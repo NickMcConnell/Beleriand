@@ -35,9 +35,6 @@
  */
 static void do_cmd_wiz_hack_ben(void)
 {
-
-#ifdef MONSTER_FLOW
-
     struct keypress cmd;
 
     int py = p_ptr->py;
@@ -246,14 +243,6 @@ static void do_cmd_wiz_hack_ben(void)
 
     /* Redraw map */
     prt_map();
-
-#else				/* MONSTER_FLOW */
-
-    /* Oops */
-    msg("Monster flow is not included in this copy of the game.");
-
-#endif				/* MONSTER_FLOW */
-
 }
 
 

@@ -214,14 +214,6 @@
 
 
 /*
- * OPTION: Allow monsters to use noise and scent information to better 
- * track the character.  This feature requires a significant amount of 
- * memory.
- */
-#define MONSTER_FLOW
-
-
-/*
  * OPTION: Support multiple "player" grids in "map_info()"
  */
 /* #define MAP_INFO_MULTIPLE_PLAYERS */

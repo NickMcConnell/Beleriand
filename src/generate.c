@@ -425,36 +425,36 @@ static void town_gen(void)
  */
 static void clear_cave(void)
 {
-	int x, y;
+    int x, y;
 
-	wipe_o_list();
-	wipe_m_list();
+    wipe_o_list();
+    wipe_m_list();
 
-	/* Clear flags and flow information. */
-	for (y = 0; y < DUNGEON_HGT; y++)
+    /* Clear flags and flow information. */
+    for (y = 0; y < DUNGEON_HGT; y++)
+    {
+	for (x = 0; x < DUNGEON_WID; x++)
 	{
-		for (x = 0; x < DUNGEON_WID; x++)
-		{
-			/* No features */
-			cave_feat[y][x] = 0;
+	    /* No features */
+	    cave_feat[y][x] = 0;
 
-			/* No flags */
-			cave_wipe(cave_info[y][x]);
+	    /* No flags */
+	    cave_wipe(cave_info[y][x]);
 
-			/* No flow */
-			cave_cost[y][x] = 0;
-			cave_when[y][x] = 0;
+	    /* No flow */
+	    cave_cost[y][x] = 0;
+	    cave_when[y][x] = 0;
 
-			/* Clear any left-over monsters (should be none) and the player. */
-			cave_m_idx[y][x] = 0;
-		}
+	    /* Clear any left-over monsters (should be none) and the player. */
+	    cave_m_idx[y][x] = 0;
 	}
+    }
 
-	/* Mega-Hack -- no player in dungeon yet */
-	p_ptr->px = p_ptr->py = 0;
+    /* Mega-Hack -- no player in dungeon yet */
+    p_ptr->px = p_ptr->py = 0;
 
-	/* Hack -- illegal panel */
-	Term->offset_y = DUNGEON_HGT;
+    /* Hack -- illegal panel */
+    Term->offset_y = DUNGEON_HGT;
 }
 
 
@@ -501,11 +501,9 @@ void generate_cave(void)
 		/* No flags */
 		cave_wipe(cave_info[y][x]);
 
-#ifdef MONSTER_FLOW
 		/* No flow */
 		cave_cost[y][x] = 0;
 		cave_when[y][x] = 0;
-#endif				/* MONSTER_FLOW */
 
 	    }
 	}
