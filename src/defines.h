@@ -55,7 +55,7 @@
  * Name of the version/variant
  */
 #define SAVEFILE_NAME  "BELE"
-
+#define DEBUG 1
 
 /**
  * Current version string - according to FAangband reckoning.

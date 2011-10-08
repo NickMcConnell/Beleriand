@@ -2151,7 +2151,14 @@ static void ui_leave_game(game_event_type type, game_event_data * data,
 errr textui_get_cmd(cmd_context context, bool wait)
 {
     if (context == CMD_BIRTH)
+#if DEBUG
+{
+			cmd_insert(CMD_QUIT);
+#endif
 	return get_birth_command(wait);
+#if DEBUG
+    }
+#endif
     else if (context == CMD_GAME)
 	textui_process_command(!wait);
 
