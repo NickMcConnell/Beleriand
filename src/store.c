@@ -2628,13 +2628,6 @@ static void store_process_command(ui_event ke)
 	    break;
 	}
 
-	/* Repeat level feeling */
-    case KTRL('F'):
-	{
-	    do_cmd_feeling();
-	    break;
-	}
-
 	/* Show previous message */
     case KTRL('O'):
 	{
@@ -3131,7 +3124,6 @@ void store_maint(int which)
 {
     int j;
     int giveup = 0;
-    int old_rating = rating;
 
     /* Save the store index */
     store_num = which;
@@ -3213,10 +3205,6 @@ void store_maint(int which)
 	giveup++;
 	if (giveup > 100) break;
     }
-
-
-    /* Hack -- Restore the rating */
-    rating = old_rating;
 }
 
 /**

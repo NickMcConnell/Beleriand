@@ -938,32 +938,6 @@ static size_t prt_depth(int row, int col)
 	strnfmt(depths, sizeof(depths), "%s", locality_name[region]);
 
 
-    /* Get color of level based on feeling -JSV- */
-    if ((p_ptr->depth) && (do_feeling)) {
-	if (p_ptr->themed_level)
-	    attr = TERM_BLUE;
-	else if (feeling == 1)
-	    attr = TERM_VIOLET;
-	else if (feeling == 2)
-	    attr = TERM_RED;
-	else if (feeling == 3)
-	    attr = TERM_L_RED;
-	else if (feeling == 4)
-	    attr = TERM_ORANGE;
-	else if (feeling == 5)
-	    attr = TERM_ORANGE;
-	else if (feeling == 6)
-	    attr = TERM_YELLOW;
-	else if (feeling == 7)
-	    attr = TERM_YELLOW;
-	else if (feeling == 8)
-	    attr = TERM_WHITE;
-	else if (feeling == 9)
-	    attr = TERM_WHITE;
-	else if (feeling == 10)
-	    attr = TERM_L_WHITE;
-    }
-
     /* Right-Adjust the "depth", and clear old values */
     c_put_str(attr, depths, row, col);
 

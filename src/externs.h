@@ -120,9 +120,6 @@ extern s16b m_cnt;
 extern s16b trap_max;
 extern s16b trap_cnt;
 extern u16b group_id;
-extern u16b feeling;
-extern bool do_feeling;
-extern s16b rating;
 extern int player_uid;
 extern int player_euid;
 extern int player_egid;
@@ -256,7 +253,6 @@ void text_out_dump(byte a, char *str, char_attr_line **line,
 		   int *current_line, int indent, int wrap);
 void textblock_dump(textblock *tb, char_attr_line **line, int *current_line, 
 		    int indent, int wrap);
-extern char themed_feeling[80];
 extern byte required_tval;
 extern byte bones_selector;
 extern int r_ghost;

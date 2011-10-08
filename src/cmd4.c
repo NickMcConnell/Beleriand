@@ -609,54 +609,6 @@ void do_cmd_version(void)
 /*
  * Array of feeling strings
  */
-static const char *feeling_text[] =
-{
-  "Looks like any other level.",
-  "You feel there is something special about this level.",
-  "You have a superb feeling about this level.",
-  "You have an excellent feeling...",
-  "You have a very good feeling...",
-  "You have a good feeling...",
-  "You feel strangely lucky...",
-  "You feel your luck is turning...",
-  "You like the look of this place...",
-  "This level can't be all bad...",
-  "What a boring place..."
-};
-
-
-/**
- * Note that "feeling" is set to zero unless some time has passed.
- * Note that this is done when the level is GENERATED, not entered.
- */
-void do_cmd_feeling(void)
-{
-  /* Verify the feeling */
-  if (feeling >= N_ELEMENTS(feeling_text))
-    feeling = N_ELEMENTS(feeling_text) - 1;
-  
-  /* No useful feeling in town */
-  if (!p_ptr->depth)
-    {
-      msg("Looks like a typical town.");
-      return;
-    }
-  
-  /* No useful feelings until enough time has passed */
-  if (!do_feeling)
-    {
-      msg("You are still uncertain about this level...");
-      return;
-    }
-  
-  /* Display the feeling */
-    if (p_ptr->themed_level) msg("%s", themed_feeling);
-    else msg(feeling_text[feeling]);
-}
-
-/*
- * Array of feeling strings
- */
 static const char *do_cmd_challenge_text[14] =
 {
   "challenges you from beyond the grave!",

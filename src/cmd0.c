@@ -137,7 +137,6 @@ static struct cmd_info cmd_info[] =
     { "Check knowledge",              '~', CMD_NULL, textui_browse_knowledge, NULL },
     { "Display visible monster list", '[', CMD_NULL, do_cmd_monlist, NULL },
     { "Display visible item list", KTRL('I'), CMD_NULL, do_cmd_itemlist, NULL },
-    { "Repeat level feeling",   KTRL('F'), CMD_NULL, do_cmd_feeling, NULL },
     { "Show previous message",  KTRL('O'), CMD_NULL, do_cmd_message_one, NULL },
     { "Show previous messages", KTRL('P'), CMD_NULL, do_cmd_messages, NULL },
     { "Show the time of day",   KTRL('T'), CMD_NULL, do_cmd_time, NULL }

@@ -727,12 +727,6 @@ void wr_misc(void)
     /* Write death */
     wr_byte(p_ptr->is_dead);
   
-    /* Write feeling */
-    wr_byte((byte)feeling);
-  
-    /* Turn of last "feeling" */
-    wr_byte(do_feeling);
-  
     /* Current turn */
     wr_s32b(turn);
 

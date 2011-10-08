@@ -1292,29 +1292,6 @@ static void process_world(void)
 	    p_ptr->redraw |= PR_STATUS;
 	}
     }
-
-    /* Delayed level feelings */
-    if ((p_ptr->depth) && (!p_ptr->leaving) && (!do_feeling) && (!(turn % 100))
-	&& (!p_ptr->themed_level)) {
-
-	int chance = 40;
-
-	/* After sufficient time, can learn about the level */
-	if ((randint0(80) < p_ptr->state.skills[SKILL_SEARCH])
-	    && (randint0(80) < chance)) {
-	    /* Now have a feeling */
-	    do_feeling = TRUE;
-
-	    /* Announce feeling */
-	    do_cmd_feeling();
-
-	    /* Update the level indicator */
-	    p_ptr->redraw |= (PR_DEPTH);
-
-	    /* Disturb */
-	    disturb(0, 0);
-	}
-    }
 }
 
 
@@ -2033,11 +2010,6 @@ static void dungeon(void)
     /* Handle delayed death */
     if (p_ptr->is_dead)
 	return;
-
-
-    /* Announce (or repeat) the feeling */
-    if ((p_ptr->depth) && (do_feeling))
-	do_cmd_feeling();
 
     /* Announce a player ghost challenge. -LM- */
     if (bones_selector)

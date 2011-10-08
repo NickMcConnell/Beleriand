@@ -104,7 +104,6 @@ extern void do_cmd_pref(void);
 extern void make_note(char *note, int what_stage, byte note_type, s16b lev);
 extern void do_cmd_note(void);
 extern void do_cmd_version(void);
-extern void do_cmd_feeling(void);
 extern void do_cmd_load_screen(void);
 extern void do_cmd_save_screen(void);
 extern void do_cmd_knowledge(void);

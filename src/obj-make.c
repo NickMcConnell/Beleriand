@@ -604,7 +604,6 @@ static bool make_artifact(object_type * o_ptr)
  *
  * Hack -- note special base damage dice boosting
  * Hack -- note special processing for weapon/digger
- * Hack -- note special rating boost for dragon scale mail
  */
 static void a_m_aux_1(object_type * o_ptr, int level, int power)
 {
@@ -753,9 +752,6 @@ static void a_m_aux_2(object_type * o_ptr, int level, int power)
     switch (o_ptr->tval) {
     case TV_DRAG_ARMOR:
 	{
-	    /* Rating boost */
-	    rating += 20;
-
 	    /* Mention the item */
 	    if (OPT(cheat_peek))
 		object_mention(o_ptr);
@@ -1117,12 +1113,6 @@ void apply_magic(object_type * o_ptr, int lev, bool okay, bool good, bool great)
 	if (a_ptr->effect) o_ptr->effect = a_ptr->effect;
 	o_ptr->time = a_ptr->time;
 
-	/* Mega-Hack -- increase the rating */
-	rating += 15;
-
-	/* Mega-Hack -- increase the rating again */
-	rating += a_ptr->cost / 2000;
-
 	/* Cheat -- peek at the item */
 	if (OPT(cheat_peek))
 	    object_mention(o_ptr);
@@ -1458,10 +1448,6 @@ void apply_magic(object_type * o_ptr, int lev, bool okay, bool good, bool great)
 	    if ((o_ptr->to_d % 2 == 1) && (randint1(4) != 1))
 		o_ptr->to_d++;
 	}
-
-
-	/* Hack -- apply rating bonus */
-	rating += e_ptr->rating;
 
 	/* Cheat -- describe the item */
 	if (OPT(cheat_peek))
@@ -1835,9 +1821,6 @@ bool make_object(object_type * j_ptr, bool good, bool great, bool exact_kind)
 
     /* Notice "okay" out-of-depth objects */
     if (!cursed_p(j_ptr) && (k_info[j_ptr->k_idx].level > p_ptr->depth)) {
-	/* Rating increase */
-	rating += (k_info[j_ptr->k_idx].level - p_ptr->depth);
-
 	/* Cheat -- peek at items */
 	if (OPT(cheat_peek))
 	    object_mention(j_ptr);

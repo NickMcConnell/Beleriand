@@ -1722,14 +1722,8 @@ extern bool build_themed_level(void)
 	return (FALSE);
     }
 
-    /* Get feeling text */
-    my_strcpy(themed_feeling, t_ptr->message, sizeof(themed_feeling));
-
     /* Indicate that this theme is built, and should not appear again. */
     p_ptr->themed_level_appeared |= (1L << (choice - 1));
-
-    /* Now have a feeling */
-    do_feeling = TRUE;
 
     /* Update the level indicator */
     p_ptr->redraw |= (PR_DEPTH);

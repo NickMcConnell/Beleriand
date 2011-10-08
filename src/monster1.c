@@ -2915,9 +2915,6 @@ bool prepare_ghost(int r_idx, monster_type * m_ptr, bool from_savefile)
     if (p_ptr->depth > 75)
 	r_ptr->spell_power += 3 * (p_ptr->depth - 75) / 2;
 
-    /* Hack -- increase the level feeling */
-    rating += 10;
-
     /* Hack - Player ghosts are "seen" whenever generated, to conform with
      * previous practice. */
     l_ptr->sights = 1;

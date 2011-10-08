@@ -1852,9 +1852,6 @@ static bool build_type5(void)
 	msg("Monster pit (%s)", name);
     }
 
-    /* Increase the level rating */
-    rating += 10;
-
     /* Success */
     return (TRUE);
 }
@@ -2318,9 +2315,6 @@ static bool build_type6(void)
 
     /*** Now we get to place the monsters. ***/
     get_chamber_monsters(y1, x1, y2, x2);
-
-    /* Increase the level rating */
-    rating += 10;
 
     /* Success. */
     return (TRUE);
@@ -2976,10 +2970,6 @@ static bool build_type7(void)
 	return (FALSE);
     }
 
-    /* Boost the rating */
-    rating += v_ptr->rat;
-
-
     /* Build the vault (sometimes lit, not icky, type 7) */
     if (!build_vault
 	(y, x, v_ptr->hgt, v_ptr->wid, v_ptr->text,
@@ -3029,9 +3019,6 @@ static bool build_type8(void)
     /* Message */
     if (OPT(cheat_room))
 	msg("Lesser Vault");
-
-    /* Boost the rating */
-    rating += v_ptr->rat;
 
     /* Build the vault (never lit, icky, type 8) */
     if (!build_vault
@@ -3083,9 +3070,6 @@ static bool build_type9(void)
     /* Message */
     if (OPT(cheat_room))
 	msg("Greater Vault");
-
-    /* Boost the rating */
-    rating += v_ptr->rat;
 
     /* Build the vault (never lit, icky, type 9) */
     if (!build_vault

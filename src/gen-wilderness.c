@@ -562,9 +562,6 @@ int make_formation(int y, int x, int base_feat1, int base_feat2, int *feat,
 		return (0);
 	    }
 
-	    /* Boost the rating */
-	    rating += v_ptr->rat;
-
 	    /* Message */
 	    if (OPT(cheat_room))
 		msg("%s. ", v_ptr->name);
@@ -2538,10 +2535,6 @@ bool place_web(int type)
 	free(v_idx);
 	return (FALSE);
     }
-
-    /* Boost the rating */
-    rating += v_ptr->rat;
-
 
     /* Build the vault (never lit, not icky unless full size) */
     if (!build_vault

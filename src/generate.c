@@ -455,11 +455,6 @@ static void clear_cave(void)
 
 	/* Hack -- illegal panel */
 	Term->offset_y = DUNGEON_HGT;
-	Term->offset_x = DUNGEON_WID;
-
-
-	/* Nothing good here yet */
-	rating = 0;
 }
 
 
@@ -486,9 +481,6 @@ void generate_cave(void)
 
     /* The dungeon is not ready */
     character_dungeon = FALSE;
-
-    /* Don't know feeling yet */
-    do_feeling = FALSE;
 
     /* Assume level is not themed. */
     p_ptr->themed_level = 0;
@@ -528,9 +520,6 @@ void generate_cave(void)
 
 	/* Reset the object generation level */
 	object_level = p_ptr->depth;
-
-	/* Nothing good here yet */
-	rating = 0;
 
 	/* Only group is the player */
 	group_id = 1;
@@ -625,31 +614,6 @@ void generate_cave(void)
 	okay = TRUE;
 
 
-	/* Extract the feeling */
-	if (rating > 50 + p_ptr->depth)
-	    feeling = 2;
-	else if (rating > 40 + 4 * p_ptr->depth / 5)
-	    feeling = 3;
-	else if (rating > 30 + 3 * p_ptr->depth / 5)
-	    feeling = 4;
-	else if (rating > 20 + 2 * p_ptr->depth / 5)
-	    feeling = 5;
-	else if (rating > 15 + 1 * p_ptr->depth / 3)
-	    feeling = 6;
-	else if (rating > 10 + 1 * p_ptr->depth / 5)
-	    feeling = 7;
-	else if (rating > 5 + 1 * p_ptr->depth / 10)
-	    feeling = 8;
-	else if (rating > 0)
-	    feeling = 9;
-	else
-	    feeling = 10;
-
-	/* Hack -- no feeling in the town */
-	if (!p_ptr->depth)
-	    feeling = 0;
-
-
 	/* Prevent object over-flow */
 	if (o_max >= z_info->o_max) {
 	    /* Message */
@@ -666,27 +630,6 @@ void generate_cave(void)
 
 	    /* Message */
 	    okay = FALSE;
-	}
-
-	/* Mega-Hack -- "auto-scum" */
-	if (OPT(adult_auto_scum) && (num < 100) && !(p_ptr->themed_level)) {
-	    int fudge = (no_vault()? 3 : 0);
-
-	    /* Require "goodness" */
-	    if ((feeling > fudge + 9)
-		|| ((p_ptr->depth >= 5) && (feeling > fudge + 8))
-		|| ((p_ptr->depth >= 10) && (feeling > fudge + 7))
-		|| ((p_ptr->depth >= 20) && (feeling > fudge + 6))) {
-		/* Give message to cheaters */
-		if (OPT(cheat_room) || OPT(cheat_hear) || OPT(cheat_peek)
-		    || OPT(cheat_xtra)) {
-		    /* Message */
-		    why = "boring level";
-		}
-
-		/* Try again */
-		okay = FALSE;
-	    }
 	}
 
 	/* Message */

@@ -2117,9 +2117,6 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	/* Message */
 	if (OPT(cheat_hear))
 	    msg("Deep Unique (%s).", name);
-
-	/* Boost rating by twice delta-depth */
-	rating += (r_ptr->level - p_ptr->depth) * 2;
     }
 
     /* Note any unique monster, even if not out of depth */
@@ -2134,11 +2131,6 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	/* Message */
 	if (OPT(cheat_hear))
 	    msg("Deep Monster (%s).", name);
-
-	/* Boost rating by a function of delta-depth */
-	rating +=
-	    ((r_ptr->level - p_ptr->depth) * (r_ptr->level -
-					      p_ptr->depth)) / 25;
     }
 
 
@@ -2155,16 +2147,13 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 
 /**
  * Attempt to place a group of monsters around the given location.
- *
- * Hack -- A group of monsters counts as a single individual for the 
- * level rating.
  */
 static bool place_monster_group(int y, int x, int r_idx, bool slp,
 				s16b group_size)
 {
     monster_race *r_ptr = &r_info[r_idx];
 
-    int old, n, i;
+    int n, i;
     int reduce;
 
     int hack_n = 0;
@@ -2192,9 +2181,6 @@ static bool place_monster_group(int y, int x, int r_idx, bool slp,
     if (group_size > GROUP_MAX)
 	group_size = GROUP_MAX;
 
-
-    /* Save the rating */
-    old = rating;
 
     /* Start on the monster */
     hack_n = 1;
@@ -2229,10 +2215,6 @@ static bool place_monster_group(int y, int x, int r_idx, bool slp,
     /* Cancel group mode */
     group_mode = FALSE;
     group_race = NON_RACIAL;
-
-    /* Hack -- restore the rating */
-    rating = old;
-
 
     /* Success */
     return (TRUE);

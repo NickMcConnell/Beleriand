@@ -1199,14 +1199,6 @@ int rd_misc(u32b version)
 	rd_byte(&tmp8u);
 	p_ptr->is_dead = tmp8u;
 
-	/* Read "feeling" */
-	rd_byte(&tmp8u);
-	feeling = tmp8u;
-
-	/* Turn of last "feeling" */
-	rd_byte(&tmp8u);
-	do_feeling = tmp8u ? TRUE : FALSE;
-
 	/* Current turn */
 	rd_s32b(&turn);
 

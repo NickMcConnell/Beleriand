@@ -90,12 +90,8 @@ char summon_kin_type;		/* Hack -- See summon_specific() */
 
 s32b turn;			/* Current game turn */
 
-bool do_feeling = FALSE;	/* Hack -- Level feeling indicator */
-
 int use_graphics;		/* "graphics" mode */
 bool use_graphics_nice;	        /* The 'nice' "graphics" mode is enabled */
-//byte tile_width = 1;            /* Tile width in units of font width */
-//byte tile_height = 1;           /* Tile height in units of font height */
 bool use_transparency = FALSE;  /* Use transparent tiles */
 char notes_start[80];           /* Opening line of notes */
 
@@ -129,13 +125,6 @@ s16b trap_max = 1;		/* Number of allocated traps */
 s16b trap_cnt = 0;		/* Number of live traps */
 
 u16b group_id = 1;              /* Number of group IDs allocated */    
-
-/*
- * Dungeon variables
- */
-
-u16b feeling;			/* Most recent feeling */
-s16b rating;			/* Level's current rating */
 
 /*
  * Player info
@@ -1015,11 +1004,6 @@ char_attr_line *pline1;
  * The "highscore" file descriptor, if available.
  */
 ang_file *highscore_fd;
-
-/**
- * Themed levels generate their own feeling mesaages. -LM-
- */
-char themed_feeling[80];
 
 /**
  * The type of object the item generator should make, if specified. -LM-
