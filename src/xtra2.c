@@ -233,7 +233,7 @@ bool modify_panel(term *t, int wy, int wx)
 	int dungeon_wid = DUNGEON_WID;
 
 	/* Adjust for town */
-	if (p_ptr->depth == 0) town_adjust(&dungeon_hgt, &dungeon_wid);
+	if (p_ptr->danger == 0) town_adjust(&dungeon_hgt, &dungeon_wid);
 
 	/* Verify wy, adjust if needed */
 	if (wy > dungeon_hgt - SCREEN_HGT) wy = dungeon_hgt - SCREEN_HGT;

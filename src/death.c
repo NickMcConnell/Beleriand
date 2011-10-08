@@ -124,7 +124,7 @@ static void make_bones(void)
     /* Ignore wizards and borgs */
     if (!(p_ptr->noscore & 0x00FF)) {
 	/* Ignore people who die in town */
-	if (p_ptr->depth) {
+	if (p_ptr->danger) {
 	    int level;
 	    char tmp[128];
 
@@ -132,9 +132,9 @@ static void make_bones(void)
 	    for (i = 0; i < 5; i++) {
 		/* Ghost hovers near level of death. */
 		if (i == 0)
-		    level = p_ptr->depth;
+		    level = p_ptr->danger;
 		else
-		    level = p_ptr->depth + 5 - damroll(2, 4);
+		    level = p_ptr->danger + 5 - damroll(2, 4);
 		if (level < 1)
 		    level = randint1(4);
 
@@ -438,9 +438,9 @@ static void print_tomb(void)
     center_string(buf, tmp);
     put_str(buf, 13, offset);
 
-    if (p_ptr->depth)
+    if (p_ptr->danger)
 	sprintf(tmp, "Killed in %s level %d",
-		locality_name[stage_map[p_ptr->stage][LOCALITY]], p_ptr->depth);
+		locality_name[stage_map[p_ptr->stage][LOCALITY]], p_ptr->danger);
     else if (boat)
 	sprintf(tmp, "Sailed victorious to Aman.");
     else if (tree)
@@ -735,7 +735,7 @@ static void death_examine(const char *title, int row)
 static void kingly(void)
 {
     /* Hack -- retire in town */
-    p_ptr->depth = 0;
+    p_ptr->danger = 0;
 
     /* Fake death */
     strcpy(p_ptr->died_from, "Ripe Old Age");

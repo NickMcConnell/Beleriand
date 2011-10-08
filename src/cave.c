@@ -1553,12 +1553,12 @@ void display_map(int *cy, int *cx)
     map_wid = Term->wid - 2;
 
     /* Adjust for town */
-    dungeon_hgt = (p_ptr->depth ? DUNGEON_HGT : 2 * DUNGEON_HGT / 3);
-    dungeon_wid = (p_ptr->depth ? DUNGEON_WID : 2 * DUNGEON_WID / 3);
-    if (!(p_ptr->depth) && (p_ptr->stage < 151) && (!OPT(adult_dungeon)))
+    dungeon_hgt = (p_ptr->danger ? DUNGEON_HGT : 2 * DUNGEON_HGT / 3);
+    dungeon_wid = (p_ptr->danger ? DUNGEON_WID : 2 * DUNGEON_WID / 3);
+    if (!(p_ptr->danger) && (p_ptr->stage < 151) && (!OPT(adult_dungeon)))
 	dungeon_wid = DUNGEON_WID / 2;
-    top_row = (p_ptr->depth ? 0 : DUNGEON_HGT / 3);
-    left_col = (p_ptr->depth ? 0 : DUNGEON_WID / 3);
+    top_row = (p_ptr->danger ? 0 : DUNGEON_HGT / 3);
+    left_col = (p_ptr->danger ? 0 : DUNGEON_WID / 3);
 
     /* Prevent accidents */
     if (map_hgt > dungeon_hgt)
@@ -3770,7 +3770,7 @@ void illuminate(void)
     for (y = 0; y < DUNGEON_HGT; y++) {
 	for (x = 0; x < DUNGEON_WID; x++) {
 	    /* Grids outside town walls */
-	    if ((cave_feat[y][x] == FEAT_PERM_SOLID)  && !p_ptr->depth)
+	    if ((cave_feat[y][x] == FEAT_PERM_SOLID)  && !p_ptr->danger)
 	    {
 
 		/* Darken the grid */

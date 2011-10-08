@@ -2771,7 +2771,7 @@ bool prepare_ghost(int r_idx, monster_type * m_ptr, bool from_savefile)
      * makes it is formally impossible to have more than one ghost at a time.
      * -BR- */
 
-    if ((r_ptr->level < p_ptr->depth - 5) && (from_savefile == FALSE))
+    if ((r_ptr->level < p_ptr->danger - 5) && (from_savefile == FALSE))
 	return (FALSE);
 
     /* Store the index of the base race. */
@@ -2791,8 +2791,8 @@ bool prepare_ghost(int r_idx, monster_type * m_ptr, bool from_savefile)
 	    if (bones_selector) {
 		sprintf(path, "%s/bone.%03d", ANGBAND_DIR_BONE, bones_selector);
 	    } else {
-		sprintf(path, "%s/bone.%03d", ANGBAND_DIR_BONE, p_ptr->depth);
-		bones_selector = (byte) p_ptr->depth;
+		sprintf(path, "%s/bone.%03d", ANGBAND_DIR_BONE, p_ptr->danger);
+		bones_selector = (byte) p_ptr->danger;
 	    }
 	} else {
 	    backup_file_selector = randint1(MAX_DEPTH - 1);
@@ -2912,8 +2912,8 @@ bool prepare_ghost(int r_idx, monster_type * m_ptr, bool from_savefile)
     process_ghost_class(ghost_class, m_ptr);
 
     /* Hack - a little extra help for the deepest ghosts */
-    if (p_ptr->depth > 75)
-	r_ptr->spell_power += 3 * (p_ptr->depth - 75) / 2;
+    if (p_ptr->danger > 75)
+	r_ptr->spell_power += 3 * (p_ptr->danger - 75) / 2;
 
     /* Hack - Player ghosts are "seen" whenever generated, to conform with
      * previous practice. */

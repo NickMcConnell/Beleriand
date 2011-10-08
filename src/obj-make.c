@@ -474,7 +474,7 @@ static bool make_artifact_special(object_type * o_ptr)
     int k_idx = 0;
 
     /* No artifacts in the town */
-    if (!p_ptr->depth || OPT(adult_no_artifacts))
+    if (!p_ptr->danger || OPT(adult_no_artifacts))
 	return (FALSE);
 
     first_pick = randint0(artifact_special_cnt);
@@ -493,9 +493,9 @@ static bool make_artifact_special(object_type * o_ptr)
 	    continue;
 
 	/* Enforce minimum "depth" (loosely) */
-	if (a_ptr->level > p_ptr->depth) {
+	if (a_ptr->level > p_ptr->danger) {
 	    /* Acquire the "out-of-depth factor" */
-	    int d = (a_ptr->level - p_ptr->depth) * 2;
+	    int d = (a_ptr->level - p_ptr->danger) * 2;
 
 	    /* Roll for out-of-depth creation */
 	    if (randint0(d) != 0)
@@ -547,7 +547,7 @@ static bool make_artifact(object_type * o_ptr)
 
 
     /* No artifacts in the town */
-    if (!p_ptr->depth)
+    if (!p_ptr->danger)
 	return (FALSE);
 
     /* Paranoia -- no "plural" artifacts */
@@ -574,9 +574,9 @@ static bool make_artifact(object_type * o_ptr)
 	    continue;
 
 	/* XXX XXX Enforce minimum "depth" (loosely) */
-	if (a_ptr->level > p_ptr->depth) {
+	if (a_ptr->level > p_ptr->danger) {
 	    /* Acquire the "out-of-depth factor" */
-	    int d = (a_ptr->level - p_ptr->depth) * 2;
+	    int d = (a_ptr->level - p_ptr->danger) * 2;
 
 	    /* Roll for out-of-depth creation */
 	    if (randint0(d) != 0)
@@ -1535,7 +1535,7 @@ static bool kind_is_good(int k_idx)
     case TV_RING:
 	{
 
-	    if (k_ptr->cost >= 500 + p_ptr->depth * 90)
+	    if (k_ptr->cost >= 500 + p_ptr->danger * 90)
 		return (TRUE);
 
 	    return (FALSE);
@@ -1544,7 +1544,7 @@ static bool kind_is_good(int k_idx)
 	/* Amulets -- any with a high enough value. */
     case TV_AMULET:
 	{
-	    if (k_ptr->cost >= 500 + p_ptr->depth * 90)
+	    if (k_ptr->cost >= 500 + p_ptr->danger * 90)
 		return (TRUE);
 
 	    return (FALSE);
@@ -1571,7 +1571,7 @@ static bool kind_is_good(int k_idx)
 	    if (k_ptr->sval == SV_WAND_TELEPORT_AWAY)
 		return (TRUE);
 
-	    if (k_ptr->cost >= 400 + p_ptr->depth * 60)
+	    if (k_ptr->cost >= 400 + p_ptr->danger * 60)
 		return (TRUE);
 
 	    return (FALSE);
@@ -1592,7 +1592,7 @@ static bool kind_is_good(int k_idx)
 	    if (k_ptr->sval == SV_STAFF_BANISHMENT)
 		return (TRUE);
 
-	    if (k_ptr->cost >= 500 + p_ptr->depth * 60)
+	    if (k_ptr->cost >= 500 + p_ptr->danger * 60)
 		return (TRUE);
 
 	    return (FALSE);
@@ -1622,7 +1622,7 @@ static bool kind_is_good(int k_idx)
 	    if (k_ptr->sval == SV_ROD_TELEPORT_AWAY)
 		return (TRUE);
 
-	    if (k_ptr->cost >= 500 + p_ptr->depth * 100)
+	    if (k_ptr->cost >= 500 + p_ptr->danger * 100)
 		return (TRUE);
 
 	    return (FALSE);
@@ -1645,7 +1645,7 @@ static bool kind_is_good(int k_idx)
 	{
 	    if (k_ptr->cost >= 10000)
 		return (TRUE);
-	    if (k_ptr->cost >= 500 + p_ptr->depth * 110)
+	    if (k_ptr->cost >= 500 + p_ptr->danger * 110)
 		return (TRUE);
 	    return (FALSE);
 	}
@@ -1820,7 +1820,7 @@ bool make_object(object_type * j_ptr, bool good, bool great, bool exact_kind)
     }
 
     /* Notice "okay" out-of-depth objects */
-    if (!cursed_p(j_ptr) && (k_info[j_ptr->k_idx].level > p_ptr->depth)) {
+    if (!cursed_p(j_ptr) && (k_info[j_ptr->k_idx].level > p_ptr->danger)) {
 	/* Cheat -- peek at items */
 	if (OPT(cheat_peek))
 	    object_mention(j_ptr);

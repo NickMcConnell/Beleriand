@@ -555,7 +555,7 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
 	{
 	    sound(MSG_SUM_MONSTER);
 	    for (k = 0; k < randint1(3); k++) {
-		if (summon_specific(py, px, FALSE, p_ptr->depth, 0)) {
+		if (summon_specific(py, px, FALSE, p_ptr->danger, 0)) {
 		    *ident = TRUE;
 		}
 	    }
@@ -566,7 +566,7 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
 	{
 	    sound(MSG_SUM_UNDEAD);
 	    for (k = 0; k < randint1(3); k++) {
-		if (summon_specific(py, px, FALSE, p_ptr->depth, SUMMON_UNDEAD)) {
+		if (summon_specific(py, px, FALSE, p_ptr->danger, SUMMON_UNDEAD)) {
 		    *ident = TRUE;
 		}
 	    }
@@ -609,7 +609,7 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
 	{
 	    sound(MSG_SUM_MONSTER);
 	    for (k = 0; k < randint1(4); k++) {
-		if (summon_specific(py, px, FALSE, p_ptr->depth, 0)) {
+		if (summon_specific(py, px, FALSE, p_ptr->danger, 0)) {
 		    *ident = TRUE;
 		}
 	    }
@@ -3377,7 +3377,7 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
     case EF_MASS_POLYMORPH:
     {
 	msg("Reality warps...");
-	poly_all(p_ptr->depth);
+	poly_all(p_ptr->danger);
 
 	return TRUE;
     }
@@ -3408,7 +3408,7 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
 	group = m_list[targ].group;
 
 	/* Summon golems */
-	summon_specific(targ_y, targ_x, FALSE, p_ptr->depth, SUMMON_GOLEM);
+	summon_specific(targ_y, targ_x, FALSE, p_ptr->danger, SUMMON_GOLEM);
 
 	/* Hack - make all local golems hostile to the target */
 	for (m_idx = 0; m_idx < z_info->m_max; m_idx++) {

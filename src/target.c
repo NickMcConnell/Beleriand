@@ -1912,10 +1912,10 @@ bool target_set_interactive(int mode, int x, int y)
 		int dx = ddx[d];
 
 		/* Adjust for town */
-		if (p_ptr->depth == 0) town_adjust(&dungeon_hgt, &dungeon_wid);
+		if (p_ptr->danger == 0) town_adjust(&dungeon_hgt, &dungeon_wid);
 
 		/* Hack to stop looking outside town walls */
-		if (!p_ptr->depth) {
+		if (!p_ptr->danger) {
 		    if (cave_feat[y + dy][x] == FEAT_PERM_SOLID)
 			dy = 0;
 		    if (cave_feat[y][x + dx] == FEAT_PERM_SOLID)

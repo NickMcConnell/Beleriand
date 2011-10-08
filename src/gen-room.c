@@ -132,7 +132,7 @@ static void spread_traps(int num, int y0, int x0, int dy, int dx)
 	    continue;
 
 	/* Place the trap */
-	place_trap(y, x, -1, p_ptr->depth);
+	place_trap(y, x, -1, p_ptr->danger);
 
 	/* Count the trap, reset the loop count */
 	count++;
@@ -947,7 +947,7 @@ static bool build_type1(void)
     bool light = FALSE;
 
     /* Occasional light */
-    if ((p_ptr->depth <= randint1(35)) && (!underworld))
+    if ((p_ptr->danger <= randint1(35)) && (!underworld))
 	light = TRUE;
 
 
@@ -1064,8 +1064,8 @@ static bool build_type1(void)
 	    }
 
 	    /* Here, creatures of Earth dwell. */
-	    if ((p_ptr->depth > 35) && (randint0(3) == 0)) {
-		spread_monsters('X', p_ptr->depth, 2 + randint1(3), y0, x0, 3,
+	    if ((p_ptr->danger > 35) && (randint0(3) == 0)) {
+		spread_monsters('X', p_ptr->danger, 2 + randint1(3), y0, x0, 3,
 				9);
 
 		/* No normal monsters. */
@@ -1082,8 +1082,8 @@ static bool build_type1(void)
 		(y1 + randint0(3), x1 + randint0(5), y2 - randint0(3),
 		 x2 - randint0(5), FALSE, FEAT_WATER, FALSE)) {
 		/* ... there may be water creatures, ... */
-		if ((p_ptr->depth > 15) && (randint0(4) == 0)) {
-		    spread_monsters('6', p_ptr->depth, 2 + randint1(4), y0, x0,
+		if ((p_ptr->danger > 15) && (randint0(4) == 0)) {
+		    spread_monsters('6', p_ptr->danger, 2 + randint1(4), y0, x0,
 				    3, 7);
 
 		    water_room = TRUE;
@@ -1113,10 +1113,10 @@ static bool build_type1(void)
 
 		/* Animals love trees. */
 		if (randint0(6) == 0)
-		    spread_monsters('3', p_ptr->depth, 2 + randint0(6), y0, x0,
+		    spread_monsters('3', p_ptr->danger, 2 + randint0(6), y0, x0,
 				    4, 11);
 		else if (randint0(3) == 0)
-		    spread_monsters('A', p_ptr->depth, 2 + randint0(5), y0, x0,
+		    spread_monsters('A', p_ptr->danger, 2 + randint0(5), y0, x0,
 				    4, 11);
 	    }
 	}
@@ -1140,7 +1140,7 @@ static bool build_type2(void)
     int light = FALSE;
 
     /* Occasional light */
-    if (p_ptr->depth <= randint1(35))
+    if (p_ptr->danger <= randint1(35))
 	light = TRUE;
 
 
@@ -1206,7 +1206,7 @@ static bool build_type2(void)
 
 
     /* Sometimes, we get creative. */
-    if ((p_ptr->depth >= 12) && (randint0(40) == 0)) {
+    if ((p_ptr->danger >= 12) && (randint0(40) == 0)) {
 	/* Demons have taken up residence. */
 	if (randint0(3) == 0) {
 	    /* Pool of lava */
@@ -1214,18 +1214,18 @@ static bool build_type2(void)
 					   y0 + randint1(2), x0 + randint1(3),
 					   FALSE, FEAT_LAVA, FALSE);
 
-	    if (p_ptr->depth > 45)
-		spread_monsters('U', p_ptr->depth, 3 + randint0(5), y0, x0,
+	    if (p_ptr->danger > 45)
+		spread_monsters('U', p_ptr->danger, 3 + randint0(5), y0, x0,
 				height / 2, width / 2);
 	    else
-		spread_monsters('u', p_ptr->depth, 2 + randint0(3), y0, x0,
+		spread_monsters('u', p_ptr->danger, 2 + randint0(3), y0, x0,
 				height / 2, width / 2);
 	}
 
 	/* Beings of frost or fire */
 	else {
 	    /* Get some monsters. */
-	    spread_monsters('7', p_ptr->depth, 2 + randint0(5), y0, x0,
+	    spread_monsters('7', p_ptr->danger, 2 + randint0(5), y0, x0,
 			    height / 2, width / 2);
 	}
     }
@@ -1260,7 +1260,7 @@ static bool build_type3(void)
     int light = FALSE;
 
     /* Occasional light */
-    if (p_ptr->depth <= randint1(35))
+    if (p_ptr->danger <= randint1(35))
 	light = TRUE;
 
 
@@ -1362,14 +1362,14 @@ static bool build_type3(void)
 	    generate_hole(y1b, x1a, y2b, x2a, FEAT_SECRET);
 
 	    /* Place a treasure in the vault */
-	    object_level = p_ptr->depth + 2;
+	    object_level = p_ptr->danger + 2;
 	    place_object(y0, x0, FALSE, FALSE, FALSE);
-	    object_level = p_ptr->depth;
+	    object_level = p_ptr->danger;
 
 	    /* Let's guard the treasure well */
-	    monster_level = p_ptr->depth + 4;
+	    monster_level = p_ptr->danger + 4;
 	    (void) place_monster(y0, x0, TRUE, TRUE, FALSE);
-	    monster_level = p_ptr->depth;
+	    monster_level = p_ptr->danger;
 
 	    /* Traps, naturally. */
 	    spread_traps(randint1(3), y0, x0, 4, 4);
@@ -1441,7 +1441,7 @@ static bool build_type4(void)
     int light = FALSE;
 
     /* Occasional light */
-    if (p_ptr->depth <= randint1(35))
+    if (p_ptr->danger <= randint1(35))
 	light = TRUE;
 
 
@@ -1497,13 +1497,13 @@ static bool build_type4(void)
 			  FEAT_DOOR_HEAD + randint1(7));
 
 	    /* Monsters on guard */
-	    spread_monsters('\0', p_ptr->depth + 2, 4, y0, x0, 2, 6);
+	    spread_monsters('\0', p_ptr->danger + 2, 4, y0, x0, 2, 6);
 
 	    /* Object (80%) */
 	    if (randint0(100) < 80) {
-		object_level = p_ptr->depth + 2;
+		object_level = p_ptr->danger + 2;
 		place_object(y0, x0, FALSE, FALSE, FALSE);
-		object_level = p_ptr->depth;
+		object_level = p_ptr->danger;
 	    }
 
 	    /* Stairs (20%) */
@@ -1562,7 +1562,7 @@ static bool build_type4(void)
 		place_secret_door(y0 - 3 + (randint1(2) * 2), x0 + 3);
 
 		/* Monsters */
-		spread_monsters('\0', p_ptr->depth, randint1(4), y0, x0, 2, 7);
+		spread_monsters('\0', p_ptr->danger, randint1(4), y0, x0, 2, 7);
 
 		/* Objects */
 		if (randint0(3) == 0)
@@ -1591,11 +1591,11 @@ static bool build_type4(void)
 
 	    /* Monsters (especially undead) just love mazes. */
 	    if (randint0(3) == 0)
-		spread_monsters('N', p_ptr->depth, randint1(6), y0, x0, 2, 9);
+		spread_monsters('N', p_ptr->danger, randint1(6), y0, x0, 2, 9);
 	    else if (randint0(3) == 0)
-		spread_monsters('*', p_ptr->depth, randint1(6), y0, x0, 2, 9);
+		spread_monsters('*', p_ptr->danger, randint1(6), y0, x0, 2, 9);
 	    else
-		spread_monsters('\0', p_ptr->depth, randint1(6), y0, x0, 2, 9);
+		spread_monsters('\0', p_ptr->danger, randint1(6), y0, x0, 2, 9);
 
 	    /* No random monsters. */
 	    generate_mark(y1, x1, y2, x2, CAVE_TEMP);
@@ -1604,7 +1604,7 @@ static bool build_type4(void)
 	    spread_traps(2 + randint0(4), y0, x0, 2, 9);
 
 	    /* Mazes should have some pretty good treasure too. */
-	    spread_objects(p_ptr->depth, 2 + randint0(4), y0, x0, 2, 9);
+	    spread_objects(p_ptr->danger, 2 + randint0(4), y0, x0, 2, 9);
 
 	    break;
 	}
@@ -1631,10 +1631,10 @@ static bool build_type4(void)
 	    }
 
 	    /* Treasure, centered at the center of the cross */
-	    spread_objects(p_ptr->depth, 2 + randint1(2), y0, x0, 1, 1);
+	    spread_objects(p_ptr->danger, 2 + randint1(2), y0, x0, 1, 1);
 
 	    /* Gotta have some monsters */
-	    spread_monsters('\0', p_ptr->depth, 6 + randint0(11), y0, x0, 2, 9);
+	    spread_monsters('\0', p_ptr->danger, 6 + randint0(11), y0, x0, 2, 9);
 
 	    break;
 	}
@@ -1712,7 +1712,7 @@ static bool build_type5(void)
 
 
     /* Get a legal depth. */
-    depth = p_ptr->depth + randint0(11) - 5;
+    depth = p_ptr->danger + randint0(11) - 5;
     if (depth > 60)
 	depth = 60;
     if (depth < 5)
@@ -1722,7 +1722,7 @@ static bool build_type5(void)
     symbol = mon_symbol_at_depth[depth / 5 - 1][randint0(7)];
 
     /* Allow tougher monsters. */
-    depth = p_ptr->depth + 3 + (p_ptr->depth < 70 ? p_ptr->depth / 7 : 10);
+    depth = p_ptr->danger + 3 + (p_ptr->danger < 70 ? p_ptr->danger / 7 : 10);
 
 
     /* 
@@ -2039,13 +2039,13 @@ static bool build_type6(void)
     int y0, x0, y1, x1, y2, x2;
 
     /* Deeper in the dungeon, chambers are less likely to be lit. */
-    bool light = (randint0(45) > p_ptr->depth) ? TRUE : FALSE;
+    bool light = (randint0(45) > p_ptr->danger) ? TRUE : FALSE;
 
 
     /* Calculate a level-dependent room size modifier. */
-    if (p_ptr->depth > randint0(160))
+    if (p_ptr->danger > randint0(160))
 	i = 4;
-    else if (p_ptr->depth > randint0(100))
+    else if (p_ptr->danger > randint0(100))
 	i = 3;
     else
 	i = 2;
@@ -2459,7 +2459,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		/* Tree. */
 	    case ';':
 		{
-		    if (randint1(p_ptr->depth + HIGHLAND_TREE_CHANCE)
+		    if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
 			> HIGHLAND_TREE_CHANCE)
 			cave_set_feat(y, x, FEAT_TREE2);
 		    else
@@ -2484,7 +2484,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    if (randint0(100) < 50) {
 			place_object(y, x, FALSE, FALSE, FALSE);
 		    } else {
-			place_trap(y, x, -1, p_ptr->depth);
+			place_trap(y, x, -1, p_ptr->danger);
 		    }
 		    break;
 		}
@@ -2497,7 +2497,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		/* Trap */
 	    case '^':
 		{
-		    place_trap(y, x, -1, p_ptr->depth);
+		    place_trap(y, x, -1, p_ptr->danger);
 		    break;
 		}
 		/* Up stairs (and player location in themed level).  */
@@ -2550,7 +2550,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 			break;
 
 		    /* Set the feature */
-		    more = (stage_map[adj][DEPTH] > p_ptr->depth);
+		    more = (stage_map[adj][DEPTH] > p_ptr->danger);
 		    switch (dir) {
 		    case NORTH:
 			{
@@ -2640,94 +2640,94 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 				place_object(y, x, FALSE, FALSE, FALSE);
 
 			} else {
-			    place_trap(y, x, -1, p_ptr->depth);
+			    place_trap(y, x, -1, p_ptr->danger);
 			}
 			break;
 		    }
 		    /* Slightly out of depth monster. */
 		case '2':
 		    {
-			monster_level = p_ptr->depth + 3;
+			monster_level = p_ptr->danger + 3;
 			place_monster(y, x, TRUE, TRUE, FALSE);
-			monster_level = p_ptr->depth;
+			monster_level = p_ptr->danger;
 			break;
 		    }
 		    /* Slightly out of depth object. */
 		case '3':
 		    {
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 			place_object(y, x, FALSE, FALSE, FALSE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 			break;
 		    }
 		    /* Monster and/or object */
 		case '4':
 		    {
 			if (randint0(100) < 50) {
-			    monster_level = p_ptr->depth + 4;
+			    monster_level = p_ptr->danger + 4;
 			    place_monster(y, x, TRUE, TRUE, FALSE);
-			    monster_level = p_ptr->depth;
+			    monster_level = p_ptr->danger;
 			}
 			if (randint0(100) < 50) {
-			    object_level = p_ptr->depth + 4;
+			    object_level = p_ptr->danger + 4;
 			    place_object(y, x, FALSE, FALSE, FALSE);
-			    object_level = p_ptr->depth;
+			    object_level = p_ptr->danger;
 			}
 			break;
 		    }
 		    /* Out of depth object. */
 		case '5':
 		    {
-			object_level = p_ptr->depth + 7;
+			object_level = p_ptr->danger + 7;
 			place_object(y, x, FALSE, FALSE, FALSE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 			break;
 		    }
 		    /* Out of depth monster. */
 		case '6':
 		    {
-			monster_level = p_ptr->depth + 7;
+			monster_level = p_ptr->danger + 7;
 			place_monster(y, x, TRUE, TRUE, FALSE);
-			monster_level = p_ptr->depth;
+			monster_level = p_ptr->danger;
 			break;
 		    }
 		    /* Very out of depth object. */
 		case '7':
 		    {
-			object_level = p_ptr->depth + 15;
+			object_level = p_ptr->danger + 15;
 			place_object(y, x, FALSE, FALSE, FALSE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 			break;
 		    }
 		    /* Very out of depth monster. */
 		case '8':
 		    {
-			monster_level = p_ptr->depth + 20;
+			monster_level = p_ptr->danger + 20;
 			place_monster(y, x, TRUE, TRUE, FALSE);
-			monster_level = p_ptr->depth;
+			monster_level = p_ptr->danger;
 			break;
 		    }
 		    /* Meaner monster, plus "good" (or better) object */
 		case '9':
 		    {
-			monster_level = p_ptr->depth + 15;
+			monster_level = p_ptr->danger + 15;
 			place_monster(y, x, TRUE, TRUE, FALSE);
-			monster_level = p_ptr->depth;
-			object_level = p_ptr->depth + 5;
+			monster_level = p_ptr->danger;
+			object_level = p_ptr->danger + 5;
 			place_object(y, x, TRUE, FALSE, FALSE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 			break;
 		    }
 
 		    /* Nasty monster and "great" (or better) object */
 		case '0':
 		    {
-			monster_level = p_ptr->depth + 30;
+			monster_level = p_ptr->danger + 30;
 			place_monster(y, x, TRUE, TRUE, FALSE);
-			monster_level = p_ptr->depth;
-			object_level = p_ptr->depth + 15;
+			monster_level = p_ptr->danger;
+			object_level = p_ptr->danger + 15;
 			place_object(y, x, TRUE, TRUE, FALSE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 			break;
 		    }
 
@@ -2736,9 +2736,9 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    {
 			required_tval = TV_CHEST;
 
-			object_level = p_ptr->depth + 5;
+			object_level = p_ptr->danger + 5;
 			place_object(y, x, FALSE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2753,7 +2753,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    /* Armour. */
 		case ']':
 		    {
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 
 			if (randint1(3) == 1)
 			    temp = randint1(9);
@@ -2780,7 +2780,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 			    required_tval = TV_DRAG_ARMOR;
 
 			place_object(y, x, TRUE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2789,7 +2789,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    /* Weapon. */
 		case '|':
 		    {
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 
 			temp = randint1(4);
 
@@ -2803,7 +2803,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 			    required_tval = TV_BOW;
 
 			place_object(y, x, TRUE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2814,12 +2814,12 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    {
 			required_tval = TV_RING;
 
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 			if (randint1(4) == 1)
 			    place_object(y, x, TRUE, FALSE, TRUE);
 			else
 			    place_object(y, x, FALSE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2830,12 +2830,12 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    {
 			required_tval = TV_AMULET;
 
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 			if (randint1(4) == 1)
 			    place_object(y, x, TRUE, FALSE, TRUE);
 			else
 			    place_object(y, x, FALSE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2846,12 +2846,12 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    {
 			required_tval = TV_POTION;
 
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 			if (randint1(4) == 1)
 			    place_object(y, x, TRUE, FALSE, TRUE);
 			else
 			    place_object(y, x, FALSE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2862,12 +2862,12 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    {
 			required_tval = TV_SCROLL;
 
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 			if (randint1(4) == 1)
 			    place_object(y, x, TRUE, FALSE, TRUE);
 			else
 			    place_object(y, x, FALSE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2878,12 +2878,12 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    {
 			required_tval = TV_STAFF;
 
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 			if (randint1(4) == 1)
 			    place_object(y, x, TRUE, FALSE, TRUE);
 			else
 			    place_object(y, x, FALSE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2897,12 +2897,12 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 			else
 			    required_tval = TV_ROD;
 
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 			if (randint1(4) == 1)
 			    place_object(y, x, TRUE, FALSE, TRUE);
 			else
 			    place_object(y, x, FALSE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2913,9 +2913,9 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		    {
 			required_tval = TV_FOOD;
 
-			object_level = p_ptr->depth + 3;
+			object_level = p_ptr->danger + 3;
 			place_object(y, x, FALSE, FALSE, TRUE);
-			object_level = p_ptr->depth;
+			object_level = p_ptr->danger;
 
 			required_tval = 0;
 
@@ -2956,8 +2956,8 @@ static bool build_type7(void)
 	v_ptr = &v_info[i];
 
 	/* Accept each interesting room that is acceptable for this depth. */
-	if ((v_ptr->typ == 7) && (v_ptr->min_lev <= p_ptr->depth)
-	    && (v_ptr->max_lev >= p_ptr->depth)) {
+	if ((v_ptr->typ == 7) && (v_ptr->min_lev <= p_ptr->danger)
+	    && (v_ptr->max_lev >= p_ptr->danger)) {
 	    v_idx[v_cnt++] = i;
 	}
     }
@@ -2973,7 +2973,7 @@ static bool build_type7(void)
     /* Build the vault (sometimes lit, not icky, type 7) */
     if (!build_vault
 	(y, x, v_ptr->hgt, v_ptr->wid, v_ptr->text,
-	 (p_ptr->depth < randint0(37)), FALSE, 7)) {
+	 (p_ptr->danger < randint0(37)), FALSE, 7)) {
 	free(v_idx);
 	return (FALSE);
     }
@@ -2999,8 +2999,8 @@ static bool build_type8(void)
 	v_ptr = &v_info[i];
 
 	/* Accept each lesser vault that is acceptable for this depth. */
-	if ((v_ptr->typ == 8) && (v_ptr->min_lev <= p_ptr->depth)
-	    && (v_ptr->max_lev >= p_ptr->depth)) {
+	if ((v_ptr->typ == 8) && (v_ptr->min_lev <= p_ptr->danger)
+	    && (v_ptr->max_lev >= p_ptr->danger)) {
 	    v_idx[v_cnt++] = i;
 	}
     }
@@ -3050,8 +3050,8 @@ static bool build_type9(void)
 	v_ptr = &v_info[i];
 
 	/* Accept each greater vault that is acceptable for this depth. */
-	if ((v_ptr->typ == 9) && (v_ptr->min_lev <= p_ptr->depth)
-	    && (v_ptr->max_lev >= p_ptr->depth)) {
+	if ((v_ptr->typ == 9) && (v_ptr->min_lev <= p_ptr->danger)
+	    && (v_ptr->max_lev >= p_ptr->danger)) {
 	    v_idx[v_cnt++] = i;
 	}
     }
@@ -3113,7 +3113,7 @@ static bool build_type10(void)
 
 
     /* Huge cave room */
-    if (p_ptr->depth > 40) {
+    if (p_ptr->danger > 40) {
 	/* This room is usually lit. */
 	if (randint0(3) != 0)
 	    light = TRUE;

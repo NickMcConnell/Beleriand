@@ -84,7 +84,7 @@ void new_player_spot(void)
 		continue;
 
 	    /* If character starts on stairs, ... */
-	    if (!OPT(adult_no_stairs) || !p_ptr->depth) {
+	    if (!OPT(adult_no_stairs) || !p_ptr->danger) {
 		/* Accept stairs going the right way or floors. */
 		if (p_ptr->create_stair) {
 		    /* Accept correct stairs */
@@ -177,7 +177,7 @@ void place_random_stairs(int y, int x)
 	return;
 
     /* Choose a staircase */
-    if (!p_ptr->depth) {
+    if (!p_ptr->danger) {
 	place_down_stairs(y, x);
     } else if (OPT(adult_dungeon) && !stage_map[p_ptr->stage][DOWN]) {
 	place_up_stairs(y, x);
@@ -333,7 +333,7 @@ void alloc_stairs(int feat, int num, int walls)
 		return;
 
 	    /* Town or no way up -- must go down */
-	    if ((!p_ptr->depth) || (!stage_map[p_ptr->stage][UP])) {
+	    if ((!p_ptr->danger) || (!stage_map[p_ptr->stage][UP])) {
 		/* Clear previous contents, add down stairs */
 		if (feat != FEAT_MORE_SHAFT)
 		    cave_set_feat(y, x, FEAT_MORE);
@@ -409,7 +409,7 @@ void alloc_object(int set, int typ, int num)
 
 	case ALLOC_TYP_TRAP:
 	    {
-		place_trap(y, x, -1, p_ptr->depth);
+		place_trap(y, x, -1, p_ptr->danger);
 		break;
 	    }
 

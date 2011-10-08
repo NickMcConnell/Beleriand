@@ -237,7 +237,7 @@ static bool mon_select(int r_idx)
 	    return (FALSE);
 
 	/* Hack -- no invisible undead until deep. */
-	if ((p_ptr->depth < 40) && (rf_has(r_ptr->flags, RF_UNDEAD))
+	if ((p_ptr->danger < 40) && (rf_has(r_ptr->flags, RF_UNDEAD))
 	    && (rf_has(r_ptr->flags, RF_INVISIBLE)))
 	    return (FALSE);
     }
@@ -352,8 +352,8 @@ extern char *mon_restrict(char symbol, byte depth, bool * ordered,
 	    if (i < 200) {
 		if ((!rf_has(r_info[j].flags, RF_UNIQUE))
 		    && (r_info[j].level != 0) && (r_info[j].level <= depth)
-		    && (ABS(r_info[j].level - p_ptr->depth) <
-			1 + (p_ptr->depth / 4)))
+		    && (ABS(r_info[j].level - p_ptr->danger) <
+			1 + (p_ptr->danger / 4)))
 		    break;
 	    } else {
 		if ((!rf_has(r_info[j].flags, RF_UNIQUE))
@@ -499,7 +499,7 @@ extern char *mon_restrict(char symbol, byte depth, bool * ordered,
     case 'P':
 	{
 	    strcpy(name, "giant");
-	    if ((p_ptr->depth < 30) && (randint0(3) == 0))
+	    if ((p_ptr->danger < 30) && (randint0(3) == 0))
 		strcpy(d_char_req, "O");
 	    else
 		strcpy(d_char_req, "P");
@@ -548,8 +548,8 @@ extern char *mon_restrict(char symbol, byte depth, bool * ordered,
 		    if (rf_has(r_info[j].flags, RF_UNDEAD)
 			&& (!rf_has(r_info[j].flags, RF_UNIQUE))
 			&& (strchr("GLWV", r_info[j].d_char))
-			&& (ABS(r_info[j].level - p_ptr->depth) <
-			    1 + (p_ptr->depth / 4))) {
+			&& (ABS(r_info[j].level - p_ptr->danger) <
+			    1 + (p_ptr->danger / 4))) {
 			break;
 		    }
 		}
@@ -840,7 +840,7 @@ extern void get_chamber_monsters(int y1, int x1, int y2, int x2)
     char *name;
 
     /* Get a legal depth. */
-    depth = p_ptr->depth + randint0(11) - 5;
+    depth = p_ptr->danger + randint0(11) - 5;
     if (depth > 60)
 	depth = 60;
     if (depth < 5)
@@ -850,7 +850,7 @@ extern void get_chamber_monsters(int y1, int x1, int y2, int x2)
     symbol = mon_symbol_at_depth[depth / 5 - 1][randint0(13)];
 
     /* Allow (slightly) tougher monsters. */
-    depth = p_ptr->depth + (p_ptr->depth < 60 ? p_ptr->depth / 12 : 5);
+    depth = p_ptr->danger + (p_ptr->danger < 60 ? p_ptr->danger / 12 : 5);
 
     /* Set monster generation restrictions.  Describe the monsters. */
     name = mon_restrict(symbol, (byte) depth, &dummy, TRUE);
@@ -871,8 +871,8 @@ extern void get_chamber_monsters(int y1, int x1, int y2, int x2)
     monsters_left = 35;
 
     /* Fewer monsters near the surface. */
-    if (p_ptr->depth < 45)
-	monsters_left = 5 + 2 * p_ptr->depth / 3;
+    if (p_ptr->danger < 45)
+	monsters_left = 5 + 2 * p_ptr->danger / 3;
 
     /* More monsters of kinds that tend to be weak. */
     if (strstr("abciBCFKRS", d_char_req))
@@ -981,7 +981,7 @@ extern void spread_monsters(char symbol, int depth, int num, int y0, int x0,
     (void) mon_restrict('\0', (byte) depth, &dummy, TRUE);
 
     /* Reset monster generation level. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
 }
 
 
@@ -1079,21 +1079,21 @@ extern void get_vault_monsters(char racial_symbol[], byte vault_type, const char
 
 	/* Determine level of monster */
 	if (vault_type == 0)
-	    temp = p_ptr->depth + 3;
+	    temp = p_ptr->danger + 3;
 	else if (vault_type == 7)
-	    temp = p_ptr->depth;
+	    temp = p_ptr->danger;
 	else if (vault_type == 8)
-	    temp = p_ptr->depth + 3;
+	    temp = p_ptr->danger + 3;
 	else if (vault_type == 9)
-	    temp = p_ptr->depth + 6;
+	    temp = p_ptr->danger + 6;
 	else if (vault_type == 12)
-	    temp = p_ptr->depth + 3;
+	    temp = p_ptr->danger + 3;
 	else if (vault_type == 13)
-	    temp = p_ptr->depth + 6;
+	    temp = p_ptr->danger + 6;
 	else if ((vault_type > 13) && (vault_type % 2))
-	    temp = p_ptr->depth + 4;
+	    temp = p_ptr->danger + 4;
 	else
-	    temp = p_ptr->depth;
+	    temp = p_ptr->danger;
 
 	/* Apply our restrictions */
 	get_mon_num_hook = mon_select;

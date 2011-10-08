@@ -715,7 +715,7 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 	object_prep(i_ptr, kind->kidx, RANDOMISE);
 	
 	/* Apply magic (no messages, no artifacts) */
-	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+	apply_magic(i_ptr, p_ptr->danger, FALSE, FALSE, FALSE);
 
 	/* Hack -- Since treasure objects are not effected by apply_magic, they
 	 * need special processing. */
@@ -978,19 +978,19 @@ static void wiz_reroll_item(object_type * o_ptr)
 	/* Apply normal magic, but first clear object */
 	else if (ch.code == 'n' || ch.code == 'N') {
 	    object_prep(i_ptr, o_ptr->k_idx, RANDOMISE);
-	    apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+	    apply_magic(i_ptr, p_ptr->danger, FALSE, FALSE, FALSE);
 	}
 
 	/* Apply good magic, but first clear object */
 	else if (ch.code == 'g' || ch.code == 'g') {
 	    object_prep(i_ptr, o_ptr->k_idx, RANDOMISE);
-	    apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE);
+	    apply_magic(i_ptr, p_ptr->danger, FALSE, TRUE, FALSE);
 	}
 
 	/* Apply great magic, but first clear object */
 	else if (ch.code == 'e' || ch.code == 'e') {
 	    object_prep(i_ptr, o_ptr->k_idx, RANDOMISE);
-	    apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE);
+	    apply_magic(i_ptr, p_ptr->danger, FALSE, TRUE, TRUE);
 	}
     }
 
@@ -1079,7 +1079,7 @@ static void wiz_statistics(object_type * o_ptr)
 
 	/* Let us know what we are doing */
 	msg("Creating a lot of %s items. Base level = %d.", quality,
-		   p_ptr->depth);
+		   p_ptr->danger);
 	message_flush();
 
 	/* Set counters to zero */
@@ -1505,7 +1505,7 @@ static void do_cmd_wiz_jump(void)
 	sprintf(ppp, "Jump to level (0-%d): ", MAX_DEPTH - 1);
 
 	/* Default */
-	sprintf(tmp_val, "%d", p_ptr->depth);
+	sprintf(tmp_val, "%d", p_ptr->danger);
 
 	/* Ask for a level */
 	if (!get_string(ppp, tmp_val, 11))
@@ -1533,7 +1533,7 @@ static void do_cmd_wiz_jump(void)
     p_ptr->stage = new_place;
 
     /* New depth */
-    p_ptr->depth = stage_map[new_place][DEPTH];
+    p_ptr->danger = stage_map[new_place][DEPTH];
 
     /* Land properly */
     p_ptr->last_stage = NOWHERE;
@@ -1628,7 +1628,7 @@ static void do_cmd_wiz_summon(int num)
     int i;
 
     for (i = 0; i < num; i++) {
-	(void) summon_specific(py, px, FALSE, p_ptr->depth, 0);
+	(void) summon_specific(py, px, FALSE, p_ptr->danger, 0);
     }
 }
 

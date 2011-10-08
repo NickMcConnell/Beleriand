@@ -669,7 +669,7 @@ void fall_off_cliff(void)
     /* From the mountaintop */
     if (stage_map[p_ptr->stage][LOCALITY] == MOUNTAIN_TOP) {
 	p_ptr->stage = stage_map[p_ptr->stage][DOWN];
-	p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+	p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
 	/* Reset */
 	stage_map[256][DOWN] = 0;
@@ -694,7 +694,7 @@ void fall_off_cliff(void)
 	/* Fall at least one level */
 	for (i = 0; i < 1; i = randint0(3)) {
 	    p_ptr->stage = stage_map[p_ptr->stage][SOUTH];
-	    p_ptr->depth++;
+	    p_ptr->danger++;
 	    if (p_ptr->state.ffall) {
 		notice_obj(OF_FEATHER, 0);
 		dam = damroll(2, 8);
@@ -706,13 +706,13 @@ void fall_off_cliff(void)
 		(void) inc_timed(TMD_CUT, damroll(4, 8), TRUE);
 	    }
 	    take_hit(dam, "falling off a precipice");
-	    if (p_ptr->depth == 70)
+	    if (p_ptr->danger == 70)
 		break;
 	}
 
 	/* Check for quests */
 	if (OPT(adult_dungeon) && is_quest(p_ptr->stage)
-	    && (p_ptr->depth < 100)) {
+	    && (p_ptr->danger < 100)) {
 	    int i;
 	    monster_race *r_ptr = NULL;
 
@@ -720,7 +720,7 @@ void fall_off_cliff(void)
 	    for (i = 0; i < z_info->r_max; i++) {
 		r_ptr = &r_info[i];
 		if ((rf_has(r_ptr->flags, RF_QUESTOR))
-		    && (r_ptr->level == p_ptr->depth))
+		    && (r_ptr->level == p_ptr->danger))
 		    break;
 	    }
 

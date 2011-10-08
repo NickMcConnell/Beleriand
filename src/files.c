@@ -1357,7 +1357,7 @@ sprintf(buf1, "%d feet", p_ptr->state.see_infra * 10);
 	dump_ptr = (char_attr *) &line[current_line];
 	dump_put_str(TERM_WHITE, "Current Location :", 1);
 	sprintf(buf, "%s Level %d",
-		locality_name[stage_map[p_ptr->stage][LOCALITY]], p_ptr->depth);
+		locality_name[stage_map[p_ptr->stage][LOCALITY]], p_ptr->danger);
 	dump_put_str(TERM_L_GREEN, buf, 20);
 	current_line++;
 
@@ -1917,10 +1917,10 @@ sprintf(buf1, "%d feet", p_ptr->state.see_infra * 10);
 	char place[32];
 
 	/* Get the location name */
-	if (p_ptr->depth)
+	if (p_ptr->danger)
 	    strnfmt(place, sizeof(place), "%15s%4d ",
 		    locality_name[stage_map[p_ptr->stage][LOCALITY]],
-		    p_ptr->depth);
+		    p_ptr->danger);
 	else if ((stage_map[p_ptr->stage][LOCALITY] != UNDERWORLD)
 		 && (stage_map[p_ptr->stage][LOCALITY] != MOUNTAIN_TOP))
 	    strnfmt(place, sizeof(place), "%15s Town",

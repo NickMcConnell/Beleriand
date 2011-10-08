@@ -118,7 +118,7 @@ s16b poly_r_idx(int base_idx, bool shapechange)
 
 	/* Forced-depth monsters only appear at their level. */
 	if ((rf_has(r_ptr->flags, RF_FORCE_DEPTH))
-	    && (r_ptr->level != p_ptr->depth))
+	    && (r_ptr->level != p_ptr->danger))
 	    continue;
 
 	/* Accept */
@@ -874,7 +874,7 @@ void teleport_player_level(bool friendly)
 	    /* Set the ways forward and back */
 	    stage_map[256][DOWN] = p_ptr->stage;
 	    stage_map[p_ptr->stage][UP] = 256;
-	    stage_map[256][DEPTH] = p_ptr->depth + 1;
+	    stage_map[256][DEPTH] = p_ptr->danger + 1;
 
 	    /* New stage */
 	    p_ptr->stage = stage_map[p_ptr->stage][UP];
@@ -888,7 +888,7 @@ void teleport_player_level(bool friendly)
 	    if (!stage_map[p_ptr->stage][DOWN]) {
 		stage_map[255][UP] = p_ptr->stage;
 		stage_map[p_ptr->stage][DOWN] = 255;
-		stage_map[255][DEPTH] = p_ptr->depth + 1;
+		stage_map[255][DEPTH] = p_ptr->danger + 1;
 	    }
 
 	    /* New stage */
@@ -927,7 +927,7 @@ void teleport_player_level(bool friendly)
     }
 
     /* New depth */
-    p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
     /* Leaving */
     p_ptr->leaving = TRUE;
@@ -1161,7 +1161,7 @@ bool chaotic_effects(monster_type * m_ptr)
 		tmp = r_ptr->level + 2;
 
 	    /* Attempt a saving throw. */
-	    if (tmp > randint1(2 * p_ptr->depth / 3)) {
+	    if (tmp > randint1(2 * p_ptr->danger / 3)) {
 		/* No message */
 	    }
 
@@ -3271,7 +3271,7 @@ static bool project_f(int who, int y, int x, int dist, int dam, int typ)
 		break;
 
 	    /* Place a trap */
-	    place_trap(y, x, -1, p_ptr->depth);
+	    place_trap(y, x, -1, p_ptr->danger);
 
 	    break;
 	}

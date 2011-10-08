@@ -1170,7 +1170,7 @@ typedef struct player {
     /* s16b max_depth; Max depth */
     /* Keep depth for now because so many things use it -NRM- */
     s16b home;		/**< Home town */
-    s16b depth;		/**< Cur depth */
+    s16b danger;       	/**< Cur danger */
 
     s16b recall[4];	/**< Recall points */
     s16b recall_pt;	/**< Which recall point is active */

@@ -1193,7 +1193,7 @@ static void spoil_obj_gen(const char *fname)
   file_putf(fff, "ego-items:  %ld\n", (long)egoitems);
   file_putf(fff, "\n\n");
   file_putf(fff, "Number of objects created (1,000,000 total)\n");
-  file_putf(fff, "         Generation Level:  %d\n\n", p_ptr->depth);
+  file_putf(fff, "         Generation Level:  %d\n\n", p_ptr->danger);
   
   for (i = 1; i < z_info->k_max; i++)
     {
@@ -1331,7 +1331,7 @@ static void spoil_mon_gen(const char *fname)
   msg("This may take a while...");
   
   /* Initialize monster generation. */
-  if (quick) (void)get_mon_num(p_ptr->depth);
+  if (quick) (void)get_mon_num(p_ptr->danger);
   
   /* Make a lot of monsters, and print their names out. */
   for (i = 0L; i < 1000000L; i++)
@@ -1343,8 +1343,8 @@ static void spoil_mon_gen(const char *fname)
       
       
       /* Get a monster index */
-      if (quick) num = get_mon_num_quick(p_ptr->depth);
-      else num = get_mon_num(p_ptr->depth);
+      if (quick) num = get_mon_num_quick(p_ptr->danger);
+      else num = get_mon_num(p_ptr->danger);
       
       /* Count monster races. */
       monster[num] += 1L;
@@ -1356,7 +1356,7 @@ static void spoil_mon_gen(const char *fname)
   /* Print to file. */
   file_putf(fff, "\n\n\n");
   file_putf(fff, "Number of monsters of various kinds (1,000,000 total)\n");
-  file_putf(fff, "         Generation Level:  %d\n\n", p_ptr->depth);
+  file_putf(fff, "         Generation Level:  %d\n\n", p_ptr->danger);
   
   for (i = 1; i < z_info->r_max; i++)
     {

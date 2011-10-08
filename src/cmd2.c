@@ -40,7 +40,7 @@ void do_cmd_move_house(void)
 
     const char *town = locality_name[stage_map[p_ptr->stage][LOCALITY]];
 
-    if (!p_ptr->depth) {
+    if (!p_ptr->danger) {
 	/* Already home */
 	if (p_ptr->stage == p_ptr->home) {
 	    msg("You already live here!");
@@ -158,7 +158,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
     /* Success */
     if (pstair == FEAT_LESS) {
 	/* Magical portal for dungeon-only games */
-	if (OPT(adult_dungeon) && (p_ptr->depth != 1)
+	if (OPT(adult_dungeon) && (p_ptr->danger != 1)
 	    && ((stage_map[p_ptr->stage][LOCALITY]) !=
 		(stage_map[stage_map[p_ptr->stage][UP]][LOCALITY]))) {
 	    /* Land properly */
@@ -171,7 +171,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	    p_ptr->stage = stage_map[p_ptr->stage][UP];
 
 	    /* New depth */
-	    p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
 	    /* Leaving */
 	    p_ptr->leaving = TRUE;
@@ -186,7 +186,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	p_ptr->create_stair = FEAT_MORE;
     } else if (pstair == FEAT_LESS_SHAFT) {
 	/* Magical portal for dungeon-only games */
-	if (OPT(adult_dungeon) && (p_ptr->depth != 2)
+	if (OPT(adult_dungeon) && (p_ptr->danger != 2)
 	    && ((stage_map[p_ptr->stage][LOCALITY]) !=
 		(stage_map[stage_map[stage_map[p_ptr->stage][UP]][UP]]
 		 [LOCALITY]))) {
@@ -200,7 +200,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	    p_ptr->stage = stage_map[stage_map[p_ptr->stage][UP]][UP];
 
 	    /* New depth */
-	    p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
 	    /* Leaving */
 	    p_ptr->leaving = TRUE;
@@ -251,7 +251,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	p_ptr->path_coord = px;
 
     /* Set the depth */
-    p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
     /* Leaving */
     p_ptr->leaving = TRUE;
@@ -287,7 +287,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 
 
     /* Handle ironman */
-    if (OPT(adult_ironman) && !p_ptr->depth && !OPT(adult_dungeon)) {
+    if (OPT(adult_ironman) && !p_ptr->danger && !OPT(adult_dungeon)) {
 	int i, other;
 	int next = stage_map[p_ptr->stage][2 + (pstair - FEAT_MORE_NORTH) / 2];
 
@@ -322,7 +322,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	if (OPT(adult_ironman) && !stage_map[p_ptr->stage][DOWN]
 	    && !OPT(adult_dungeon)) {
 	    /* Get choice */
-	    if (!jump_menu(p_ptr->depth + 1, &location))
+	    if (!jump_menu(p_ptr->danger + 1, &location))
 		return;
 
 	    /* Land properly */
@@ -332,7 +332,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	    p_ptr->stage = location;
 
 	    /* New depth */
-	    p_ptr->depth = stage_map[location][DEPTH];
+	    p_ptr->danger = stage_map[location][DEPTH];
 
 	    /* Leaving */
 	    p_ptr->leaving = TRUE;
@@ -341,7 +341,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	}
 
 	/* Magical portal for dungeon-only games */
-	if (OPT(adult_dungeon) && (p_ptr->depth)
+	if (OPT(adult_dungeon) && (p_ptr->danger)
 	    && ((stage_map[p_ptr->stage][LOCALITY]) !=
 		(stage_map[stage_map[p_ptr->stage][DOWN]][LOCALITY]))) {
 	    /* Land properly */
@@ -354,7 +354,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	    p_ptr->stage = stage_map[p_ptr->stage][DOWN];
 
 	    /* New depth */
-	    p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
 	    /* Leaving */
 	    p_ptr->leaving = TRUE;
@@ -386,7 +386,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	    p_ptr->stage = stage_map[stage_map[p_ptr->stage][DOWN]][DOWN];
 
 	    /* New depth */
-	    p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
 	    /* Leaving */
 	    p_ptr->leaving = TRUE;
@@ -442,10 +442,10 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	p_ptr->path_coord = px;
 
     /* Set the depth */
-    p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
     /* Check for quests */
-    if (OPT(adult_dungeon) && is_quest(p_ptr->stage) && (p_ptr->depth < 100)) {
+    if (OPT(adult_dungeon) && is_quest(p_ptr->stage) && (p_ptr->danger < 100)) {
 	int i;
 	monster_race *r_ptr = NULL;
 
@@ -453,7 +453,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	for (i = 0; i < z_info->r_max; i++) {
 	    r_ptr = &r_info[i];
 	    if ((rf_has(r_ptr->flags, RF_QUESTOR))
-		&& (r_ptr->level == p_ptr->depth))
+		&& (r_ptr->level == p_ptr->danger))
 		break;
 	}
 
@@ -1059,7 +1059,7 @@ static void chest_death(bool scatter, int y, int x, s16b o_idx)
     required_tval = 0;
 
     /* Reset the object level */
-    object_level = p_ptr->depth;
+    object_level = p_ptr->danger;
 
     /* No longer opening a chest */
     opening_chest = FALSE;
@@ -1087,7 +1087,7 @@ static void chest_trap(int y, int x, s16b o_idx)
     object_type *o_ptr = &o_list[o_idx];
 
     /* Compensate for the averaging routine in the summon monster function. */
-    int summon_level = o_ptr->pval + o_ptr->pval - p_ptr->depth;
+    int summon_level = o_ptr->pval + o_ptr->pval - p_ptr->danger;
 
     /* Ignore disarmed chests */
     if (o_ptr->pval <= 0)
@@ -2234,7 +2234,7 @@ extern bool do_cmd_disarm_aux(int y, int x)
 
 
     /* Extract trap "power". */
-    power = 5 + p_ptr->depth / 4;
+    power = 5 + p_ptr->danger / 4;
 
     /* Only player traps grant exp. */
     if (!trf_has(t_ptr->flags, TRF_TRAP))

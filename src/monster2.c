@@ -481,7 +481,7 @@ s16b get_mon_num(int level)
 
 
     /* Sometimes, monsters in the dungeon can be out of depth */
-    if (p_ptr->depth != 0) {
+    if (p_ptr->danger != 0) {
 	/* Occasional boost to maximum level */
 	if (randint0(NASTY_MON) == 0) {
 	    /* Pick a level bonus */
@@ -521,7 +521,7 @@ s16b get_mon_num(int level)
 		continue;
 
 	    /* Hack -- No town monsters in dungeon */
-	    if ((p_ptr->depth != 0) && (table[i].level < 1))
+	    if ((p_ptr->danger != 0) && (table[i].level < 1))
 		continue;
 
 	    /* Get the monster index */
@@ -537,7 +537,7 @@ s16b get_mon_num(int level)
 
 	    /* Forced-depth monsters only appear at their level. */
 	    if ((rf_has(r_ptr->flags, RF_FORCE_DEPTH))
-		&& (r_ptr->level != p_ptr->depth))
+		&& (r_ptr->level != p_ptr->danger))
 		continue;
 
 	    /* Hack - handle dungeon specific -NRM- */
@@ -1727,7 +1727,7 @@ s16b player_place(int y, int x)
 	return (0);
 
     /* No stairs if we don't do that */
-    if (OPT(adult_no_stairs) && !p_ptr->themed_level && p_ptr->depth)
+    if (OPT(adult_no_stairs) && !p_ptr->themed_level && p_ptr->danger)
 	cave_set_feat(y, x, FEAT_FLOOR);
 
     /* Save player location */
@@ -1934,7 +1934,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
     }
 
     /* Depth monsters may NOT be created out of depth */
-    if ((rf_has(r_ptr->flags, RF_FORCE_DEPTH)) && (p_ptr->depth < r_ptr->level))
+    if ((rf_has(r_ptr->flags, RF_FORCE_DEPTH)) && (p_ptr->danger < r_ptr->level))
     {
 	/* Cannot create */
 	return (FALSE);
@@ -1982,7 +1982,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	n_ptr->csleep = ((val * 2) + randint1(val * 10));
     } else if (!((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))
 	       && (stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)
-	       && (p_ptr->depth) && (!character_dungeon))
+	       && (p_ptr->danger) && (!character_dungeon))
 	n_ptr->csleep += 20;
 
     /* Enforce no sleeping if needed */
@@ -2113,7 +2113,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	return (FALSE);
 
     /* Deep unique monsters */
-    if ((rf_has(r_ptr->flags, RF_UNIQUE)) && (r_ptr->level > p_ptr->depth)) {
+    if ((rf_has(r_ptr->flags, RF_UNIQUE)) && (r_ptr->level > p_ptr->danger)) {
 	/* Message */
 	if (OPT(cheat_hear))
 	    msg("Deep Unique (%s).", name);
@@ -2127,7 +2127,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
     }
 
     /* Deep normal monsters */
-    else if (r_ptr->level > p_ptr->depth + 4) {
+    else if (r_ptr->level > p_ptr->danger + 4) {
 	/* Message */
 	if (OPT(cheat_hear))
 	    msg("Deep Monster (%s).", name);
@@ -2162,14 +2162,14 @@ static bool place_monster_group(int y, int x, int r_idx, bool slp,
     byte hack_x[GROUP_MAX];
 
     /* Hard monsters, smaller groups */
-    if (r_ptr->level > p_ptr->depth) {
-	reduce = (r_ptr->level - p_ptr->depth) / 2;
+    if (r_ptr->level > p_ptr->danger) {
+	reduce = (r_ptr->level - p_ptr->danger) / 2;
 	group_size -= randint1(reduce);
     }
 
     /* Easy monsters, slightly smaller groups -BR- */
-    else if (r_ptr->level < p_ptr->depth) {
-	reduce = (p_ptr->depth - r_ptr->level) / 6;
+    else if (r_ptr->level < p_ptr->danger) {
+	reduce = (p_ptr->danger - r_ptr->level) / 6;
 	group_size -= randint1(reduce);
     }
 
@@ -2793,8 +2793,8 @@ bool summon_specific(int y1, int x1, bool scattered, int lev, int type)
 
     /* Pick a monster, using the level calculation */
     r_idx =
-	get_mon_num((p_ptr->depth + lev) / 2 + 1 +
-		    (p_ptr->depth >= 20 ? 4 : p_ptr->depth / 5));
+	get_mon_num((p_ptr->danger + lev) / 2 + 1 +
+		    (p_ptr->danger >= 20 ? 4 : p_ptr->danger / 5));
 
 
     /* Remove restriction */
@@ -3016,8 +3016,8 @@ int assess_shapechange(int m_idx, monster_type * m_ptr)
 
 	/* Get a possible race */
 	shape =
-	    get_mon_num((p_ptr->depth + r_ptr->level) / 2 + 1 +
-			(p_ptr->depth >= 20 ? 4 : p_ptr->depth / 5));
+	    get_mon_num((p_ptr->danger + r_ptr->level) / 2 + 1 +
+			(p_ptr->danger >= 20 ? 4 : p_ptr->danger / 5));
 
 	/* Sauron's hack */
 	if (!shape && (type == SUMMON_SAURON))
@@ -4007,7 +4007,7 @@ void monster_death(int m_idx)
     coin_type = force_coin;
 
     /* Average dungeon and monster levels */
-    object_level = (p_ptr->depth + r_ptr->level) / 2;
+    object_level = (p_ptr->danger + r_ptr->level) / 2;
 
     /* Drop some objects */
     for (j = 0; j < number; j++) {
@@ -4061,7 +4061,7 @@ void monster_death(int m_idx)
     }
 
     /* Reset the object level */
-    object_level = p_ptr->depth;
+    object_level = p_ptr->danger;
 
     /* Reset "coin" type */
     coin_type = 0;
@@ -4099,11 +4099,11 @@ void monster_death(int m_idx)
 	build_quest_stairs(y, x, "staircase");
 
     /* ...or a portal for ironmen wilderness games */
-    else if (OPT(adult_ironman) && !OPT(adult_dungeon) && (p_ptr->depth != 100))
+    else if (OPT(adult_ironman) && !OPT(adult_dungeon) && (p_ptr->danger != 100))
 	build_quest_stairs(y, x, "portal");
 
     /* or a path out of Nan Dungortheb for wilderness games */
-    else if ((r_ptr->level == 70) && (p_ptr->depth == 70)
+    else if ((r_ptr->level == 70) && (p_ptr->danger == 70)
 	     && !OPT(adult_dungeon)) {
 	/* Make a path */
 	for (y = p_ptr->py; y < DUNGEON_HGT - 2; y++)

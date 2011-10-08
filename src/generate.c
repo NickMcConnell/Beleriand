@@ -514,29 +514,29 @@ void generate_cave(void)
 	p_ptr->px = p_ptr->py = 0;
 
 	/* Reset the monster generation level */
-	monster_level = p_ptr->depth;
+	monster_level = p_ptr->danger;
 
 	/* Reset the object generation level */
-	object_level = p_ptr->depth;
+	object_level = p_ptr->danger;
 
 	/* Only group is the player */
 	group_id = 1;
 
 	/* Set the number of wilderness "vaults" */
 	wild_vaults = 0;
-	if (p_ptr->depth > 10)
+	if (p_ptr->danger > 10)
 	    wild_vaults += randint0(2);
-	if (p_ptr->depth > 20)
+	if (p_ptr->danger > 20)
 	    wild_vaults += randint0(2);
-	if (p_ptr->depth > 30)
+	if (p_ptr->danger > 30)
 	    wild_vaults += randint0(2);
-	if (p_ptr->depth > 40)
+	if (p_ptr->danger > 40)
 	    wild_vaults += randint0(2);
 	if (no_vault())
 	    wild_vaults = 0;
 
 	/* Build the town */
-	if (!p_ptr->depth) {
+	if (!p_ptr->danger) {
 	    /* Make a town */
 	    town_gen();
 	}

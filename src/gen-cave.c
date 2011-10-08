@@ -418,7 +418,7 @@ static int num_rooms_allowed(int room_type)
 
 
     /* No rooms allowed above their minimum depth. */
-    if (p_ptr->depth < rm_ptr->min_level)
+    if (p_ptr->danger < rm_ptr->min_level)
 	return (0);
 
     /* No "nothing" rooms. */
@@ -431,19 +431,19 @@ static int num_rooms_allowed(int room_type)
 
 
     /* If below level 100, use the rarity value for level 100. */
-    if (p_ptr->depth > 100) {
+    if (p_ptr->danger > 100) {
 	base_num = rm_ptr->room_gen_num[10];
     } else {
-	mod = p_ptr->depth % 10;
+	mod = p_ptr->danger % 10;
 
 	/* If depth is divisable by 10, use the appropriate table value. */
 	if (mod == 0) {
-	    base_num = rm_ptr->room_gen_num[p_ptr->depth / 10];
+	    base_num = rm_ptr->room_gen_num[p_ptr->danger / 10];
 	}
 	/* Otherwise, use a weighted average of the nearest values. */
 	else {
-	    base_num = ((mod * rm_ptr->room_gen_num[(p_ptr->depth + 9) / 10])
-			+ ((10 - mod) * rm_ptr->room_gen_num[p_ptr->depth / 10]
+	    base_num = ((mod * rm_ptr->room_gen_num[(p_ptr->danger + 9) / 10])
+			+ ((10 - mod) * rm_ptr->room_gen_num[p_ptr->danger / 10]
 			)) / 10;
 	}
     }
@@ -1608,14 +1608,14 @@ bool themed_level_ok(byte choice)
     case THEME_ELEMENTAL:
 	{
 	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		&& (p_ptr->depth >= 35) && (p_ptr->depth <= 70))
+		&& (p_ptr->danger >= 35) && (p_ptr->danger <= 70))
 		break;
 	    return (FALSE);
 	}
     case THEME_DRAGON:
 	{
 	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		&& (p_ptr->depth >= 40) && (p_ptr->depth <= 80))
+		&& (p_ptr->danger >= 40) && (p_ptr->danger <= 80))
 		break;
 	    return (FALSE);
 	}
@@ -1628,14 +1628,14 @@ bool themed_level_ok(byte choice)
     case THEME_DEMON:
 	{
 	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		&& (p_ptr->depth >= 60) && (p_ptr->depth <= 255))
+		&& (p_ptr->danger >= 60) && (p_ptr->danger <= 255))
 		break;
 	    return (FALSE);
 	}
     case THEME_MINE:
 	{
 	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		&& (p_ptr->depth >= 20) && (p_ptr->depth <= 45))
+		&& (p_ptr->danger >= 20) && (p_ptr->danger <= 45))
 		break;
 	    return (FALSE);
 	}
@@ -1643,7 +1643,7 @@ bool themed_level_ok(byte choice)
 	{
 	    if (((stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)
 		 || (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
-		&& (p_ptr->depth >= 20))
+		&& (p_ptr->danger >= 20))
 		break;
 	    return (FALSE);
 	}
@@ -1656,7 +1656,7 @@ bool themed_level_ok(byte choice)
     case THEME_ESTOLAD:
 	{
 	    if ((stage_map[p_ptr->stage][LOCALITY] == EAST_BELERIAND)
-		&& (p_ptr->depth >= 10))
+		&& (p_ptr->danger >= 10))
 		break;
 	    return (FALSE);
 	}
@@ -1774,7 +1774,7 @@ extern void cave_gen(void)
 	underworld = TRUE;
 
     /* It is possible for levels to be moria-style. */
-    if (((p_ptr->depth >= 10) && (p_ptr->depth < 40)
+    if (((p_ptr->danger >= 10) && (p_ptr->danger < 40)
 	 && (randint0(MORIA_LEVEL_CHANCE) == 0)) || (underworld)) {
 	moria_level = TRUE;
 	if (OPT(cheat_room))
@@ -1788,7 +1788,7 @@ extern void cave_gen(void)
     }
 
     /* It is possible for levels to be destroyed */
-    if ((p_ptr->depth > 10) && (!is_quest(p_ptr->stage))
+    if ((p_ptr->danger > 10) && (!is_quest(p_ptr->stage))
 	&& (randint0(DEST_LEVEL_CHANCE) == 0)) {
 	destroyed = TRUE;
 
@@ -1998,7 +1998,7 @@ extern void cave_gen(void)
 
 
     /* Basic "amount" */
-    k = (p_ptr->depth / 3);
+    k = (p_ptr->danger / 3);
     if (k > 10)
 	k = 10;
     if (k < 2)
@@ -2016,16 +2016,16 @@ extern void cave_gen(void)
     if (moria_level) {
 	/* Set global monster restriction variables. */
 	if (underworld)
-	    mon_restrict('x', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('x', (byte) p_ptr->danger, &dummy, TRUE);
 	else
-	    mon_restrict('0', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('0', (byte) p_ptr->danger, &dummy, TRUE);
     } else {
 	/* Remove all monster restrictions. */
-	mon_restrict('\0', (byte) p_ptr->depth, &dummy, TRUE);
+	mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
     }
 
     /* Build the monster probability table. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
     (void) get_mon_num(monster_level);
 
     /* Put some monsters in the dungeon */
@@ -2033,10 +2033,10 @@ extern void cave_gen(void)
 	/* Always have some random monsters */
 	if ((get_mon_num_hook) && (j < 5)) {
 	    /* Remove all monster restrictions. */
-	    mon_restrict('\0', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
 
 	    /* Build the monster probability table. */
-	    (void) get_mon_num(p_ptr->depth);
+	    (void) get_mon_num(p_ptr->danger);
 	}
 
 	/* 
@@ -2053,7 +2053,7 @@ extern void cave_gen(void)
 	    monster_race *r_ptr = &r_info[i];
 	    /* Ensure quest monsters */
 	    if ((rf_has(r_ptr->flags, RF_QUESTOR))
-		&& (r_ptr->level == p_ptr->depth) && (r_ptr->cur_num < 1)) {
+		&& (r_ptr->level == p_ptr->danger) && (r_ptr->cur_num < 1)) {
 		int y, x;
 
 		/* Pick a location */

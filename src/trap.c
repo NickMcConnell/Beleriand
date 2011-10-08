@@ -679,14 +679,14 @@ void hit_trap_aux(int y, int x, int trap)
 		/* Set the ways forward and back */
 		stage_map[255][UP] = p_ptr->stage;
 		stage_map[p_ptr->stage][DOWN] = 255;
-		stage_map[255][DEPTH] = p_ptr->depth + 1;
+		stage_map[255][DEPTH] = p_ptr->danger + 1;
 	    }
 
 	    /* New stage */
 	    p_ptr->stage = stage_map[p_ptr->stage][DOWN];
 
 	    /* New depth */
-	    p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
 	    /* Leaving */
 	    p_ptr->leaving = TRUE;
@@ -700,7 +700,7 @@ void hit_trap_aux(int y, int x, int trap)
     case TRAP_PIT:
 	{
 	    /* determine how dangerous the trap is allowed to be. */
-	    nastyness = randint1(p_ptr->depth);
+	    nastyness = randint1(p_ptr->danger);
 	    if (randint1(20) == 1)
 		nastyness += 20;
 	    else if (randint1(5) == 1)
@@ -747,7 +747,7 @@ void hit_trap_aux(int y, int x, int trap)
 
 			    k = randint1(3) + 2;
 			    for (i = 0; i < k; i++) {
-				summon_specific(y, x, FALSE, p_ptr->depth,
+				summon_specific(y, x, FALSE, p_ptr->danger,
 						SUMMON_UNDEAD);
 			    }
 			}
@@ -876,7 +876,7 @@ void hit_trap_aux(int y, int x, int trap)
     case TRAP_DART:
 	{
 	    /* decide if the dart hits. */
-	    if (check_trap_hit(50 + p_ptr->depth)) {
+	    if (check_trap_hit(50 + p_ptr->danger)) {
 		/* select a stat to drain. */
 		selection = randint0(6);
 
@@ -887,7 +887,7 @@ void hit_trap_aux(int y, int x, int trap)
 		take_hit(dam, name);
 
 		/* Determine how dangerous the trap is allowed to be. */
-		nastyness = randint1(p_ptr->depth);
+		nastyness = randint1(p_ptr->danger);
 
 		/* decide how much to drain the stat by. */
 		if ((nastyness > 50) && (randint1(3) == 1)) {
@@ -911,7 +911,7 @@ void hit_trap_aux(int y, int x, int trap)
     case TRAP_SPOT:
 	{
 	    /* determine how dangerous the trap is allowed to be. */
-	    nastyness = randint1(p_ptr->depth);
+	    nastyness = randint1(p_ptr->danger);
 	    if (randint1(5) == 1)
 		nastyness += 10;
 
@@ -1071,14 +1071,14 @@ void hit_trap_aux(int y, int x, int trap)
 	{
 	    sound(MSG_SUM_MONSTER);
 	    /* sometimes summon thieves. */
-	    if ((p_ptr->depth > 8) && (randint1(5) == 1)) {
+	    if ((p_ptr->danger > 8) && (randint1(5) == 1)) {
 		msg("You have aroused a den of thieves!");
 
 		Rand_quick = FALSE;
 
 		num = 2 + randint1(3);
 		for (i = 0; i < num; i++) {
-		    (void) summon_specific(y, x, FALSE, p_ptr->depth,
+		    (void) summon_specific(y, x, FALSE, p_ptr->danger,
 					   SUMMON_THIEF);
 		}
 
@@ -1091,7 +1091,7 @@ void hit_trap_aux(int y, int x, int trap)
 
 		Rand_quick = FALSE;
 
-		(void) summon_specific(y, x, FALSE, p_ptr->depth + 5,
+		(void) summon_specific(y, x, FALSE, p_ptr->danger + 5,
 				       SUMMON_UNIQUE);
 
 		Rand_quick = TRUE;
@@ -1105,7 +1105,7 @@ void hit_trap_aux(int y, int x, int trap)
 
 		num = 2 + randint1(3);
 		for (i = 0; i < num; i++) {
-		    (void) summon_specific(y, x, FALSE, p_ptr->depth, 0);
+		    (void) summon_specific(y, x, FALSE, p_ptr->danger, 0);
 		}
 
 		Rand_quick = TRUE;
@@ -1121,7 +1121,7 @@ void hit_trap_aux(int y, int x, int trap)
     case TRAP_ALTER:
 	{
 	    /* determine how dangerous the trap is allowed to be. */
-	    nastyness = randint1(p_ptr->depth);
+	    nastyness = randint1(p_ptr->danger);
 	    if (randint1(5) == 1)
 		nastyness += 10;
 
@@ -1390,7 +1390,7 @@ void hit_trap_aux(int y, int x, int trap)
 
 	    /* Determine the missile type and base damage. */
 	    if (randint1(3) == 1) {
-		if (p_ptr->depth < 40) {
+		if (p_ptr->danger < 40) {
 		    missile_name = "shot";
 		    dam = damroll(2, 3);
 		    tval = TV_SHOT;
@@ -1404,7 +1404,7 @@ void hit_trap_aux(int y, int x, int trap)
 	    }
 
 	    else if (randint1(2) == 1) {
-		if (p_ptr->depth < 55) {
+		if (p_ptr->danger < 55) {
 		    missile_name = "arrow";
 		    dam = damroll(2, 4);
 		    tval = TV_ARROW;
@@ -1418,7 +1418,7 @@ void hit_trap_aux(int y, int x, int trap)
 	    }
 
 	    else {
-		if (p_ptr->depth < 65) {
+		if (p_ptr->danger < 65) {
 		    missile_name = "bolt";
 		    dam = damroll(2, 5);
 		    tval = TV_BOLT;
@@ -1432,7 +1432,7 @@ void hit_trap_aux(int y, int x, int trap)
 	    }
 
 	    /* determine if the missile hits. */
-	    if (check_trap_hit(75 + p_ptr->depth)) {
+	    if (check_trap_hit(75 + p_ptr->danger)) {
 		msg("A %s hits you from above.", missile_name);
 
 		Rand_quick = FALSE;
@@ -1484,7 +1484,7 @@ void hit_trap_aux(int y, int x, int trap)
     case TRAP_BRANCH:
 	{
 	    /* determine if the missile hits. */
-	    if (check_trap_hit(75 + p_ptr->depth)) {
+	    if (check_trap_hit(75 + p_ptr->danger)) {
 		/* Take damage */
 		dam = damroll(3, 5);
 		msg("A branch hits you from above.");
@@ -1699,7 +1699,7 @@ extern void py_steal(int y, int x)
 	    purse *= 1 + randint1(3) + randint1(r_ptr->level / 30);
 
 	/* Pickings are scarce in a land of many thieves. */
-	purse = purse * (p_ptr->depth + 5) / (p_ptr->recall[0] + 5);
+	purse = purse * (p_ptr->danger + 5) / (p_ptr->recall[0] + 5);
 
 	/* Increase player gold. */
 	p_ptr->au += purse;

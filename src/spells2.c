@@ -3933,7 +3933,7 @@ void grow_trees_and_grass(bool powerful)
 	    /* Probably grass, otherwise a tree */
 	    if ((randint0(4) == 0) || powerful) 
 	    {
-		if (p_ptr->depth < 40)
+		if (p_ptr->danger < 40)
 		    cave_set_feat(y, x, FEAT_TREE);
 		else
 		    cave_set_feat(y, x, FEAT_TREE2);
@@ -5918,7 +5918,7 @@ bool trap_creation(void)
 	int y = py + ddy_ddd[i], x = px + ddx_ddd[i];
 	feature_type *f_ptr = &f_info[cave_feat[x][y]];
 	if (tf_has(f_ptr->flags, TF_TREE))
-	    place_trap(y, x, -1, p_ptr->depth);
+	    place_trap(y, x, -1, p_ptr->danger);
     }
 
     return (project(-1, 1, py, px, 0, GF_MAKE_TRAP, flg, 0, 0));

@@ -389,7 +389,7 @@ void sun_banish(void)
 static void play_ambient_sound(void)
 {
     /* Town sound */
-    if (p_ptr->depth == 0) {
+    if (p_ptr->danger == 0) {
 	/* Hack - is it daytime or nighttime? */
 	if (turn % (10L * TOWN_DAWN) < TOWN_DAWN / 2) {
 	    /* It's day. */
@@ -402,22 +402,22 @@ static void play_ambient_sound(void)
     }
 
     /* Dungeon level 1-20 */
-    else if (p_ptr->depth <= 20) {
+    else if (p_ptr->danger <= 20) {
 	sound(MSG_AMBIENT_DNG1);
     }
 
     /* Dungeon level 21-40 */
-    else if (p_ptr->depth <= 40) {
+    else if (p_ptr->danger <= 40) {
 	sound(MSG_AMBIENT_DNG2);
     }
 
     /* Dungeon level 41-60 */
-    else if (p_ptr->depth <= 60) {
+    else if (p_ptr->danger <= 60) {
 	sound(MSG_AMBIENT_DNG3);
     }
 
     /* Dungeon level 61-80 */
-    else if (p_ptr->depth <= 80) {
+    else if (p_ptr->danger <= 80) {
 	sound(MSG_AMBIENT_DNG4);
     }
 
@@ -507,7 +507,7 @@ static void process_world(void)
 
 
     /* Update the stores once a day (while out of town) */
-    if (p_ptr->depth)
+    if (p_ptr->danger)
 	if (!(turn % (10L * STORE_TURNS)))
 	    stores_maint(1);
 
@@ -523,7 +523,7 @@ static void process_world(void)
 	int n;
 
 	/* Hack for small towns */
-	if (!p_ptr->depth)
+	if (!p_ptr->danger)
 	    n = MAX_SIGHT - 5;
 	else
 	    n = MAX_SIGHT + 5;
@@ -1127,7 +1127,7 @@ static void process_world(void)
 	msg("You have attracted a demon.");
 
 	/* Here it comes */
-	summon_specific(p_ptr->py, p_ptr->px, FALSE, p_ptr->depth,
+	summon_specific(p_ptr->py, p_ptr->px, FALSE, p_ptr->danger,
 			SUMMON_DEMON);
 
 	/* Notice */
@@ -1140,7 +1140,7 @@ static void process_world(void)
 	msg("A call goes out beyond the grave.");
 
 	/* Here it comes */
-	summon_specific(p_ptr->py, p_ptr->px, FALSE, p_ptr->depth,
+	summon_specific(p_ptr->py, p_ptr->px, FALSE, p_ptr->danger,
 			SUMMON_UNDEAD);
 
 	/* Notice */
@@ -1268,7 +1268,7 @@ static void process_world(void)
 		p_ptr->stage = p_ptr->home;
 
 		/* Reset depth */
-		p_ptr->depth = 0;
+		p_ptr->danger = 0;
 
 		/* Leaving */
 		p_ptr->leaving = TRUE;
@@ -1280,7 +1280,7 @@ static void process_world(void)
 		p_ptr->stage = p_ptr->recall_pt;
 
 		/* Reset depth */
-		p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+		p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
 		/* Leaving */
 		p_ptr->leaving = TRUE;
@@ -1894,7 +1894,7 @@ static void dungeon(void)
     }
 
     /* Track depth */
-    p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
     /* No stairs down from Quest */
     if ((is_quest(p_ptr->stage))
@@ -1904,7 +1904,7 @@ static void dungeon(void)
 
 
     /* No stairs from town or if not allowed */
-    if (p_ptr->depth && OPT(adult_no_stairs)) {
+    if (p_ptr->danger && OPT(adult_no_stairs)) {
 	p_ptr->create_stair = 0;
     }
 
@@ -2022,10 +2022,10 @@ static void dungeon(void)
     /*** Process this dungeon level ***/
 
     /* Reset the monster generation level */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
 
     /* Reset the object generation level */
-    object_level = p_ptr->depth;
+    object_level = p_ptr->danger;
 
     /* Main loop */
     while (TRUE) {
@@ -2321,7 +2321,7 @@ void play_game(void)
 	/* Start in home town - or on the stairs to Angband */
 	p_ptr->stage =
 	    (OPT(adult_thrall) ? (OPT(adult_dungeon) ? 87 : 135) : p_ptr->home);
-	p_ptr->depth = stage_map[p_ptr->stage][DEPTH];
+	p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
 
 	/* Read the default options */
 	process_pref_file("birth.prf", TRUE, TRUE);
@@ -2498,7 +2498,7 @@ void play_game(void)
 		p_ptr->stage = p_ptr->home;
 
 		/* New depth */
-		p_ptr->depth = 0;
+		p_ptr->danger = 0;
 
 		/* Leaving */
 		p_ptr->leaving = TRUE;

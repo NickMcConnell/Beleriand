@@ -180,7 +180,7 @@ static void alloc_paths(int stage, int last_stage)
     /* North */
     if (north) {
 	/* Harder or easier? */
-	if (stage_map[north][DEPTH] > p_ptr->depth)
+	if (stage_map[north][DEPTH] > p_ptr->danger)
 	    path = FEAT_MORE_NORTH;
 	else
 	    path = FEAT_LESS_NORTH;
@@ -251,7 +251,7 @@ static void alloc_paths(int stage, int last_stage)
     /* East */
     if (east) {
 	/* Harder or easier? */
-	if (stage_map[east][DEPTH] > p_ptr->depth)
+	if (stage_map[east][DEPTH] > p_ptr->danger)
 	    path = FEAT_MORE_EAST;
 	else
 	    path = FEAT_LESS_EAST;
@@ -313,7 +313,7 @@ static void alloc_paths(int stage, int last_stage)
     /* South */
     if (south) {
 	/* Harder or easier? */
-	if (stage_map[south][DEPTH] > p_ptr->depth)
+	if (stage_map[south][DEPTH] > p_ptr->danger)
 	    path = FEAT_MORE_SOUTH;
 	else
 	    path = FEAT_LESS_SOUTH;
@@ -384,7 +384,7 @@ static void alloc_paths(int stage, int last_stage)
     /* West */
     if (west) {
 	/* Harder or easier? */
-	if (stage_map[west][DEPTH] > p_ptr->depth)
+	if (stage_map[west][DEPTH] > p_ptr->danger)
 	    path = FEAT_MORE_WEST;
 	else
 	    path = FEAT_LESS_WEST;
@@ -511,7 +511,7 @@ int make_formation(int y, int x, int base_feat1, int base_feat2, int *feat,
 	bool good_place = TRUE;
 
 	/* Greater "vault" ? */
-	if (randint0(100 - p_ptr->depth) < 9)
+	if (randint0(100 - p_ptr->danger) < 9)
 	    wild_type += 1;
 
 	/* Examine each "vault" */
@@ -520,8 +520,8 @@ int make_formation(int y, int x, int base_feat1, int base_feat2, int *feat,
 	    v_ptr = &v_info[n];
 
 	    /* Accept each "vault" that is acceptable for this location */
-	    if ((v_ptr->typ == wild_type) && (v_ptr->min_lev <= p_ptr->depth)
-		&& (v_ptr->max_lev >= p_ptr->depth)) {
+	    if ((v_ptr->typ == wild_type) && (v_ptr->min_lev <= p_ptr->danger)
+		&& (v_ptr->max_lev >= p_ptr->danger)) {
 		v_idx[v_cnt++] = n;
 	    }
 	}
@@ -747,7 +747,7 @@ extern void plain_gen(void)
     }
 
     /* Place some formations */
-    while (form_grids < (50 * p_ptr->depth + 1000)) {
+    while (form_grids < (50 * p_ptr->danger + 1000)) {
 	/* Set the "vault" type */
 	wild_type = ((randint0(5) == 0) ? 26 : 14);
 
@@ -756,7 +756,7 @@ extern void plain_gen(void)
 	x = randint0(DUNGEON_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_GRASS, FEAT_GRASS, form_feats,
-			   p_ptr->depth + 1);
+			   p_ptr->danger + 1);
     }
 
     /* And some water */
@@ -775,10 +775,10 @@ extern void plain_gen(void)
     }
 
     /* Basic "amount" */
-    k = (p_ptr->depth / 2);
+    k = (p_ptr->danger / 2);
 
     /* Gets hairy north of the mountains */
-    if (p_ptr->depth > 40)
+    if (p_ptr->danger > 40)
 	k += 10;
 
 
@@ -786,7 +786,7 @@ extern void plain_gen(void)
     i = MIN_M_ALLOC_LEVEL + randint1(8);
 
     /* Build the monster probability table. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
     (void) get_mon_num(monster_level);
 
     /* Put some monsters in the dungeon */
@@ -794,10 +794,10 @@ extern void plain_gen(void)
 	/* Always have some random monsters */
 	if ((get_mon_num_hook) && (j < 5)) {
 	    /* Remove all monster restrictions. */
-	    mon_restrict('\0', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
 
 	    /* Build the monster probability table. */
-	    (void) get_mon_num(p_ptr->depth);
+	    (void) get_mon_num(p_ptr->danger);
 	}
 
 	/* 
@@ -1047,7 +1047,7 @@ extern void mtn_gen(void)
 
 
 
-    while (form_grids < 50 * (p_ptr->depth)) {
+    while (form_grids < 50 * (p_ptr->danger)) {
 	/* Set the "vault" type */
 	wild_type = ((randint0(5) == 0) ? 26 : 16);
 
@@ -1056,7 +1056,7 @@ extern void mtn_gen(void)
 	x = randint0(DUNGEON_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_GRASS, FEAT_GRASS, form_feats,
-			   p_ptr->depth * 2);
+			   p_ptr->danger * 2);
 	/* Now join it up */
 	min = DUNGEON_WID + DUNGEON_HGT;
 	for (i = 0; i < 20; i++) {
@@ -1099,7 +1099,7 @@ extern void mtn_gen(void)
 		}
 	    case FEAT_SHOP_HEAD + 3:
 		{
-		    if (randint1(p_ptr->depth + HIGHLAND_TREE_CHANCE)
+		    if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
 			> HIGHLAND_TREE_CHANCE)
 			cave_set_feat(y, x, FEAT_TREE2);
 		    else
@@ -1135,17 +1135,17 @@ extern void mtn_gen(void)
 
 
     /* Basic "amount" */
-    k = (p_ptr->depth / 2);
+    k = (p_ptr->danger / 2);
 
     /* Gets hairy north of the mountains */
-    if (p_ptr->depth > 40)
+    if (p_ptr->danger > 40)
 	k += 10;
 
     /* Pick a base number of monsters */
     i = MIN_M_ALLOC_LEVEL + randint1(8);
 
     /* Build the monster probability table. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
     (void) get_mon_num(monster_level);
 
     /* Put some monsters in the dungeon */
@@ -1153,10 +1153,10 @@ extern void mtn_gen(void)
 	/* Always have some random monsters */
 	if ((get_mon_num_hook) && (j < 5)) {
 	    /* Remove all monster restrictions. */
-	    mon_restrict('\0', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
 
 	    /* Build the monster probability table. */
-	    (void) get_mon_num(p_ptr->depth);
+	    (void) get_mon_num(p_ptr->danger);
 	}
 
 	/* 
@@ -1409,10 +1409,10 @@ extern void mtntop_gen(void)
 
 
     /* Basic "amount" */
-    k = p_ptr->depth;
+    k = p_ptr->danger;
 
     /* Build the monster probability table. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
     (void) get_mon_num(monster_level);
 
     /* Put some monsters in the dungeon */
@@ -1565,7 +1565,7 @@ extern void forest_gen(void)
 	for (x = 0; x < DUNGEON_WID; x++) {
 	    /* Create trees */
 	    if (cave_feat[y][x] == FEAT_GRASS) {
-		if (randint1(p_ptr->depth + HIGHLAND_TREE_CHANCE)
+		if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
 		    > HIGHLAND_TREE_CHANCE)
 		    cave_set_feat(y, x, FEAT_TREE2);
 		else
@@ -1613,7 +1613,7 @@ extern void forest_gen(void)
 
 
     /* Place some formations */
-    while (form_grids < (50 * p_ptr->depth + 1000)) {
+    while (form_grids < (50 * p_ptr->danger + 1000)) {
 	/* Set the "vault" type */
 	wild_type = ((randint0(5) == 0) ? 26 : 18);
 
@@ -1622,7 +1622,7 @@ extern void forest_gen(void)
 	x = randint0(DUNGEON_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_TREE, FEAT_TREE2, form_feats,
-			   p_ptr->depth + 1);
+			   p_ptr->danger + 1);
     }
 
     /* And some water */
@@ -1641,17 +1641,17 @@ extern void forest_gen(void)
     }
 
     /* Basic "amount" */
-    k = (p_ptr->depth / 2);
+    k = (p_ptr->danger / 2);
 
     /* Gets hairy north of the mountains */
-    if (p_ptr->depth > 40)
+    if (p_ptr->danger > 40)
 	k += 10;
 
     /* Pick a base number of monsters */
     i = MIN_M_ALLOC_LEVEL + randint1(8);
 
     /* Build the monster probability table. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
     (void) get_mon_num(monster_level);
 
     /* Put some monsters in the dungeon */
@@ -1659,10 +1659,10 @@ extern void forest_gen(void)
 	/* Always have some random monsters */
 	if ((get_mon_num_hook) && (j < 5)) {
 	    /* Remove all monster restrictions. */
-	    mon_restrict('\0', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
 
 	    /* Build the monster probability table. */
-	    (void) get_mon_num(p_ptr->depth);
+	    (void) get_mon_num(p_ptr->danger);
 	}
 
 	/* 
@@ -1833,7 +1833,7 @@ extern void swamp_gen(void)
 
 
     /* Place some formations (but not many, and less for more danger) */
-    while (form_grids < 20000 / p_ptr->depth) {
+    while (form_grids < 20000 / p_ptr->danger) {
 	/* Set the "vault" type */
 	wild_type = ((randint0(5) == 0) ? 26 : 20);
 
@@ -1842,7 +1842,7 @@ extern void swamp_gen(void)
 	x = randint0(DUNGEON_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_GRASS, FEAT_WATER, form_feats,
-			   p_ptr->depth);
+			   p_ptr->danger);
     }
 
     /* No longer "icky" */
@@ -1853,17 +1853,17 @@ extern void swamp_gen(void)
     }
 
     /* Basic "amount" */
-    k = (p_ptr->depth / 2);
+    k = (p_ptr->danger / 2);
 
     /* Gets hairy north of the mountains */
-    if (p_ptr->depth > 40)
+    if (p_ptr->danger > 40)
 	k += 10;
 
     /* Pick a base number of monsters */
     i = MIN_M_ALLOC_LEVEL + randint1(8);
 
     /* Build the monster probability table. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
     (void) get_mon_num(monster_level);
 
     /* Put some monsters in the dungeon */
@@ -1871,10 +1871,10 @@ extern void swamp_gen(void)
 	/* Always have some random monsters */
 	if ((get_mon_num_hook) && (j < 5)) {
 	    /* Remove all monster restrictions. */
-	    mon_restrict('\0', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
 
 	    /* Build the monster probability table. */
-	    (void) get_mon_num(p_ptr->depth);
+	    (void) get_mon_num(p_ptr->danger);
 	}
 
 	/* 
@@ -2111,7 +2111,7 @@ extern void desert_gen(void)
 
 
     /* Place some formations */
-    while (form_grids < 20 * p_ptr->depth) {
+    while (form_grids < 20 * p_ptr->danger) {
 	/* Set the "vault" type */
 	wild_type = ((randint0(5) == 0) ? 26 : 22);
 
@@ -2120,7 +2120,7 @@ extern void desert_gen(void)
 	x = randint0(DUNGEON_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_RUBBLE, FEAT_MAGMA, form_feats,
-			   p_ptr->depth);
+			   p_ptr->danger);
     }
 
     /* No longer "icky" */
@@ -2131,17 +2131,17 @@ extern void desert_gen(void)
     }
 
     /* Basic "amount" */
-    k = (p_ptr->depth / 2);
+    k = (p_ptr->danger / 2);
 
     /* Gets hairy north of the mountains */
-    if (p_ptr->depth > 40)
+    if (p_ptr->danger > 40)
 	k += 10;
 
     /* Pick a base number of monsters */
     i = MIN_M_ALLOC_LEVEL + randint1(8);
 
     /* Build the monster probability table. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
     (void) get_mon_num(monster_level);
 
     /* Put some monsters in the dungeon */
@@ -2149,10 +2149,10 @@ extern void desert_gen(void)
 	/* Always have some random monsters */
 	if ((get_mon_num_hook) && (j < 5)) {
 	    /* Remove all monster restrictions. */
-	    mon_restrict('\0', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
 
 	    /* Build the monster probability table. */
-	    (void) get_mon_num(p_ptr->depth);
+	    (void) get_mon_num(p_ptr->danger);
 	}
 
 	/* 
@@ -2376,7 +2376,7 @@ extern void river_gen(void)
     }
 
     /* Place some formations */
-    while (form_grids < 50 * p_ptr->depth + 1000) {
+    while (form_grids < 50 * p_ptr->danger + 1000) {
 	/* Set the "vault" type */
 	wild_type = ((randint0(5) == 0) ? 26 : 24);
 
@@ -2386,7 +2386,7 @@ extern void river_gen(void)
 
 	form_grids +=
 	    make_formation(y, x, FEAT_GRASS, FEAT_GRASS, form_feats,
-			   p_ptr->depth / 2);
+			   p_ptr->danger / 2);
     }
 
     /* No longer "icky" */
@@ -2415,17 +2415,17 @@ extern void river_gen(void)
     }
 
     /* Basic "amount" */
-    k = (p_ptr->depth / 2);
+    k = (p_ptr->danger / 2);
 
     /* Gets hairy north of the mountains */
-    if (p_ptr->depth > 40)
+    if (p_ptr->danger > 40)
 	k += 10;
 
     /* Pick a base number of monsters */
     i = MIN_M_ALLOC_LEVEL + randint1(8);
 
     /* Build the monster probability table. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
     (void) get_mon_num(monster_level);
 
     /* Put some monsters in the dungeon */
@@ -2433,10 +2433,10 @@ extern void river_gen(void)
 	/* Always have some random monsters */
 	if ((get_mon_num_hook) && (j < 5)) {
 	    /* Remove all monster restrictions. */
-	    mon_restrict('\0', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
 
 	    /* Build the monster probability table. */
-	    (void) get_mon_num(p_ptr->depth);
+	    (void) get_mon_num(p_ptr->danger);
 	}
 
 	/* 
@@ -2491,8 +2491,8 @@ bool place_web(int type)
 	v_ptr = &v_info[i];
 
 	/* Accept each web that is acceptable for this depth. */
-	if ((v_ptr->typ == type) && (v_ptr->min_lev <= p_ptr->depth)
-	    && (v_ptr->max_lev >= p_ptr->depth)) {
+	if ((v_ptr->typ == type) && (v_ptr->min_lev <= p_ptr->danger)
+	    && (v_ptr->max_lev >= p_ptr->danger)) {
 	    v_idx[v_cnt++] = i;
 	}
     }
@@ -2578,7 +2578,7 @@ extern void valley_gen(void)
     for (y = 0; y < DUNGEON_HGT; y++) {
 	for (x = 0; x < DUNGEON_WID; x++) {
 	    /* Create trees */
-	    if (randint1(p_ptr->depth + HIGHLAND_TREE_CHANCE)
+	    if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
 		> HIGHLAND_TREE_CHANCE)
 		cave_set_feat(y, x, FEAT_TREE2);
 	    else
@@ -2615,7 +2615,7 @@ extern void valley_gen(void)
     /* Special boundary walls -- Bottom */
     i = 5;
     j = 0;
-    if (p_ptr->depth != 70) {
+    if (p_ptr->danger != 70) {
 	for (x = 0; x < DUNGEON_WID; x++) {
 	    i += 1 - randint0(3);
 	    if (i > 10)
@@ -2691,12 +2691,12 @@ extern void valley_gen(void)
     }
 
     /* Place some formations */
-    while (form_grids < (40 * p_ptr->depth)) {
+    while (form_grids < (40 * p_ptr->danger)) {
 	y = randint0(DUNGEON_HGT - 1) + 1;
 	x = randint0(DUNGEON_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_TREE, FEAT_TREE2, form_feats,
-			   p_ptr->depth + 1);
+			   p_ptr->danger + 1);
     }
 
     /* No longer "icky" */
@@ -2718,7 +2718,7 @@ extern void valley_gen(void)
     }
 
     /* Basic "amount" */
-    k = (p_ptr->depth / 2);
+    k = (p_ptr->danger / 2);
     if (k > 30)
 	k = 30;
 
@@ -2726,7 +2726,7 @@ extern void valley_gen(void)
     i = MIN_M_ALLOC_LEVEL + randint1(8);
 
     /* Build the monster probability table. */
-    monster_level = p_ptr->depth;
+    monster_level = p_ptr->danger;
     (void) get_mon_num(monster_level);
 
     /* Put some monsters in the dungeon */
@@ -2734,10 +2734,10 @@ extern void valley_gen(void)
 	/* Always have some random monsters */
 	if ((get_mon_num_hook) && (j < 5)) {
 	    /* Remove all monster restrictions. */
-	    mon_restrict('\0', (byte) p_ptr->depth, &dummy, TRUE);
+	    mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
 
 	    /* Build the monster probability table. */
-	    (void) get_mon_num(p_ptr->depth);
+	    (void) get_mon_num(p_ptr->danger);
 	}
 
 	/* 
