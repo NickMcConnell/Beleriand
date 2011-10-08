@@ -42,7 +42,7 @@ const char *copyright =
 
 
 /*
- * Version of FAangband.
+ * Version of Beleriand.
  */
 byte version_major = VERSION_MAJOR;
 byte version_minor = VERSION_MINOR;
@@ -151,7 +151,7 @@ term *angband_term[TERM_WIN_MAX];
  */
 char angband_term_name[TERM_WIN_MAX][16] =
 {
-  "FAangband",
+  "Beleriand",
   "Term-1",
   "Term-2",
   "Term-3",

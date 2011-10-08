@@ -1,10 +1,10 @@
                                                                                
              ****************************************************              
-             **   FAangband 1.2.6  ****   First Age Angband    **              
+             **************   Beleriand 1.0.0  ******************               
              ** Beleriand in the days of the War of the Jewels **              
              ****************************************************              
                                                                                
-     Based on Moria, Umoria, Angband and Oangband,                             
+     Based on Moria, Umoria, Angband, Oangband and FAangband                   
      with ideas and features from NPPangband and Unangband                     
                                                                                
      Contributors include Robert Alan Koeneke, James E. Wilson, Alex Cutler,   
@@ -12,18 +12,17 @@
      Ben Harrison, Robert Ruehlmann, Leon Marrick, Bahman Rabii, Jeff Greene,  
      Diego Gonzalez, Andrew Doull, Andi Sidwell, Pete Mack, Si Griffin.      
 	                                                                       
-     FAangband 0.1.0-1.2.6 by Nick McConnell             
-     FAangband 0.3.6       by Si Griffin             
+                        Beleriand by Nick McConnell                            
                                                                                
-     Send comments, bug reports, and patches to nckmccnnll@gmail.com     
-     The FAangband home page is http://angband.oook.cz/faangband            
-     Latest code is at https://github.com/NickMcConnell/FAangband            
-     Visit the Angband ladder page at http://angband.oook.cz                  
+     Send comments, bug reports, and patches to nckmccnnll@gmail.com           
+     The FAangband home page is http://angband.oook.cz/faangband               
+     Latest code is at https://github.com/NickMcConnell/Beleriand              
+     Visit the Angband ladder page at http://angband.oook.cz                   
                         '?' for in-game help.                                  
 
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-wwwwwwwwwwwwwwwwwwZZZZZZZZZZZZZZZwwwwwwwwwZZZZZZZZZZZZZZZZZwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwZZZZZZZZZZZZZZZwwwwwwwwwwwwwwwwwwwww
 wwwwwwwwwwwwwwwwYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYwwwwwwwwwwwwwwwww
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww

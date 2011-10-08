@@ -857,7 +857,7 @@ static void print_header(void)
 {
   char buf[80];
   
-  sprintf(buf, "Artifact Spoilers for FAangband Version %d.%d.%d",
+  sprintf(buf, "Artifact Spoilers for Beleriand Version %d.%d.%d",
 	  VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
   spoiler_underline(buf);
 }
@@ -1138,7 +1138,7 @@ static void spoil_obj_gen(const char *fname)
   
   msg("This may take a while...");
   
-  file_putf(fff, "Object Generation Spoiler for FAangband Version %d.%d.%d\n",
+  file_putf(fff, "Object Generation Spoiler for Beleriand Version %d.%d.%d\n",
 	  VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
   
   /* Clear storage. */
@@ -1278,7 +1278,7 @@ static void spoil_mon_gen(const char *fname)
       return;
     }
   
-  file_putf(fff, "Monster Generation Spoiler for FAangband Version %d.%d.%d\n",
+  file_putf(fff, "Monster Generation Spoiler for Beleriand Version %d.%d.%d\n",
 	  VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
   
   /* Clear storage. */
@@ -1511,7 +1511,7 @@ static void spoil_mon_desc(const char *fname)
     }
   
   /* Dump the header */
-  file_putf(fff, "Monster Spoilers for FAangband Version %d.%d.%d\n",
+  file_putf(fff, "Monster Spoilers for Beleriand Version %d.%d.%d\n",
 	  VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
   file_putf(fff, "------------------------------------------\n\n");
   
@@ -1737,7 +1737,7 @@ static void spoil_mon_info(const char *fname)
 
   
   /* Dump the header */
-  sprintf(buf, "Monster Spoilers for FAangband Version %d.%d.%d\n",
+  sprintf(buf, "Monster Spoilers for Beleriand Version %d.%d.%d\n",
 	  VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
   spoil_out(buf);
   spoil_out("------------------------------------------\n\n");

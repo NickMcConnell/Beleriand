@@ -1024,7 +1024,7 @@ extern int make_dump(char_attr_line * line, int mode)
     /* Hack - skip all this for mode 1 */
     if (mode != 1) {
 	/* Begin dump */
-	sprintf(buf, "[FAangband %s Character Dump]", VERSION_STRING);
+	sprintf(buf, "[Beleriand %s Character Dump]", VERSION_STRING);
 	dump_put_str(TERM_WHITE, buf, 2);
 	current_line++;
 
@@ -2420,7 +2420,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 	/* Show a general "title" */
 	prt(format
-	    ("[FAangband %d.%d.%d, %s, Line %d/%d]", VERSION_MAJOR,
+	    ("[Beleriand %d.%d.%d, %s, Line %d/%d]", VERSION_MAJOR,
 	     VERSION_MINOR, VERSION_PATCH, caption, line, size), 0, 0);
 
 

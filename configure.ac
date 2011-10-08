@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([FAangband], [1.2.0], [nckmccnnll@gmail.com], [faangband])
+AC_INIT([Beleriand], [1.2.0], [nckmccnnll@gmail.com], [beleriand])
 AC_PREREQ([2.59])
 
 AC_CONFIG_HEADER(src/autoconf.h)
@@ -12,7 +12,7 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 AC_ARG_WITH(setgid,
-	[  --with-setgid=NAME      install faangband as group NAME],
+	[  --with-setgid=NAME      install beleriand as group NAME],
 	[wsetgid=yes])
 AC_ARG_WITH(private_dirs,
 	[  --with-private-dirs     use private scorefiles/savefiles])
@@ -34,7 +34,7 @@ if test "x$wsetgid$with_private_dirs$with_no_install" != "xyes";  then
 --with-setgid=<groupname>
     This configures the game to store savefiles and scorefiles in a central
     location on the system, writeable only by the group \"groupname\".  If you
-    want a traditional installation of FAangband, where all users share a
+    want a traditional installation of Beleriand, where all users share a
     scorefile, then use this option, and set the groupname to your \"games\"
     group.  This option requires the game to have the \"setgid\" bit set on its
     permissions, and thus this option requires root when installing.
@@ -97,7 +97,7 @@ if test "x$bindir" == "x\${exec_prefix}/bin"; then
   bindir=${exec_prefix}/games
 fi
 
-AC_ARG_WITH(configpath, [  --with-configpath=PATH  use PATH as the path to the FAangband configuration folder])
+AC_ARG_WITH(configpath, [  --with-configpath=PATH  use PATH as the path to the Beleriand configuration folder])
 
 if test "x$with_configpath" != "x"; then
 	configpath="${with_configpath}"
@@ -112,7 +112,7 @@ case "/$configpath" in
 	*)  MY_EXPAND_DIR(configdir, "$configpath/") ;;
 esac
 
-AC_ARG_WITH(libpath, [  --with-libpath=PATH     use PATH as the path to the FAangband lib folder])
+AC_ARG_WITH(libpath, [  --with-libpath=PATH     use PATH as the path to the Beleriand lib folder])
 
 if test "x$with_libpath" != "x"; then
 	libpath="${with_libpath}"
@@ -128,7 +128,7 @@ case "/$libpath" in
 	*)  MY_EXPAND_DIR(libdatadir, "$libpath/") ;;
 esac
 
-AC_ARG_WITH(varpath, [  --with-varpath=PATH     use PATH as the path to the FAangband saved data folder])
+AC_ARG_WITH(varpath, [  --with-varpath=PATH     use PATH as the path to the Beleriand saved data folder])
 
 if test "x$with_varpath" != "x"; then
 	varpath="${with_varpath}"
@@ -287,7 +287,7 @@ echo "  var path:                               ${displayedvardatadir}"
 if test "x$wsetgid" = "xyes"; then
 	echo "  (as group ${SETEGID})"
 elif test "x$with_private_dirs" = "xyes"; then
-	echo "  (with private save and score files in ~/.angband/FAangband/)"
+	echo "  (with private save and score files in ~/.angband/Beleriand/)"
 fi
 
 echo

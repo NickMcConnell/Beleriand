@@ -54,7 +54,7 @@
 /**
  * Name of the version/variant
  */
-#define SAVEFILE_NAME  "FAAN"
+#define SAVEFILE_NAME  "BELE"
 
 
 /**
@@ -62,7 +62,7 @@
  */
 /*
 #ifdef BUILD_ID
-#define VERSION_STRING	"1.2.6 (" BUILD_ID ")"
+#define VERSION_STRING	"1.0.0 (" BUILD_ID ")"
 #endif
 */
 
@@ -70,8 +70,8 @@
  * Current FAangband version numbers.
  */
 #define VERSION_MAJOR	1
-#define VERSION_MINOR	2
-#define VERSION_PATCH	6
+#define VERSION_MINOR	0
+#define VERSION_PATCH	0
 #define VERSION_EXTRA	0
 
 /**
