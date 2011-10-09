@@ -100,7 +100,6 @@ ANGFILES = \
 	jewel.o \
 	keymap.o \
 	load.o \
-	load-old.o \
 	monattk.o \
 	monmove.o \
 	monster1.o \

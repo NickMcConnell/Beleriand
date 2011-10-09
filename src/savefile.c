@@ -19,45 +19,121 @@
 #include "angband.h"
 #include "savefile.h"
 
+/**
+ * The savefile code.
+ *
+ * Savefiles since ~3.1 have used a block-based system.  Each savefile
+ * consists of an 8-byte header, the first four bytes of which mark this
+ * as a savefile, the second four bytes provide a variant ID.
+ *
+ * After that, each block has the format:
+ * - 16-byte string giving the type of block
+ * - 4-byte block version
+ * - 4-byte block size
+ * - 4-byte block checksum
+ * ... data ...
+ * padding so that block is a multiple of 4 bytes
+ *
+ * The savefile deosn't contain the version number of that game that saved it;
+ * versioning is left at the individual block level.  The current code
+ * keeps a list of savefile blocks to save in savers[] below, along with
+ * their current versions.
+ *
+ * For each block type and version, there is a loading function to load that
+ * type/version combination.  For example, there may be a loader for v1
+ * and v2 of the RNG block; these must be different functions.  It has been
+ * done this way since it allows easier maintenance; after each release, you
+ * need simply remove old loaders and you will not have to disentangle
+ * lots of code with "if (version > 3)" and its like everywhere.
+ *
+ * Savefile loading and saving is done by keeping the current block in
+ * memory, which is accessed using the wr_* and rd_* functions.  This is
+ * then written out, whole, to disk, with the appropriate header.
+ *
+ *
+ * So, if you want to make a savefile compat-breaking change, then there are
+ * a few things you should do:
+ *
+ * - increment the version in 'savers' below
+ * - add a loading function that accepts the new version (in addition to
+ *   the previous loading function) to 'loaders'
+ * - and watch the magic happen.
+ *
+ *
+ * TODO:
+ * - wr_ and rd_ should be passed a buffer to work with, rather than using
+ *   the rd_ and wr_ functions with a universal buffer
+ * - 
+ */
 
-/** Magic bits at beginning of savefile */
+
+/**
+ * Magic bits at beginning of savefile 
+ */
 static const byte savefile_magic[4] = { 83, 97, 118, 101 };
 static const byte savefile_name[4] = SAVEFILE_NAME;
 
 
 /**
- * Big list of all savefile block types.
+ * Savefile saving functions 
  */
-static const struct
-{
-    char name[16];
-    int (*loader)(u32b version);
-    void (*saver)(void);
-    u32b cur_ver;
-    u32b oldest_ver;
-} savefile_blocks[] =
-{
-    { "rng", rd_randomizer, wr_randomizer, 1, 1 },
-    { "options", rd_options, wr_options, 1, 1 },
-    { "messages", rd_messages, wr_messages, 1, 1 },
-    { "monster memory", rd_monster_memory, wr_monster_memory, 1, 1 },
-    { "object memory", rd_object_memory, wr_object_memory, 1, 1 },
-    { "quests", rd_quests, wr_quests, 1, 1 },
-    { "artifacts", rd_artifacts, wr_artifacts, 1, 1 },
-    { "player", rd_player, wr_player, 1, 1 },
-    { "squelch", rd_squelch, wr_squelch, 1, 1 },
-    { "misc", rd_misc, wr_misc, 1, 1 },
-    { "player hp", rd_player_hp, wr_player_hp, 1, 1 },
-    { "player spells", rd_player_spells, wr_player_spells, 1, 1 },
-    { "randarts", rd_randarts, wr_randarts, 1, 1 },
-    { "inventory", rd_inventory, wr_inventory, 1, 1 },
-    { "stores", rd_stores, wr_stores, 1, 1 },
-    { "dungeon", rd_dungeon, wr_dungeon, 1, 1 },
-    { "objects", rd_objects, wr_objects, 1, 1 },
-    { "monsters", rd_monsters, wr_monsters, 1, 1 },
-    { "ghost", rd_ghost, wr_ghost, 1, 1 },
-    { "history", rd_history, wr_history, 1, 1 },
-    { "traps", rd_traps, wr_traps, 1, 1 },
+static const struct {
+        char name[16];
+        void (*save)(void);
+        u32b version;   
+} savers[] = {
+        { "rng", wr_randomizer, 1 },
+        { "options", wr_options, 1 },
+        { "messages", wr_messages, 1 },
+        { "monster memory", wr_monster_memory, 1 },
+        { "object memory", wr_object_memory, 1 },
+        { "quests", wr_quests, 1 },
+        { "artifacts", wr_artifacts, 1 },
+        { "player", wr_player, 1 },
+        { "squelch", wr_squelch, 1 },
+        { "misc", wr_misc, 1 },
+        { "player hp", wr_player_hp, 1 },
+        { "player spells", wr_player_spells, 1 },
+        { "randarts", wr_randarts, 1 },
+        { "inventory", wr_inventory, 1 },
+        { "stores", wr_stores, 1 },
+        { "dungeon", wr_dungeon, 1 },
+        { "objects", wr_objects, 1 },
+        { "monsters", wr_monsters, 1 },
+        { "ghost", wr_ghost, 1 },
+        { "history", wr_history, 1 },
+        { "traps", wr_traps, 1 },
+};
+
+/**
+ * Savefile loading functions 
+ */
+static const struct {
+        char name[16];
+        int (*load)(void);
+        u32b version;
+} loaders[] = {
+        { "rng", rd_randomizer, 1 },
+        { "options", rd_options, 1 },
+        { "messages", rd_messages, 1 },
+        { "monster memory", rd_monster_memory, 1 },
+        { "object memory", rd_object_memory, 1 },
+        { "quests", rd_quests, 1 },
+        { "artifacts", rd_artifacts, 1 },
+        { "player", rd_player, 1 },
+        { "squelch", rd_squelch, 1 },
+        { "misc", rd_misc, 1 },
+        { "player hp", rd_player_hp, 1 },
+        { "player spells", rd_player_spells, 1 },
+        { "randarts", rd_randarts, 1 },
+        { "inventory", rd_inventory, 1 },
+        { "stores", rd_stores, 1 },
+        { "dungeon", rd_dungeon, 1 },
+        { "objects", rd_objects, 1 },
+        { "monsters", rd_monsters, 1 },
+        { "ghost", rd_ghost, 1 },
+        { "history", rd_history, 1 },
+        { "traps", rd_traps, 1 },
 };
 
 
@@ -79,20 +155,21 @@ static u32b buffer_check;
 /*
  * Hack -- Show information on the screen, one line at a time.
  *
- * Avoid the top two lines, to avoid interference with "msg()".
+ * Avoid the top two lines, to avoid interference with "note()".
  */
-void note(const char *msg)
+void note(const char *message)
 {
-    static int y = 2;
+        static int y = 2;
 
-    /* Draw the message */
-    prt(msg, y, 0);
+        /* Draw the message */
+        prt(message, y, 0);
+        pause_line(Term);
 
-    /* Advance one line (wrap if needed) */
-    if (++y >= 24) y = 2;
+        /* Advance one line (wrap if needed) */
+        if (++y >= 24) y = 2;
 
-    /* Flush it */
-    Term_fresh();
+	/* Flush it */
+	Term_fresh();
 }
 
 
@@ -102,30 +179,30 @@ void note(const char *msg)
 
 static void sf_put(byte v)
 {
-    assert(buffer != NULL);
-    assert(buffer_size > 0);
+	assert(buffer != NULL);
+	assert(buffer_size > 0);
 
-    if (buffer_size == buffer_pos)
-    {
-	buffer_size += BUFFER_BLOCK_INCREMENT;
-	buffer = mem_realloc(buffer, buffer_size);
-    }
+	if (buffer_size == buffer_pos)
+	{
+		buffer_size += BUFFER_BLOCK_INCREMENT;
+		buffer = mem_realloc(buffer, buffer_size);
+	}
 
-    assert(buffer_pos < buffer_size);
+	assert(buffer_pos < buffer_size);
 
-    buffer[buffer_pos++] = v;
-    buffer_check += v;
+	buffer[buffer_pos++] = v;
+	buffer_check += v;
 }
 
 static byte sf_get(void)
 {
-    assert(buffer != NULL);
-    assert(buffer_size > 0);
-    assert(buffer_pos < buffer_size);
+	assert(buffer != NULL);
+	assert(buffer_size > 0);
+	assert(buffer_pos < buffer_size);
 
-    buffer_check += buffer[buffer_pos];
+	buffer_check += buffer[buffer_pos];
 
-    return buffer[buffer_pos++];
+	return buffer[buffer_pos++];
 }
 
 
@@ -133,240 +210,150 @@ static byte sf_get(void)
 
 void wr_byte(byte v)
 {
-    sf_put(v);
+	sf_put(v);
 }
 
 void wr_u16b(u16b v)
 {
-    sf_put((byte)(v & 0xFF));
-    sf_put((byte)((v >> 8) & 0xFF));
+	sf_put((byte)(v & 0xFF));
+	sf_put((byte)((v >> 8) & 0xFF));
 }
 
 void wr_s16b(s16b v)
 {
-    wr_u16b((u16b)v);
+	wr_u16b((u16b)v);
 }
 
 void wr_u32b(u32b v)
 {
-    sf_put((byte)(v & 0xFF));
-    sf_put((byte)((v >> 8) & 0xFF));
-    sf_put((byte)((v >> 16) & 0xFF));
-    sf_put((byte)((v >> 24) & 0xFF));
+	sf_put((byte)(v & 0xFF));
+	sf_put((byte)((v >> 8) & 0xFF));
+	sf_put((byte)((v >> 16) & 0xFF));
+	sf_put((byte)((v >> 24) & 0xFF));
 }
 
 void wr_s32b(s32b v)
 {
-    wr_u32b((u32b)v);
+	wr_u32b((u32b)v);
 }
 
 void wr_string(const char *str)
 {
-    while (*str)
-    {
+	while (*str)
+	{
+		wr_byte(*str);
+		str++;
+	}
 	wr_byte(*str);
-	str++;
-    }
-    wr_byte(*str);
 }
 
 
 void rd_byte(byte *ip)
 {
-    *ip = sf_get();
+	*ip = sf_get();
 }
 
 void rd_u16b(u16b *ip)
 {
-    (*ip) = sf_get();
-    (*ip) |= ((u16b)(sf_get()) << 8);
+	(*ip) = sf_get();
+	(*ip) |= ((u16b)(sf_get()) << 8);
 }
 
 void rd_s16b(s16b *ip)
 {
-    rd_u16b((u16b*)ip);
+	rd_u16b((u16b*)ip);
 }
 
 void rd_u32b(u32b *ip)
 {
-    (*ip) = sf_get();
-    (*ip) |= ((u32b)(sf_get()) << 8);
-    (*ip) |= ((u32b)(sf_get()) << 16);
-    (*ip) |= ((u32b)(sf_get()) << 24);
+	(*ip) = sf_get();
+	(*ip) |= ((u32b)(sf_get()) << 8);
+	(*ip) |= ((u32b)(sf_get()) << 16);
+	(*ip) |= ((u32b)(sf_get()) << 24);
 }
 
 void rd_s32b(s32b *ip)
 {
-    rd_u32b((u32b*)ip);
+	rd_u32b((u32b*)ip);
 }
 
 void rd_string(char *str, int max)
 {
-    byte tmp8u;
-    int i = 0;
+	byte tmp8u;
+	int i = 0;
 
-    do
-    {
-	rd_byte(&tmp8u);
+	do
+	{
+		rd_byte(&tmp8u);
 
-	if (i < max) str[i] = tmp8u;
-	if (!tmp8u) break;
-    } while (++i);
+		if (i < max) str[i] = tmp8u;
+		if (!tmp8u) break;
+	} while (++i);
 
-    str[max - 1] = '\0';
+	str[max - 1] = '\0';
 }
 
 void strip_bytes(int n)
 {
-    byte tmp8u;
-    while (n--) rd_byte(&tmp8u);
+	byte tmp8u;
+	while (n--) rd_byte(&tmp8u);
 }
 
 void pad_bytes(int n)
 {
-    while (n--) wr_byte(0);
+	while (n--) wr_byte(0);
 }
 
 
-
-
-/*** ****/
-
+/*** Savefile saving functions ***/
 
 static bool try_save(ang_file *file)
 {
-    byte savefile_head[SAVEFILE_HEAD_SIZE];
-    size_t i, pos;
+	byte savefile_head[SAVEFILE_HEAD_SIZE];
+	size_t i, pos;
 
-    /* Start off the buffer */
-    buffer = mem_alloc(BUFFER_INITIAL_SIZE);
-    buffer_size = BUFFER_INITIAL_SIZE;
+	/* Start off the buffer */
+        buffer = mem_alloc(BUFFER_INITIAL_SIZE);
+        buffer_size = BUFFER_INITIAL_SIZE;
 
-    for (i = 0; i < N_ELEMENTS(savefile_blocks); i++)
-    {
-	buffer_pos = 0;
-	buffer_check = 0;
+        for (i = 0; i < N_ELEMENTS(savers); i++)
+        {
+                buffer_pos = 0;
+                buffer_check = 0;
 
-	savefile_blocks[i].saver();
+                savers[i].save();
 
-	/* 16-byte block name */
-	pos = my_strcpy((char *)savefile_head,
-			savefile_blocks[i].name,
-			sizeof savefile_head);
-	while (pos < 16)
-	    savefile_head[pos++] = 0;
+                /* 16-byte block name */
+                pos = my_strcpy((char *)savefile_head,
+                                savers[i].name,
+                                sizeof savefile_head);
+                while (pos < 16)
+                        savefile_head[pos++] = 0;
 
-	/* 4-byte block version */
-	savefile_head[pos++] = (savefile_blocks[i].cur_ver & 0xFF);
-	savefile_head[pos++] = ((savefile_blocks[i].cur_ver >> 8) & 0xFF);
-	savefile_head[pos++] = ((savefile_blocks[i].cur_ver >> 16) & 0xFF);
-	savefile_head[pos++] = ((savefile_blocks[i].cur_ver >> 24) & 0xFF);
+#define SAVE_U32B(v)    \
+                savefile_head[pos++] = (v & 0xFF); \
+                savefile_head[pos++] = ((v >> 8) & 0xFF); \
+                savefile_head[pos++] = ((v >> 16) & 0xFF); \
+                savefile_head[pos++] = ((v >> 24) & 0xFF);
 
-	/* 4-byte block size */
-	savefile_head[pos++] = (buffer_pos & 0xFF);
-	savefile_head[pos++] = ((buffer_pos >> 8) & 0xFF);
-	savefile_head[pos++] = ((buffer_pos >> 16) & 0xFF);
-	savefile_head[pos++] = ((buffer_pos >> 24) & 0xFF);
+                SAVE_U32B(savers[i].version);
+                SAVE_U32B(buffer_pos);
+                SAVE_U32B(buffer_check);
 
-	/* 4-byte block checksum */
-	savefile_head[pos++] = (buffer_check & 0xFF);
-	savefile_head[pos++] = ((buffer_check >> 8) & 0xFF);
-	savefile_head[pos++] = ((buffer_check >> 16) & 0xFF);
-	savefile_head[pos++] = ((buffer_check >> 24) & 0xFF);
+                assert(pos == SAVEFILE_HEAD_SIZE);
 
-	assert(pos == SAVEFILE_HEAD_SIZE);
+		file_write(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+		file_write(file, (char *)buffer, buffer_pos);
 
-	file_write(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
-
-	file_write(file, (char *)buffer, buffer_pos);
-
-	/* pad to 4 byte multiples */
-	if (buffer_pos % 4)
-	    file_write(file, "xxx", 4 - (buffer_pos % 4));
-    }
-
-    mem_free(buffer);
-
-    return TRUE;
-}
-
-
-static bool try_load(ang_file *file)
-{
-    byte savefile_head[SAVEFILE_HEAD_SIZE];
-    u32b block_version, block_size, block_checksum;
-
-    while (TRUE)
-    {
-	size_t i;
-	size_t size;
-
-	/* Load in the next header */
-	size = file_read(file,
-			 (char *)savefile_head, SAVEFILE_HEAD_SIZE);
-
-	/* If nothing was read, that's the end of the file */
-	if (size == 0) break;
-
-	assert(size == SAVEFILE_HEAD_SIZE);
-
-	/* 16-byte block name, null-terminated */
-	assert(savefile_head[15] == '\0');
-
-	/* Determine the block ID */
-	for (i = 0; i < N_ELEMENTS(savefile_blocks); i++)
-	{
-	    if (strncmp((char *) savefile_head,
-			savefile_blocks[i].name,
-			sizeof savefile_blocks[i].name) == 0)
-		break;
+		/* pad to 4 byte multiples */
+		if (buffer_pos % 4)
+			file_write(file, "xxx", 4 - (buffer_pos % 4));
 	}
-	assert(i < N_ELEMENTS(savefile_blocks));
 
-
-	/* 4-byte block version */
-	block_version = ((u32b) savefile_head[16]) |
-	    ((u32b) savefile_head[17] << 8) |
-	    ((u32b) savefile_head[18] << 16) |
-	    ((u32b) savefile_head[19] << 24);
-
-	/* 4-byte block size */
-	block_size = ((u32b) savefile_head[20]) |
-	    ((u32b) savefile_head[21] << 8) |
-	    ((u32b) savefile_head[22] << 16) |
-	    ((u32b) savefile_head[23] << 24);
-
-	/* 4-byte block checksum */
-	block_checksum = ((u32b) savefile_head[24]) |
-	    ((u32b) savefile_head[25] << 8) |
-	    ((u32b) savefile_head[26] << 16) |
-	    ((u32b) savefile_head[27] << 24);
-
-	/* pad to 4 bytes */
-	if (block_size % 4)
-	    block_size += 4 - (block_size % 4);
-
-	/* Read stuff in */
-	buffer = mem_alloc(block_size);
-	buffer_size = block_size;
-	buffer_pos = 0;
-	buffer_check = 0;
-
-	size = file_read(file, (char *) buffer, block_size);
-	assert(size == block_size);
-
-	/* Try loading */
-	if (savefile_blocks[i].loader(block_version))
-	    return -1;
-
-/*		assert(buffer_check == block_checksum); */
 	mem_free(buffer);
-    }
 
-    return 0;
+	return TRUE;
 }
-
-
 
 
 /*
@@ -374,182 +361,191 @@ static bool try_load(ang_file *file)
  */
 bool savefile_save(const char *path)
 {
-    ang_file *file;
+        ang_file *file;
+        int count = 0;
+        char new_savefile[1024];
+        char old_savefile[1024];
 
-    char new_savefile[1024];
-    char old_savefile[1024];
+        /* New savefile */
+        strnfmt(old_savefile, sizeof(old_savefile), "%s%u.old", path,Rand_simple(1000000));
+        while (file_exists(old_savefile) && (count++ < 100)) {
+                strnfmt(old_savefile, sizeof(old_savefile), "%s%u%u.old", path,Rand_simple(1000000),count);
+        }
+        count = 0;
+        /* Make sure that the savefile doesn't already exist */
+        /*safe_setuid_grab();
+        file_delete(new_savefile);
+        file_delete(old_savefile);
+        safe_setuid_drop();*/
 
-    /* New savefile */
-    strnfmt(new_savefile, sizeof(new_savefile), "%s.new", path);
-    strnfmt(old_savefile, sizeof(old_savefile), "%s.old", path);
+        /* Open the savefile */
+        safe_setuid_grab();
+        strnfmt(new_savefile, sizeof(new_savefile), "%s%u.new", path,Rand_simple(1000000));
+        while (file_exists(new_savefile) && (count++ < 100)) {
+                strnfmt(new_savefile, sizeof(new_savefile), "%s%u%u.new", path,Rand_simple(1000000),count);
+        }
+        file = file_open(new_savefile, MODE_WRITE, FTYPE_SAVE);
+        safe_setuid_drop();
 
-    /* Make sure that the savefile doesn't already exist */
-    safe_setuid_grab();
-    file_delete(new_savefile);
-    file_delete(old_savefile);
-    safe_setuid_drop();
-
-    /* Open the savefile */
-    safe_setuid_grab();
-    file = file_open(new_savefile, MODE_WRITE, FTYPE_SAVE);
-    safe_setuid_drop();
-
-    if (file)
-    {
-	file_write(file, (char *) &savefile_magic, 4);
-	file_write(file, (char *) &savefile_name, 4);
-
-	character_saved = try_save(file);
-	file_close(file);
-    }
-
-    if (character_saved)
-    {
-	bool err = FALSE;
-
-	safe_setuid_grab();
-
-	if (file_exists(savefile) && !file_move(savefile, old_savefile))
-	    err = TRUE;
-
-	if (!err)
+	if (file)
 	{
-	    if (!file_move(new_savefile, savefile))
-		err = TRUE;
+		file_write(file, (char *) &savefile_magic, 4);
+		file_write(file, (char *) &savefile_name, 4);
 
-	    if (err)
-		file_move(old_savefile, savefile);
-	    else
-		file_delete(old_savefile);
+		character_saved = try_save(file);
+		file_close(file);
 	}
 
-	safe_setuid_drop();
+	if (character_saved)
+	{
+		bool err = FALSE;
 
-	return err ? FALSE : TRUE;
-    }
+		safe_setuid_grab();
 
-    /* Delete temp file */
-    safe_setuid_grab();
-    file_delete(new_savefile);
-    safe_setuid_drop();
+		if (file_exists(savefile) && !file_move(savefile, old_savefile))
+			err = TRUE;
 
-    return FALSE;
+		if (!err)
+		{
+			if (!file_move(new_savefile, savefile))
+				err = TRUE;
+
+			if (err)
+				file_move(old_savefile, savefile);
+			else
+				file_delete(old_savefile);
+		} 
+
+		safe_setuid_drop();
+
+                return err ? FALSE : TRUE;
+        }
+
+        /* Delete temp file if the save failed */
+        if (file)
+        {
+                /* file is no longer valid, but it still points to a non zero
+                 * value if the file was created above */
+                safe_setuid_grab();
+                file_delete(new_savefile);
+                safe_setuid_drop();
+        }
+        return FALSE;
 }
 
 
 
-/*
- * Attempt to Load a "savefile"
- *
- * On multi-user systems, you may only "read" a savefile if you will be
- * allowed to "write" it later, this prevents painful situations in which
- * the player loads a savefile belonging to someone else, and then is not
- * allowed to save his game when he quits.
- *
- * We return "TRUE" if the savefile was usable, and we set the
- * flag "character_loaded" if a real, living, character was loaded.
- *
- * Note that we always try to load the "current" savefile, even if
- * there is no such file, so we must check for "empty" savefile names.
+/*** Savefiel loading functions ***/
+
+static bool try_load(ang_file *f)
+{
+        byte savefile_head[SAVEFILE_HEAD_SIZE];
+        u32b block_version, block_size;
+        char *block_name;
+
+        while (TRUE)
+        {
+                size_t i;
+                int (*loader)(void) = NULL;
+
+                /* Load in the next header */
+                size_t size = file_read(f, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+                if (!size)
+                        break;
+
+                if (size != SAVEFILE_HEAD_SIZE || savefile_head[15] != 0) {
+                        note("Savefile is corrupted -- block header mangled.");
+                        return FALSE;
+                }
+
+#define RECONSTRUCT_U32B(from) \
+                ((u32b) savefile_head[from]) | \
+                ((u32b) savefile_head[from+1] << 8) | \
+                ((u32b) savefile_head[from+2] << 16) | \
+                ((u32b) savefile_head[from+3] << 24);
+
+                block_name = (char *) savefile_head;
+                block_version = RECONSTRUCT_U32B(16);
+                block_size = RECONSTRUCT_U32B(20);
+
+                /* pad to 4 bytes */
+                if (block_size % 4)
+                        block_size += 4 - (block_size % 4);
+
+                /* Find the right loader */
+                for (i = 0; i < N_ELEMENTS(loaders); i++) {
+                        if (streq(block_name, loaders[i].name) &&
+                                        block_version == loaders[i].version) {
+                                loader = loaders[i].load;
+                        }
+                }
+
+                if (!loader) {
+                        /* No loader found */
+                        note("Savefile too old.  Try importing it into an older Angband first.");
+                        return FALSE;
+                }
+
+                /* Allocate space for the buffer */
+                buffer = mem_alloc(block_size);
+                buffer_pos = 0;
+                buffer_check = 0;
+
+                buffer_size = file_read(f, (char *) buffer, block_size);
+                if (buffer_size != block_size) {
+                        note("Savefile is corrupted -- not enough bytes.");
+                        mem_free(buffer);
+                        return FALSE;
+                }
+
+                /* Try loading */
+                if (loader() != 0) {
+                        note("Savefile is corrupted.");
+                        mem_free(buffer);
+                        return FALSE;
+                }
+
+                mem_free(buffer);
+        }
+
+        /* Still alive */
+        if (p_ptr->chp >= 0)
+        {
+		/* Reset cause of death */
+                my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
+        }
+
+        return TRUE;
+}
+
+
+/**
+ * Load a savefile.
  */
 bool savefile_load(const char *path)
 {
-    byte sf_major = 0;
-    byte sf_minor = 0;
-    byte sf_patch = 0;
-    byte sf_extra = 0;
-    ang_file *fh;
-    byte head[8];
+	byte head[8];
+	bool ok = TRUE;
 
-    const char *what = "generic";
-    errr err = 0;
+	ang_file *f = file_open(path, MODE_READ, -1);
+	if (f) {
+		if (file_read(f, (char *) &head, 8) == 8 &&
+				memcmp(&head[0], savefile_magic, 4) == 0 &&
+				memcmp(&head[4], savefile_name, 4) == 0) {
+			if (!try_load(f)) {
+				ok = FALSE;
+				note("Failed loading savefile.");
+			}
+		} else {
+			ok = FALSE;
+			note("Savefile is corrupted -- incorrect file header.");
+		}
 
-    /* Clear screen */
-    Term_clear();
-
-
-    fh = file_open(savefile, MODE_READ, -1);
-    if (!fh)
-    {
-	err = -1;
-	what = "Cannot open savefile";
-    }
-
-    /* Process file */
-    if (!err)
-    {
-
-	/* Read version / ID marker */
-	if (file_read(fh, (char *) &head, 8) != 8)
-	{
-	    file_close(fh);
-
-	    what = "Cannot read savefile";
-	    err = -1;
+		file_close(f);
+	} else {
+		ok = FALSE;
+		note("Couldn't open savefile.");
 	}
 
-	sf_major = head[0];
-	sf_minor = head[1];
-	sf_patch = head[2];
-	sf_extra = head[3];
-    }
-
-    /* Process file */
-    if (!err)
-    {
-	if (sf_major == savefile_magic[0] && sf_minor == savefile_magic[1] &&
-	    sf_patch == savefile_magic[2] && sf_extra == savefile_magic[3])
-	{
-	    if (strncmp((char *) &head[4], SAVEFILE_NAME, 4) != 0)
-	    {
-		err = -1;
-		what = "Savefile from different variant";
-	    }
-	    else
-	    {
-		err = try_load(fh);
-		file_close(fh);
-		if (!err) what = "cannot read savefile";
-	    }
-	}
-	else 
-	{
-	    file_close(fh);
-	    err = rd_savefile_old();
-	    if (err) what = "Cannot parse savefile";
-	}
-    }
-
-    /* Paranoia */
-    if (!err)
-    {
-	/* Invalid turn */
-	if (!turn) err = -1;
-
-	/* Message (below) */
-	if (err) what = "Broken savefile";
-    }
-
-
-    /* Okay */
-    if (!err)
-    {
-	/* Still alive */
-	if (p_ptr->chp >= 0)
-	{
-	    /* Reset cause of death */
-	    my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
-	}
-
-	/* Success */
-	return (TRUE);
-    }
-
-    /* Message */
-    msg("Error (%s) reading %d.%d.%d savefile.",
-	       what, sf_major, sf_minor, sf_patch);
-    message_flush();
-
-    /* Oops */
-    return (FALSE);
+	return ok;
 }

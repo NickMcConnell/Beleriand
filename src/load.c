@@ -282,7 +282,7 @@ static void rd_trap(trap_type *t_ptr)
 /**
  * Read RNG state (added in 2.8.0)
  */
-int rd_randomizer(u32b version)
+int rd_randomizer(void)
 {
     int i;
     u32b noop;
@@ -329,7 +329,7 @@ int rd_randomizer(u32b version)
  * The window options are stored in the same way, but note that each
  * window gets 32 options, and their order is fixed by certain defines.
  */
-int rd_options(u32b version)
+int rd_options(void)
 {
     int i, n;
   
@@ -450,7 +450,7 @@ int rd_options(u32b version)
 /**
  * Read the saved messages
  */
-int rd_messages(u32b version)
+int rd_messages(void)
 {
   int i;
   char buf[128];
@@ -486,7 +486,7 @@ int rd_messages(u32b version)
 /**
  * Read the monster lore
  */
-int rd_monster_memory(u32b version)
+int rd_monster_memory(void)
 {
     byte tmp8u, rf_size, rsf_size, monster_blow_max;
     int r_idx;
@@ -590,7 +590,7 @@ int rd_monster_memory(u32b version)
     return (0);
 }
 
-int rd_object_memory(u32b version)
+int rd_object_memory(void)
 {
     int i;
     u16b tmp16u;
@@ -710,7 +710,7 @@ int rd_object_memory(u32b version)
     return 0;
 }
 
-int rd_quests(u32b version)
+int rd_quests(void)
 {
     int i;
     byte tmp8u;
@@ -738,7 +738,7 @@ int rd_quests(u32b version)
     return 0;
 }
 
-int rd_artifacts(u32b version)
+int rd_artifacts(void)
 {
     int i, k;
     byte tmp8u;
@@ -891,7 +891,7 @@ int rd_artifacts(u32b version)
 /*
  * Read the "extra" information
  */
-int rd_player(u32b version)
+int rd_player(void)
 {
     int i;
 
@@ -1113,7 +1113,7 @@ int rd_player(u32b version)
 /**
  * Read squelch and autoinscription submenu for all known objects
  */
-int rd_squelch(u32b version)
+int rd_squelch(void)
 {
     int i;
     byte tmp8u;
@@ -1172,7 +1172,7 @@ int rd_squelch(u32b version)
 }
 
 
-int rd_misc(u32b version)
+int rd_misc(void)
 {
 	byte tmp8u;
 	u32b tmp32u;
@@ -1205,7 +1205,7 @@ int rd_misc(u32b version)
 	return 0;
 }
 
-int rd_player_hp(u32b version)
+int rd_player_hp(void)
 {
 	int i;
 	u16b tmp16u;
@@ -1228,7 +1228,7 @@ int rd_player_hp(u32b version)
 }
 
 
-int rd_player_spells(u32b version)
+int rd_player_spells(void)
 {
     int i;
     u16b tmp16u;
@@ -1259,12 +1259,12 @@ int rd_player_spells(u32b version)
     return (0);
 }
 
-int rd_randarts(u32b version)
+int rd_randarts(void)
 {
     return 0;
 }
 
-int rd_inventory(u32b version)
+int rd_inventory(void)
 {
     int slot = 0;
     byte all_inven_total;
@@ -1359,7 +1359,7 @@ int rd_inventory(u32b version)
 /**
  * Read a store
  */
-int rd_stores(u32b version)
+int rd_stores(void)
 {
     int i;
     byte num, max_stores, store_inven_max, store_choices;
@@ -1458,7 +1458,7 @@ int rd_stores(u32b version)
  * DUNGEON_HGT by DUNGEON_WID, and any dungeon with another
  * size will be silently discarded by this routine.
  */
-int rd_dungeon(u32b version)
+int rd_dungeon(void)
 {
     int i, n, y, x;
   
@@ -1623,7 +1623,7 @@ int rd_dungeon(u32b version)
   
 /*** Objects ***/
   
-int rd_objects(u32b version)
+int rd_objects(void)
 {
     int i;
     u16b limit;
@@ -1702,7 +1702,7 @@ int rd_objects(u32b version)
   
 /*** Monsters ***/
   
-int rd_monsters(u32b version)
+int rd_monsters(void)
 {
     int i;
     u16b limit;
@@ -1807,7 +1807,7 @@ int rd_monsters(u32b version)
  *
  * XXX XXX XXX This is such a nasty hack it hurts.
  */
-int rd_ghost(u32b version)
+int rd_ghost(void)
 {
     char buf[64];
   
@@ -1825,7 +1825,7 @@ int rd_ghost(u32b version)
 }
 
 
-int rd_history(u32b version)
+int rd_history(void)
 {
     u32b tmp32u;
     size_t i;
@@ -1854,7 +1854,7 @@ int rd_history(u32b version)
     return 0;
 }
 
-int rd_traps(u32b version)
+int rd_traps(void)
 {
     int i;
     u32b tmp32u;
