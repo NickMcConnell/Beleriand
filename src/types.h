@@ -1401,10 +1401,11 @@ struct hint
  * Descriptor of a chunk of the world
  */
 typedef struct world_chunk{
-    byte *chunk;   /**< Pointer to mini-savefile */
-    u16b age;      /**< Time in turns since this chunk was created */
-    u16b region;   /**< Region the chunk is from */
-    byte y_pos;    /**< y position in the region */
-    byte x_pos;    /**< x position in the region */
-    byte z_pos;    /**< depth of the chunk */
+    byte *chunk;       /**< Pointer to mini-savefile */
+    u16b age;          /**< Time in turns since this chunk was created */
+    u16b region;       /**< Region the chunk is from */
+    byte y_pos;        /**< y position in the region */
+    byte x_pos;        /**< x position in the region */
+    byte z_pos;        /**< depth of the chunk */
+    byte adjacent[6];  /**< Adjacent (NESWUD) chunks */
 } world_chunk;

@@ -88,6 +88,19 @@
 
 
 /**
+ * Number of grids in each block (vertically)
+ * Probably hard-coded to 11, see "generate.c"
+ */
+#define CHUNK_HGT	22
+
+/**
+ * Number of grids in each block (horizontally)
+ * Probably hard-coded to 11, see "generate.c"
+ */
+#define CHUNK_WID	66
+
+
+/**
  * Number of grids in each panel (vertically)
  */
 #define PANEL_HGT	((int)(BLOCK_HGT / tile_height))
@@ -2590,7 +2603,7 @@ extern int PlayerUID;
 #define VALLEY                 8
 #define MOUNTAINTOP            9
 
-/* Fields for stage_map array */
+/* Fields for stage array */
 #define LOCALITY               0
 #define DEPTH                  1
 #define NORTH                  2
@@ -2600,6 +2613,14 @@ extern int PlayerUID;
 #define UP                     6
 #define DOWN                   7
 #define STAGE_TYPE             8
+
+/* Directions for chunk array 
+#define NORTH                  0
+#define EAST                   1
+#define SOUTH                  2
+#define WEST                   3
+#define UP                     4
+#define DOWN                   5 */
 
 /*
  * Mouse click region names

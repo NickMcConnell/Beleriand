@@ -847,12 +847,6 @@ void wr_stores(void)
 
 
 /**
- * The cave grid flags that get saved in the savefile
- */
-#define IMPORTANT_FLAGS (CAVE_MARK | CAVE_GLOW | CAVE_ICKY | CAVE_ROOM)
-
-
-/**
  * Write the current dungeon
  */
 void wr_dungeon(void)
