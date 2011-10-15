@@ -533,7 +533,6 @@ s16b (*cave_o_idx)[DUNGEON_WID];
  */
 s16b (*cave_m_idx)[DUNGEON_WID];
 
-
 /**
  * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "cost" values
  * Used to simulate character noise.
