@@ -52,7 +52,7 @@
 typedef bitflag grid_256[256][CAVE_SIZE];
 
 /**
- * An array of DUNGEON_WID byte's
+ * An array of DUNGEON_WID bytes
  */
 typedef byte byte_wid[DUNGEON_WID];
 
@@ -60,6 +60,21 @@ typedef byte byte_wid[DUNGEON_WID];
  * An array of DUNGEON_WID s16b's
  */
 typedef s16b s16b_wid[DUNGEON_WID];
+
+/**
+ * An array of CHUNK_WID cave bitflag arrays
+ */
+typedef bitflag grid_chunk[CHUNK_WID][CAVE_SIZE];
+
+/**
+ * An array of CHUNK_WID bytes
+ */
+typedef byte byte_chunk[chunk_WID];
+
+/**
+ * An array of CHUNK_WID s16b's
+ */
+typedef s16b s16b_chunk[DUNGEON_WID];
 
 /**
  * An array of NUM_STAGES u16b's
@@ -1401,11 +1416,21 @@ struct hint
  * Descriptor of a chunk of the world
  */
 typedef struct world_chunk{
-    byte *chunk;       /**< Pointer to mini-savefile */
+    u16b ch_idx;       /**< Index of this chunk */
     u16b age;          /**< Time in turns since this chunk was created */
     u16b region;       /**< Region the chunk is from */
     byte y_pos;        /**< y position in the region */
     byte x_pos;        /**< x position in the region */
     byte z_pos;        /**< depth of the chunk */
     byte adjacent[6];  /**< Adjacent (NESWUD) chunks */
+    byte (*cave_feat)[CHUNK_WID];
+    s16b (*cave_o_idx)[CHUNK_WID];
+    s16b (*cave_m_idx)[CHUNK_WID];
+    bitflag (*cave_info)[CHUNK_WID][CAVE_SIZE];
+    trap_type *trap_list;    /**< Array of live traps */
+    object_type *o_list;     /**< Array of live objects */
+    monster_type *m_list;    /**< Array of live monsters */
+    s16b trap_cnt;     /**< Number of live traps */
+    s16b o_cnt;	       /**< Number of live objects */
+    s16b m_cnt;	       /**< Number of live monsters */
 } world_chunk;
