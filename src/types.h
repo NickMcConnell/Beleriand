@@ -69,7 +69,7 @@ typedef bitflag grid_chunk[CHUNK_WID][CAVE_SIZE];
 /**
  * An array of CHUNK_WID bytes
  */
-typedef byte byte_chunk[chunk_WID];
+typedef byte byte_chunk[CHUNK_WID];
 
 /**
  * An array of CHUNK_WID s16b's
