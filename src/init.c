@@ -3465,69 +3465,73 @@ static errr init_other(void)
     p_ptr->inventory = C_ZNEW(ALL_INVEN_TOTAL, object_type);
 
 
-  /*** Prepare the stores ***/
+    /*** Prepare the world chunk array ***/
+
+    chunk_list = (world_chunk **)mem_alloc(MAX_CHUNKS * sizeof(world_chunk*));
   
-  /* Allocate the stores */
-  store = C_ZNEW(MAX_STORES, store_type);
+    /*** Prepare the stores ***/
+    
+    /* Allocate the stores */
+    store = C_ZNEW(MAX_STORES, store_type);
   
-  for (n = 0; n < MAX_STORES; n++)
+    for (n = 0; n < MAX_STORES; n++)
     {
-      /* Access the store */
-      store_type *st_ptr = &store[n];
+	/* Access the store */
+	store_type *st_ptr = &store[n];
       
-      /* Set the type */
-      st_ptr->type = type_of_store[n];
+	/* Set the type */
+	st_ptr->type = type_of_store[n];
       
-      /* Assume full stock */
-      st_ptr->stock_size = STORE_INVEN_MAX;
+	/* Assume full stock */
+	st_ptr->stock_size = STORE_INVEN_MAX;
 
-      /* Allocate the stock */
-      st_ptr->stock = C_ZNEW(st_ptr->stock_size, object_type);
+	/* Allocate the stock */
+	st_ptr->stock = C_ZNEW(st_ptr->stock_size, object_type);
       
-      /* No table for the black market or home */
-      if ((st_ptr->type == STORE_BLACKM) || 
-          (st_ptr->type == STORE_HOME)) continue;
+	/* No table for the black market or home */
+	if ((st_ptr->type == STORE_BLACKM) || 
+	    (st_ptr->type == STORE_HOME)) continue;
       
-      /* Assume full table */
-      st_ptr->table_size = STORE_CHOICES;
+	/* Assume full table */
+	st_ptr->table_size = STORE_CHOICES;
 
-      /* Nothing there yet */
-      st_ptr->table_num = 0;
+	/* Nothing there yet */
+	st_ptr->table_num = 0;
       
-      /* Allocate the stock */
-      st_ptr->table = C_ZNEW(st_ptr->table_size, s16b);
+	/* Allocate the stock */
+	st_ptr->table = C_ZNEW(st_ptr->table_size, s16b);
       
-      /* Scan the choices */
-      for (k = 0; k < STORE_CHOICES; k++)
+	/* Scan the choices */
+	for (k = 0; k < STORE_CHOICES; k++)
         {
-          int k_idx;
-          int tv, sv;
+	    int k_idx;
+	    int tv, sv;
           
-          /* Cut short for the merchant */
-          if ((st_ptr->type == STORE_MERCH) && (k >= STORE_CHOICES - 8))
+	    /* Cut short for the merchant */
+	    if ((st_ptr->type == STORE_MERCH) && (k >= STORE_CHOICES - 8))
             {
-              st_ptr->table[st_ptr->table_num++] = 0;
-              continue;
+		st_ptr->table[st_ptr->table_num++] = 0;
+		continue;
             }     
           
-          /* Extract the tval/sval codes */
-          tv = store_table[st_ptr->type][k][0];
-          sv = store_table[st_ptr->type][k][1];
+	    /* Extract the tval/sval codes */
+	    tv = store_table[st_ptr->type][k][0];
+	    sv = store_table[st_ptr->type][k][1];
           
-          /* Look for it */
-          for (k_idx = 1; k_idx < z_info->k_max; k_idx++)
+	    /* Look for it */
+	    for (k_idx = 1; k_idx < z_info->k_max; k_idx++)
             {
-              object_kind *k_ptr = &k_info[k_idx];
+		object_kind *k_ptr = &k_info[k_idx];
               
-              /* Found a match */
-              if ((k_ptr->tval == tv) && (k_ptr->sval == sv)) break;
+		/* Found a match */
+		if ((k_ptr->tval == tv) && (k_ptr->sval == sv)) break;
             }
           
-          /* Catch errors */
-          if (k_idx == z_info->k_max) continue;
+	    /* Catch errors */
+	    if (k_idx == z_info->k_max) continue;
           
-          /* Add that item index to the table */
-          st_ptr->table[st_ptr->table_num++] = k_idx;
+	    /* Add that item index to the table */
+	    st_ptr->table[st_ptr->table_num++] = k_idx;
         }
     }
   
@@ -4310,6 +4314,8 @@ void cleanup_angband(void)
 
     /* Free the stores */
     FREE(store);
+
+    mem_free(chunk_list);
 
     /* Free the quest list */
     FREE(q_list);

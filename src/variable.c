@@ -593,6 +593,11 @@ monster_lore *l_list;
 quest *q_list;
 
 /**
+ * Array[MAX_CHUNKS] of pointers to world chunks
+ */
+world_chunk **chunk_list;
+
+/**
  * Array[MAX_STORES] of stores
  */
 store_type *store;

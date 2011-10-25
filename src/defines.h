@@ -283,6 +283,11 @@
 #define NUM_STAGES      412
 
 /**
+ * Maximum number of live world chunks.
+ */
+#define MAX_CHUNKS      256
+
+/**
  * Maximum size of the "view" array (see "cave.c")
  * Note that the "view radius" will NEVER exceed 20, and even if the "view"
  * was octagonal, we would never require more than 1520 entries in the array.

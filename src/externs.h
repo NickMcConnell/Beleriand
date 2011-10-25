@@ -166,6 +166,7 @@ extern object_type *o_list;
 extern monster_type *m_list;
 extern monster_lore *l_list;
 extern quest *q_list;
+extern world_chunk **chunk_list;
 extern store_type *store;
 extern const char *** name_sections;
 extern object_type *inventory;
