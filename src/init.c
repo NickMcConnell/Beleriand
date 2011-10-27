@@ -3467,7 +3467,7 @@ static errr init_other(void)
 
     /*** Prepare the world chunk array ***/
 
-    chunk_list = (world_chunk **)mem_alloc(MAX_CHUNKS * sizeof(world_chunk*));
+    chunk_list = (world_chunk **)mem_zalloc(MAX_CHUNKS * sizeof(world_chunk*));
   
     /*** Prepare the stores ***/
     

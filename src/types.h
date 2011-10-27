@@ -74,7 +74,7 @@ typedef byte byte_chunk[CHUNK_WID];
 /**
  * An array of CHUNK_WID s16b's
  */
-typedef s16b s16b_chunk[DUNGEON_WID];
+typedef s16b s16b_chunk[CHUNK_WID];
 
 /**
  * An array of NUM_STAGES u16b's
@@ -103,7 +103,6 @@ typedef struct druid_blows druid_blows;
 typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;
 typedef struct color_type color_type;
-
 
 /**** Available structs ****/
 
@@ -1422,7 +1421,7 @@ typedef struct world_chunk{
     byte y_pos;        /**< y position in the region */
     byte x_pos;        /**< x position in the region */
     byte z_pos;        /**< depth of the chunk */
-    byte adjacent[6];  /**< Adjacent (NESWUD) chunks */
+    struct world_chunk *adjacent[6];  /**< Adjacent (NESWUD) chunks */
     byte (*cave_feat)[CHUNK_WID];
     s16b (*cave_o_idx)[CHUNK_WID];
     s16b (*cave_m_idx)[CHUNK_WID];
