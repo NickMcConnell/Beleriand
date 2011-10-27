@@ -23,7 +23,7 @@
 world_chunk *chunk_write(int y_offset, int x_offset, int idx, 
 			 u16b region, byte y_pos, byte x_pos, byte z_pos)
 {
-    size_t i;
+    int i;
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
     int x0 = x_offset * CHUNK_WID;
@@ -51,7 +51,7 @@ world_chunk *chunk_write(int y_offset, int x_offset, int idx,
     new->o_list     = C_ZNEW(z_info->o_max, object_type);
     new->m_list     = C_ZNEW(z_info->m_max, monster_type);
     new->trap_list  = C_ZNEW(z_info->l_max, trap_type);
-    new->trap_cnt = 0;
+    new->trap_max = 0;
     new->o_cnt = 0;
     new->m_cnt = 0;
 
@@ -124,7 +124,7 @@ world_chunk *chunk_write(int y_offset, int x_offset, int idx,
     for (i = 0; i < trap_max; i++)
     {
 	/* Point to this trap */
-	trap_type *t_ptr = &trap_list[new->trap_cnt + 1];
+	trap_type *t_ptr = &trap_list[new->trap_max + 1];
 	trap_type *u_ptr = &new->trap_list[i];
 	int ty = t_ptr->fy;
 	int tx = t_ptr->fx;
@@ -134,7 +134,7 @@ world_chunk *chunk_write(int y_offset, int x_offset, int idx,
 	{
 	    memcpy(u_ptr, t_ptr, sizeof(*t_ptr));
 	    remove_trap(t_ptr->fy, t_ptr->fx, FALSE, i);
-	    new->trap_cnt++;
+	    new->trap_max++;
 	    u_ptr->fy = ty -y0;
 	    u_ptr->fx = tx -x0;
 	}
@@ -178,3 +178,144 @@ void chunk_store(int y_offset, int x_offset, u16b region, byte y_pos,
     chunk_list[idx] = chunk_write(y_offset, x_offset, idx, region, y_pos, 
 				  x_pos, z_pos);
 }
+
+void chunk_read(int idx, int y_offset, int x_offset)
+{
+    int i;
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
+
+    world_chunk *chunk = chunk_list[idx];
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_WID; x++)
+	{
+	    int this_o_idx, next_o_idx, held;
+	    
+	    /* Terrain */
+	    cave_feat[y0 + y][x0 + x] = chunk->cave_feat[y][x];
+	    for (i = 0; i < CAVE_SIZE; i++)		
+		cave_info[y0 + y][x0 + x][i] = chunk->cave_info[y][x][i];
+	    
+	    /* Objects */
+	    held = 0;
+	    if (chunk->cave_o_idx[y][x])
+	    {
+		for (this_o_idx = chunk->cave_o_idx[y][x]; this_o_idx; 
+		     this_o_idx = next_o_idx) 
+		{
+		    object_type *o_ptr = &chunk->o_list[this_o_idx];
+		    object_type *j_ptr = NULL;
+		    int o_idx; 
+
+		    o_idx = o_pop();
+
+		    /* Hope this never happens */
+		    if (!o_idx) break;
+		
+		    j_ptr = &o_list[o_idx];
+		    object_copy(j_ptr, o_ptr);
+		    j_ptr->iy = y + y0;
+		    j_ptr->ix = x + x0;
+
+		    if (o_ptr->held_m_idx)
+		    { 
+			if (!held) held = o_idx;
+		    }
+
+		    next_o_idx = o_ptr->next_o_idx;
+		    if (next_o_idx) 
+		    {
+			o_idx = o_pop();
+			if (!o_idx) break;
+			j_ptr->next_o_idx = o_idx;
+		    }
+		}
+	    }
+
+	    /* Monsters */
+	    if (chunk->cave_m_idx[y][x] > 0)
+	    {
+		monster_type *m_ptr = &chunk->m_list[cave_m_idx[y][x]];
+		monster_type *n_ptr = NULL;
+		int m_idx;
+
+		m_idx = m_pop();
+
+		/* Hope this never happens */
+		if (!m_idx) break;
+
+		n_ptr = &m_list[m_idx];
+		memcpy(n_ptr, m_ptr, sizeof(*m_ptr));
+		n_ptr->fy = y + y0;
+		n_ptr->fx = x + x0;
+		n_ptr->hold_o_idx = held;
+		o_list[held].held_m_idx = m_idx;
+
+		n_ptr->ty = m_ptr->ty + y0;
+		n_ptr->tx = m_ptr->tx + x0;
+		
+		n_ptr->y_terr = m_ptr->y_terr + y0;
+		n_ptr->x_terr = m_ptr->x_terr + x0;
+	    }
+	}
+    }
+	    
+    /* Traps */
+    for (i = 0; i < chunk->trap_max; i++)
+    {
+	trap_type *t_ptr = &chunk->trap_list[i];
+	size_t j;
+	
+	/* Scan the entire trap list */
+	for (j = 1; j < z_info->l_max; j++)
+	{
+	    /* Point to this trap */
+	    trap_type *u_ptr = &trap_list[j];
+
+	    /* This space is available */
+	    if (!u_ptr->t_idx)
+	    {
+		memcpy(u_ptr, t_ptr, sizeof(*t_ptr));
+
+		/* Adjust trap count if necessary */
+		if (i + 1 > trap_max) trap_max = i + 1;
+
+		/* We created a rune */
+		if (trf_has(u_ptr->flags, TRF_RUNE)) 
+		    num_runes_on_level[t_ptr->t_idx - 1]++;
+
+		/* We created a monster trap */
+		if (trf_has(u_ptr->flags, TRF_M_TRAP)) 
+		    num_trap_on_level++;
+
+		/* Toggle on the trap marker */
+		cave_on(cave_info[y + y0][x + x0], CAVE_TRAP);
+
+		break;
+	    }
+	}
+    }
+
+    /* Free everything */
+    FREE(chunk->cave_info);
+    FREE(chunk->cave_feat);
+    FREE(chunk->cave_o_idx);
+    FREE(chunk->cave_m_idx);
+    FREE(chunk->o_list);
+    FREE(chunk->m_list);
+    FREE(chunk->trap_list);
+    mem_free(chunk);
+    
+    /* Decrement */
+    chunk_cnt--;
+    if (idx == chunk_max)
+	chunk_max--;
+
+    /* Remove from the list */
+    chunk_list[idx] = NULL;
+}
+

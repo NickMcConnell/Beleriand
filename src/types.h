@@ -1429,7 +1429,7 @@ typedef struct world_chunk{
     trap_type *trap_list;    /**< Array of live traps */
     object_type *o_list;     /**< Array of live objects */
     monster_type *m_list;    /**< Array of live monsters */
-    s16b trap_cnt;     /**< Number of live traps */
+    s16b trap_max;     /**< Number of live traps */
     s16b o_cnt;	       /**< Number of live objects */
     s16b m_cnt;	       /**< Number of live monsters */
 } world_chunk;

@@ -118,7 +118,6 @@ extern s16b o_cnt;
 extern s16b m_max;
 extern s16b m_cnt;
 extern s16b trap_max;
-extern s16b trap_cnt;
 extern u16b chunk_max;
 extern u16b chunk_cnt;
 extern u16b group_id;

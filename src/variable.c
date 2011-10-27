@@ -122,7 +122,6 @@ s16b m_max = 1;			/* Number of allocated monsters */
 s16b m_cnt = 0;			/* Number of live monsters */
 
 s16b trap_max = 1;		/* Number of allocated traps */
-s16b trap_cnt = 0;		/* Number of live traps */
 
 u16b chunk_max = 1;		/* Number of allocated chunks */
 u16b chunk_cnt = 0;		/* Number of live chunks */
