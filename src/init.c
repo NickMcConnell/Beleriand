@@ -4453,6 +4453,8 @@ void cleanup_angband(void)
     mem_free(e_info);
     mem_free(r_info);
     mem_free(c_info);
+    mem_free(v_info);
+    mem_free(region_info);
 
     /* Free the format() buffer */
     vformat_kill();
