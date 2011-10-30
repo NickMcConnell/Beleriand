@@ -372,6 +372,8 @@ static enum parser_error parse_z(struct parser *p) {
 	z->e_max = value;
     else if (streq(label, "R"))
 	z->r_max = value;
+    else if (streq(label, "G"))
+	z->region_max = value;
     else if (streq(label, "V"))
 	z->v_max = value;
     else if (streq(label, "W"))
@@ -2635,6 +2637,97 @@ struct file_parser v_parser = {
     finish_parse_v
 };
 
+static enum parser_error parse_region_n(struct parser *p) {
+    struct world_region *h = parser_priv(p);
+    struct world_region *reg = mem_zalloc(sizeof *reg);
+
+    reg->region_idx = parser_getuint(p, "index");
+    reg->name = string_make(parser_getstr(p, "name"));
+    //reg->message = string_make(parser_getstr(p, "message"));
+    reg->next = h;
+    parser_setpriv(p, reg);
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_region_i(struct parser *p) {
+    struct world_region *region = parser_priv(p);
+
+    if (!region)
+	return PARSE_ERROR_MISSING_RECORD_HEADER;
+    region->danger = parser_getuint(p, "danger");
+    region->scale = parser_getint(p, "scale");
+
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_region_a(struct parser *p) {
+    struct world_region *region = parser_priv(p);
+
+    if (!region)
+	return PARSE_ERROR_MISSING_RECORD_HEADER;
+    region->adjacent[0] = parser_getuint(p, "adj0");
+    region->adjacent[1] = parser_getuint(p, "adj1");
+    region->adjacent[2] = parser_getuint(p, "adj2");
+    region->adjacent[3] = parser_getuint(p, "adj3");
+    region->adjacent[4] = parser_getuint(p, "adj4");
+    region->adjacent[5] = parser_getuint(p, "adj5");
+    region->adjacent[6] = parser_getuint(p, "adj6");
+    region->adjacent[7] = parser_getuint(p, "adj7");
+
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_region_d(struct parser *p) {
+    struct world_region *region = parser_priv(p);
+
+    if (!region)
+	return PARSE_ERROR_MISSING_RECORD_HEADER;
+    region->text = string_append(region->text, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_region(void) {
+    struct parser *p = parser_new();
+    parser_setpriv(p, NULL);
+    parser_reg(p, "N uint index str name", parse_region_n);
+    parser_reg(p, "I uint danger int scale", parse_region_i);
+    parser_reg(p, "A uint adj0 uint adj1 uint adj2 uint adj3 uint adj4 uint adj5 uint adj6 uint adj7", parse_region_a);
+    parser_reg(p, "D str text", parse_region_d);
+    return p;
+}
+
+static errr run_parse_region(struct parser *p) {
+    return parse_file(p, "region");
+}
+
+static errr finish_parse_region(struct parser *p) {
+    struct world_region *region, *n;
+
+    region_info = mem_zalloc(sizeof(*region) * z_info->region_max);
+    for (region = parser_priv(p); region; region = region->next) {
+	if (region->region_idx >= z_info->region_max)
+	    continue;
+	memcpy(&region_info[region->region_idx], region, sizeof(*region));
+    }
+
+    region = parser_priv(p);
+    while (region) {
+	n = region->next;
+	mem_free(region);
+	region = n;
+    }
+
+    parser_destroy(p);
+    return 0;
+}
+
+struct file_parser region_parser = {
+    "region",
+    init_parse_region,
+    run_parse_region,
+    finish_parse_region
+};
+
 static enum parser_error parse_t_n(struct parser *p) {
     struct vault *h = parser_priv(p);
     struct vault *v = mem_zalloc(sizeof *v);
@@ -4190,6 +4283,10 @@ bool init_angband(void)
     if (run_parser(&set_parser)) quit("Cannot initialize set items");
     update_artifact_sets();
   
+    /* Initialize region info */
+    event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (regions)");
+    if (run_parser(&region_parser)) quit("Cannot initialize regions");
+
     /* Initialize vault info */
     event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
     if (run_parser(&v_parser)) quit("Cannot initialize vaults");

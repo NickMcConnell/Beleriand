@@ -130,6 +130,7 @@ typedef struct maxima {
     u16b a_max;		/**< Max size for "a_info[]" */
     u16b e_max;		/**< Max size for "e_info[]" */
     u16b r_max;		/**< Max size for "r_info[]" */
+    u16b region_max;	/**< Max size for "region_info[]" */
     u16b v_max;		/**< Max size for "v_info[]" */
     u16b t_max;		/**< Max size for "t_info[]" */
     u16b p_max;		/**< Max size for "p_info[]" */
@@ -559,6 +560,24 @@ typedef struct vault {
     byte min_lev;	/**< Minimum allowable level, if specified. */
     byte max_lev;	/**< Maximum allowable level, if specified. */
 } vault_type;
+
+
+
+/**
+ * Information about regions
+ */
+typedef struct world_region {
+    struct world_region *next;
+    unsigned int region_idx;
+    char *name;
+    char *message;
+    char *text;
+
+    byte danger;       	           /**< Region danger */
+    byte scale;		           /**< Scaling for region map */
+
+    byte adjacent[MAX_BORDERS];    /**< Indices of adjacent regions*/
+} region_type;
 
 
 

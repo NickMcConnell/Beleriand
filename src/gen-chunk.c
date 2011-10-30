@@ -156,54 +156,6 @@ world_chunk *chunk_write(int y_offset, int x_offset)
 }
 
 
-void chunk_store(int y_offset, int x_offset, u16b region, byte y_pos, 
-		 byte x_pos, byte z_pos)
-{
-    int i;
-    int max = 0, idx = 0;
-
-    /* Too many chunks */
-    if (chunk_cnt + 1 >= MAX_CHUNKS)
-    {
-	/* Find and delete the oldest chunk */
-	for (i = 0; i < MAX_CHUNKS; i++)
-	    if (chunk_list[i]->age > max)
-	    {
-		max = chunk_list[i]->age;
-		idx = i;
-	    }
-
-	chunk_wipe(idx);
-    }
-
-    /* Find the next free slot */
-    if (!idx)
-	for (idx = 0; idx < chunk_max; idx++)
-	    if (!chunk_list[idx]) break;
-    
-    /* Increment the counters */
-    chunk_cnt++;
-    if (idx == chunk_max)
-	chunk_max++;
-
-    /* Set all the values */
-    chunk_list[idx].ch_idx = idx;
-
-    /* Test for persistence */
-    if (p_ptr->danger == 0) 
-	chunk_list[idx].age = 0;
-    else
-	chunk_list[idx].age = 1;
-
-    chunk_list[idx].region = region;
-    chunk_list[idx].y_pos = y_pos;
-    chunk_list[idx].x_pos = x_pos;
-    chunk_list[idx].z_pos = z_pos;
-
-    /* Write the chunk */
-    chunk_list[idx].chunk = chunk_write(y_offset, x_offset);
-}
-
 void chunk_wipe(int idx)
 {
     world_chunk *chunk = chunk_list[idx].chunk;
@@ -227,6 +179,54 @@ void chunk_wipe(int idx)
     chunk_list[idx].chunk = NULL;
 }
 
+
+void chunk_store(int y_offset, int x_offset, u16b region, byte y_pos, 
+		 byte x_pos, byte z_pos)
+{
+    int i;
+    int max = 0, idx = 0;
+
+    /* Too many chunks */
+    if (chunk_cnt + 1 >= MAX_CHUNKS)
+    {
+	/* Find and delete the oldest chunk */
+	for (i = 0; i < MAX_CHUNKS; i++)
+	    if (chunk_list[i].age > max)
+	    {
+		max = chunk_list[i].age;
+		idx = i;
+	    }
+
+	chunk_wipe(idx);
+    }
+
+    /* Find the next free slot */
+    if (!idx)
+	for (idx = 0; idx < chunk_max; idx++)
+	    if (!chunk_list[idx].chunk) break;
+    
+    /* Increment the counters */
+    chunk_cnt++;
+    if (idx == chunk_max)
+	chunk_max++;
+
+    /* Set all the values */
+    chunk_list[idx].ch_idx = idx;
+
+    /* Test for persistence */
+    if (p_ptr->danger == 0) 
+	chunk_list[idx].age = 0;
+    else
+	chunk_list[idx].age = 1;
+
+    chunk_list[idx].region = region;
+    chunk_list[idx].y_pos = y_pos;
+    chunk_list[idx].x_pos = x_pos;
+    chunk_list[idx].z_pos = z_pos;
+
+    /* Write the chunk */
+    chunk_list[idx].chunk = chunk_write(y_offset, x_offset);
+}
 
 void chunk_read(int idx, int y_offset, int x_offset)
 {

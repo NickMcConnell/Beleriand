@@ -597,7 +597,7 @@ quest *q_list;
 /**
  * Array[MAX_CHUNKS] of pointers to world chunks
  */
-world_chunk **chunk_list;
+chunk_ref *chunk_list;
 
 /**
  * Array[MAX_STORES] of stores
@@ -715,6 +715,11 @@ u32b total_wakeup_chance = 0;
  * Structure (not array) of size limits
  */
 maxima *z_info;
+
+/**
+ * The region arrays
+ */
+region_type *region_info;
 
 /**
  * The vault generation arrays
