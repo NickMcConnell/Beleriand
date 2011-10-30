@@ -1412,16 +1412,9 @@ struct hint
 };
 
 /**
- * Descriptor of a chunk of the world
+ * A chunk of the world
  */
 typedef struct world_chunk{
-    u16b ch_idx;       /**< Index of this chunk */
-    u16b age;          /**< Time in turns since this chunk was created */
-    u16b region;       /**< Region the chunk is from */
-    byte y_pos;        /**< y position in the region */
-    byte x_pos;        /**< x position in the region */
-    byte z_pos;        /**< depth of the chunk */
-    struct world_chunk *adjacent[6];  /**< Adjacent (NESWUD) chunks */
     byte (*cave_feat)[CHUNK_WID];
     s16b (*cave_o_idx)[CHUNK_WID];
     s16b (*cave_m_idx)[CHUNK_WID];
@@ -1433,3 +1426,17 @@ typedef struct world_chunk{
     s16b o_cnt;	       /**< Number of live objects */
     s16b m_cnt;	       /**< Number of live monsters */
 } world_chunk;
+
+/**
+ * Location data for a world_chunk
+ */
+typedef struct chunk_ref {
+    u16b ch_idx;        /**< Index of this chunk */
+    u16b age;           /**< Time in turns since this chunk was created */
+    u16b region;        /**< Region the chunk is from */
+    byte y_pos;         /**< y position in the region */
+    byte x_pos;         /**< x position in the region */
+    byte z_pos;         /**< depth of the chunk */
+    world_chunk *chunk; /**< The actual chunk */
+    int *adjacent[6];   /**< Adjacent (NESWUD) chunks */
+} chunk_ref;

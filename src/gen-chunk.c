@@ -20,8 +20,7 @@
 #include "monster.h"
 #include "trap.h"
 
-world_chunk *chunk_write(int y_offset, int x_offset, int idx, 
-			 u16b region, byte y_pos, byte x_pos, byte z_pos)
+world_chunk *chunk_write(int y_offset, int x_offset)
 {
     int i;
     int x, y;
@@ -30,27 +29,21 @@ world_chunk *chunk_write(int y_offset, int x_offset, int idx,
 
     world_chunk *new = (world_chunk*) mem_alloc(sizeof(world_chunk));
 
-    new->ch_idx = idx;
-
-    /* Test for persistence */
-    if (p_ptr->danger == 0) 
-	new->age = 0;
-    else
-	new->age = 1;
-
-    new->region = region;
-    new->y_pos = y_pos;
-    new->x_pos = x_pos;
-    new->z_pos = z_pos;
-
     /* Intialise */
-    new->cave_info  = C_ZNEW(CHUNK_HGT, grid_chunk);
-    new->cave_feat  = C_ZNEW(CHUNK_HGT, byte_chunk);
-    new->cave_o_idx = C_ZNEW(CHUNK_HGT, s16b_chunk);
-    new->cave_m_idx = C_ZNEW(CHUNK_HGT, s16b_chunk);
-    new->o_list     = C_ZNEW(z_info->o_max, object_type);
-    new->m_list     = C_ZNEW(z_info->m_max, monster_type);
-    new->trap_list  = C_ZNEW(z_info->l_max, trap_type);
+    new->cave_info 
+	= (grid_chunk *) mem_zalloc(CHUNK_HGT * sizeof(grid_chunk));
+    new->cave_feat 
+	= (byte_chunk *) mem_zalloc(CHUNK_HGT * sizeof(byte_chunk));
+    new->cave_o_idx 
+	= (s16b_chunk *) mem_zalloc(CHUNK_HGT * sizeof(s16b_chunk));
+    new->cave_m_idx 
+	= (s16b_chunk *) mem_zalloc(CHUNK_HGT * sizeof(s16b_chunk));
+    new->o_list 
+	= (object_type *) mem_zalloc(z_info->o_max * sizeof(object_type));
+    new->m_list 
+	= (monster_type *) mem_zalloc(z_info->m_max * sizeof(monster_type));
+    new->trap_list 
+	= (trap_type *) mem_zalloc(z_info->l_max * sizeof(trap_type));
     new->trap_max = 0;
     new->o_cnt = 0;
     new->m_cnt = 0;
@@ -71,13 +64,17 @@ world_chunk *chunk_write(int y_offset, int x_offset, int idx,
 	    held = 0;
 	    if (cave_o_idx[y0 + y][x0 + x])
 	    {
+		new->cave_o_idx[y][x] = ++new->o_cnt;
 		for (this_o_idx = cave_o_idx[y0 + y][x0 + x]; this_o_idx; 
 		     this_o_idx = next_o_idx) 
 		{
 		    object_type *o_ptr = &o_list[this_o_idx];
-		    object_type *j_ptr = &new->o_list[++new->o_cnt];
+		    object_type *j_ptr = &new->o_list[new->o_cnt];
 		
+		    /* Copy over */
 		    object_copy(j_ptr, o_ptr);
+
+		    /* Adjust stuff */
 		    j_ptr->iy = y;
 		    j_ptr->ix = x;
 		    next_o_idx = o_ptr->next_o_idx;
@@ -98,7 +95,11 @@ world_chunk *chunk_write(int y_offset, int x_offset, int idx,
 		monster_type *m_ptr = &m_list[cave_m_idx[y0 + y][x0 + x]];
 		monster_type *n_ptr = &new->m_list[++new->m_cnt];
 
+		/* Copy over */
+		new->cave_m_idx[y][x] = new->m_cnt;
 		memcpy(n_ptr, m_ptr, sizeof(*m_ptr));
+
+		/* Adjust stuff */
 		n_ptr->fy = y;
 		n_ptr->fx = x;
 		n_ptr->hold_o_idx = held;
@@ -132,13 +133,24 @@ world_chunk *chunk_write(int y_offset, int x_offset, int idx,
 	if ((ty >= y0) && (ty < y0 + CHUNK_HGT) && 
 	    (tx >= x0) && (tx < x0 + CHUNK_WID))
 	{
+	    /* Copy over */
 	    memcpy(u_ptr, t_ptr, sizeof(*t_ptr));
-	    remove_trap(t_ptr->fy, t_ptr->fx, FALSE, i);
+
+	    /* Adjust stuff */
 	    new->trap_max++;
-	    u_ptr->fy = ty -y0;
-	    u_ptr->fx = tx -x0;
+	    u_ptr->fy = ty - y0;
+	    u_ptr->fx = tx - x0;
+	    remove_trap(t_ptr->fy, t_ptr->fx, FALSE, i);
 	}
     }
+
+    /* Re-allocate memory to save space */
+    new->o_list = (object_type *) 
+	mem_realloc(new->o_list, new->o_cnt * sizeof(object_type));
+    new->m_list = (monster_type *) 
+	mem_realloc(new->m_list, new->m_cnt * sizeof(monster_type));
+    new->trap_list = (trap_type *) 
+	mem_realloc(new->trap_list, new->trap_max * sizeof(trap_type));
 	
     return new;
 }
@@ -161,23 +173,60 @@ void chunk_store(int y_offset, int x_offset, u16b region, byte y_pos,
 		idx = i;
 	    }
 
-	mem_free(chunk_list[idx]);
-	chunk_list[idx] = NULL;
+	chunk_wipe(idx);
     }
 
+    /* Find the next free slot */
     if (!idx)
 	for (idx = 0; idx < chunk_max; idx++)
 	    if (!chunk_list[idx]) break;
     
-    /* Increment */
+    /* Increment the counters */
     chunk_cnt++;
     if (idx == chunk_max)
 	chunk_max++;
 
+    /* Set all the values */
+    chunk_list[idx].ch_idx = idx;
+
+    /* Test for persistence */
+    if (p_ptr->danger == 0) 
+	chunk_list[idx].age = 0;
+    else
+	chunk_list[idx].age = 1;
+
+    chunk_list[idx].region = region;
+    chunk_list[idx].y_pos = y_pos;
+    chunk_list[idx].x_pos = x_pos;
+    chunk_list[idx].z_pos = z_pos;
+
     /* Write the chunk */
-    chunk_list[idx] = chunk_write(y_offset, x_offset, idx, region, y_pos, 
-				  x_pos, z_pos);
+    chunk_list[idx].chunk = chunk_write(y_offset, x_offset);
 }
+
+void chunk_wipe(int idx)
+{
+    world_chunk *chunk = chunk_list[idx].chunk;
+
+    /* Free everything */
+    mem_free(chunk->cave_info);
+    mem_free(chunk->cave_feat);
+    mem_free(chunk->cave_o_idx);
+    mem_free(chunk->cave_m_idx);
+    mem_free(chunk->o_list);
+    mem_free(chunk->m_list);
+    mem_free(chunk->trap_list);
+    mem_free(chunk);
+    
+    /* Decrement the counters */
+    chunk_cnt--;
+    if (idx == chunk_max)
+	chunk_max--;
+
+    /* Remove from the list */
+    chunk_list[idx].chunk = NULL;
+}
+
 
 void chunk_read(int idx, int y_offset, int x_offset)
 {
@@ -186,7 +235,7 @@ void chunk_read(int idx, int y_offset, int x_offset)
     int y0 = y_offset * CHUNK_HGT;
     int x0 = x_offset * CHUNK_WID;
 
-    world_chunk *chunk = chunk_list[idx];
+    world_chunk *chunk = chunk_list[idx].chunk;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -211,13 +260,17 @@ void chunk_read(int idx, int y_offset, int x_offset)
 		    object_type *j_ptr = NULL;
 		    int o_idx; 
 
+		    /* Make an object */
 		    o_idx = o_pop();
 
 		    /* Hope this never happens */
 		    if (!o_idx) break;
 		
+		    /* Copy over */
 		    j_ptr = &o_list[o_idx];
 		    object_copy(j_ptr, o_ptr);
+
+		    /* Adjust stuff */
 		    j_ptr->iy = y + y0;
 		    j_ptr->ix = x + x0;
 
@@ -243,13 +296,17 @@ void chunk_read(int idx, int y_offset, int x_offset)
 		monster_type *n_ptr = NULL;
 		int m_idx;
 
+		/* Make a monster */
 		m_idx = m_pop();
 
 		/* Hope this never happens */
 		if (!m_idx) break;
 
+		/* Copy over */
 		n_ptr = &m_list[m_idx];
 		memcpy(n_ptr, m_ptr, sizeof(*m_ptr));
+
+		/* Adjust stuff */
 		n_ptr->fy = y + y0;
 		n_ptr->fx = x + x0;
 		n_ptr->hold_o_idx = held;
@@ -300,22 +357,7 @@ void chunk_read(int idx, int y_offset, int x_offset)
 	}
     }
 
-    /* Free everything */
-    FREE(chunk->cave_info);
-    FREE(chunk->cave_feat);
-    FREE(chunk->cave_o_idx);
-    FREE(chunk->cave_m_idx);
-    FREE(chunk->o_list);
-    FREE(chunk->m_list);
-    FREE(chunk->trap_list);
-    mem_free(chunk);
-    
-    /* Decrement */
-    chunk_cnt--;
-    if (idx == chunk_max)
-	chunk_max--;
-
-    /* Remove from the list */
-    chunk_list[idx] = NULL;
+    /* Wipe it */
+    chunk_wipe(idx);   
 }
 
