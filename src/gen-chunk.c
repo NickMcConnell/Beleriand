@@ -169,14 +169,6 @@ void chunk_wipe(int idx)
     mem_free(chunk->m_list);
     mem_free(chunk->trap_list);
     mem_free(chunk);
-    
-    /* Decrement the counters */
-    chunk_cnt--;
-    if (idx == chunk_max)
-	chunk_max--;
-
-    /* Remove from the list */
-    chunk_list[idx].chunk = NULL;
 }
 
 
@@ -198,6 +190,11 @@ void chunk_store(int y_offset, int x_offset, u16b region, byte y_pos,
 	    }
 
 	chunk_wipe(idx);
+
+	/* Decrement the counters */
+	chunk_cnt--;
+	if (idx == chunk_max)
+	    chunk_max--;
     }
 
     /* Find the next free slot */
