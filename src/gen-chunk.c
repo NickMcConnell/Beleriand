@@ -20,6 +20,13 @@
 #include "monster.h"
 #include "trap.h"
 
+/**
+ * The "current player area" is the size of an old dungeon level, and is 
+ * divided into nine chunks, indexed by x_offset and y_offset with (0, 0) 
+ * being top left.
+ */
+
+
 world_chunk *chunk_write(int y_offset, int x_offset)
 {
     int i;
@@ -358,3 +365,67 @@ void chunk_read(int idx, int y_offset, int x_offset)
     chunk_wipe(idx);   
 }
 
+int chunk_find(int x_offset, int y_offset, int z_offset)
+{
+    int chunk_idx = -1;
+
+    /* Staying at the same depth */
+    if (z_offset == 0)
+    {
+	/* North */
+	if ((x_offset == 1) && (y_offset == 0))
+	    chunk_idx = chunk_list[p_ptr->stage].adjacent[0];
+	/* East */
+	else if ((x_offset == 2) && (y_offset == 1))
+	    chunk_idx = chunk_list[p_ptr->stage].adjacent[1];
+	/* South */
+	else if ((x_offset == 1) && (y_offset == 2))
+	    chunk_idx = chunk_list[p_ptr->stage].adjacent[2];
+	/* West */
+	else if ((x_offset == 0) && (y_offset == 1))
+	    chunk_idx = chunk_list[p_ptr->stage].adjacent[3];
+	/* North East */
+	else if ((x_offset == 2) && (y_offset == 0))
+	    chunk_idx = 
+		chunk_list[chunk_list[p_ptr->stage].adjacent[0]].adjacent[1];
+	/* South East */
+	else if ((x_offset == 2) && (y_offset == 2))
+	    chunk_idx = 
+		chunk_list[chunk_list[p_ptr->stage].adjacent[1]].adjacent[2];
+	/* South West */
+	else if ((x_offset == 0) && (y_offset == 2))
+	    chunk_idx = 
+		chunk_list[chunk_list[p_ptr->stage].adjacent[2]].adjacent[3];
+	/* North West */
+	else if ((x_offset == 0) && (y_offset == 0))
+	    chunk_idx = 
+		chunk_list[chunk_list[p_ptr->stage].adjacent[3]].adjacent[0];
+    }
+    else if (z_offset == -1)
+    {
+	/* Up */
+	chunk_idx = chunk_list[p_ptr->stage].adjacent[5];
+    }
+    else if (z_offset == 1)
+    {
+	/* Down */
+	chunk_idx = chunk_list[p_ptr->stage].adjacent[6];
+    }
+
+    return chunk_idx;
+}
+
+void chunk_change(int x_offset, int y_offset, int z_offset)
+{
+    size_t i;
+
+    /* New centre chunk */
+    int chunk_idx = chunk_find(x_offset, y_offset, z_offset);
+
+    /* Check for existing chunks */
+    for (i = 0; i < MAX_CHUNKS; i++)
+    {
+	if (chunk_idx == chunk_list[i].ch_idx)
+	    break;
+    }
+}
