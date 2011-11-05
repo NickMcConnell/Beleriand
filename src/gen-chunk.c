@@ -26,7 +26,9 @@
  * being top left.
  */
 
-
+/**
+ * Write a world_chunk to memory and return a pointer to it
+ */
 world_chunk *chunk_write(int y_offset, int x_offset)
 {
     int i;
@@ -162,7 +164,9 @@ world_chunk *chunk_write(int y_offset, int x_offset)
     return new;
 }
 
-
+/**
+ * Free a chunk
+ */
 void chunk_wipe(int idx)
 {
     world_chunk *chunk = chunk_list[idx].chunk;
@@ -178,7 +182,9 @@ void chunk_wipe(int idx)
     mem_free(chunk);
 }
 
-
+/**
+ * Store a chunk from the current playing region into the chunk list
+ */
 void chunk_store(int y_offset, int x_offset, u16b region, byte y_pos, 
 		 byte x_pos, byte z_pos)
 {
@@ -232,6 +238,10 @@ void chunk_store(int y_offset, int x_offset, u16b region, byte y_pos,
     chunk_list[idx].chunk = chunk_write(y_offset, x_offset);
 }
 
+/**
+ * Read a chunk from the chunk list and put it back into the current playing
+ * area
+ */
 void chunk_read(int idx, int y_offset, int x_offset)
 {
     int i;
@@ -365,6 +375,9 @@ void chunk_read(int idx, int y_offset, int x_offset)
     chunk_wipe(idx);   
 }
 
+/**
+ * Translate offset from current chunk into a chunk reference
+ */
 int chunk_find(int x_offset, int y_offset, int z_offset)
 {
     int chunk_idx = -1;
@@ -415,6 +428,11 @@ int chunk_find(int x_offset, int y_offset, int z_offset)
     return chunk_idx;
 }
 
+/**
+ * Handle the player moving from one chunk to an adjacent one.  This function
+ * needs to handle moving in the eight surface directions, plus up or down
+ * one level, and the consequent moving of chunks to and from chunk_list.
+ */
 void chunk_change(int x_offset, int y_offset, int z_offset)
 {
     size_t i;
@@ -428,4 +446,10 @@ void chunk_change(int x_offset, int y_offset, int z_offset)
 	if (chunk_idx == chunk_list[i].ch_idx)
 	    break;
     }
+
+    /* Unload chunks no longer required */
+
+    /* Re-align current playing area */
+
+    /* Reload or generate chunks to fill the playing area */
 }
