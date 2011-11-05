@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "generate.h"
 #include "monster.h"
 #include "trap.h"
 
@@ -183,7 +184,29 @@ void chunk_wipe(int idx)
 }
 
 /**
- * Store a chunk from the current playing region into the chunk list
+ * Find a chunk_ref in chunk_list
+ */
+int chunk_find(chunk_ref ref)
+{
+    size_t i;
+
+    /* Search the list */
+    for (i = 0; i < MAX_CHUNKS; i++)
+    {
+	/* Reject wrong values */
+	if (ref.region != chunk_list[i].region) continue;
+	if (ref.x_pos != chunk_list[i].x_pos) continue;
+	if (ref.y_pos != chunk_list[i].y_pos) continue;
+	if (ref.z_pos != chunk_list[i].z_pos) continue;
+
+	break;
+    }
+
+    return (int) i;
+}
+
+/**
+ * Store a chunk from the current playing area into the chunk list
  */
 void chunk_store(int y_offset, int x_offset, u16b region, byte y_pos, 
 		 byte x_pos, byte z_pos)
@@ -191,34 +214,50 @@ void chunk_store(int y_offset, int x_offset, u16b region, byte y_pos,
     int i;
     int max = 0, idx = 0;
 
-    /* Too many chunks */
-    if (chunk_cnt + 1 >= MAX_CHUNKS)
+    chunk_ref ref = CHUNK_EMPTY;
+
+    /* Check for an existing one */
+    ref.region = region;
+    ref.x_pos = x_pos;
+    ref.y_pos = y_pos;
+    ref.z_pos = z_pos;
+
+    idx = chunk_find(ref);
+
+    /* We need a new slot */
+    if (idx == MAX_CHUNKS)
     {
-	/* Find and delete the oldest chunk */
-	for (i = 0; i < MAX_CHUNKS; i++)
-	    if (chunk_list[i].age > max)
-	    {
-		max = chunk_list[i].age;
-		idx = i;
-	    }
+	/* Too many chunks */
+	if (chunk_cnt + 1 >= MAX_CHUNKS)
+	{
+	    /* Find and delete the oldest chunk */
+	    for (i = 0; i < MAX_CHUNKS; i++)
+		if (chunk_list[i].age > max)
+		{
+		    max = chunk_list[i].age;
+		    idx = i;
+		}
 
-	chunk_wipe(idx);
+	    chunk_wipe(idx);
 
-	/* Decrement the counters */
-	chunk_cnt--;
-	if (idx == chunk_max)
-	    chunk_max--;
-    }
+	    /* Decrement the counters */
+	    chunk_cnt--;
+	    if (idx == chunk_max)
+		chunk_max--;
+	}
 
-    /* Find the next free slot */
-    if (!idx)
-	for (idx = 0; idx < chunk_max; idx++)
-	    if (!chunk_list[idx].chunk) break;
+	/* Find the next free slot */
+	else
+	{
+	    for (idx = 0; idx < chunk_max; idx++)
+		if (!chunk_list[idx].chunk) break;
+	}
     
-    /* Increment the counters */
-    chunk_cnt++;
-    if (idx == chunk_max)
-	chunk_max++;
+	/* Increment the counters */
+	chunk_cnt++;
+	if (idx == chunk_max)
+	    chunk_max++;
+    }
 
     /* Set all the values */
     chunk_list[idx].ch_idx = idx;
@@ -376,9 +415,9 @@ void chunk_read(int idx, int y_offset, int x_offset)
 }
 
 /**
- * Translate offset from current chunk into a chunk reference
+ * Translate offset from current chunk into a chunk_list index
  */
-int chunk_find(int x_offset, int y_offset, int z_offset)
+int chunk_get_idx(int x_offset, int y_offset, int z_offset)
 {
     int chunk_idx = -1;
 
@@ -435,10 +474,10 @@ int chunk_find(int x_offset, int y_offset, int z_offset)
  */
 void chunk_change(int x_offset, int y_offset, int z_offset)
 {
-    size_t i;
+    size_t i, x, y;
 
     /* New centre chunk */
-    int chunk_idx = chunk_find(x_offset, y_offset, z_offset);
+    int chunk_idx = chunk_get_idx(x_offset, y_offset, z_offset);
 
     /* Check for existing chunks */
     for (i = 0; i < MAX_CHUNKS; i++)

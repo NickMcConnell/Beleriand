@@ -107,6 +107,8 @@
  */
 #define HIGHLAND_TREE_CHANCE 30
 
+#define CHUNK_EMPTY   { 0 }
+
 /**
  * Height and width for the currently generated level
  *
