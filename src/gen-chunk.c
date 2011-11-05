@@ -421,7 +421,10 @@ int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset)
 {
     if (z_offset == -1) return 0;
     else if (z_offset == 1) return 10;
-    else return (7 - 3 * y_offset + x_offset);
+    else if ((y_offset >= 0) && (y_offset <= 2) &&
+	     (x_offset >= 0) && (x_offset <= 2))
+	return (7 - 3 * y_offset + x_offset);
+    else return MAX_CHUNKS;
 }
 
 /**
@@ -499,8 +502,11 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		    continue;
 	    }
 
-	    /* Access the chunk's placeholder in chunk_list */
+	    /* Access the chunk's placeholder in chunk_list.
+	    * Quit if it isn't valid */
 	    chunk_idx = chunk_get_idx(0, y, x);
+	    if (chunk_idx == MAX_CHUNKS)
+		quit_fmt("No chunk at y offset %d, x offset %d", y, x);
 	    ref = &chunk_list[chunk_idx];
 
 	    /* Store it */
@@ -620,6 +626,6 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	}
     }
 
-    /* Reload or generate chunks to fill the playing area */
-    /* Note chunk generation needs to write the adjacent[] entries */
+    /* Reload or generate chunks to fill the playing area. 
+     * Note that chunk generation needs to write the adjacent[] entries */
 }
