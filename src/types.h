@@ -1457,5 +1457,5 @@ typedef struct chunk_ref {
     byte y_pos;         /**< y position in the region */
     byte x_pos;         /**< x position in the region */
     world_chunk *chunk; /**< The actual chunk */
-    int adjacent[6];   /**< Adjacent (NESWUD) chunks */
+    int adjacent[11];   /**< Adjacent chunks */
 } chunk_ref;

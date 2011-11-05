@@ -22,7 +22,7 @@
 #include "trap.h"
 
 /**
- * The "current player area" is the size of an old dungeon level, and is 
+ * The "current playing area" is the size of an old dungeon level, and is 
  * divided into nine chunks, indexed by x_offset and y_offset with (0, 0) 
  * being top left.
  */
@@ -415,56 +415,48 @@ void chunk_read(int idx, int y_offset, int x_offset)
 }
 
 /**
+ * Translate from offsets to adjacent index
+ */
+int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset)
+{
+    if (z_offset == -1) return 0;
+    else if (z_offset == 1) return 10;
+    else return (7 - 3 * y_offset + x_offset);
+}
+
+/**
+ * Translate from adjacent index to offsets
+ */
+void chunk_adjacent_to_offset(int adjacent, int *z_off, int *y_off, int *x_off)
+{
+    if (adjacent == 0)
+    {
+	*z_off = -1;
+	*y_off = 0;
+	*x_off = 0;
+    }
+    else if (adjacent == 10)
+    {
+	*z_off = -1;
+	*y_off = 0;
+	*x_off = 0;
+    }
+    else
+    {
+	*z_off = 0;
+	*y_off = 2 - ((adjacent - 1) / 3);
+	*x_off = (adjacent - 1) % 3;
+    }
+}
+
+/**
  * Translate offset from current chunk into a chunk_list index
  */
 int chunk_get_idx(int z_offset, int y_offset, int x_offset)
 {
-    int chunk_idx = -1;
+    int adj_index = chunk_offset_to_adjacent(z_offset, y_offset, x_offset);
 
-    /* Staying at the same depth */
-    if (z_offset == 0)
-    {
-	/* North */
-	if ((x_offset == 1) && (y_offset == 0))
-	    chunk_idx = chunk_list[p_ptr->stage].adjacent[0];
-	/* East */
-	else if ((x_offset == 2) && (y_offset == 1))
-	    chunk_idx = chunk_list[p_ptr->stage].adjacent[1];
-	/* South */
-	else if ((x_offset == 1) && (y_offset == 2))
-	    chunk_idx = chunk_list[p_ptr->stage].adjacent[2];
-	/* West */
-	else if ((x_offset == 0) && (y_offset == 1))
-	    chunk_idx = chunk_list[p_ptr->stage].adjacent[3];
-	/* North East */
-	else if ((x_offset == 2) && (y_offset == 0))
-	    chunk_idx = 
-		chunk_list[chunk_list[p_ptr->stage].adjacent[0]].adjacent[1];
-	/* South East */
-	else if ((x_offset == 2) && (y_offset == 2))
-	    chunk_idx = 
-		chunk_list[chunk_list[p_ptr->stage].adjacent[1]].adjacent[2];
-	/* South West */
-	else if ((x_offset == 0) && (y_offset == 2))
-	    chunk_idx = 
-		chunk_list[chunk_list[p_ptr->stage].adjacent[2]].adjacent[3];
-	/* North West */
-	else if ((x_offset == 0) && (y_offset == 0))
-	    chunk_idx = 
-		chunk_list[chunk_list[p_ptr->stage].adjacent[3]].adjacent[0];
-    }
-    else if (z_offset == -1)
-    {
-	/* Up */
-	chunk_idx = chunk_list[p_ptr->stage].adjacent[5];
-    }
-    else if (z_offset == 1)
-    {
-	/* Down */
-	chunk_idx = chunk_list[p_ptr->stage].adjacent[6];
-    }
-
-    return chunk_idx;
+    return chunk_list[p_ptr->stage].adjacent[adj_index];
 }
 
 
