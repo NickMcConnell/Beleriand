@@ -424,7 +424,7 @@ int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset)
     else if ((y_offset >= 0) && (y_offset <= 2) &&
 	     (x_offset >= 0) && (x_offset <= 2))
 	return (7 - 3 * y_offset + x_offset);
-    else return MAX_CHUNKS;
+    else return -1;
 }
 
 /**
@@ -458,6 +458,9 @@ void chunk_adjacent_to_offset(int adjacent, int *z_off, int *y_off, int *x_off)
 int chunk_get_idx(int z_offset, int y_offset, int x_offset)
 {
     int adj_index = chunk_offset_to_adjacent(z_offset, y_offset, x_offset);
+
+    if (adj_index == -1)
+	quit_fmt("No chunk at y offset %d, x offset %d", y_offset, x_offset);
 
     return chunk_list[p_ptr->stage].adjacent[adj_index];
 }
@@ -505,8 +508,6 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	    /* Access the chunk's placeholder in chunk_list.
 	    * Quit if it isn't valid */
 	    chunk_idx = chunk_get_idx(0, y, x);
-	    if (chunk_idx == MAX_CHUNKS)
-		quit_fmt("No chunk at y offset %d, x offset %d", y, x);
 	    ref = &chunk_list[chunk_idx];
 
 	    /* Store it */
