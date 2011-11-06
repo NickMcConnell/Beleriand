@@ -475,9 +475,8 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 {
     size_t i;
     int x, y;
-    int chunk_idx;
-    chunk_ref *ref = NULL;
     bool y_reverse = FALSE, x_reverse = FALSE;
+    bool chunk_exists[10] = { 0 };
 
     /* Go in the right direction */
     if (y_offset == 0)
@@ -485,24 +484,32 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
     if (x_offset == 0)
 	x_reverse = TRUE;
 
-    /* Check for existing chunks - not needed ?
-    for (i = 0; i < MAX_CHUNKS; i++)
-    {
-	if (chunk_idx == chunk_list[i].ch_idx)
-	    break;
-    }*/
-
     /* Unload chunks no longer required */
     for (y = 0; y < 3; y++)
     {
 	for (x = 0; x < 3; x++)
 	{
+	    chunk_ref *ref = NULL;
+	    int chunk_idx;
+
 	    /* Same level, so some chunks remain */
 	    if (z_offset == 0)
 	    {
 		/* Keep chunks adjacent to the new centre */
 		if ((ABS(x_offset - x) < 2) && (ABS(y_offset - y) < 2))
+		{
+		    int adj_index;
+		    int new_y = y - 1 + y_offset;
+		    int new_x = x - 1 + x_offset;
+
+		    /* Record this one as existing */
+		    adj_index = chunk_offset_to_adjacent(0, new_y, new_x);
+		    if (adj_index == -1)
+			quit_fmt("Bad chunk index at y offset %d, x offset %d",
+				 new_y, new_x);
+		    chunk_exists[adj_index] = TRUE;
 		    continue;
+		}
 	    }
 
 	    /* Access the chunk's placeholder in chunk_list.
@@ -629,4 +636,18 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 
     /* Reload or generate chunks to fill the playing area. 
      * Note that chunk generation needs to write the adjacent[] entries */
+    if (z_offset == 0)
+    {
+	for (y = 0; y < 3; y++)
+	{
+	    for (x = 0; x < 3; x++)
+	    {
+		int adj_index = chunk_offset_to_adjacent(0, y, x);
+
+		/* Already in the current playing area */
+		if (chunk_exists[adj_index])
+		    continue;
+	    }
+	}
+    }
 }
