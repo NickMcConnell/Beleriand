@@ -211,7 +211,7 @@ void alloc_object(int set, int typ, int num);
 
 
 extern bool no_vault(void);
-extern void plain_gen(void);
+extern void plain_gen(chunk_ref ref, int y_offset, int x_offset);
 extern void mtn_gen(void);
 extern void mtntop_gen(void);
 extern void forest_gen(void);

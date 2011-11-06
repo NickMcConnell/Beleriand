@@ -604,7 +604,7 @@ void generate_cave(void)
 
 		case PLAIN:
 		    {
-			plain_gen();
+			//plain_gen();
 		    }
 		}
 	    }

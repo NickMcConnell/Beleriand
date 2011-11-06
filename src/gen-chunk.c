@@ -553,8 +553,8 @@ void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
 
     /* Pick the new y, x co-ordinates */
     ref->region = new_region;
-    ref->y_pos = min_y + (y_frac * (max_y - min_y)) / 10; 
-    ref->x_pos = min_x + (x_frac * (max_x - min_x)) / 10; 
+    ref->y_pos = min_y + (y_frac * (max_y - min_y)) / 10;
+    ref->x_pos = min_x + (x_frac * (max_x - min_x)) / 10;
     new_terrain = region->text[region->width * ref->y_pos + ref->x_pos];
 
     /* Move if it's still border */
@@ -567,14 +567,21 @@ void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
 }
 
 /**
+ * Generate a chunk
+ */
+void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
+{
+    plain_gen(ref, y_offset, x_offset);
+}
+
+/**
  * Handle the player moving from one chunk to an adjacent one.  This function
  * needs to handle moving in the eight surface directions, plus up or down
  * one level, and the consequent moving of chunks to and from chunk_list.
  */
 void chunk_change(int z_offset, int y_offset, int x_offset)
 {
-    size_t i;
-    int x, y;
+    int i, x, y;
     bool y_reverse = FALSE, x_reverse = FALSE;
     bool chunk_exists[10] = { 0 };
 
@@ -745,23 +752,30 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		int chunk_idx;
 		int adj_index = chunk_offset_to_adjacent(0, y, x);
 		chunk_ref ref = CHUNK_EMPTY;
-
+		
 		/* Already in the current playing area */
 		if (chunk_exists[adj_index])
 		    continue;
-
+	    
 		/* Get the location data */
 		ref.region = chunk_list[p_ptr->stage].region;
 		ref.z_pos = 0;
 		ref.y_pos = chunk_list[p_ptr->stage].y_pos;
 		ref.x_pos = chunk_list[p_ptr->stage].x_pos;
 		chunk_adjacent_data(&ref, y, x);
-
+	    
 		/* Load it if it already exists */
 		chunk_idx = chunk_find(ref);
 		if (chunk_idx != MAX_CHUNKS)
 		    chunk_read(chunk_idx, y, x);
+
+		/* Otherwise generate a new one */
+		else 
+		{
+		    chunk_generate(ref, y, x);
+		}
 	    }
 	}
     }
+
 }

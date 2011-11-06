@@ -630,6 +630,23 @@ int make_formation(int y, int x, int base_feat1, int base_feat2, int *feat,
 }
 
 
+extern void plain_gen(chunk_ref ref, int y_offset, int x_offset)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_WID; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_GRASS);
+	}
+    }
+}
+
 /**
  * Generate a new plain level. Place stairs, 
  * and random monsters, objects, and traps.  Place any quest monsters.
@@ -638,7 +655,7 @@ int make_formation(int y, int x, int base_feat1, int base_feat2, int *feat,
  * 
  * No rooms outside the dungeons (for now, at least) -NRM
  */
-extern void plain_gen(void)
+extern void plain_gen_old(void)
 {
     int i, j, k, y, x;
     int stage = p_ptr->stage;
