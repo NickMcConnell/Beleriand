@@ -575,6 +575,8 @@ typedef struct world_region {
 
     byte danger;       	           /**< Region danger */
     byte scale;		           /**< Scaling for region map */
+    byte height;                   /**< Region height */
+    byte width;                    /**< Region width */
 
     byte adjacent[MAX_BORDERS];    /**< Indices of adjacent regions*/
 } region_type;

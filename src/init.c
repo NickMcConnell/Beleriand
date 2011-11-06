@@ -2656,6 +2656,8 @@ static enum parser_error parse_region_i(struct parser *p) {
 	return PARSE_ERROR_MISSING_RECORD_HEADER;
     region->danger = parser_getuint(p, "danger");
     region->scale = parser_getint(p, "scale");
+    region->height = parser_getuint(p, "height");
+    region->width = parser_getuint(p, "width");
 
     return PARSE_ERROR_NONE;
 }
@@ -2690,7 +2692,7 @@ struct parser *init_parse_region(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
     parser_reg(p, "N uint index str name", parse_region_n);
-    parser_reg(p, "I uint danger int scale", parse_region_i);
+    parser_reg(p, "I uint danger int scale uint height uint width", parse_region_i);
     parser_reg(p, "A uint adj0 uint adj1 uint adj2 uint adj3 uint adj4 uint adj5 uint adj6 uint adj7", parse_region_a);
     parser_reg(p, "D str text", parse_region_d);
     return p;

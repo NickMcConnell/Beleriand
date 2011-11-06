@@ -465,6 +465,106 @@ int chunk_get_idx(int z_offset, int y_offset, int x_offset)
     return chunk_list[p_ptr->stage].adjacent[adj_index];
 }
 
+/**
+ * Get the location data for a chunk
+ */
+void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
+{
+    region_type *region = &region_info[ref->region];
+    int y_new = ref->y_pos;
+    int x_new = ref->x_pos;
+    int y, x, min_y, min_x, max_y, max_x, y_frac, x_frac;
+    char terrain, new_terrain;
+    int i, new_region;
+
+    /* Get the new position */
+    y_new += (y_offset - 1);
+    x_new += (x_offset - 1);
+
+    /* See what's there */
+    terrain = region->text[region->width * y_new + x_new];
+
+    /* Still in the same region */
+    if ((terrain < '0') || (terrain > '8'))
+    {
+	ref->y_pos = y_new;
+	ref->x_pos = x_new;
+	return;
+    }
+
+    /* Empty region */
+    if (terrain == '0')
+    {
+	ref->region = 0;
+	return;
+    }
+
+    /* Get the region border */
+    min_y = region->height;
+    min_x = region->width;
+    max_y = 0;
+    max_x = 0;
+    for (y = 0; y < region->height; y++)
+	for (x = 0; x < region->width; x++)
+	{
+	    if (region->text[region->width * y + x] == terrain)
+	    {
+		min_y = MIN(y, min_y);
+		min_x = MIN(x, min_x);
+		max_y = MAX(y, min_y);
+		max_x = MAX(x, min_x);
+	    }
+	}
+
+    /* Get the y and x distances along the border (as tenths of the total) */
+    y_frac = ((y_new - min_y) * 10) / (max_y - min_y);
+    x_frac = ((x_new - min_x) * 10) / (max_x - min_x);
+
+    /* Switch to the new region */
+    new_region = region->adjacent[D2I(terrain) - 1];
+    region = &region_info[new_region];
+
+    /* Find the new terrain */
+    for (i = 0; i < 8; i++)
+    {
+	if (region->adjacent[i] == ref->region)
+	{
+	    terrain = I2D(i + 1);
+	    break;
+	}
+    }
+
+    /* Get the region border */
+    min_y = region->height;
+    min_x = region->width;
+    max_y = 0;
+    max_x = 0;
+    for (y = 0; y < region->height; y++)
+	for (x = 0; x < region->width; x++)
+	{
+	    if (region->text[region->width * y + x] == terrain)
+	    {
+		min_y = MIN(y, min_y);
+		min_x = MIN(x, min_x);
+		max_y = MAX(y, min_y);
+		max_x = MAX(x, min_x);
+	    }
+	}
+
+    /* Pick the new y, x co-ordinates */
+    ref->region = new_region;
+    ref->y_pos = min_y + (y_frac * (max_y - min_y)) / 10; 
+    ref->x_pos = min_x + (x_frac * (max_x - min_x)) / 10; 
+    new_terrain = region->text[region->width * ref->y_pos + ref->x_pos];
+
+    /* Move if it's still border */
+    while ((new_terrain >= '0') && (new_terrain <= '8'))
+    {
+	ref->y_pos += (y_offset - 1);
+	ref->x_pos += (x_offset - 1);
+	new_terrain = region->text[region->width * ref->y_pos + ref->x_pos];
+    }
+}
 
 /**
  * Handle the player moving from one chunk to an adjacent one.  This function
@@ -642,11 +742,25 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	{
 	    for (x = 0; x < 3; x++)
 	    {
+		int chunk_idx;
 		int adj_index = chunk_offset_to_adjacent(0, y, x);
+		chunk_ref ref = CHUNK_EMPTY;
 
 		/* Already in the current playing area */
 		if (chunk_exists[adj_index])
 		    continue;
+
+		/* Get the location data */
+		ref.region = chunk_list[p_ptr->stage].region;
+		ref.z_pos = 0;
+		ref.y_pos = chunk_list[p_ptr->stage].y_pos;
+		ref.x_pos = chunk_list[p_ptr->stage].x_pos;
+		chunk_adjacent_data(&ref, y, x);
+
+		/* Load it if it already exists */
+		chunk_idx = chunk_find(ref);
+		if (chunk_idx != MAX_CHUNKS)
+		    chunk_read(chunk_idx, y, x);
 	    }
 	}
     }
