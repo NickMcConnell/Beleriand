@@ -2304,9 +2304,13 @@ void play_game(void)
 	player_birth(p_ptr->ht_birth ? TRUE : FALSE);
 
 	/* Start in home town - or on the stairs to Angband */
-	p_ptr->stage =
-	    (OPT(adult_thrall) ? (OPT(adult_dungeon) ? 87 : 135) : p_ptr->home);
-	p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
+	p_ptr->stage = 0;
+	chunk_list[0].region = 20;
+	chunk_list[0].z_pos = 0;
+	chunk_list[0].y_pos = 2;
+	chunk_list[0].x_pos = 5;
+	    //(OPT(adult_thrall) ? (OPT(adult_dungeon) ? 87 : 135) : p_ptr->home);
+	p_ptr->danger = 0;
 
 	/* Read the default options */
 	process_pref_file("birth.prf", TRUE, TRUE);

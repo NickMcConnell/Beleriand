@@ -645,6 +645,8 @@ extern void plain_gen(chunk_ref ref, int y_offset, int x_offset)
 	    cave_set_feat(y0 + y, x0 + x, FEAT_GRASS);
 	}
     }
+
+    player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
 /**

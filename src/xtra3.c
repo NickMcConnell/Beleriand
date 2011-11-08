@@ -2153,7 +2153,7 @@ errr textui_get_cmd(cmd_context context, bool wait)
     if (context == CMD_BIRTH)
 #if DEBUG
 {
-			cmd_insert(CMD_QUIT);
+    //cmd_insert(CMD_QUIT);
 #endif
 	return get_birth_command(wait);
 #if DEBUG

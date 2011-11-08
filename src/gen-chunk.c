@@ -209,7 +209,7 @@ int chunk_find(chunk_ref ref)
  * Store a chunk from the current playing area into the chunk list
  */
 void chunk_store(int y_offset, int x_offset, u16b region, byte z_pos, 
-		 byte y_pos, byte x_pos)
+		 byte y_pos, byte x_pos, bool write)
 {
     int i;
     int max = 0, idx = 0;
@@ -274,7 +274,7 @@ void chunk_store(int y_offset, int x_offset, u16b region, byte z_pos,
     chunk_list[idx].z_pos = z_pos;
 
     /* Write the chunk */
-    chunk_list[idx].chunk = chunk_write(y_offset, x_offset);
+    if (write) chunk_list[idx].chunk = chunk_write(y_offset, x_offset);
 }
 
 /**
@@ -625,7 +625,8 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	    ref = &chunk_list[chunk_idx];
 
 	    /* Store it */
-	    chunk_store(y, x, ref->region, ref->z_pos, ref->y_pos, ref->x_pos);
+	    chunk_store(y, x, ref->region, ref->z_pos, ref->y_pos, ref->x_pos, 
+			TRUE);
 	}
     }
 

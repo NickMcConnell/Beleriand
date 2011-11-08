@@ -536,6 +536,35 @@ void generate_cave(void)
 	if (no_vault())
 	    wild_vaults = 0;
 
+	for (y = 0; y < 3; y++)
+	{
+	    for (x = 0; x < 3; x++)
+	    {
+		int chunk_idx;
+		int adj_index = chunk_offset_to_adjacent(0, y, x);
+		chunk_ref ref = CHUNK_EMPTY;
+		
+		/* Get the location data */
+		ref.region = chunk_list[p_ptr->stage].region;
+		ref.z_pos = chunk_list[p_ptr->stage].z_pos;
+		ref.y_pos = chunk_list[p_ptr->stage].y_pos;
+		ref.x_pos = chunk_list[p_ptr->stage].x_pos;
+		chunk_adjacent_data(&ref, y, x);
+	    
+		/* Load it if it already exists
+		chunk_idx = chunk_find(ref);
+		if (chunk_idx != MAX_CHUNKS)
+		    chunk_read(chunk_idx, y, x); */
+
+		/* Generate a new chunk */
+		//else 
+		//{
+		    chunk_generate(ref, y, x);
+		    //}
+	    }
+	}
+
+#if 0
 	/* Build the town */
 	if (!p_ptr->danger) {
 	    /* Make a town */
@@ -609,7 +638,7 @@ void generate_cave(void)
 		}
 	    }
 	}
-
+#endif
 	okay = TRUE;
 
 
