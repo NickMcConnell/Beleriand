@@ -1874,3 +1874,83 @@ int rd_traps(void)
 
     return 0;
 }
+
+int rd_chunks(void)
+{
+    int i, n, y, x;
+  
+    s16b stage;
+    s16b last_stage;
+    s16b py, px;
+    s16b ymax, xmax;
+  
+    byte count;
+    byte tmp8u;
+    u16b tmp16u, cave_size;
+  
+  
+    /* Only if the player's alive */
+    if (p_ptr->is_dead)
+	return 0;
+
+    rd_u16b(&chunk_cnt);
+    rd_u16b(&cave_size);
+
+    /*** Run length decoding ***/
+  
+    /* Loop across bytes of cave_info */
+    for (n = 0; n < cave_size; n++)
+    {
+	/* Load the dungeon data */
+	for (x = y = 0; y < CHUNK_HGT; )
+	{
+	    /* Grab RLE info */
+	    rd_byte(&count);
+	    rd_byte(&tmp8u);
+	    
+	    /* Apply the RLE info */
+	    for (i = count; i > 0; i--)
+	    {
+		/* Extract "info" */
+		cave_info[y][x][n] = tmp8u;
+	  
+		/* Advance/Wrap */
+		if (++x >= CHUNK_WID)
+		{
+		    /* Wrap */
+		    x = 0;
+		    
+		    /* Advance/Wrap */
+		    if (++y >= CHUNK_HGT) break;
+		}
+	    }
+	}
+    }
+
+   /*** Run length decoding ***/
+  
+    /* Load the dungeon data */
+    for (x = y = 0; y < CHUNK_HGT; )
+    {
+	/* Grab RLE info */
+	rd_byte(&count);
+	rd_byte(&tmp8u);
+      
+	/* Apply the RLE info */
+	for (i = count; i > 0; i--)
+	{
+	    /* Extract "feat" */
+	    cave_set_feat(y, x, tmp8u);
+	  
+	    /* Advance/Wrap */
+	    if (++x >= CHUNK_WID)
+	    {
+		/* Wrap */
+		x = 0;
+	      
+		/* Advance/Wrap */
+		if (++y >= CHUNK_HGT) break;
+	    }
+	}
+    }
+}

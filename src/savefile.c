@@ -103,6 +103,7 @@ static const struct {
         { "ghost", wr_ghost, 1 },
         { "history", wr_history, 1 },
         { "traps", wr_traps, 1 },
+        { "chunk list", wr_chunks, 1 },
 };
 
 /**
@@ -134,6 +135,7 @@ static const struct {
         { "ghost", rd_ghost, 1 },
         { "history", rd_history, 1 },
         { "traps", rd_traps, 1 },
+        { "chunk list", rd_chunks, 1 },
 };
 
 

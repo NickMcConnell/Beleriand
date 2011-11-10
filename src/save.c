@@ -1072,3 +1072,140 @@ void wr_traps(void)
     /* Expansion */
     wr_u32b(0);
 }
+
+
+void wr_chunks(void)
+{
+    int y, x;
+    size_t i, j;
+  
+    byte tmp8u;
+  
+    byte count;
+    byte prev_char;
+  
+  
+    if (p_ptr->is_dead)
+	return;
+
+    wr_u16b(chunk_cnt);
+    wr_u16b(CAVE_SIZE);
+
+    for (j = 0; j < chunk_max; j++)
+    {
+	world_chunk *chunk = chunk_list[j].chunk;
+
+	/* Skip dead ones */
+	if (!chunk) continue;
+
+	/* Loop across bytes of cave_info */
+	for (i = 0; i < CAVE_SIZE; i++)
+	{
+	    /* Note that this will induce two wasted bytes */
+	    count = 0;
+	    prev_char = 0;
+	
+	    /* Dump the cave */
+	    for (y = 0; y < CHUNK_HGT; y++)
+	    {
+		for (x = 0; x < CHUNK_WID; x++)
+		{
+		    /* Extract the important cave_info flags */
+		    tmp8u = chunk->cave_info[y][x][i];
+	  
+		    /* If the run is broken, or too full, flush it */
+		    if ((tmp8u != prev_char) || (count == MAX_UCHAR))
+		    {
+			wr_byte((byte)count);
+			wr_byte((byte)prev_char);
+			prev_char = tmp8u;
+			count = 1;
+		    }
+		
+		    /* Continue the run */
+		    else
+		    {
+			count++;
+		    }
+		}
+	    }
+	
+	    /* Flush the data (if any) */
+	    if (count)
+	    {
+		wr_byte((byte)count);
+		wr_byte((byte)prev_char);
+	    }
+	}
+  
+	/* Note that this will induce two wasted bytes */
+	count = 0;
+	prev_char = 0;
+  
+	/* Dump the cave */
+	for (y = 0; y < CHUNK_HGT; y++)
+	{
+	    for (x = 0; x < CHUNK_WID; x++)
+	    {
+		/* Extract a byte */
+		tmp8u = chunk->cave_feat[y][x];
+	  
+		/* If the run is broken, or too full, flush it */
+		if ((tmp8u != prev_char) || (count == MAX_UCHAR))
+		{
+		    wr_byte((byte)count);
+		    wr_byte((byte)prev_char);
+		    prev_char = tmp8u;
+		    count = 1;
+		}
+	  
+		/* Continue the run */
+		else
+		{
+		    count++;
+		}
+	    }
+	}
+  
+	/* Flush the data (if any) */
+	if (count)
+	{
+	    wr_byte((byte)count);
+	    wr_byte((byte)prev_char);
+	}
+
+	/* Total objects */
+	wr_u16b(chunk->o_cnt);
+  
+	/* Dump the objects */
+	for (i = 1; i < chunk->o_max; i++)
+	{
+	    object_type *o_ptr = &chunk->o_list[i];
+      
+	    /* Dump it */
+	    wr_item(o_ptr);
+	}
+
+	/* Total monsters */
+	wr_u16b(chunk->m_cnt);
+  
+	/* Dump the monsters */
+	for (i = 1; i < chunk->m_max; i++)
+	{
+	    monster_type *m_ptr = &chunk->m_list[i];
+	    
+	    /* Dump it */
+	    wr_monster(m_ptr);
+	}
+
+	/* Total traps */
+	wr_s16b(chunk->trap_max);
+	
+	for (i = 0; i < chunk->trap_max; i++)
+	{
+	    trap_type *t_ptr = &chunk->trap_list[i];
+	    
+	    wr_trap(t_ptr);
+	}
+    }
+}

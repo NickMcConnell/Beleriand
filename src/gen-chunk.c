@@ -70,16 +70,16 @@ world_chunk *chunk_write(int y_offset, int x_offset)
 	    for (i = 0; i < CAVE_SIZE; i++)		
 		new->cave_info[y][x][i] = cave_info[y0 + y][x0 + x][i];
 	    
-	    /* Objects */
+	    /* Dungeon objects */
 	    held = 0;
 	    if (cave_o_idx[y0 + y][x0 + x])
 	    {
-		new->cave_o_idx[y][x] = ++new->o_cnt;
+		new->cave_o_idx[y][x] = new->o_cnt + 1;
 		for (this_o_idx = cave_o_idx[y0 + y][x0 + x]; this_o_idx; 
 		     this_o_idx = next_o_idx) 
 		{
 		    object_type *o_ptr = &o_list[this_o_idx];
-		    object_type *j_ptr = &new->o_list[new->o_cnt];
+		    object_type *j_ptr = &new->o_list[++new->o_cnt];
 		
 		    /* Copy over */
 		    object_copy(j_ptr, o_ptr);
@@ -90,16 +90,12 @@ world_chunk *chunk_write(int y_offset, int x_offset)
 		    next_o_idx = o_ptr->next_o_idx;
 		    if (next_o_idx) 
 			j_ptr->next_o_idx = new->o_cnt + 1;
-		    if (o_ptr->held_m_idx)
-		    { 
-			j_ptr->held_m_idx = new->m_cnt + 1;
-			if (!held) held = new->o_cnt;
-		    }
 		    delete_object_idx(this_o_idx);
 		}
 	    }
 
-	    /* Monsters */
+	    /* Monsters and held objects */
+	    held = 0;
 	    if (cave_m_idx[y0 + y][x0 + x] > 0)
 	    {
 		monster_type *m_ptr = &m_list[cave_m_idx[y0 + y][x0 + x]];
@@ -112,6 +108,28 @@ world_chunk *chunk_write(int y_offset, int x_offset)
 		/* Adjust stuff */
 		n_ptr->fy = y;
 		n_ptr->fx = x;
+		if (m_ptr->hold_o_idx)
+		{
+		    for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; 
+			 this_o_idx = next_o_idx) 
+		    {
+			object_type *o_ptr = &o_list[this_o_idx];
+			object_type *j_ptr = &new->o_list[++new->o_cnt];
+			
+			/* Copy over */
+			object_copy(j_ptr, o_ptr);
+			
+			/* Adjust stuff */
+			j_ptr->iy = y;
+			j_ptr->ix = x;
+			next_o_idx = o_ptr->next_o_idx;
+			if (next_o_idx) 
+			    j_ptr->next_o_idx = new->o_cnt + 1;
+			j_ptr->held_m_idx = new->m_cnt;
+			if (!held) held = new->o_cnt;
+			delete_object_idx(this_o_idx);
+		    }
+		}
 		n_ptr->hold_o_idx = held;
 		if ((m_ptr->ty >= y0) && (m_ptr->ty < y0 + CHUNK_HGT) && 
 		    (m_ptr->tx >= x0) && (m_ptr->tx < x0 + CHUNK_WID))
@@ -608,6 +626,8 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		    int adj_index;
 		    int new_y = y - 1 + y_offset;
 		    int new_x = x - 1 + x_offset;
+
+		    if ((new_y < 0) || (new_x < 0)) continue;
 
 		    /* Record this one as existing */
 		    adj_index = chunk_offset_to_adjacent(0, new_y, new_x);

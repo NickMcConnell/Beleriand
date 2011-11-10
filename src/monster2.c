@@ -23,6 +23,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "generate.h"
 #include "history.h"
 #include "monster.h"
 #include "player.h"
@@ -1629,6 +1630,7 @@ bool is_detected(int y, int x)
 void monster_swap(int y1, int x1, int y2, int x2)
 {
     int m1, m2;
+    int y_offset, x_offset;
     bool player_moved = FALSE;
 
     monster_type *m_ptr;
@@ -1714,6 +1716,12 @@ void monster_swap(int y1, int x1, int y2, int x2)
     /* Redraw */
     light_spot(y1, x1);
     light_spot(y2, x2);
+
+    /* Deal with change of chunk */
+    y_offset = p_ptr->py / CHUNK_HGT;
+    x_offset = p_ptr->px / CHUNK_WID;
+    if ((y_offset != 1) || (x_offset != 1))
+	chunk_change(0, y_offset, x_offset);
 }
 
 
