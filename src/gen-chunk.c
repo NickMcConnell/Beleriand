@@ -27,6 +27,7 @@
  * being top left.
  */
 
+
 /**
  * Write a world_chunk to memory and return a pointer to it
  */
@@ -226,8 +227,8 @@ int chunk_find(chunk_ref ref)
 /**
  * Store a chunk from the current playing area into the chunk list
  */
-void chunk_store(int y_offset, int x_offset, u16b region, byte z_pos, 
-		 byte y_pos, byte x_pos, bool write)
+int chunk_store(int y_offset, int x_offset, u16b region, byte z_pos, byte y_pos,
+		byte x_pos, bool write)
 {
     int i;
     int max = 0, idx = 0;
@@ -268,7 +269,7 @@ void chunk_store(int y_offset, int x_offset, u16b region, byte z_pos,
 	else
 	{
 	    for (idx = 0; idx < chunk_max; idx++)
-		if (!chunk_list[idx].chunk) break;
+		if (!chunk_list[idx].region) break;
 	}
     
 	/* Increment the counters */
@@ -281,7 +282,7 @@ void chunk_store(int y_offset, int x_offset, u16b region, byte z_pos,
     chunk_list[idx].ch_idx = idx;
 
     /* Test for persistence */
-    if (p_ptr->danger == 0) 
+    if ((p_ptr->danger == 0) || !write)
 	chunk_list[idx].age = 0;
     else
 	chunk_list[idx].age = 1;
@@ -290,9 +291,12 @@ void chunk_store(int y_offset, int x_offset, u16b region, byte z_pos,
     chunk_list[idx].y_pos = y_pos;
     chunk_list[idx].x_pos = x_pos;
     chunk_list[idx].z_pos = z_pos;
+    chunk_list[idx].adjacent[5] = idx;
 
     /* Write the chunk */
     if (write) chunk_list[idx].chunk = chunk_write(y_offset, x_offset);
+
+    return idx;
 }
 
 /**
@@ -433,7 +437,8 @@ void chunk_read(int idx, int y_offset, int x_offset)
 }
 
 /**
- * Translate from offsets to adjacent index
+ * Translate from offsets to adjacent index.  0 is up, 10 is down, 1-9 are 
+ * the keypad directions
  */
 int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset)
 {
@@ -535,8 +540,8 @@ void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
 	}
 
     /* Get the y and x distances along the border (as tenths of the total) */
-    y_frac = ((y_new - min_y) * 10) / (max_y - min_y);
-    x_frac = ((x_new - min_x) * 10) / (max_x - min_x);
+    y_frac = max_y - min_y ? ((y_new - min_y) * 10) / (max_y - min_y) : 0;
+    x_frac = max_x - min_x ? ((x_new - min_x) * 10) / (max_x - min_x) : 0;
 
     /* Switch to the new region */
     new_region = region->adjacent[D2I(terrain) - 1];
@@ -571,8 +576,8 @@ void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
 
     /* Pick the new y, x co-ordinates */
     ref->region = new_region;
-    ref->y_pos = min_y + (y_frac * (max_y - min_y)) / 10;
-    ref->x_pos = min_x + (x_frac * (max_x - min_x)) / 10;
+    ref->y_pos = max_y - min_y ? min_y + (y_frac * (max_y - min_y)) / 10 : 0;
+    ref->x_pos = max_x - min_x ? min_x + (x_frac * (max_x - min_x)) / 10 : 0;
     new_terrain = region->text[region->width * ref->y_pos + ref->x_pos];
 
     /* Move if it's still border */
@@ -589,6 +594,47 @@ void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
  */
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 {
+    int n, z_off, y_off, x_off;
+    
+    /* Store the chunk reference */
+    int idx = chunk_store(1, 1, ref.region, ref.z_pos, ref.y_pos, ref.x_pos, 
+			  FALSE);
+    
+    /* Set adjacencies */
+    for (n = 0; n < 11; n++)
+    {
+	chunk_ref ref1 = CHUNK_EMPTY;
+	int chunk_idx;
+
+	/* Set the reference data for the adjacent chunk */
+	chunk_adjacent_to_offset(n, &z_off, &y_off, &x_off);
+	ref1.region = ref.region;
+	ref1.z_pos = ref.z_pos;
+	ref1.y_pos = ref.y_pos;
+	ref1.x_pos = ref.x_pos;
+	if (z_off == 0) 
+	    chunk_adjacent_data(&ref1, y_off, x_off);
+	else
+	    ref1.z_pos += z_off;
+
+	/* Self-reference (not strictly necessary) */
+	if (n == 5)
+	{
+	    ref1.adjacent[n] = idx;
+	    continue;
+	}
+
+	/* Deal with existing chunks */
+	chunk_idx = chunk_find(ref);
+	if (chunk_idx < MAX_CHUNKS)
+	{
+	    chunk_list[idx].adjacent[n] = chunk_idx;
+	    chunk_list[chunk_idx].adjacent[10 - n] = idx;
+	}
+	else
+	    chunk_list[idx].adjacent[n] = MAX_CHUNKS;
+    }
+
     plain_gen(ref, y_offset, x_offset);
 }
 
@@ -624,8 +670,8 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		if ((ABS(x_offset - x) < 2) && (ABS(y_offset - y) < 2))
 		{
 		    int adj_index;
-		    int new_y = y - 1 + y_offset;
-		    int new_x = x - 1 + x_offset;
+		    int new_y = y + 1 - y_offset;
+		    int new_x = x + 1 - x_offset;
 
 		    if ((new_y < 0) || (new_x < 0)) continue;
 
@@ -645,8 +691,8 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	    ref = &chunk_list[chunk_idx];
 
 	    /* Store it */
-	    chunk_store(y, x, ref->region, ref->z_pos, ref->y_pos, ref->x_pos, 
-			TRUE);
+	    (void) chunk_store(y, x, ref->region, ref->z_pos, ref->y_pos, 
+			       ref->x_pos, TRUE);
 	}
     }
 
@@ -787,7 +833,7 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	    
 		/* Load it if it already exists */
 		chunk_idx = chunk_find(ref);
-		if (chunk_idx != MAX_CHUNKS)
+		if ((chunk_idx != MAX_CHUNKS) && chunk_list[chunk_idx].chunk)
 		    chunk_read(chunk_idx, y, x);
 
 		/* Otherwise generate a new one */

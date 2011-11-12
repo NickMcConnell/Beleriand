@@ -1178,7 +1178,7 @@ void wr_chunks(void)
 	wr_u16b(chunk->o_cnt);
   
 	/* Dump the objects */
-	for (i = 1; i < chunk->o_max; i++)
+	for (i = 1; i < chunk->o_cnt; i++)
 	{
 	    object_type *o_ptr = &chunk->o_list[i];
       
@@ -1190,7 +1190,7 @@ void wr_chunks(void)
 	wr_u16b(chunk->m_cnt);
   
 	/* Dump the monsters */
-	for (i = 1; i < chunk->m_max; i++)
+	for (i = 1; i < chunk->m_cnt; i++)
 	{
 	    monster_type *m_ptr = &chunk->m_list[i];
 	    

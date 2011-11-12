@@ -211,8 +211,8 @@ void alloc_object(int set, int typ, int num);
 
 int chunk_find(chunk_ref ref);
 void chunk_read(int idx, int y_offset, int x_offset);
-void chunk_store(int y_offset, int x_offset, u16b region, byte z_pos, 
-		 byte y_pos, byte x_pos, bool write);
+int chunk_store(int y_offset, int x_offset, u16b region, byte z_pos, byte y_pos,
+		byte x_pos, bool write);
 int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset);
 void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset);
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset);
