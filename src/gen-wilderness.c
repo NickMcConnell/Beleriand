@@ -646,7 +646,8 @@ extern void plain_gen(chunk_ref ref, int y_offset, int x_offset)
 	}
     }
 
-    player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
 /**
