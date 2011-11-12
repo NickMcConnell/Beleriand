@@ -625,7 +625,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	}
 
 	/* Deal with existing chunks */
-	chunk_idx = chunk_find(ref);
+	chunk_idx = chunk_find(ref1);
 	if (chunk_idx < MAX_CHUNKS)
 	{
 	    chunk_list[idx].adjacent[n] = chunk_idx;
