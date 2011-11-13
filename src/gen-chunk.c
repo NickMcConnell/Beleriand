@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "generate.h"
 #include "monster.h"
 #include "trap.h"
@@ -648,12 +649,19 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
     int i, x, y;
     bool y_reverse = FALSE, x_reverse = FALSE;
     bool chunk_exists[10] = { 0 };
+    int new_idx;
 
     /* Go in the right direction */
     if (y_offset == 0)
 	y_reverse = TRUE;
     if (x_offset == 0)
 	x_reverse = TRUE;
+
+    /* Get the new centre chunk */
+    if (z_offset == 0) 
+	new_idx = chunk_offset_to_adjacent(0, y_offset, x_offset);
+
+    forget_view();
 
     /* Unload chunks no longer required */
     for (y = 0; y < 3; y++)
@@ -782,6 +790,9 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 			    m_ptr->x_terr + (x_offset - 1) * CHUNK_WID;
 		    }
 		}
+		/* Remove the player for now */
+		else if (cave_m_idx[y_read][x_read] < 0)
+		    cave_m_idx[y_read][x_read] = 0;
 	    }
 	}
 
@@ -806,7 +817,15 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		/* Shouldn't happen */
 		remove_trap(t_ptr->fy, t_ptr->fx, FALSE, i);
 	}
+
+	/* Move the player */
+	p_ptr->py -= CHUNK_HGT * (y_offset - 1);
+	p_ptr->px -= CHUNK_WID * (x_offset - 1);
+	cave_m_idx[p_ptr->py][p_ptr->px] = -1;
+	p_ptr->last_stage = p_ptr->stage;
+	p_ptr->stage = chunk_list[p_ptr->stage].adjacent[new_idx];
     }
+
 
     /* Reload or generate chunks to fill the playing area. 
      * Note that chunk generation needs to write the adjacent[] entries */
@@ -844,5 +863,5 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	    }
 	}
     }
-
+    update_view();
 }
