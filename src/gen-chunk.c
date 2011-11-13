@@ -174,13 +174,13 @@ world_chunk *chunk_write(int y_offset, int x_offset)
 	}
     }
 
-    /* Re-allocate memory to save space */
+    /* Re-allocate memory to save space 
     new->o_list = (object_type *) 
 	mem_realloc(new->o_list, new->o_cnt * sizeof(object_type));
     new->m_list = (monster_type *) 
 	mem_realloc(new->m_list, new->m_cnt * sizeof(monster_type));
     new->trap_list = (trap_type *) 
-	mem_realloc(new->trap_list, new->trap_max * sizeof(trap_type));
+	mem_realloc(new->trap_list, new->trap_max * sizeof(trap_type)); */
 	
     return new;
 }
@@ -335,6 +335,7 @@ void chunk_read(int idx, int y_offset, int x_offset)
 		    object_type *o_ptr = &chunk->o_list[this_o_idx];
 		    object_type *j_ptr = NULL;
 		    int o_idx; 
+		    bool alloc = FALSE;
 
 		    /* Make an object */
 		    o_idx = o_pop();
@@ -353,6 +354,12 @@ void chunk_read(int idx, int y_offset, int x_offset)
 		    if (o_ptr->held_m_idx)
 		    { 
 			if (!held) held = o_idx;
+		    }
+
+		    if (!alloc) 
+		    {
+			cave_o_idx[y + y0][x + x0] = o_idx;
+			alloc = TRUE;
 		    }
 
 		    next_o_idx = o_ptr->next_o_idx;
@@ -381,6 +388,7 @@ void chunk_read(int idx, int y_offset, int x_offset)
 		/* Copy over */
 		n_ptr = &m_list[m_idx];
 		memcpy(n_ptr, m_ptr, sizeof(*m_ptr));
+		cave_m_idx[y + y0][x + x0] = m_idx;
 
 		/* Adjust stuff */
 		n_ptr->fy = y + y0;
