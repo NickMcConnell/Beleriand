@@ -201,6 +201,7 @@ void chunk_wipe(int idx)
     mem_free(chunk->m_list);
     mem_free(chunk->trap_list);
     mem_free(chunk);
+    chunk = NULL;
 }
 
 /**
@@ -442,7 +443,8 @@ void chunk_read(int idx, int y_offset, int x_offset)
     }
 
     /* Wipe it */
-    chunk_wipe(idx);   
+    chunk_wipe(idx);
+    chunk_list[idx].chunk = NULL;
 }
 
 /**
