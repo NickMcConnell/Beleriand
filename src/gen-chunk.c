@@ -595,7 +595,7 @@ void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
  */
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 {
-    int n, z_off, y_off, x_off;
+    int y, x, n, z_off, y_off, x_off;
     
     /* Store the chunk reference */
     int idx = chunk_store(1, 1, ref.region, ref.z_pos, ref.y_pos, ref.x_pos, 
@@ -660,8 +660,6 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
     /* Get the new centre chunk */
     if (z_offset == 0) 
 	new_idx = chunk_offset_to_adjacent(0, y_offset, x_offset);
-
-    forget_view();
 
     /* Unload chunks no longer required */
     for (y = 0; y < 3; y++)
@@ -742,9 +740,13 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 
 		/* Terrain */
 		cave_feat[y_write][x_write] = cave_feat[y_read][x_read];
+		cave_feat[y_read][x_read] = 0;
 		for (i = 0; i < CAVE_SIZE; i++)
+		{
 		    cave_info[y_write][x_write][i]
 			= cave_info[y_read][x_read][i];
+		    cave_wipe(cave_info[y_read][x_read]);
+		}
 
 		/* Objects */
 		if (cave_o_idx[y_read][x_read])
@@ -760,6 +762,7 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 			o_ptr->ix = x_write;
 			next_o_idx = o_ptr->next_o_idx;
 		    }
+		    cave_o_idx[y_read][x_read] = 0;
 		}
 
 		/* Monsters */
@@ -789,6 +792,7 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 			m_ptr->x_terr =
 			    m_ptr->x_terr + (x_offset - 1) * CHUNK_WID;
 		    }
+		    cave_m_idx[y_read][x_read] = 0;
 		}
 		/* Remove the player for now */
 		else if (cave_m_idx[y_read][x_read] < 0)
@@ -858,10 +862,18 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		/* Otherwise generate a new one */
 		else 
 		{
+		    int xx, yy;
+		    int x0 = x * CHUNK_WID, y0 = y * CHUNK_HGT;
+
+		    for (yy = y0; yy < y0 + CHUNK_HGT; yy++)
+			for (xx = x0; xx < x0 + CHUNK_WID; xx++)
+			    cave_off(cave_info[yy][xx], CAVE_MARK);
+
 		    chunk_generate(ref, y, x);
 		}
 	    }
 	}
     }
+    illuminate();
     update_view();
 }
