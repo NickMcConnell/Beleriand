@@ -1088,14 +1088,30 @@ void wr_chunks(void)
     if (p_ptr->is_dead)
 	return;
 
-    wr_u16b(chunk_cnt);
+    wr_u16b(chunk_max);
     wr_u16b(CAVE_SIZE);
 
     for (j = 0; j < chunk_max; j++)
     {
-	world_chunk *chunk = chunk_list[j].chunk;
+	chunk_ref *ref = &chunk_list[j];
+	world_chunk *chunk = ref->chunk;
 
-	/* Skip dead ones */
+	wr_u16b(ref->ch_idx);
+	wr_u16b(ref->age);
+	wr_u16b(ref->region);
+	wr_byte(ref->z_pos);
+	wr_byte(ref->y_pos);
+	wr_byte(ref->x_pos);
+	for (i = 0; i < 11; i++)
+	    wr_u16b(ref->adjacent[i]);
+
+	/* Skip dead chunks */
+	if (chunk) 
+	    tmp8u = 1;
+	else
+	    tmp8u = 0;
+	
+	wr_byte(tmp8u);
 	if (!chunk) continue;
 
 	/* Loop across bytes of cave_info */
@@ -1199,7 +1215,7 @@ void wr_chunks(void)
 	}
 
 	/* Total traps */
-	wr_s16b(chunk->trap_max);
+	wr_u16b(chunk->trap_max);
 	
 	for (i = 0; i < chunk->trap_max; i++)
 	{

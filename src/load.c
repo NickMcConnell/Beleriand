@@ -1877,12 +1877,7 @@ int rd_traps(void)
 
 int rd_chunks(void)
 {
-    int i, n, y, x;
-  
-    s16b stage;
-    s16b last_stage;
-    s16b py, px;
-    s16b ymax, xmax;
+    int i, j, n, y, x;
   
     byte count;
     byte tmp8u;
@@ -1893,64 +1888,141 @@ int rd_chunks(void)
     if (p_ptr->is_dead)
 	return 0;
 
-    rd_u16b(&chunk_cnt);
+    rd_u16b(&chunk_max);
     rd_u16b(&cave_size);
+    chunk_cnt = 0;
 
     /*** Run length decoding ***/
   
-    /* Loop across bytes of cave_info */
-    for (n = 0; n < cave_size; n++)
+    for (j = 0; j < chunk_max; j++)
     {
+	chunk_ref *ref = &chunk_list[j];
+	world_chunk *chunk = ref->chunk;
+
+	rd_u16b(&ref->ch_idx);
+	rd_u16b(&ref->age);
+	rd_u16b(&ref->region);
+	rd_byte(&ref->z_pos);
+	rd_byte(&ref->y_pos);
+	rd_byte(&ref->x_pos);
+	for (i = 0; i < 11; i++)
+	{
+	    rd_u16b(&tmp16u);
+	    ref->adjacent[i] = tmp16u;
+	}
+
+	/* Chunk? */
+	rd_byte(&tmp8u);
+	if (tmp8u == 0) continue;
+
+	/* Allocate memory */
+	chunk = (world_chunk*) mem_alloc(sizeof(world_chunk));
+
+	chunk->cave_info 
+	    = (grid_chunk *) mem_zalloc(CHUNK_HGT * sizeof(grid_chunk));
+	chunk->cave_feat 
+	    = (byte_chunk *) mem_zalloc(CHUNK_HGT * sizeof(byte_chunk));
+	chunk->cave_o_idx 
+	    = (s16b_chunk *) mem_zalloc(CHUNK_HGT * sizeof(s16b_chunk));
+	chunk->cave_m_idx 
+	    = (s16b_chunk *) mem_zalloc(CHUNK_HGT * sizeof(s16b_chunk));
+	chunk->o_list 
+	    = (object_type *) mem_zalloc(z_info->o_max * sizeof(object_type));
+	chunk->m_list 
+	    = (monster_type *) mem_zalloc(z_info->m_max * sizeof(monster_type));
+	chunk->trap_list 
+	    = (trap_type *) mem_zalloc(z_info->l_max * sizeof(trap_type));
+
+	/* Loop across bytes of cave_info */
+	for (n = 0; n < cave_size; n++)
+	{
+	    /* Load the dungeon data */
+	    for (x = y = 0; y < CHUNK_HGT; )
+	    {
+		/* Grab RLE info */
+		rd_byte(&count);
+		rd_byte(&tmp8u);
+	    
+		/* Apply the RLE info */
+		for (i = count; i > 0; i--)
+		{
+		    /* Extract "info" */
+		    chunk->cave_info[y][x][n] = tmp8u;
+	  
+		    /* Advance/Wrap */
+		    if (++x >= CHUNK_WID)
+		    {
+			/* Wrap */
+			x = 0;
+		    
+			/* Advance/Wrap */
+			if (++y >= CHUNK_HGT) break;
+		    }
+		}
+	    }
+	}
+
+	/*** Run length decoding ***/
+  
 	/* Load the dungeon data */
 	for (x = y = 0; y < CHUNK_HGT; )
 	{
 	    /* Grab RLE info */
 	    rd_byte(&count);
 	    rd_byte(&tmp8u);
-	    
+      
 	    /* Apply the RLE info */
 	    for (i = count; i > 0; i--)
 	    {
-		/* Extract "info" */
-		cave_info[y][x][n] = tmp8u;
+		/* Extract "feat" */
+		chunk->cave_feat[y][x] = tmp8u;
 	  
 		/* Advance/Wrap */
 		if (++x >= CHUNK_WID)
 		{
 		    /* Wrap */
 		    x = 0;
-		    
+	      
 		    /* Advance/Wrap */
 		    if (++y >= CHUNK_HGT) break;
 		}
 	    }
 	}
-    }
 
-   /*** Run length decoding ***/
+	/* Total objects */
+	rd_u16b(&chunk->o_cnt);
   
-    /* Load the dungeon data */
-    for (x = y = 0; y < CHUNK_HGT; )
-    {
-	/* Grab RLE info */
-	rd_byte(&count);
-	rd_byte(&tmp8u);
-      
-	/* Apply the RLE info */
-	for (i = count; i > 0; i--)
+	/* Dump the objects */
+	for (i = 1; i < chunk->o_cnt; i++)
 	{
-	    /* Extract "feat" */
-	    cave_set_feat(y, x, tmp8u);
-	  
-	    /* Advance/Wrap */
-	    if (++x >= CHUNK_WID)
-	    {
-		/* Wrap */
-		x = 0;
-	      
-		/* Advance/Wrap */
-		if (++y >= CHUNK_HGT) break;
-	    }
+	    object_type *o_ptr = &chunk->o_list[i];
+      
+	    /* Dump it */
+	    rd_item(o_ptr);
+	}
+
+	/* Total monsters */
+	rd_u16b(&chunk->m_cnt);
+  
+	/* Dump the monsters */
+	for (i = 1; i < chunk->m_cnt; i++)
+	{
+	    monster_type *m_ptr = &chunk->m_list[i];
+	    
+	    /* Dump it */
+	    rd_monster(m_ptr);
+	}
+
+	/* Total traps */
+	rd_u16b(&chunk->trap_max);
+	
+	for (i = 0; i < chunk->trap_max; i++)
+	{
+	    trap_type *t_ptr = &chunk->trap_list[i];
+	    
+	    rd_trap(t_ptr);
 	}
     }
+
+    return 0;
 }
