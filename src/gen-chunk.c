@@ -34,6 +34,7 @@
  */
 world_chunk *chunk_write(int y_offset, int x_offset)
 {
+    size_t j;
     int i;
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -69,8 +70,8 @@ world_chunk *chunk_write(int y_offset, int x_offset)
 	    
 	    /* Terrain */
 	    new->cave_feat[y][x] = cave_feat[y0 + y][x0 + x];
-	    for (i = 0; i < CAVE_SIZE; i++)		
-		new->cave_info[y][x][i] = cave_info[y0 + y][x0 + x][i];
+	    for (j = 0; j < CAVE_SIZE; j++)		
+		new->cave_info[y][x][j] = cave_info[y0 + y][x0 + x][j];
 	    
 	    /* Dungeon objects */
 	    held = 0;
@@ -311,6 +312,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, byte z_pos, byte y_pos,
  */
 void chunk_read(int idx, int y_offset, int x_offset)
 {
+    size_t j;
     int i;
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -327,8 +329,8 @@ void chunk_read(int idx, int y_offset, int x_offset)
 	    
 	    /* Terrain */
 	    cave_feat[y0 + y][x0 + x] = chunk->cave_feat[y][x];
-	    for (i = 0; i < CAVE_SIZE; i++)		
-		cave_info[y0 + y][x0 + x][i] = chunk->cave_info[y][x][i];
+	    for (j = 0; j < CAVE_SIZE; j++)		
+		cave_info[y0 + y][x0 + x][j] = chunk->cave_info[y][x][j];
 	    
 	    /* Objects */
 	    held = 0;
@@ -504,6 +506,34 @@ int chunk_get_idx(int z_offset, int y_offset, int x_offset)
 }
 
 /**
+ * Find a valid terrain location in a region
+ */
+void chunk_get_terrain(region_type region, byte *y_pos, byte *x_pos)
+{
+    char terrain;
+
+    /* Enforce limits */
+    *y_pos = MIN(region.height - 1, *y_pos);
+    *x_pos = MIN(region.width - 1, *x_pos);
+
+    /* Get the obvious terrain */
+    terrain = region.text[region.width * (*y_pos) + (*x_pos)];
+
+    /* Move if it's still border */
+    while (((terrain >= '0') && (terrain <= '8')) || (terrain = ' '))
+    {
+	int cy = region.height / 2, cx = region.width / 2;
+
+	if (cy < *y_pos) (*y_pos)--;
+	else if (cy > *y_pos) (*y_pos)++;
+	if (cx < *x_pos) (*x_pos)--;
+	else if (cx > *x_pos) (*x_pos)++;
+
+	terrain = region.text[region.width * (*y_pos) + (*x_pos)];
+    }
+}
+
+/**
  * Get the location data for a chunk
  */
 void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
@@ -512,7 +542,7 @@ void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
     int y_new = ref->y_pos;
     int x_new = ref->x_pos;
     int y, x, min_y, min_x, max_y, max_x, y_frac, x_frac;
-    char terrain, new_terrain;
+    char terrain;
     int i, new_region;
 
     /* Get the new position */
@@ -593,15 +623,7 @@ void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
     ref->region = new_region;
     ref->y_pos = max_y - min_y ? min_y + (y_frac * (max_y - min_y)) / 10 : 0;
     ref->x_pos = max_x - min_x ? min_x + (x_frac * (max_x - min_x)) / 10 : 0;
-    new_terrain = region->text[region->width * ref->y_pos + ref->x_pos];
-
-    /* Move if it's still border */
-    while ((new_terrain >= '0') && (new_terrain <= '8'))
-    {
-	ref->y_pos += (y_offset - 1);
-	ref->x_pos += (x_offset - 1);
-	new_terrain = region->text[region->width * ref->y_pos + ref->x_pos];
-    }
+    chunk_get_terrain(*region, &ref->y_pos, &ref->x_pos);
 }
 
 /**
@@ -609,7 +631,7 @@ void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
  */
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 {
-    int y, x, n, z_off, y_off, x_off;
+    int n, z_off, y_off, x_off;
     
     /* Store the chunk reference */
     int idx = chunk_store(1, 1, ref.region, ref.z_pos, ref.y_pos, ref.x_pos, 
@@ -660,6 +682,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
  */
 void chunk_change(int z_offset, int y_offset, int x_offset)
 {
+    size_t j;
     int i, x, y;
     bool y_reverse = FALSE, x_reverse = FALSE;
     bool chunk_exists[10] = { 0 };
@@ -755,10 +778,10 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		/* Terrain */
 		cave_feat[y_write][x_write] = cave_feat[y_read][x_read];
 		cave_feat[y_read][x_read] = 0;
-		for (i = 0; i < CAVE_SIZE; i++)
+		for (j = 0; j < CAVE_SIZE; j++)
 		{
-		    cave_info[y_write][x_write][i]
-			= cave_info[y_read][x_read][i];
+		    cave_info[y_write][x_write][j]
+			= cave_info[y_read][x_read][j];
 		    cave_wipe(cave_info[y_read][x_read]);
 		}
 
