@@ -101,10 +101,14 @@ world_chunk *chunk_write(int y_offset, int x_offset)
 	    if (cave_m_idx[y0 + y][x0 + x] > 0)
 	    {
 		monster_type *m_ptr = &m_list[cave_m_idx[y0 + y][x0 + x]];
-		monster_type *n_ptr = &new->m_list[++new->m_cnt];
+		monster_type *n_ptr = NULL;
+
+		/* Valid monster */
+		if (m_ptr->r_idx <= 0) continue;
 
 		/* Copy over */
-		new->cave_m_idx[y][x] = new->m_cnt;
+		new->cave_m_idx[y][x] = ++new->m_cnt;
+		n_ptr = &new->m_list[new->m_cnt];
 		memcpy(n_ptr, m_ptr, sizeof(*m_ptr));
 
 		/* Adjust stuff */
@@ -802,6 +806,7 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 			m_ptr->x_terr =
 			    m_ptr->x_terr + (x_offset - 1) * CHUNK_WID;
 		    }
+		    cave_m_idx[y_write][x_write] = cave_m_idx[y_read][x_read];
 		    cave_m_idx[y_read][x_read] = 0;
 		}
 		/* Remove the player for now */
