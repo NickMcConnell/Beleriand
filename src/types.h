@@ -574,9 +574,10 @@ typedef struct world_region {
     char *text;
 
     byte danger;       	           /**< Region danger */
-    byte scale;		           /**< Scaling for region map */
-    byte height;                   /**< Region height */
-    byte width;                    /**< Region width */
+    byte height;       	           /**< Region height */
+    byte width;       	           /**< Region width */
+    byte y_offset;                 /**< Region y location */
+    byte x_offset;                 /**< Region x location */
 
     byte adjacent[MAX_BORDERS];    /**< Indices of adjacent regions*/
 } region_type;
@@ -1456,8 +1457,8 @@ typedef struct chunk_ref {
     u16b age;           /**< Time in turns since this chunk was created */
     u16b region;        /**< Region the chunk is from */
     byte z_pos;         /**< depth of the chunk */
-    byte y_pos;         /**< y position in the region */
-    byte x_pos;         /**< x position in the region */
+    byte y_pos;         /**< y position */
+    byte x_pos;         /**< x position of the centre of the chunk (1 mod 3) */
     world_chunk *chunk; /**< The actual chunk */
     int adjacent[11];   /**< Adjacent chunks */
 } chunk_ref;

@@ -549,7 +549,7 @@ void generate_cave(void)
 		ref.z_pos = chunk_list[p_ptr->stage].z_pos;
 		ref.y_pos = chunk_list[p_ptr->stage].y_pos;
 		ref.x_pos = chunk_list[p_ptr->stage].x_pos;
-		chunk_adjacent_data(&ref, y, x);
+		chunk_adjacent_data(&ref, 0, y, x);
 	    
 		/* Load it if it already exists
 		chunk_idx = chunk_find(ref);

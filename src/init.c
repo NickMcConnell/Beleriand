@@ -2655,9 +2655,10 @@ static enum parser_error parse_region_i(struct parser *p) {
     if (!region)
 	return PARSE_ERROR_MISSING_RECORD_HEADER;
     region->danger = parser_getuint(p, "danger");
-    region->scale = parser_getint(p, "scale");
     region->height = parser_getuint(p, "height");
     region->width = parser_getuint(p, "width");
+    region->y_offset = parser_getuint(p, "y_offset");
+    region->x_offset = parser_getuint(p, "x_offset");
 
     return PARSE_ERROR_NONE;
 }
@@ -2692,7 +2693,7 @@ struct parser *init_parse_region(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
     parser_reg(p, "N uint index str name", parse_region_n);
-    parser_reg(p, "I uint danger int scale uint height uint width", parse_region_i);
+    parser_reg(p, "I uint danger uint height uint width uint y_offset uint x_offset", parse_region_i);
     parser_reg(p, "A uint adj0 uint adj1 uint adj2 uint adj3 uint adj4 uint adj5 uint adj6 uint adj7", parse_region_a);
     parser_reg(p, "D str text", parse_region_d);
     return p;
@@ -3472,6 +3473,7 @@ static void autoinscribe_init(void)
 static errr init_other(void)
 {
     int i, k, n;
+    int y, x;
 
 
     /*** Prepare the various "bizarre" arrays ***/
@@ -3515,6 +3517,26 @@ static errr init_other(void)
     cave_cost = C_ZNEW(DUNGEON_HGT, byte_wid);
     cave_when = C_ZNEW(DUNGEON_HGT, byte_wid);
 
+    /*** Write region terrain array ***/
+    for (y = 0; y < MAX_Y_POS; y++)
+	for (x = 0; x < MAX_X_POS; x++)
+	    region_terrain[y][x] = 'W';
+
+    for (i = 0; i < z_info->region_max; i++)
+    {
+	region_type *region = &region_info[i];
+	int y_start = region->y_offset;
+	int x_start = region->x_offset;
+
+	for (y = 0; y < region->height; y++)
+	    for (x = 0; x < region->width; x++)
+	    {
+		char terrain = region->text[y * region->width + x];
+
+		if (terrain != ' ')
+		    region_terrain[y + y_start][x + x_start] = terrain;
+	    }
+    }
 
     /*** Prepare entity arrays ***/
 

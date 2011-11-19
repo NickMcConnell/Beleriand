@@ -506,124 +506,55 @@ int chunk_get_idx(int z_offset, int y_offset, int x_offset)
 }
 
 /**
- * Find a valid terrain location in a region
+ * Find the region a set of coordinates is in - assume dungeons are always
+ * directly below their entrance
  */
-void chunk_get_terrain(region_type region, byte *y_pos, byte *x_pos)
+int find_region(int y_pos, int x_pos)
 {
-    char terrain;
+    int i;
 
-    /* Enforce limits */
-    *y_pos = MIN(region.height - 1, *y_pos);
-    *x_pos = MIN(region.width - 1, *x_pos);
-
-    /* Get the obvious terrain */
-    terrain = region.text[region.width * (*y_pos) + (*x_pos)];
-
-    /* Move if it's still border */
-    while (((terrain >= '0') && (terrain <= '8')) || (terrain = ' '))
+    for (i = 0; i < z_info->region_max; i++)
     {
-	int cy = region.height / 2, cx = region.width / 2;
+	region_type *region = &region_info[i];
 
-	if (cy < *y_pos) (*y_pos)--;
-	else if (cy > *y_pos) (*y_pos)++;
-	if (cx < *x_pos) (*x_pos)--;
-	else if (cx > *x_pos) (*x_pos)++;
+	if ((y_pos < region->y_offset) || 
+	    (y_pos >= region->y_offset + region->height))
+	    continue;
 
-	terrain = region.text[region.width * (*y_pos) + (*x_pos)];
+	if ((x_pos < region->x_offset) || 
+	    (x_pos >= region->x_offset + region->width))
+	    continue;
+
+	if (region->text[region->width * y_pos + x_pos] == ' ')
+	    continue;
+
+	break;
     }
+
+    return i;
 }
 
 /**
  * Get the location data for a chunk
  */
-void chunk_adjacent_data(chunk_ref *ref, int y_offset, int x_offset)
+void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset, 
+			 int x_offset)
 {
-    region_type *region = &region_info[ref->region];
-    int y_new = ref->y_pos;
-    int x_new = ref->x_pos;
-    int y, x, min_y, min_x, max_y, max_x, y_frac, x_frac;
-    char terrain;
-    int i, new_region;
-
-    /* Get the new position */
-    y_new += (y_offset - 1);
-    x_new += (x_offset - 1);
-
-    /* See what's there */
-    terrain = region->text[region->width * y_new + x_new];
-
-    /* Still in the same region */
-    if ((terrain < '0') || (terrain > '8'))
-    {
-	ref->y_pos = y_new;
-	ref->x_pos = x_new;
-	return;
-    }
-
-    /* Empty region */
-    if (terrain == '0')
+    if (((ref->y_pos == 0) && (y_offset == 0)) || 
+	((ref->y_pos >= MAX_Y_POS - 1) && (y_offset == 2)) || 
+	((ref->x_pos <= 2) && (x_offset == 0)) ||
+	((ref->x_pos >= MAX_X_POS - 3) && (x_offset == 2)))
     {
 	ref->region = 0;
-	return;
     }
-
-    /* Get the region border */
-    min_y = region->height;
-    min_x = region->width;
-    max_y = 0;
-    max_x = 0;
-    for (y = 0; y < region->height; y++)
-	for (x = 0; x < region->width; x++)
-	{
-	    if (region->text[region->width * y + x] == terrain)
-	    {
-		min_y = MIN(y, min_y);
-		min_x = MIN(x, min_x);
-		max_y = MAX(y, min_y);
-		max_x = MAX(x, min_x);
-	    }
-	}
-
-    /* Get the y and x distances along the border (as tenths of the total) */
-    y_frac = max_y - min_y ? ((y_new - min_y) * 10) / (max_y - min_y) : 0;
-    x_frac = max_x - min_x ? ((x_new - min_x) * 10) / (max_x - min_x) : 0;
-
-    /* Switch to the new region */
-    new_region = region->adjacent[D2I(terrain) - 1];
-    region = &region_info[new_region];
-
-    /* Find the new terrain */
-    for (i = 0; i < 8; i++)
+    else
     {
-	if (region->adjacent[i] == ref->region)
-	{
-	    terrain = I2D(i + 1);
-	    break;
-	}
+	ref->z_pos += z_offset;
+	ref->y_pos += (y_offset - 1);
+	ref->x_pos += 3 * (x_offset - 1);
+	if (z_offset == 0) 
+	    ref->region = find_region(ref->y_pos, ref->x_pos);
     }
-
-    /* Get the region border */
-    min_y = region->height;
-    min_x = region->width;
-    max_y = 0;
-    max_x = 0;
-    for (y = 0; y < region->height; y++)
-	for (x = 0; x < region->width; x++)
-	{
-	    if (region->text[region->width * y + x] == terrain)
-	    {
-		min_y = MIN(y, min_y);
-		min_x = MIN(x, min_x);
-		max_y = MAX(y, min_y);
-		max_x = MAX(x, min_x);
-	    }
-	}
-
-    /* Pick the new y, x co-ordinates */
-    ref->region = new_region;
-    ref->y_pos = max_y - min_y ? min_y + (y_frac * (max_y - min_y)) / 10 : 0;
-    ref->x_pos = max_x - min_x ? min_x + (x_frac * (max_x - min_x)) / 10 : 0;
-    chunk_get_terrain(*region, &ref->y_pos, &ref->x_pos);
 }
 
 /**
@@ -645,14 +576,13 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 
 	/* Set the reference data for the adjacent chunk */
 	chunk_adjacent_to_offset(n, &z_off, &y_off, &x_off);
-	ref1.region = ref.region;
 	ref1.z_pos = ref.z_pos;
 	ref1.y_pos = ref.y_pos;
 	ref1.x_pos = ref.x_pos;
-	if (z_off == 0) 
-	    chunk_adjacent_data(&ref1, y_off, x_off);
-	else
-	    ref1.z_pos += z_off;
+	ref1.region = ref.region;
+	chunk_adjacent_data(&ref1, z_off, y_off, x_off);
+	//if (ref1.region == z_info->region_max)
+	//  quit("Failed to find a valid region");
 
 	/* Self-reference (not strictly necessary) */
 	if (n == 5)
@@ -890,7 +820,7 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		ref.z_pos = 0;
 		ref.y_pos = chunk_list[p_ptr->stage].y_pos;
 		ref.x_pos = chunk_list[p_ptr->stage].x_pos;
-		chunk_adjacent_data(&ref, y, x);
+		chunk_adjacent_data(&ref, 0, y, x);
 	    
 		/* Load it if it already exists */
 		chunk_idx = chunk_find(ref);

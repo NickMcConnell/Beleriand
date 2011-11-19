@@ -146,6 +146,7 @@ extern u16b (*adjacency)[NUM_STAGES];
 extern u16b (*stage_path)[NUM_STAGES];
 extern u16b (*temp_path)[NUM_STAGES];
 extern u16b (*race_prob)[NUM_STAGES];
+extern char region_terrain[MAX_Y_POS][MAX_X_POS];
 extern byte *dummy;
 extern bitflag (*cave_info)[256][CAVE_SIZE];
 extern byte (*cave_feat)[DUNGEON_WID];
