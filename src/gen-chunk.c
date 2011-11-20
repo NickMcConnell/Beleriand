@@ -602,7 +602,25 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	    chunk_list[idx].adjacent[n] = MAX_CHUNKS;
     }
 
-    plain_gen(ref, y_offset, x_offset);
+    /*  */
+    for (n = 0; n <= 2; n++)
+    {
+	char terrain = region_terrain[ref.y_pos][ref.x_pos];
+
+	switch (terrain)
+	{
+	case '.':
+	{
+	    plain_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	default:
+	{
+	    ocean_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	}
+    }
 }
 
 /**

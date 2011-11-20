@@ -629,19 +629,39 @@ int make_formation(int y, int x, int base_feat1, int base_feat2, int *feat,
     return (total);
 }
 
-extern void plain_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void plain_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
     {
-	for (x = 0; x < CHUNK_WID; x++)
+	for (x = 0; x < CHUNK_HGT; x++)
 	{
 	    /* Terrain */
 	    cave_set_feat(y0 + y, x0 + x, FEAT_GRASS);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_WATER);
 	}
     }
 
