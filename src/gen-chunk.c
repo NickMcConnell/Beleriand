@@ -207,6 +207,9 @@ void chunk_wipe(int idx)
     mem_free(chunk->trap_list);
     mem_free(chunk);
     chunk = NULL;
+
+    /* Decrement the counter */
+    chunk_cnt--;
 }
 
 /**
@@ -266,8 +269,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, byte z_pos, byte y_pos,
 
 	    chunk_wipe(idx);
 
-	    /* Decrement the counters */
-	    chunk_cnt--;
+	    /* Decrement the maximum if necessary */
 	    if (idx == chunk_max)
 		chunk_max--;
 	}
@@ -581,8 +583,6 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	ref1.x_pos = ref.x_pos;
 	ref1.region = ref.region;
 	chunk_adjacent_data(&ref1, z_off, y_off, x_off);
-	//if (ref1.region == z_info->region_max)
-	//  quit("Failed to find a valid region");
 
 	/* Self-reference (not strictly necessary) */
 	if (n == 5)

@@ -1896,7 +1896,7 @@ int rd_chunks(void)
   
     for (j = 0; j < chunk_max; j++)
     {
-	chunk_ref *ref = &chunk_list[j];
+	chunk_ref *ref = &chunk_list[chunk_cnt];
 	world_chunk *chunk = ref->chunk;
 
 	rd_u16b(&ref->ch_idx);
@@ -2022,7 +2022,11 @@ int rd_chunks(void)
 	    
 	    rd_trap(t_ptr);
 	}
+	ref->chunk = chunk;
+	chunk_cnt++;
     }
+
+    chunk_max = chunk_cnt;
 
     return 0;
 }
