@@ -221,10 +221,10 @@ void chunk_change(int z_offset, int y_offset, int x_offset);
 
 extern bool no_vault(void);
 extern void plain_gen(chunk_ref ref, int y_offset, int x_offset, int x_small);
+extern void forest_gen(chunk_ref ref, int y_offset, int x_offset, int x_small);
 extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset, int x_small);
 extern void mtn_gen(void);
 extern void mtntop_gen(void);
-extern void forest_gen(void);
 extern void swamp_gen(void);
 extern void desert_gen(void);
 extern void river_gen(void);

@@ -649,6 +649,26 @@ extern void plain_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
+extern void forest_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_TREE);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
 extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 {
     int x, y;
@@ -1485,7 +1505,7 @@ extern void mtntop_gen(void)
  * 
  * No rooms outside the dungeons (for now, at least) -NRM
  */
-extern void forest_gen(void)
+extern void forest_gen_old(void)
 {
     bool made_plat;
 

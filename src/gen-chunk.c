@@ -260,6 +260,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, byte z_pos, byte y_pos,
 	if (chunk_cnt + 1 >= MAX_CHUNKS)
 	{
 	    /* Find and delete the oldest chunk */
+	    idx = 0;
 	    for (i = 0; i < MAX_CHUNKS; i++)
 		if (chunk_list[i].age > max)
 		{
@@ -605,13 +606,18 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     /*  */
     for (n = 0; n <= 2; n++)
     {
-	char terrain = region_terrain[ref.y_pos][ref.x_pos];
+	char terrain = region_terrain[ref.y_pos][ref.x_pos + n - 1];
 
 	switch (terrain)
 	{
 	case '.':
 	{
 	    plain_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '+':
+	{
+	    forest_gen(ref, y_offset, x_offset, n);
 	    break;
 	}
 	default:
