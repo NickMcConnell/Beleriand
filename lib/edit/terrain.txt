@@ -764,6 +764,47 @@ F:PASSABLE | OBJECT | EASY
 D:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
 D:spells.  
 
+N:123:reeds
+G:;:g
+P:13
+X:0:0:0:0
+F:PASSABLE | OBJECT | EASY
+D:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
+D:spells.  
+
+N:124:mountain
+G:#:D
+P:13
+X:0:0:0:0
+F:WALL | ROCK | PERMANENT | NO_SCENT | NO_NOISE
+D:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
+D:spells.  
+
+N:125:road
+G:.:W
+P:13
+X:0:0:0:0
+F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | RUN1 | TRAP
+D:An open road.  Can be walked across by anything, and can 
+D:hold traps or items.  Does not break line of sight.
+
+N:126:snow
+G:*:w
+P:13
+X:0:0:0:0
+F:PASSABLE | OBJECT | PROTECT | HIDE_OBJ
+D:Greatly slows down any creature that cannot bore or pass through rock.  Ends 
+D:LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
+D:spells.  Grants the character and monsters within it some protection from 
+D:melee, ranged, or magical attacks.  Snow may dissolve to normal floor.
+
+N:127:battlement
+G:#:u
+P:13
+X:0:0:0:0
+F:LOS | PROJECT | WALL | ROCK | NO_SCENT | NO_NOISE
+D:Allows LOS, missiles, bolts, and beams, but cannot be passed. 
+
 
 
 #

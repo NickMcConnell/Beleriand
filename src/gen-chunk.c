@@ -603,7 +603,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	    chunk_list[idx].adjacent[n] = MAX_CHUNKS;
     }
 
-    /*  */
+    /* Generate the chunk as 3 22x22 pieces */
     for (n = 0; n <= 2; n++)
     {
 	char terrain = region_terrain[ref.y_pos][ref.x_pos + n - 1];
@@ -618,6 +618,61 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	case '+':
 	{
 	    forest_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '-':
+	{
+	    lake_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '~':
+	{
+	    ocean_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case ',':
+	{
+	    moor_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '^':
+	{
+	    mtn_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '_':
+	{
+	    swamp_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '|':
+	{
+	    dark_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case 'X':
+	{
+	    impass_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '/':
+	{
+	    desert_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '*':
+	{
+	    snow_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '=':
+	{
+	    town_gen(ref, y_offset, x_offset, n);
+	    break;
+	}
+	case '&':
+	{
+	    landmk_gen(ref, y_offset, x_offset, n);
 	    break;
 	}
 	default:

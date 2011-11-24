@@ -689,6 +689,207 @@ extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
+extern void lake_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_WATER);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void moor_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_GRASS);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_MTN);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_REED);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void dark_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_TREE);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void impass_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_MTN);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void desert_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_DUNE);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void snow_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_SNOW);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void town_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_ROAD);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+extern void landmk_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+{
+    int x, y;
+    int y0 = y_offset * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+
+    /* Write the location stuff */
+    for (y = 0; y < CHUNK_HGT; y++)
+    {
+	for (x = 0; x < CHUNK_HGT; x++)
+	{
+	    /* Terrain */
+	    cave_set_feat(y0 + y, x0 + x, FEAT_FLOOR);
+	}
+    }
+
+    if (!character_dungeon)
+	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+}
+
+
 /**
  * Generate a new plain level. Place stairs, 
  * and random monsters, objects, and traps.  Place any quest monsters.
@@ -922,7 +1123,7 @@ void mtn_connect(int y, int x, int y1, int x1)
  * 
  * No rooms outside the dungeons (for now, at least) -NRM
  */
-extern void mtn_gen(void)
+extern void mtn_gen_old(void)
 {
     bool made_plat;
 
@@ -1254,7 +1455,7 @@ extern void mtn_gen(void)
  * We mark grids "temp" to prevent random monsters being placed there.
  * 
  */
-extern void mtntop_gen(void)
+extern void mtntop_gen_old(void)
 {
     bool made_plat;
 
@@ -1766,7 +1967,7 @@ extern void forest_gen_old(void)
  * 
  * No rooms outside the dungeons (for now, at least) -NRM
  */
-extern void swamp_gen(void)
+extern void swamp_gen_old(void)
 {
     int i, j, k, y, x;
     int stage = p_ptr->stage;
@@ -1978,7 +2179,7 @@ extern void swamp_gen(void)
  * 
  * No rooms outside the dungeons (for now, at least) -NRM
  */
-extern void desert_gen(void)
+extern void desert_gen_old(void)
 {
     bool made_plat;
 
@@ -2257,7 +2458,7 @@ extern void desert_gen(void)
  * 
  * No rooms outside the dungeons (for now, at least) -NRM
  */
-extern void river_gen(void)
+extern void river_gen_old(void)
 {
     int i, j, k, y, x, y1 = DUNGEON_HGT / 2;
     int mid[DUNGEON_HGT];
@@ -2619,7 +2820,7 @@ bool place_web(int type)
  * 
  * No rooms outside the dungeons (for now, at least) -NRM
  */
-extern void valley_gen(void)
+extern void valley_gen_old(void)
 {
     bool made_plat;
 
