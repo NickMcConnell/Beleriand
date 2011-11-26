@@ -5,3 +5,4 @@ beleriand
 *~
 main-wce.c
 Makefile.win_sdl
+.DS_store

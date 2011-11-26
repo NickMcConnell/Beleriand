@@ -346,7 +346,7 @@ static void town_gen_hack(void)
  * he is always placed on the stairs, even if he left the dungeon via
  * word of recall or teleport level.
  */
-static void town_gen(void)
+static void town_gen_old(void)
 {
     int i, y, x;
 

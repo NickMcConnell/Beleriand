@@ -9,3 +9,5 @@ autoconf.h
 faangband
 FAangband.app/
 .deps
+.DS_Store
+Beleriand.app
