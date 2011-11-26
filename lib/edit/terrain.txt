@@ -805,6 +805,13 @@ X:0:0:0:0
 F:LOS | PROJECT | WALL | ROCK | NO_SCENT | NO_NOISE
 D:Allows LOS, missiles, bolts, and beams, but cannot be passed. 
 
+N:128:ice
+G:*:w
+P:13
+X:0:0:0:0
+F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | RUN2
+D:An exposed sheet of ice.  Can be walked across by anything, and can 
+D:hold items.  Does not break line of sight.
 
 
 #
