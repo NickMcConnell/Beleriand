@@ -2000,8 +2000,8 @@ bool object_similar(const object_type * o_ptr, const object_type * j_ptr,
     int i;
     int total = o_ptr->number + j_ptr->number;
 
-    /* Check against stacking limit - except in stores which absorb anyway */
-    if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE))
+    /* Check against stacking limit */
+    if (total >= MAX_STACK_SIZE)
 	return FALSE;
 
     /* Hack -- identical items cannot be stacked */
@@ -4147,8 +4147,6 @@ void display_object_kind_recall(s16b k_idx)
 {
     object_type object = { 0 };
     object_prep(&object, k_idx, EXTREMIFY);
-    if (k_info[k_idx].aware)
-	object.ident |= IDENT_STORE;
 
     display_object_recall(&object);
 }

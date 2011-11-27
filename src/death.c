@@ -474,28 +474,9 @@ static void print_tomb(void)
  */
 static void death_knowledge(void)
 {
-    int i, which = 0;
+    int i;
 
     object_type *o_ptr;
-
-    store_type *st_ptr = NULL;
-
-    /* Get the store number of the home */
-    if (OPT(adult_dungeon))
-	which = NUM_TOWNS_SMALL * 4 + STORE_HOME;
-    else {
-	for (i = 0; i < NUM_TOWNS; i++) {
-	    /* Found the town */
-	    if (p_ptr->home == towns[i]) {
-		which += (i < NUM_TOWNS_SMALL ? 3 : STORE_HOME);
-		break;
-	    }
-	    /* Next town */
-	    else
-		which +=
-		    (i < NUM_TOWNS_SMALL ? MAX_STORES_SMALL : MAX_STORES_BIG);
-	}
-    }
 
     /* Hack -- Know everything in the inven/equip */
     for (i = 0; i < ALL_INVEN_TOTAL; i++) {
@@ -511,29 +492,6 @@ static void death_knowledge(void)
 
 	/* Fully known */
 	cf_union(o_ptr->id_curse, o_ptr->flags_curse);
-    }
-
-    /* Thralls sometimes (often!) don't have a home */
-    if (p_ptr->home) {
-	/* Activate the store */
-	st_ptr = &store[which];
-
-
-	/* Hack -- Know everything in the home */
-	for (i = 0; i < st_ptr->stock_num; i++) {
-	    o_ptr = &st_ptr->stock[i];
-
-	    /* Skip non-objects */
-	    if (!o_ptr->k_idx)
-		continue;
-
-	    /* Aware and Known */
-	    object_aware(o_ptr);
-	    object_known(o_ptr);
-
-	    /* Fully known */
-	    cf_union(o_ptr->id_curse, o_ptr->flags_curse);
-	}
     }
 
     history_unmask_unknown();
@@ -558,35 +516,9 @@ static void death_file(const char *title, int row)
  */
 static void death_info(const char *title, int row)
 {
-    int i, j, k, which = 0;
-
-    object_type *o_ptr;
-
-    store_type *st_ptr;
-
     ui_event ke;
 
     bool done = FALSE;
-
-    /* Get the store number of the home */
-    if (OPT(adult_dungeon))
-	which = NUM_TOWNS_SMALL * 4 + STORE_HOME;
-    else {
-	for (i = 0; i < NUM_TOWNS; i++) {
-	    /* Found the town */
-	    if (p_ptr->home == towns[i]) {
-		which += (i < NUM_TOWNS_SMALL ? 3 : STORE_HOME);
-		break;
-	    }
-	    /* Next town */
-	    else
-		which +=
-		    (i < NUM_TOWNS_SMALL ? MAX_STORES_SMALL : MAX_STORES_BIG);
-	}
-    }
-
-    /* Activate the store */
-    st_ptr = &store[which];
 
     screen_save();
     
@@ -631,49 +563,6 @@ static void death_info(const char *title, int row)
 	    done = TRUE;
     }
 
-
-
-    /* Home -- if anything there */
-    if ((st_ptr->stock_num) && !done) {
-	/* Display contents of the home */
-	for (k = 0, i = 0; i < st_ptr->stock_num; k++) {
-	    /* Clear screen */
-	    Term_clear();
-
-	    /* Show 12 items */
-	    for (j = 0; (j < 12) && (i < st_ptr->stock_num); j++, i++) {
-		byte attr;
-
-		char o_name[80];
-		char tmp_val[80];
-
-		/* Get the object */
-		o_ptr = &st_ptr->stock[i];
-
-		/* Print header, clear line */
-		sprintf(tmp_val, "%c) ", I2A(j));
-		prt(tmp_val, j + 2, 4);
-
-		/* Get the object description */
-		object_desc(o_name, sizeof(o_name), o_ptr,
-			    ODESC_PREFIX | ODESC_FULL);	
-
-		/* Get the inventory color */
-		attr = tval_to_attr[o_ptr->tval & 0x7F];
-
-		/* Display the object */
-		c_put_str(attr, o_name, j + 2, 7);
-	    }
-
-	    /* Caption */
-	    prt(format("Your home contains (page %d): -more-", k + 1), 0, 0);
-
-	    /* Wait for it */
-	    ke = inkey_ex();
-	    if (ke.key.code == ESCAPE)
-		done = TRUE;
-	}
-    }
     screen_load();
 }
 

@@ -471,9 +471,9 @@ static void process_world(void)
 	}
     }
 
-    /*** Handle the "outside" (stores and sunshine) ***/
+    /*** Handle the "outside" ***/
 
-    /* While not in cave, including cave towns */
+    /* While not in cave */
     if (outside) {
 	/* Hack -- Daybreak/Nightfall outside */
 	if (!(turn % ((10L * TOWN_DAWN) / 2))) {
@@ -501,12 +501,6 @@ static void process_world(void)
 	    }
 	}
     }
-
-
-    /* Update the stores once a day (while out of town) */
-    if (p_ptr->danger)
-	if (!(turn % (10L * STORE_TURNS)))
-	    stores_maint(1);
 
 
     /*** Process the monsters ***/

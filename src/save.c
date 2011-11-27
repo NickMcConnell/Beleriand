@@ -793,60 +793,6 @@ void wr_inventory(void)
 
 
 /**
- * Write a "store" record
- */
-void wr_stores(void)
-{
-    int i;
-
-    wr_byte(MAX_STORES);
-    wr_byte(STORE_INVEN_MAX);
-    wr_byte(STORE_CHOICES);
-    for (i = 0; i < MAX_STORES; i++)
-    {
-	const store_type *st_ptr = &store[i];
-	int j;
-  
-	/* Save the "open" counter */
-	wr_u32b(st_ptr->store_open);
-  
-	/* Save the "insults" */
-	wr_s16b(st_ptr->insult_cur);
-  
-	/* Save the current owner*/
-	wr_byte(st_ptr->owner);
-  
-	/* Save the stock size */
-	wr_byte((byte)st_ptr->stock_num);
-  
-	/* Save the "haggle" info */
-	wr_s16b(st_ptr->good_buy);
-	wr_s16b(st_ptr->bad_buy);
-  
-	/* Save the stock */
-	for (j = 0; j < st_ptr->stock_num; j++)
-	{
-	    /* Save each item in stock */
-	    wr_item(&st_ptr->stock[j]);
-	}
-
-	/* Save the ordered stock */
-	if (st_ptr->type == STORE_MERCH)
-    
-	    /* Look at the ordered slots */
-	    for (j = STORE_INVEN_MAX; j < STORE_CHOICES; j++)
-	    {
-		/* Save the table entry */
-		wr_s16b(st_ptr->table[j]);
-	    }
-
-	/* Expansion */
-	wr_u32b(0);
-    }
-}
-
-
-/**
  * Write the current dungeon
  */
 void wr_dungeon(void)

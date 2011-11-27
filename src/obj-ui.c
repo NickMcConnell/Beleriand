@@ -132,13 +132,6 @@ static void show_obj(int onum, size_t max_len, char label[80],
 	/* Extra fields */
 	ex_offset_ctr = ex_offset;
 
-	if (mode & OLIST_PRICE) {
-	    int price = price_item(o_ptr, TRUE, o_ptr->number);
-	    strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
-	    put_str(tmp_val, row + onum, col + ex_offset_ctr);
-	    ex_offset_ctr += 9;
-	}
-
 	if (mode & OLIST_FAIL) {
 	    int fail = (9 + get_use_device_chance(o_ptr)) / 10;
 	    if (object_aware_p(o_ptr))

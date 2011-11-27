@@ -1518,7 +1518,7 @@ bool describe_origin(textblock *tb, const object_type *o_ptr)
 	break;
 
     case ORIGIN_STORE:
-	textblock_append(tb, "Bought from a store.\n");
+	textblock_append(tb, "From a store.\n");
 	break;
 
     case ORIGIN_FLOOR:

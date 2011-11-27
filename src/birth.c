@@ -1341,9 +1341,6 @@ void player_birth(bool quickstart_allowed)
     /* Max HP and SP */
     get_bonuses();
 
-    /* Initialize shops */
-    store_init();
-
     /* Now we're really done.. */
     event_signal(EVENT_LEAVE_BIRTH);
 }

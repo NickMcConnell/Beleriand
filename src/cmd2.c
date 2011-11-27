@@ -32,76 +32,6 @@
  * Move house to the current town
  */
 
-void do_cmd_move_house(void)
-{
-    char buf[80];
-    int old_home = 0, new_home = 0, i = 0;
-    store_type temp;
-
-    const char *town = locality_name[stage_map[p_ptr->stage][LOCALITY]];
-
-    if (!p_ptr->danger) {
-	/* Already home */
-	if (p_ptr->stage == p_ptr->home) {
-	    msg("You already live here!");
-	    flush();
-	    return;
-	}
-
-	/* Check */
-	sprintf(buf, "Do you really want to move to %s?", town);
-	if (!get_check(buf))
-	    return;
-
-	/* No need to move for thrall mode */
-	if (p_ptr->home) {
-	    /* Get the current home */
-	    while (1) {
-		while (type_of_store[old_home] != STORE_HOME)
-		    old_home++;
-		if (p_ptr->home == towns[i])
-		    break;
-		old_home++;
-		i++;
-	    }
-	    i = 0;
-
-	    /* Get the new home */
-	    while (1) {
-		while (type_of_store[new_home] != STORE_HOME)
-		    new_home++;
-		if (p_ptr->stage == towns[i])
-		    break;
-		new_home++;
-		i++;
-	    }
-
-	    /* Transfer the gear */
-	    temp = store[new_home];
-	    store[new_home] = store[old_home];
-	    store[old_home] = temp;
-	}
-
-	/* Set the new town */
-	p_ptr->home = p_ptr->stage;
-	msg("Your home will be here when you return.");
-
-	/* Moved house */
-	sprintf(buf, "Moved house to %s.", town);
-
-	/* Write message */
-	history_add(buf, HISTORY_MOVE_HOUSE, 0);
-
-    } else
-	msg("You can only move to another town!");
-
-    /* Flush messages */
-    flush();
-
-    return;
-}
-
-
 /**
  * Go to less danger
  */
@@ -3035,8 +2965,6 @@ void do_cmd_pathfind(cmd_code code, cmd_arg args[])
  */
 static void do_cmd_hold_or_stay(int pickup)
 {
-    feature_type *f_ptr = &f_info[cave_feat[p_ptr->py][p_ptr->px]];
-
     /* Take a turn */
     p_ptr->energy_use = 100;
 
@@ -3058,18 +2986,6 @@ static void do_cmd_hold_or_stay(int pickup)
 
     /* Handle "objects".  Do not charge extra energy for objects picked up. */
     (void) py_pickup(pickup, p_ptr->py, p_ptr->px);
-
-    /* Hack -- enter a store if we are on one */
-    if (tf_has(f_ptr->flags, TF_SHOP))
-    {
-	/* Disturb */
-	disturb(0, 0);
-
-	cmd_insert(CMD_ENTER_STORE);
-
-	/* Free turn XXX XXX XXX */
-	p_ptr->energy_use = 0;
-    }
 }
 
 

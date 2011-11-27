@@ -839,10 +839,6 @@ extern int make_dump(char_attr_line * line, int mode)
 
     const char *paren = ")";
 
-    int k, which = 0;
-
-    store_type *st_ptr = NULL;
-
     char o_name[120];
 
     char buf[100];
@@ -876,31 +872,6 @@ extern int make_dump(char_attr_line * line, int mode)
     int current_line = 0;
 
     bool dead = FALSE;
-    bool have_home = (p_ptr->home != 0);
-
-    /* Get the store number of the home */
-    if (have_home) {
-	if (OPT(adult_dungeon))
-	    which = NUM_TOWNS_SMALL * 4 + STORE_HOME;
-	else {
-	    for (k = 0; k < NUM_TOWNS; k++) {
-		/* Found the town */
-		if (p_ptr->home == towns[k]) {
-		    which += (k < NUM_TOWNS_SMALL ? 3 : STORE_HOME);
-		    break;
-		}
-		/* Next town */
-		else
-		    which +=
-			(k <
-			 NUM_TOWNS_SMALL ? MAX_STORES_SMALL : MAX_STORES_BIG);
-	    }
-	}
-
-	/* Activate the store */
-	st_ptr = &store[which];
-    }
-
     dump_ptr = (char_attr *) &line[current_line];
 
     /* Hack - skip all this for mode 1 */
@@ -1734,33 +1705,6 @@ sprintf(buf1, "%d feet", p_ptr->state.see_infra * 10);
 
     }
     current_line += 2;
-
-    /* Dump the Home -- if anything there */
-    if (have_home) {
-	if (st_ptr->stock_num) {
-	    dump_ptr = (char_attr *) &line[current_line];
-
-	    /* Header */
-	    dump_put_str(TERM_WHITE, "[Home Inventory]", 2);
-	    current_line += 2;
-
-	    /* Dump all available items */
-	    for (i = 0; i < st_ptr->stock_num; i++) {
-		dump_ptr = (char_attr *) &line[current_line];
-		object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
-			    ODESC_PREFIX | ODESC_FULL);
-		sprintf(buf, "%c) %s", I2A(i), o_name);
-		dump_put_str(proc_list_color_hack(&st_ptr->stock[i]), buf, 0);
-		current_line++;
-		dump_ptr = (char_attr *) &line[current_line];
-		object_info_chardump(&st_ptr->stock[i], &line, &current_line, 5, 75);
-		current_line++;
-	    }
-
-	    /* Add an empty line */
-	    current_line += 2;
-	}
-    }
 
     /* Add in "character start" information */
     dump_ptr = (char_attr *) &line[current_line];

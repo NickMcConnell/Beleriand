@@ -1179,12 +1179,6 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 	    /* Pick proper indefinite article */
 	    s3 = (is_a_vowel(name[0])) ? "an " : "a ";
 
-	    /* Hack -- special introduction for store doors */
-	    if (tf_has(f_ptr->flags, TF_SHOP))
-	    {
-		s3 = "the entrance to the ";
-	    }
-
 	    /* Hack - destination of surface paths */
 	    if ((feat >= FEAT_LESS_NORTH) && (feat <= FEAT_MORE_WEST)) 
 	    {

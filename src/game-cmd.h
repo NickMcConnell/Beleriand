@@ -74,7 +74,6 @@ typedef enum cmd_code
 	CMD_BASH,
 	CMD_RUN,
 	CMD_HOLD,
-	CMD_ENTER_STORE,
 	CMD_ALTER,
 
     /* Store commands */	
@@ -99,7 +98,6 @@ typedef enum cmd_context
 	CMD_INIT,
 	CMD_BIRTH,
 	CMD_GAME,
-	CMD_STORE,
 	CMD_DEATH
 } cmd_context;
 

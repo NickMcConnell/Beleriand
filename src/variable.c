@@ -605,11 +605,6 @@ quest *q_list;
 chunk_ref *chunk_list;
 
 /**
- * Array[MAX_STORES] of stores
- */
-store_type *store;
-
-/**
  * Array[RANDNAME_NUM_TYPES][num_names] of random names
  */
 const char *** name_sections;

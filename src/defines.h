@@ -177,40 +177,6 @@
 #define NUM_TOWNS_BIG    4
 
 /**
- * Total number of stores (see "store.c", etc)
- */
-#define MAX_STORES       60
-
-/**
- * Number of stores in a large town (see "store.c", etc)
- */
-#define MAX_STORES_BIG    9
-
-/**
- * Number of stores in a small town (see "store.c", etc)
- */
-#define MAX_STORES_SMALL  4
-
-/**
- * Number of store types
- */
-#define MAX_STORE_TYPES  10
-
-/*
- * Store numbers
- */
-#define STORE_GEN 		0
-#define STORE_ARMORY 		1
-#define STORE_WEAPON 		2
-#define STORE_TEMPLE 		3
-#define STORE_ALCH 		4
-#define STORE_MAGIC 		5
-#define STORE_BLACKM 		6
-#define STORE_HOME 		7
-#define STORE_BOOK 		8
-#define STORE_MERCH             9
-
-/**
  * Maximum number of player "sex" types (see "table.c", etc)
  */
 #define MAX_SEXES            2
@@ -426,19 +392,6 @@
  * Current number of defined themes.  The maximum theoretical number is 32.
  */
 #define THEME_MAX		9
-
-
-/*
- * Store constants
- */
-#define STORE_INVEN_MAX	24	/* Max number of discrete objs in inven */
-#define STORE_CHOICES	32	/* Number of items to choose stock from */
-#define STORE_OBJ_LEVEL	5	/* Magic Level for normal stores */
-#define STORE_TURNOVER	9	/* Normal shop turnover, per day */
-#define STORE_MIN_KEEP	6	/* Min slots to "always" keep full */
-#define STORE_MAX_KEEP	18	/* Max slots to "always" keep full */
-#define STORE_SHUFFLE	20	/* 1/Chance (per day) of an owner changing */
-#define STORE_TURNS	1000	/* Number of turns between turnovers */
 
 
 /*
@@ -1043,15 +996,6 @@ enum
 #define FEAT_PERM_INNER	0x3D
 #define FEAT_PERM_OUTER	0x3E
 #define FEAT_PERM_SOLID	0x3F
-
-/*
- * Oangband shops are moved to 0x40 to 0x48 to make room for
- * the extra bookstore.  Method borrowed from Zangband. -LM-
- * Nother one. -NRM-
- */
-#define FEAT_SHOP_HEAD 0x40
-#define FEAT_SHOP_HOME 0x47
-#define FEAT_SHOP_TAIL 0x49
 
 /* "stairs" in wilderness -NRM- */
 #define FEAT_LESS_NORTH		0x60

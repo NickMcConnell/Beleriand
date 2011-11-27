@@ -1083,19 +1083,8 @@ void move_player(int dir)
 	    (void) search(FALSE);
 	}
 	
-	/* Handle "store doors" */
-	if (tf_has(f_ptr->flags, TF_SHOP)) {
-	    /* Disturb */
-	    disturb(0, 0);
-	    cmd_insert(CMD_ENTER_STORE);
-	}
-	
-	/* All other grids (including traps) */
-	else
-	{
-	    /* Handle objects (later) */
-	    p_ptr->notice |= (PN_PICKUP);
-	}
+	/* Handle objects (later) */
+	p_ptr->notice |= (PN_PICKUP);
 	
 	/* Flying players have a chance to miss traps */
 	if ((p_ptr->schange == SHAPE_BAT) || (p_ptr->schange == SHAPE_WYRM)) {

@@ -59,8 +59,6 @@ extern int dungeon_map[NUM_STAGES][9];
 extern const char *locality_name[MAX_LOCALITIES];
 extern const char *short_locality_name[MAX_LOCALITIES];
 extern int towns[10];
-extern int race_town_prob[10][14];
-extern byte type_of_store[MAX_STORES];
 extern const byte char_tables[256][CHAR_TABLE_SLOTS];
 extern const xchar_type latin1_encode[];
 extern byte get_angle_to_grid[41][41];
@@ -169,7 +167,6 @@ extern monster_type *m_list;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern chunk_ref *chunk_list;
-extern store_type *store;
 extern const char *** name_sections;
 extern object_type *inventory;
 extern object_type *quiver;
@@ -351,13 +348,6 @@ extern void initialize_random_artifacts(void);
 extern void enter_score(time_t *death_time);
 extern void show_scores(void);
 extern void predict_score(void);
-
-/* store.c */
-s32b price_item(object_type * o_ptr, int greed, bool flip);
-extern void store_shuffle(int which);
-extern void store_maint(int which);
-extern void stores_maint(int times);
-extern void store_init(void);
 
 /* util.c */
 extern void text_to_ascii(char *buf, size_t len, const char *str);

@@ -1140,8 +1140,8 @@ extern void mtn_gen_old(void)
 
     /* Amusing hack to make paths work */
     int form_feats[8] =
-	{ FEAT_SHOP_HEAD, FEAT_SHOP_HEAD + 1, FEAT_SHOP_HEAD + 2,
-	FEAT_SHOP_HEAD + 3, FEAT_SHOP_HEAD + 4, FEAT_NONE
+	{ FEAT_DOOR_HEAD, FEAT_DOOR_HEAD + 1, FEAT_DOOR_HEAD + 2,
+	FEAT_DOOR_HEAD + 3, FEAT_DOOR_HEAD + 4, FEAT_NONE
     };
 
     bool dummy;
@@ -1281,7 +1281,7 @@ extern void mtn_gen_old(void)
 	x = randint0(DUNGEON_WID - 1) + 1;
 	made_plat =
 	    generate_starburst_room(y - b, x - a, y + b, x + a, FALSE,
-				    FEAT_SHOP_HEAD + 2, TRUE);
+				    FEAT_DOOR_HEAD + 2, TRUE);
 
 	/* Success ? */
 	if (made_plat) {
@@ -1341,23 +1341,23 @@ extern void mtn_gen_old(void)
 		    cave_on(cave_info[y][x], CAVE_WALL);
 		    break;
 		}
-	    case FEAT_SHOP_HEAD:
+	    case FEAT_DOOR_HEAD:
 		{
 		    cave_set_feat(y, x, FEAT_RUBBLE);
 		    break;
 		}
-	    case FEAT_SHOP_HEAD + 1:
+	    case FEAT_DOOR_HEAD + 1:
 		{
 		    cave_set_feat(y, x, FEAT_MAGMA);
 		    cave_on(cave_info[y][x], CAVE_WALL);
 		    break;
 		}
-	    case FEAT_SHOP_HEAD + 2:
+	    case FEAT_DOOR_HEAD + 2:
 		{
 		    cave_set_feat(y, x, FEAT_GRASS);
 		    break;
 		}
-	    case FEAT_SHOP_HEAD + 3:
+	    case FEAT_DOOR_HEAD + 3:
 		{
 		    if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
 			> HIGHLAND_TREE_CHANCE)
@@ -1366,7 +1366,7 @@ extern void mtn_gen_old(void)
 			cave_set_feat(y, x, FEAT_TREE);
 		    break;
 		}
-	    case FEAT_SHOP_HEAD + 4:
+	    case FEAT_DOOR_HEAD + 4:
 		{
 		    cave_set_feat(y, x, FEAT_FLOOR);
 		    break;

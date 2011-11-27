@@ -121,8 +121,6 @@ static const char *obj_desc_get_basename(const object_type * o_ptr, bool aware)
     bool show_flavor = (k_ptr->flavor || is_jewellery(o_ptr)) ? TRUE : FALSE;
 
 
-    if (o_ptr->ident & IDENT_STORE)
-	show_flavor = FALSE;
     if (aware && !OPT(show_flavors))
 	show_flavor = FALSE;
 
@@ -218,10 +216,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 {
     object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-    bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE)
-	|| spoil;
-    bool aware = object_aware_p(o_ptr) || (o_ptr->ident & IDENT_STORE)
-	|| spoil;
+    bool known = object_known_p(o_ptr) || spoil;
+    bool aware = object_aware_p(o_ptr) || spoil;
 
     const char *basename = obj_desc_get_basename(o_ptr, aware);
     const char *modstr = obj_desc_get_modstr(o_ptr);
@@ -495,7 +491,7 @@ static bool obj_desc_show_armor(const object_type * o_ptr)
 static size_t obj_desc_chest(const object_type * o_ptr, char *buf, size_t max,
 			     size_t end)
 {
-    bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+    bool known = object_known_p(o_ptr);
 
     if (o_ptr->tval != TV_CHEST)
 	return end;
@@ -573,7 +569,7 @@ static size_t obj_desc_chest(const object_type * o_ptr, char *buf, size_t max,
 static size_t obj_desc_combat(const object_type * o_ptr, char *buf, size_t max,
 			      size_t end, bool spoil)
 {
-    bool worn = (o_ptr->ident & IDENT_WORN) || (o_ptr->ident & IDENT_STORE);
+    bool worn = (o_ptr->ident & IDENT_WORN);
 
     /* Dump base weapon info */
     switch (o_ptr->tval) {
@@ -763,7 +759,7 @@ static size_t obj_desc_charges(const object_type * o_ptr, char *buf, size_t max,
 {
     object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-    bool aware = object_aware_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+    bool aware = object_aware_p(o_ptr);
 
     /* Wands and Staffs have charges */
     if (aware && (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
@@ -846,27 +842,6 @@ static size_t obj_desc_inscrip(const object_type * o_ptr, char *buf, size_t max,
 }
 
 
-/* Add "unseen" to the end of unaware items in stores */
-static size_t obj_desc_aware(const object_type * o_ptr, char *buf, size_t max,
-			     size_t end)
-{
-    if (object_aware_p(o_ptr))
-    {
-	if ((o_ptr->discount > 0) && (o_ptr->discount != 80)) 
-	    strnfcat(buf, max, &end, " {%d%% off}", o_ptr->discount);
-    }
-    else
-    {
-	if ((o_ptr->discount == 0) || (o_ptr->discount == 80)) 
-	    strnfcat(buf, max, &end, " {unseen}");
-	else
-	    strnfcat(buf, max, &end, " {%d%% off, unseen}", o_ptr->discount);
-    }
-    
-    return end;
-}
-
-
 /**
  * Describes item `o_ptr` into buffer `buf` of size `max`.
  *
@@ -875,7 +850,6 @@ static size_t obj_desc_aware(const object_type * o_ptr, char *buf, size_t max,
  * ODESC_COMBAT will add to-hit, to-dam and AC info.
  * ODESC_EXTRA will add pval/charge/inscription/squelch info.
  * ODESC_PLURAL will pluralise regardless of the number in the stack.
- * ODESC_STORE turns off squelch markers, for in-store display.
  * ODESC_SPOIL treats the object as fully identified.
  *
  * Setting 'prefix' to TRUE prepends a 'the', 'a' or the number in the stack,
@@ -890,8 +864,7 @@ size_t object_desc(char *buf, size_t max, const object_type * o_ptr,
 
     bool prefix = mode & ODESC_PREFIX;
     bool spoil = (mode & ODESC_SPOIL);
-    bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE)
-	|| spoil;
+    bool known = object_known_p(o_ptr) || spoil;
 
     size_t end = 0;
 
@@ -925,16 +898,12 @@ size_t object_desc(char *buf, size_t max, const object_type * o_ptr,
     }
 
     if (mode & ODESC_EXTRA) {
-	if (spoil || (o_ptr->ident & IDENT_WORN) || 
-	    (o_ptr->ident & IDENT_STORE))
+	if (spoil || (o_ptr->ident & IDENT_WORN))
 	    end = obj_desc_pval(o_ptr, buf, max, end);
 
 	end = obj_desc_charges(o_ptr, buf, max, end);
 
-	if (mode & ODESC_STORE) {
-	    end = obj_desc_aware(o_ptr, buf, max, end);
-	} else
-	    end = obj_desc_inscrip(o_ptr, buf, max, end);
+	end = obj_desc_inscrip(o_ptr, buf, max, end);
     }
 
     return end;

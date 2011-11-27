@@ -164,7 +164,6 @@ const char *feature_group_text[] = {
     "Walls",
     "Streamers",
     "Obstructions",
-    "Stores",
     "Other",
     NULL
 };
@@ -1179,9 +1178,9 @@ static void display_artifact(int col, int row, bool cursor, int oid)
 
 static object_type *find_artifact(int a_idx)
 {
-    int i, j;
+    int i;
 
-    /* Look for the artifact, either in inventory, store or the object list */
+    /* Look for the artifact, either in inventory or the object list */
     for (i = 0; i < z_info->o_max; i++) {
 	if (o_list[i].name1 == a_idx)
 	    return &o_list[i];
@@ -1190,13 +1189,6 @@ static object_type *find_artifact(int a_idx)
     for (i = 0; i < INVEN_TOTAL; i++) {
 	if (p_ptr->inventory[i].name1 == a_idx)
 	    return &p_ptr->inventory[i];
-    }
-
-    for (j = 1; j < (FEAT_SHOP_TAIL - FEAT_SHOP_HEAD + 1); j++) {
-	for (i = 0; i < store[j].stock_size; i++) {
-	    if (store[j].stock[i].name1 == a_idx)
-		return &store[j].stock[i];
-	}
     }
 
     return NULL;

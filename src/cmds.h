@@ -52,7 +52,6 @@ extern void do_cmd_itemlist(void);
 extern void do_cmd_unknown(void);
 
 /* cmd2.c */
-extern void do_cmd_move_house(void);
 extern void do_cmd_go_up(cmd_code code, cmd_arg args[]);
 extern void do_cmd_go_down(cmd_code code, cmd_arg args[]);
 extern void do_cmd_search(cmd_code code, cmd_arg args[]);
@@ -132,7 +131,6 @@ extern void textui_cmd_fire_at_nearest(void);
 extern void do_cmd_throw(cmd_code code, cmd_arg args[]);
 extern void textui_cmd_throw(void);
 
-extern void do_cmd_store(cmd_code code, cmd_arg args[]);
 extern void do_cmd_suicide(cmd_code code, cmd_arg args[]);
 extern void do_cmd_save_game(cmd_code code, cmd_arg args[]);
 

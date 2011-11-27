@@ -84,7 +84,6 @@ static struct cmd_info cmd_action[] =
     { "Bash a door open",                   'B', CMD_BASH, NULL, NULL },
     { "Fire at nearest target",             'h', CMD_NULL, textui_cmd_fire_at_nearest, NULL },
     { "Racial shapechange/End shapechange", ']', CMD_NULL, do_cmd_reshape, NULL },
-    { "Move house",                         'H', CMD_NULL, do_cmd_move_house, NULL } 
 };
 
 /**
@@ -162,7 +161,6 @@ static struct cmd_info cmd_hidden[] =
 {
     { "Take notes",                      ':', CMD_NULL, do_cmd_note, NULL },
     { "Version info",                    'V', CMD_NULL, do_cmd_version, NULL },
-    { "Enter a store",                   '_', CMD_ENTER_STORE, NULL, NULL },
     { "Toggle windows",            KTRL('E'), CMD_NULL, toggle_inven_equip, NULL },
     { "Walk",                            ';', CMD_WALK, NULL, NULL },
     { "Start running",                   '.', CMD_RUN, NULL, NULL },

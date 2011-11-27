@@ -103,11 +103,8 @@ static void build_store(int n, int yy, int xx, int stage)
     /* Build an invulnerable rectangular building */
     for (y = y1; y <= y2; y++) {
 	for (x = x1; x <= x2; x++) {
-	    /* Create the building (or not ... NRM) */
-	    if ((n != 7) || (p_ptr->home == stage))
-		cave_set_feat(y, x, FEAT_PERM_EXTRA);
-	    else
-		cave_set_feat(y, x, FEAT_FLOOR);
+	    /* Create the building */
+	  cave_set_feat(y, x, FEAT_PERM_EXTRA);
 	}
     }
 
@@ -157,10 +154,7 @@ static void build_store(int n, int yy, int xx, int stage)
     }
 
     /* Clear previous contents, add a store door */
-    if ((n != 7) || (p_ptr->home == stage))
-	cave_set_feat(y, x, FEAT_SHOP_HEAD + n);
-    else
-	cave_set_feat(y, x, FEAT_FLOOR);
+    cave_set_feat(y, x, FEAT_DOOR_HEAD);
 }
 
 
@@ -182,7 +176,7 @@ static void town_gen_hack(void)
     int stage = p_ptr->stage;
     int last_stage = p_ptr->last_stage;
 
-    int rooms[MAX_STORES_BIG + 1];
+    int rooms[10];
 
     bool place = FALSE;
     bool major = FALSE;
@@ -208,7 +202,7 @@ static void town_gen_hack(void)
 
     /* Prepare an Array of "remaining stores", and count them */
     if (major)
-	for (n = 0; n < MAX_STORES_BIG; n++)
+	for (n = 0; n < 10; n++)
 	    rooms[n] = n;
     else {
 	rooms[0] = 9;

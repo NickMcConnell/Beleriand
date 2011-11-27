@@ -2069,48 +2069,6 @@ const char *short_locality_name[MAX_LOCALITIES] =
 int towns[10] = {6, 30, 37, 44, 115, 150, 151, 152, 153, 154};
 
 
-/**
- * Probabilities of races appearing in the respective towns 
- */
-
-int race_town_prob[10][14] = 
-  {
-    /* Eriador         */ {60, 0, 0, 7, 0, 4, 2, 5, 4, 0, 5, 7, 3, 2},
-    /* Ossiriand       */ {0, 75, 7, 0, 0, 0, 0, 0, 0, 2, 4, 7, 5, 0},
-    /* Ered Luin South */ {2, 0, 0, 0, 90, 2, 2, 2, 0, 0, 2, 0, 0, 0},
-    /* Taur-Im-Duinath */ {0, 5, 5, 0, 0, 0, 2, 0, 2, 1, 5, 40, 40, 0},
-    /* Ephel Brandir   */ {7, 0, 2, 1, 0, 0, 40, 0, 40, 2, 2, 2, 2, 2},
-    /* Gladden Fields  */ {5, 0, 0, 25, 0, 0, 5, 5, 5, 0, 25, 5, 0, 25},
-    /* Khazad Dum      */ {0, 0, 0, 0, 5, 20, 0, 70, 0, 0, 5, 0, 0, 0},
-    /* Belegost        */ {0, 0, 0, 0, 5, 70, 0, 20, 0, 0, 5, 0, 0, 0},
-    /* Menegroth       */ {0, 5, 70, 0, 0, 0, 5, 0, 5, 5, 5, 0, 5, 0},
-    /* Gondolin        */ {0, 5, 20, 0, 0, 0, 0, 0, 0, 75, 0, 0, 0, 0}};
-
-/**
- * Store types by index 
- */
-
-byte type_of_store[MAX_STORES] = 
-  {
-    /* Eriador        */ STORE_MERCH, STORE_TEMPLE, STORE_ALCH, STORE_HOME,
-    /* Ossiriand      */ STORE_MERCH, STORE_TEMPLE, STORE_ALCH, STORE_HOME,
-    /* Ered Luin South*/ STORE_MERCH, STORE_TEMPLE, STORE_ALCH, STORE_HOME,
-    /* Taur-Im-Duinath*/ STORE_MERCH, STORE_TEMPLE, STORE_ALCH, STORE_HOME,
-    /* Ephel Brandir  */ STORE_MERCH, STORE_TEMPLE, STORE_ALCH, STORE_HOME,
-    /* Gladden Fields */ STORE_MERCH, STORE_TEMPLE, STORE_ALCH, STORE_HOME,
-    /* Khazad Dum     */ STORE_GEN, STORE_ARMORY, STORE_WEAPON, STORE_TEMPLE,
-                          STORE_ALCH, STORE_MAGIC, STORE_BLACKM, STORE_HOME,
-                          STORE_BOOK,
-    /* Belegost       */ STORE_GEN, STORE_ARMORY, STORE_WEAPON, STORE_TEMPLE,
-                          STORE_ALCH, STORE_MAGIC, STORE_BLACKM, STORE_HOME,
-                          STORE_BOOK,
-    /* Menegroth      */ STORE_GEN, STORE_ARMORY, STORE_WEAPON, STORE_TEMPLE,
-                          STORE_ALCH, STORE_MAGIC, STORE_BLACKM, STORE_HOME,
-                          STORE_BOOK,
-    /* Gondolin       */ STORE_GEN, STORE_ARMORY, STORE_WEAPON, STORE_TEMPLE,
-                          STORE_ALCH, STORE_MAGIC, STORE_BLACKM, STORE_HOME,
-                          STORE_BOOK};
-    
 /*
  * Character translations and definitions.  -JG-
  *

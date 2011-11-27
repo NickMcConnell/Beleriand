@@ -98,7 +98,6 @@ typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
 typedef struct spell spell_type;
 typedef struct owner_type owner_type;
-typedef struct store_type store_type;
 typedef struct druid_blows druid_blows;
 typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;
@@ -796,54 +795,6 @@ struct quest
     int max_num;	/**< Number required (unused) */
 };
 
-
-
-
-/**<*
- * A store owner
- */
-struct owner_type {
-    struct owner_type *next;
-    int bidx;
-    char *owner_name;	/**< Name */
-    u32b unused;	/**< Currently unused */
-
-    s16b max_cost;	/**< Purse limit */
-
-    int inflate;	/**< Inflation */
-    byte owner_race;	/**< Owner race */
-
-};
-
-
-
-
-/**
- * A store, with an owner, various state flags, a current stock
- * of items, and a table of items that are often purchased.
- */
-struct store_type {
-    byte owner;		/**< Owner index */
-    byte type;		/**< What type of store it is -NRM- */
-
-    s16b insult_cur;	/**< Insult counter */
-
-    s16b good_buy;	/**< Number of "good" buys */
-    s16b bad_buy;	/**< Number of "bad" buys */
-
-    s32b store_open;	/**< Closed until this turn */
-
-    s32b store_wrap;	/**< Unused for now */
-
-    s16b table_num;	/**< Table -- Number of entries */
-    s16b table_size;	/**< Table -- Total Size of Array */
-    s16b *table;	/**< Table -- Legal item kinds */
-
-    s16b stock_num;	/**< Stock -- Number of entries */
-    s16b stock_size;	/**< Stock -- Total Size of Array */
-    object_type *stock;
-			/**< Stock -- Actual stock items */
-};
 
 
 
