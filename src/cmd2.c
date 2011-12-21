@@ -2793,7 +2793,7 @@ static bool do_cmd_walk_test(int y, int x)
     }
 
     /* Require open space */
-    if (!cave_passable_bold(y, x)) 
+    if (!tf_has(f_ptr->flags, TF_PASSABLE)) 
     {
 	/* Door */
 	if (tf_has(f_ptr->flags, TF_DOOR_CLOSED))
@@ -2809,15 +2809,8 @@ static bool do_cmd_walk_test(int y, int x)
 
 	/* Wall */
 	else {
-	    /* Inside or outside ? */
-	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		|| (stage_map[p_ptr->stage][STAGE_TYPE] == TOWN)) {
-		/* Message */
-		msg("There is a wall in the way!");
-	    } else {
-		/* Message */
-		msg("There is rock in the way!");
-	    }
+	    /* Message */
+	    msg("Your way is blocked!");
 	}
 
 	/* Cancel repeat */
