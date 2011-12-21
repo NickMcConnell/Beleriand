@@ -3143,7 +3143,6 @@ static bool project_f(int who, int y, int x, int dist, int dam, int typ)
 		    }
 
 		    /* Forget the wall */
-		    cave_off(cave_info[y][x], CAVE_WALL);
 		    cave_off(cave_info[y][x], CAVE_MARK);
 
 		    /* Destroy the wall */
@@ -3162,7 +3161,6 @@ static bool project_f(int who, int y, int x, int dist, int dam, int typ)
 		    }
 
 		    /* Forget the wall */
-		    cave_off(cave_info[y][x], CAVE_WALL);
 		    cave_off(cave_info[y][x], CAVE_MARK);
 
 		    /* Destroy the wall */
@@ -3183,7 +3181,6 @@ static bool project_f(int who, int y, int x, int dist, int dam, int typ)
 		    }
 
 		    /* Forget the wall */
-		    cave_off(cave_info[y][x], CAVE_WALL);
 		    cave_off(cave_info[y][x], CAVE_MARK);
 
 		    /* Destroy the wall */
@@ -3201,7 +3198,6 @@ static bool project_f(int who, int y, int x, int dist, int dam, int typ)
 		    }
 
 		    /* Forget the wall */
-		    cave_off(cave_info[y][x], CAVE_WALL);
 		    cave_off(cave_info[y][x], CAVE_MARK);
 
 		    /* Destroy the rubble */
@@ -3230,7 +3226,6 @@ static bool project_f(int who, int y, int x, int dist, int dam, int typ)
 		}
 
 		/* Forget the wall */
-		cave_off(cave_info[y][x], CAVE_WALL);
 		cave_off(cave_info[y][x], CAVE_MARK);
 
 		/* Destroy the feature */
