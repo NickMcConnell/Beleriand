@@ -3746,42 +3746,6 @@ void illuminate(void)
     }
 
 
-    /* Handle shop doorways */
-    for (y = 0; y < DUNGEON_HGT; y++) 
-    {
-	for (x = 0; x < DUNGEON_WID; x++) 
-	{
-	    feature_type *f_ptr = &f_info[cave_feat[y][x]];
-	    /* Track shop doorways */
-	    if (tf_has(f_ptr->flags, TF_SHOP)) 
-	    {
-		/* Illuminate the grid */
-		cave_on(cave_info[y][x], CAVE_GLOW);
-		
-		/* Hack -- Memorize grids */
-		if (OPT(view_perma_grids)) {
-		    cave_on(cave_info[y][x], CAVE_MARK);
-		}
-		
-		for (i = 0; i < 8; i++) 
-		{
-		    int yy = y + ddy_ddd[i];
-		    int xx = x + ddx_ddd[i];
-
-		    /* Illuminate the grid */
-		    cave_on(cave_info[yy][xx], CAVE_GLOW);
-
-		    /* Hack -- Memorize grids */
-		    if (OPT(view_perma_grids)) 
-		    {
-			cave_on(cave_info[yy][xx], CAVE_MARK);
-		    }
-		}
-	    }
-	}
-    }
-
-
     /* Fully update the visuals */
     p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
@@ -3801,13 +3765,13 @@ void cave_set_feat(int y, int x, int feat)
     /* Change the feature */
     cave_feat[y][x] = feat;
 
-    /* Handle "floor" grids. */
-    if (tf_has(f_ptr->flags, TF_LOS) || tf_has(f_ptr->flags, TF_SHOP)) 
+    /* Line of sight.... */
+    if (tf_has(f_ptr->flags, TF_LOS)) 
     {
 	cave_off(cave_info[y][x], CAVE_WALL);
     }
 
-    /* Handle "wall"/etc grids */
+    /* ...or not */
     else 
     {
 	cave_on(cave_info[y][x], CAVE_WALL);
