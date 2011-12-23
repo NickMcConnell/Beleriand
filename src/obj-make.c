@@ -1909,7 +1909,7 @@ void place_object(int y, int x, bool good, bool great, bool exact_kind)
     if (!in_bounds(y, x))
 	return;
 
-    /* Hack -- require clean floor space */
+    /* Require clean floor space */
     if (!cave_clean_bold(y, x))
 	return;
 
