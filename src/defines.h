@@ -1014,12 +1014,12 @@ enum
 #define FEAT_TREE               0x72
 #define FEAT_TREE2		0x73
 #define FEAT_GRASS              0x74  
+#define FEAT_ROAD               0x75
 #define FEAT_VOID               0x77  
 #define FEAT_PIT                0x78  
 #define FEAT_DUNE               0x7a
 #define FEAT_REED               0x7b
 #define FEAT_MTN                0x7c
-#define FEAT_ROAD               0x7d
 #define FEAT_SNOW               0x7e
 #define FEAT_BTLMNT             0x7f
 
