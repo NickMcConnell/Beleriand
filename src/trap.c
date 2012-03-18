@@ -268,7 +268,7 @@ bool cave_web(int y, int x)
  * wait until we do, in fact, have stacked traps under normal conditions.
  *
  */
-bool get_trap_graphics(int t_idx, byte *a, char *c, bool require_visible)
+bool get_trap_graphics(int t_idx, byte *a, wchar_t *c, bool require_visible)
 {
     trap_type *t_ptr = &trap_list[t_idx];
     
@@ -1737,7 +1737,8 @@ extern void py_steal(int y, int x)
 	if ((randint1(5) == 1) && (purse) && (rf_has(r_ptr->flags, RF_SMART))) {
 	    monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 	    act = desc_victim_outcry[randint0(20)];
-	    msg("%^s cries out %s", m_name, act);
+	    my_strcap(m_name);
+	    msg("%s cries out %s", m_name, act);
 	}
 	/* Otherwise, simply explain what happened. */
 	else {

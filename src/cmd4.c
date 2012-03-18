@@ -637,7 +637,7 @@ void ghost_challenge(void)
 {
     monster_race *r_ptr = &r_info[r_ghost];
     
-    msg("%^s, the %^s %s", ghost_name, r_ptr->name, 
+    msg("%s, the %s %s", ghost_name, r_ptr->name, 
 	       do_cmd_challenge_text[randint0(14)]);
 }
 
@@ -661,7 +661,7 @@ void do_cmd_load_screen(void)
   int i, y, x;
   
   byte a = 0;
-  char c = ' ';
+  wchar_t c = L' ';
   
   bool okay = TRUE;
   
@@ -698,6 +698,7 @@ void do_cmd_load_screen(void)
       /* Show each row */
       for (x = 0; x < 79; x++)
 	{
+	    Term_mbstowcs(&c, &buf[x], 1);
 	  /* Put the attr/char */
 	  Term_draw(x, y, TERM_WHITE, buf[x]);
 	}
@@ -750,11 +751,12 @@ void do_cmd_save_screen_text(void)
   int y, x;
   
   byte a = 0;
-  char c = ' ';
+  wchar_t c = L' ';
   
   ang_file *fff;
   
   char buf[1024];
+  char *p;
   
   /* Build the filename */
   path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
@@ -780,11 +782,11 @@ void do_cmd_save_screen_text(void)
 	  (void)(Term_what(x, y, &a, &c));
 	  
 	  /* Dump it */
-	  buf[x] = c;
+	  p += wctomb(p, c);
 	}
       
       /* Terminate */
-      buf[x] = '\0';
+      *p = '\0';
       
       /* End the row */
       file_putf(fff, "%s\n", buf);
@@ -797,6 +799,7 @@ void do_cmd_save_screen_text(void)
   /* Dump the screen */
   for (y = 0; y < 24; y++)
     {
+	p = buf;
       /* Dump each row */
       for (x = 0; x < 79; x++)
 	{
