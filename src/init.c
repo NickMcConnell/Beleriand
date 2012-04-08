@@ -4348,8 +4348,6 @@ bool init_angband(void)
 
 void cleanup_angband(void)
 {
-    int i;
-
     /* Free the macros */
     keymap_free();
 
