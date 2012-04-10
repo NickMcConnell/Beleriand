@@ -3499,9 +3499,6 @@ static errr init_other(void)
     /*** Prepare grid arrays ***/
 
     /* Array of grids */
-    view_g = C_ZNEW(VIEW_MAX, u16b);
-
-    /* Array of grids */
     temp_g = C_ZNEW(TEMP_MAX, u16b);
 
     /* Hack -- use some memory twice */
@@ -4394,9 +4391,6 @@ void cleanup_angband(void)
     FREE(cave_m_idx);
     FREE(cave_feat);
     FREE(cave_info);
-
-    /* Free the "update_view()" array */
-    FREE(view_g);
 
     /* Free the temp array */
     FREE(temp_g);
