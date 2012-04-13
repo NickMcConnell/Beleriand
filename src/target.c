@@ -1831,7 +1831,7 @@ bool target_set_interactive(int mode, int x, int y)
 		    int dungeon_wid = DUNGEON_WID;
 		
 		    /* Adjust for town */
-		    if (p_ptr->depth == 0) 
+		    if (p_ptr->danger == 0) 
 			town_adjust(&dungeon_hgt, &dungeon_wid);
 
 		    y = KEY_GRID_Y(press);//.mouse.y;
