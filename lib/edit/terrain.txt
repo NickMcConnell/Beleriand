@@ -636,16 +636,6 @@ F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | RUN1 | TRAP | MTRAP | RUNE
 D:An open road.  Can be walked across by anything, and can 
 D:hold traps or items.  Does not break line of sight.
 
-# 0x76 --> special feature -- web
-
-N:118:web
-G:%:y
-P:20
-F:LOS | PROJECT
-D:Woven by a spider, this traps insects.  Monsters which are not spiders and 
-D:cannot pass through rock will need a turn to clear the web, as will the 
-D:player.  It can be seen through.
-
 # 0x77 --> special feature -- void
 
 N:119:empty space
