@@ -1976,7 +1976,7 @@ static void dungeon(void)
 
     /* Make basic mouse buttons */
     (void) button_add("[ESC]", ESCAPE);
-    (void) button_add("[Ent]", '\r');
+    (void) button_add("[Ent]", KC_ENTER);
     (void) button_add("[Spc]", ' ');
     (void) button_add("[Rpt]", 'n');
     (void) button_add("[Std]", ',');
@@ -2149,7 +2149,7 @@ static void dungeon(void)
 
     /* Kill basic mouse buttons */
     (void) button_kill(ESCAPE);
-    (void) button_kill('\r');
+    (void) button_kill(KC_ENTER);
     (void) button_kill(' ');
     (void) button_kill('n');
     (void) button_kill(',');

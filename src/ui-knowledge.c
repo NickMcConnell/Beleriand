@@ -830,8 +830,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 	break;
     }
 
-    case '\n':
-    case '\r':
+    case KC_ENTER:
 	{
 	    if (*tile_picker_ptr)
 	    {
@@ -1037,8 +1036,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 	break;
     }
 
-    case '\n':
-    case '\r':
+    case KC_ENTER:
 	{
 	    if (*glyph_picker_ptr)
 	    {
