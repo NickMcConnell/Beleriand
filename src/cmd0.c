@@ -135,7 +135,6 @@ static struct cmd_info cmd_info[] =
 	{ "Identify symbol", { '/' }, CMD_NULL, do_cmd_query_symbol },
 	{ "Character description", { 'C' }, CMD_NULL, do_cmd_change_name },
 	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge },
-	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling },
 	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one },
 	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages },
 	{ "Show the time of day",   { KTRL('T') }, CMD_NULL, do_cmd_time }
