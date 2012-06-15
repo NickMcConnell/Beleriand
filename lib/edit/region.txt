@@ -2085,45 +2085,45 @@ D:        //////////////////////////////////////////////////////////////////////
 D:       //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                
 D:      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                
 D:      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                           
-D:      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
-D:      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
-D:      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
-D:     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
-D:    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
-D:   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
-D:  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                       
-D: ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                       
-D://///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                       
-D: ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                       
-D: ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                       
-D:  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                       
-D:  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                       
-D:   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                             
-D:   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                             
-D:    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                             
-D:    /////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                             
-D:     ///////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                             
-D:     /////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                             
-D:      //////////////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                             
-D:      ///////////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
-D:       ////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
-D:        //////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                              
-D:         ////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
-D:          ///////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
-D:           //////////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
-D:             /////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
+D:      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
+D:      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
+D:      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
+D:     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
+D:    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
+D:   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                                                   
+D:  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////     ///////////////////////////////////////////////////////////////                                                                                                                                                                                                                                       
+D: ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////          ///////////////////////////////////////////////////////////                                                                                                                                                                                                                             
+D://////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////               ///////////////////////////////////////////////////////                                                                                                                                                                                                                        
+D: //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                    ///////////////////////////////////////////////////                                                                                                                                                                                                                   
+D: ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                         ///////////////////////////////////////////////                                                                                                                                                                                                              
+D:  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                              ///////////////////////////////////////////                                                                                                                                                                                                         
+D:  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                    ///////////////////////////////////////                                                                                                                                                                                                   
+D:   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                          ///////////////////////////////////                                                                                                                                                                                                                                                                   
+D:   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                ///////////////////////////////                                                                                                                                                                                                                                                             
+D:    ////////////////////////////////////////////////////////////////////////////////////////                                                                                           ///////////////////////////                                                                                                                                                                                                                                                
+D:    //////////////////////////////////////////////////////////////////////////////////////                                                                                               ///////////////////////                                                                                                                                                                                                                                     
+D:     ///////////////////////////////////////////////////////////////////////////////////                                                                                                   ///////////////////                                                                                                                                                                                                                          
+D:     /////////////////////////////////////////////////////////////////////////////                                                                                                           ///////////////                                                                                                                                                                                                              
+D:      /////////////////////////////////////////////////////////////////////                                                                                                                     //////////                                                                                                                                                                                                  
+D:      /////////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
+D:       ////////////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
+D:        ///////////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                              
+D:         //////////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
+D:          /////////////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
+D:           //////////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
+D:             ////////////////////////////////                                                                                                                                                                                                                                                                                                                                  
 D:                                //                                                                                                                                                                                                                                                                                                                                  
 
 N:31:Crissaegrim
 I:2:49:63:126:308
 A:29:33:47:27:28:0:0:0
 D:                   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:                   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:                   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
 D:                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 D:               XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 D:              XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2152,19 +2152,19 @@ D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 D:          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
 D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
-D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
 D:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
 
 #N:32:Gondolin
@@ -2176,22 +2176,20 @@ D:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #D:....
 
 N:33:Taur-Nu-Fuin
-I:2:70:133:91:327
+I:2:70:133:93:327
 A:30:53:54:46:47:31:29:0
-D:                                                                 ||||||||||||||||||||||||||||                                                 
-D:                                                                 ||||||||||||||||||||||||||||                                                 
-D:                                                                 ||||||||||||||||||||||||||||                                                 
-D:                                                                 ||||||||||||||||||||||||||||                                                 
-D:                                                                 ||||||||||||||||||||||||||||                                                 
-D:                                                                 ||||||||||||||||||||||||||||                                                 
-D:                                                                 ||||||||||||||||||||||||||||                                                 
-D:                                            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
-D:                                            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
-D:                                            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
-D:                                            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
-D:                                            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
-D:                                            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
-D:                                            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
+D:                                                                          |||||||||||||||||||                                                 
+D:                                                                        |||||||||||||||||||||                                                 
+D:                                                                      |||||||||||||||||||||||                                                 
+D:                                                                |||||||||||||||||||||||||||||                                                 
+D:                                                         ||||||||||||||||||||||||||||||||||||                                                 
+D:                                                     |||||||||||||||||||||||||||||||||||||||||||||||                                          
+D:                                                 |||||||||||||||||||||||||||||||||||||||||||||||||||                                          
+D:                                             |||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
+D:                                         |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
+D:                                     |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
+D:                               |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
+D:                           |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                          
 D:                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||              
 D:                  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||              
 D:                  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||              
@@ -2214,12 +2212,12 @@ D: |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 D:||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 D:||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 D:                                     |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-D:                                     |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-D:                                     |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-D:                                     |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-D:                                     |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-D:                                     |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-D:                                     |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+D:                                      ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+D:                                       |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+D:                                        ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+D:                                         |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+D:                                          ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+D:                                           |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 D:                                            |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                   
 D:                                            |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                   
 D:                                            |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                   
@@ -3525,37 +3523,37 @@ D:                     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 D:                     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
 D:                     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
 D:                     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       
+D:             XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
+D:        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
 D:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX              
-D:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
-D:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
-D:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
-D:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
-D:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
-D:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
+D:      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
+D:     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
+D:    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
+D:   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
+D:  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
+D: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
 D:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       XXXXXXX                            
 
 N:47:Pass of Anach
 I:2:14:14:161:357
 A:33:46:35:27:31:0:0:0
+D:             +++++++
+D:            +++++++
+D:           +++++++
+D:          +++++++
+D:         +++++++
+D:        +++++++
 D:       +++++++
-D:       +++++++
-D:       +++++++
-D:       +++++++
-D:       +++++++
-D:       +++++++
-D:       +++++++
-D:+++++++       
-D:+++++++       
-D:+++++++       
-D:+++++++       
-D:+++++++       
-D:+++++++       
+D:      +++++++       
+D:     +++++++       
+D:    +++++++       
+D:   +++++++       
+D:  +++++++       
+D: +++++++       
 D:+++++++       
 
 N:48:Nan Elmoth
@@ -3929,10 +3927,12 @@ D:                            .....................
 D:                            .....................                                                               
 
 N:53:Drûn
-I:2:14:42:91:420
+I:2:14:42:89:420
 A:30:54:33:0:0:0:0:0
-D:+++++++++++++++++++++.....................
-D:+++++++++++++++++++++.....................
+D:                                  .       
+D:                              .....
+D:                          ................
+D:                      ....................
 D:+++++++++++++++++++++.....................
 D:+++++++++++++++++++++.....................
 D:+++++++++++++++++++++.....................
@@ -3949,20 +3949,20 @@ D:       +++++++++++++++++++++++++++++++++++
 N:54:Ladros
 I:2:63:63:84:455
 A:30:38:57:55:46:33:53:0
-D:       ,,,,,,,,,,,,,,                                          
-D:       ,,,,,,,,,,,,,,                                          
-D:       ,,,,,,,,,,,,,,                                          
-D:       ,,,,,,,,,,,,,,                                          
-D:       ,,,,,,,,,,,,,,                                          
-D:       ,,,,,,,,,,,,,,                                          
-D:       ,,,,,,,,,,,,,,                                          
-D:       ...................................                     
-D:       ...................................                     
-D:       ...................................                     
-D:       ...................................                     
-D:       ...................................                     
-D:       ...................................                     
-D:       ...................................                     
+D:              ,,,,,                                          
+D:           ,,,,,,,,,,                                          
+D:        ,,,,,,,,,,,,,,,                                          
+D:     ,,,,,,,,,,,,,,,,,,,,                                          
+D:  ,,,,,,,,,,,,,,,,,,,,,,,,,                                          
+D:,,,,,,,,,,,,,,,,,,,,,,,,,,,,,                                          
+D:,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,                                          
+D:       ..........................                     
+D:       ............................                     
+D:       ..............................                     
+D:       ................................                     
+D:       ..................................                     
+D:       ....................................                     
+D:       .......................................                     
 D:       +++++++++++++++++++++.....................              
 D:       +++++++++++++++++++++.....................              
 D:       +++++++++++++++++++++.....................              
@@ -4225,26 +4225,26 @@ D:                                                                              
 D:                                                                                          ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.......................................................................................................................              
 D:                                                                                    ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.......................................................................................................................              
 D:                                                                             ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
-D:                                                                      ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
+D:                                                                         ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
+D:                                                                       ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
+D:                                                                     ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
+D:                                                                   ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
+D:                                                                 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
 D:                                                               ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
-D:                                                        ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
-D:                                                 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
-D:                                          ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
-D:                                  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,........................................................................................................................................................................              
-D:,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
-D:,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
-D:,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
-D:,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
-D:,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
-D:,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
-D:,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
-D:                     .....................................................................................................................................................................................................................................................                            
-D:                     .....................................................................................................................................................................................................................................................                            
-D:                     .....................................................................................................................................................................................................................................................                            
-D:                     .....................................................................................................................................................................................................................................................                            
-D:                     .....................................................................................................................................................................................................................................................                            
-D:                     .....................................................................................................................................................................................................................................................                            
-D:                     .....................................................................................................................................................................................................................................................                            
+D:                                                             ,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
+D:                                                           ,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
+D:                                                         ,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
+D:                                                       ,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
+D:                                                     ,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
+D:                                                   ,,,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
+D:                                                 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,....................................................................................................................................................................................................                     
+D:                                               ...........................................................................................................................................................................................................................                            
+D:                                             .............................................................................................................................................................................................................................                            
+D:                                           ...............................................................................................................................................................................................................................                            
+D:                                         .................................................................................................................................................................................................................................                            
+D:                                       ...................................................................................................................................................................................................................................                            
+D:                                     .....................................................................................................................................................................................................................................                            
+D:                                   .......................................................................................................................................................................................................................................                            
 D:                            ................................................................................................................................................................................................................................                                          
 D:                            ................................................................................................................................................................................................................................                                          
 D:                            ................................................................................................................................................................................................................................                                          
