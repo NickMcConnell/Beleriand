@@ -544,9 +544,9 @@ void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset,
 			 int x_offset)
 {
     if (((ref->y_pos == 0) && (y_offset == 0)) || 
-	((ref->y_pos >= MAX_Y_POS - 1) && (y_offset == 2)) || 
+	((ref->y_pos >= MAX_Y_REGION - 1) && (y_offset == 2)) || 
 	((ref->x_pos <= 2) && (x_offset == 0)) ||
-	((ref->x_pos >= MAX_X_POS - 3) && (x_offset == 2)))
+	((ref->x_pos >= MAX_X_REGION - 3) && (x_offset == 2)))
     {
 	ref->region = 0;
     }

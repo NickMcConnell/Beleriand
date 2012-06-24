@@ -253,8 +253,8 @@
  */
 #define MAX_CHUNKS      256
 
-#define MAX_Y_POS 84
-#define MAX_X_POS 126
+#define MAX_Y_REGION 588
+#define MAX_X_REGION 735
 
 /**
  * Maximum number of region borders.

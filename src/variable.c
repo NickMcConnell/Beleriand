@@ -481,7 +481,7 @@ u16b (*race_prob)[NUM_STAGES];
 /**
  * Terrain array 
  */
-char region_terrain[MAX_Y_POS][MAX_X_POS];
+char region_terrain[MAX_Y_REGION][MAX_X_REGION];
 
 /* Dummy array */
 byte *dummy;

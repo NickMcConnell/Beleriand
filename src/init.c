@@ -3523,8 +3523,8 @@ static errr init_other(void)
     cave_when = C_ZNEW(DUNGEON_HGT, byte_wid);
 
     /*** Write region terrain array ***/
-    for (y = 0; y < MAX_Y_POS; y++)
-	for (x = 0; x < MAX_X_POS; x++)
+    for (y = 0; y < MAX_Y_REGION; y++)
+	for (x = 0; x < MAX_X_REGION; x++)
 	    region_terrain[y][x] = 'W';
 
     for (i = 0; i < z_info->region_max; i++)
