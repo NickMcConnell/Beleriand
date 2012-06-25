@@ -2889,7 +2889,6 @@ static enum parser_error parse_region_n(struct parser *p) {
 
     reg->region_idx = parser_getuint(p, "index");
     reg->name = string_make(parser_getstr(p, "name"));
-    //reg->message = string_make(parser_getstr(p, "message"));
     reg->next = h;
     parser_setpriv(p, reg);
     return PARSE_ERROR_NONE;
@@ -2909,23 +2908,6 @@ static enum parser_error parse_region_i(struct parser *p) {
     return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_region_a(struct parser *p) {
-    struct world_region *region = parser_priv(p);
-
-    if (!region)
-	return PARSE_ERROR_MISSING_RECORD_HEADER;
-    region->adjacent[0] = parser_getuint(p, "adj0");
-    region->adjacent[1] = parser_getuint(p, "adj1");
-    region->adjacent[2] = parser_getuint(p, "adj2");
-    region->adjacent[3] = parser_getuint(p, "adj3");
-    region->adjacent[4] = parser_getuint(p, "adj4");
-    region->adjacent[5] = parser_getuint(p, "adj5");
-    region->adjacent[6] = parser_getuint(p, "adj6");
-    region->adjacent[7] = parser_getuint(p, "adj7");
-
-    return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_region_d(struct parser *p) {
     struct world_region *region = parser_priv(p);
 
@@ -2940,7 +2922,6 @@ struct parser *init_parse_region(void) {
     parser_setpriv(p, NULL);
     parser_reg(p, "N uint index str name", parse_region_n);
     parser_reg(p, "I uint danger uint height uint width uint y_offset uint x_offset", parse_region_i);
-    parser_reg(p, "A uint adj0 uint adj1 uint adj2 uint adj3 uint adj4 uint adj5 uint adj6 uint adj7", parse_region_a);
     parser_reg(p, "D str text", parse_region_d);
     return p;
 }

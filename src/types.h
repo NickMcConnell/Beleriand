@@ -611,7 +611,6 @@ typedef struct world_region {
     byte y_offset;                 /**< Region y location */
     byte x_offset;                 /**< Region x location */
 
-    byte adjacent[MAX_BORDERS];    /**< Indices of adjacent regions*/
 } region_type;
 
 
