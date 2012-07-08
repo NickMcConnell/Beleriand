@@ -62,6 +62,7 @@ int rd_ghost(void);
 int rd_history(void);
 int rd_traps(void);
 int rd_chunks(void);
+int rd_locations(void);
 
 /* save.c */
 void wr_randomizer(void);
@@ -85,6 +86,6 @@ void wr_ghost(void);
 void wr_history(void);
 void wr_traps(void);
 void wr_chunks(void);
-
+void wr_locations(void);
 
 #endif /* INCLUDED_SAVEFILE_H */

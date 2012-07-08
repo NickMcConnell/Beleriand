@@ -1939,3 +1939,8 @@ int rd_chunks(void)
 
     return 0;
 }
+
+int rd_locations(void) {
+
+    return 0;
+}

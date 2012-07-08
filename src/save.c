@@ -1171,3 +1171,7 @@ void wr_chunks(void)
 	}
     }
 }
+
+void wr_locations(void){
+
+}
