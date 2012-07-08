@@ -3524,6 +3524,9 @@ static errr init_other(void)
 	    }
     }
 
+    /*** Prepare generated location array ***/
+    gen_loc_list = (gen_loc **)mem_zalloc(z_info->region_max * sizeof(*gen_loc_list));
+
     /*** Prepare entity arrays ***/
 
     /* Objects */
@@ -4345,6 +4348,7 @@ void cleanup_angband(void)
     event_remove_all_handlers();
 
     mem_free(chunk_list);
+    mem_free(gen_loc_list);
 
     /* Free the quest list */
     FREE(q_list);

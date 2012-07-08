@@ -582,6 +582,12 @@ monster_lore *l_list;
 quest *q_list;
 
 /**
+ * Array[z_info->region_max] of pointers to the starts of regional 
+ * generated location linked lists
+ */
+gen_loc **gen_loc_list;
+
+/**
  * Array[MAX_CHUNKS] of pointers to world chunks
  */
 chunk_ref *chunk_list;

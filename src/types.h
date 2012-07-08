@@ -86,10 +86,10 @@ typedef u16b u16b_stage[NUM_STAGES];
 /** Function hook types **/
 
 /** Function prototype for the UI to provide to create native buttons */
-typedef int (*button_add_f) (const char *, unsigned char);
+typedef int (*button_add_f)(const char *, unsigned char);
 
 /** Function prototype for the UI to provide to remove native buttons */
-typedef int (*button_kill_f) (unsigned char);
+typedef int (*button_kill_f)(unsigned char);
 
 /**** Available Structs ****/
 
@@ -1451,12 +1451,10 @@ typedef struct chunk_ref {
  * Generation data for a generated location
  */
 typedef struct gen_loc {
+    struct gen_loc *next;
     u16b x_pos;
-    struct gen_loc *x_next;
     u16b y_pos;
-    struct gen_loc *y_next;
     u16b z_pos;
-    struct gen_loc *z_next;
     struct terrain_change *changed_terrain;
     struct edge_effect * edge_effects;
 } gen_loc;
