@@ -1445,3 +1445,38 @@ typedef struct chunk_ref {
     world_chunk *chunk; /**< The actual chunk */
     int adjacent[11];   /**< Adjacent chunks */
 } chunk_ref;
+
+
+/**
+ * Generation data for a generated location
+ */
+typedef struct gen_loc {
+    u16b x_pos;
+    struct gen_loc *x_next;
+    u16b y_pos;
+    struct gen_loc *y_next;
+    u16b z_pos;
+    struct gen_loc *z_next;
+    struct terrain_change *changed_terrain;
+    struct edge_effect * edge_effects;
+} gen_loc;
+
+/**
+ * A change to terrain made after generation
+ */
+typedef struct terrain_change {
+    byte y;
+    byte x;
+    byte terrain;
+    struct terrain_change *next;
+} terrain_change;
+
+/**
+ * cave_info flags which will effect generation of adjacent chunks
+ */
+typedef struct edge_effect {
+    byte y;
+    byte x;
+    bitflag (*info)[CAVE_SIZE];
+    struct edge_effect *next;
+} edge_effect;

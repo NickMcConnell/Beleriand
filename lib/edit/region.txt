@@ -2,7 +2,7 @@
 
 # This file holds templates for wilderness regions.
 
-# The complete Middle-Earth map is currently 588 miles high by 882 miles wide. 
+# The complete Middle-Earth map is currently 588 miles high by 735 miles wide. 
 # y and x coordinates are for the top left of the region as shown in the D:
 # lines (so in particular, that does include spaces).
 # Each grid represents 1 square mile.
