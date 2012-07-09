@@ -156,7 +156,7 @@ extern object_type *o_list;
 extern monster_type *m_list;
 extern monster_lore *l_list;
 extern quest *q_list;
-extern gen_loc **gen_loc_list;
+extern gen_loc *gen_loc_list;
 extern chunk_ref *chunk_list;
 extern const char *** name_sections;
 extern object_type *inventory;

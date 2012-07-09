@@ -1451,7 +1451,6 @@ typedef struct chunk_ref {
  * Generation data for a generated location
  */
 typedef struct gen_loc {
-    struct gen_loc *next;
     u16b x_pos;
     u16b y_pos;
     u16b z_pos;

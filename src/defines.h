@@ -253,6 +253,14 @@
  */
 #define MAX_CHUNKS      256
 
+/**
+ * Size increment of the generated locations array
+ */
+#define GEN_LOC_INCR 128
+
+/**
+ * Maximum x and y values for region grids 
+ */
 #define MAX_Y_REGION 588
 #define MAX_X_REGION 735
 

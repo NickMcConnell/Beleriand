@@ -3524,9 +3524,6 @@ static errr init_other(void)
 	    }
     }
 
-    /*** Prepare generated location array ***/
-    gen_loc_list = (gen_loc **)mem_zalloc(z_info->region_max * sizeof(*gen_loc_list));
-
     /*** Prepare entity arrays ***/
 
     /* Objects */
@@ -3570,6 +3567,9 @@ static errr init_other(void)
     /* Allocate it */
     p_ptr->inventory = C_ZNEW(ALL_INVEN_TOTAL, object_type);
 
+
+    /*** Prepare generated location array ***/
+    gen_loc_list = (gen_loc *)mem_zalloc(GEN_LOC_INCR * sizeof(gen_loc));
 
     /*** Prepare the world chunk array ***/
 
