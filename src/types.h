@@ -1454,8 +1454,8 @@ typedef struct gen_loc {
     u16b x_pos;
     u16b y_pos;
     u16b z_pos;
-    struct terrain_change *changed_terrain;
-    struct edge_effect * edge_effects;
+    struct terrain_change *change;
+    struct edge_effect *effect;
 } gen_loc;
 
 /**
@@ -1474,6 +1474,6 @@ typedef struct terrain_change {
 typedef struct edge_effect {
     byte y;
     byte x;
-    bitflag (*info)[CAVE_SIZE];
+    bitflag info[CAVE_SIZE];
     struct edge_effect *next;
 } edge_effect;

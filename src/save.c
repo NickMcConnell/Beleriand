@@ -1172,6 +1172,53 @@ void wr_chunks(void)
     }
 }
 
-void wr_locations(void){
+void wr_locations(void)
+{
+    size_t i, j;
 
+    wr_u16b(CAVE_SIZE);
+    wr_u32b(gen_loc_cnt);
+
+    for (i = 0; i < gen_loc_cnt; i++)
+    {
+	gen_loc *location = &gen_loc_list[i];
+	int num_changes = 0, num_effects = 0;
+	terrain_change *change;
+	edge_effect *effect;
+
+	wr_u16b(location->x_pos);
+	wr_u16b(location->y_pos);
+	wr_u16b(location->z_pos);
+
+	/* Count the terrain changes */
+	for (change = location->change; change; change = change->next)
+	{
+	    num_changes++;
+	}
+
+	/* Write the terrain changes */
+	wr_u16b(num_changes);
+	for (change = location->change; change; change = change->next)
+	{
+	    wr_byte(change->y);
+	    wr_byte(change->x);
+	    wr_byte(change->terrain);
+	}
+
+	/* Count the edge effects */
+	for (effect = location->effect; effect; effect = effect->next)
+	{
+	    num_effects++;
+	}
+
+	/* Write the edge effects */
+	wr_u16b(num_effects);
+	for (effect = location->effect; effect; effect = effect->next)
+	{
+	    wr_byte(effect->y);
+	    wr_byte(effect->x);
+	    for (j = 0; j < CAVE_SIZE; j++)
+		wr_byte(effect->info[j]);
+	}
+    }
 }

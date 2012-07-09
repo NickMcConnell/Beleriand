@@ -1940,7 +1940,67 @@ int rd_chunks(void)
     return 0;
 }
 
-int rd_locations(void) {
+int rd_locations(void)
+{
 
+    size_t i, j;
+    u16b cave_size;
+
+    rd_u16b(&cave_size);
+    rd_u32b(&gen_loc_cnt);
+
+    for (i = 0; i < gen_loc_cnt; i++)
+    {
+	gen_loc *location = &gen_loc_list[i];
+	u16b num_changes, num_effects;
+	terrain_change *change;
+	edge_effect *effect;
+
+	/* Increase the array size if necessary */
+	if ((i % GEN_LOC_INCR) == 0)
+	{
+	    gen_loc_max += GEN_LOC_INCR;
+	    if (i > 0) gen_loc_list = mem_realloc(gen_loc_list, gen_loc_max);
+	}
+
+	rd_u16b(&location->x_pos);
+	rd_u16b(&location->y_pos);
+	rd_u16b(&location->z_pos);
+
+	/* Read the terrain changes */
+	rd_u16b(&num_changes);
+	if (num_changes)
+	    change = malloc(num_changes * (3 + sizeof(change)));
+	location->change = change;
+	for (j = 0; j < num_changes; j++)
+	{
+	    rd_byte(&change[j].y);
+	    rd_byte(&change[j].x);
+	    rd_byte(&change[j].terrain);
+	    if (j + 1 < num_changes)
+		change[j].next = &change[j + 1];
+	    else
+		change[j].next = NULL;
+	}
+
+	/* Read the edge effects */
+	rd_u16b(&num_effects);
+	if (num_effects)
+	    effect = malloc(num_effects * (2 + cave_size + sizeof(effect)));
+	location->effect = effect;
+	for (j = 0; j < num_effects; j++)
+	{
+	    int k;
+
+	    rd_byte(&effect[j].y);
+	    rd_byte(&effect[j].x);
+	    for (k = 0; k < cave_size; k++)
+		rd_byte(&effect[j].info[k]);
+	    if (j + 1 < num_effects)
+		effect[j].next = &effect[j + 1];
+	    else
+		effect[j].next = NULL;
+	}
+    }
     return 0;
 }

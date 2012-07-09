@@ -126,6 +126,9 @@ s16b trap_max = 1;		/* Number of allocated traps */
 u16b chunk_max = 1;		/* Number of allocated chunks */
 u16b chunk_cnt = 0;		/* Number of live chunks */
 
+u32b gen_loc_max = GEN_LOC_INCR;/* Number of allocated generated locations */
+u32b gen_loc_cnt = 0;		/* Number of actual generated locations */
+
 u16b group_id = 1;              /* Number of group IDs allocated */    
 
 /*

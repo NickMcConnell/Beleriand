@@ -116,6 +116,8 @@ extern s16b m_cnt;
 extern s16b trap_max;
 extern u16b chunk_max;
 extern u16b chunk_cnt;
+extern u32b gen_loc_max;
+extern u32b gen_loc_cnt;
 extern u16b group_id;
 extern int player_uid;
 extern int player_euid;
