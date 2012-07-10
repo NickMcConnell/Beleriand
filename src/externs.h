@@ -84,7 +84,6 @@ extern bool character_saved;
 extern s16b character_icky;
 extern s16b character_xtra;
 extern u32b seed_flavor;
-extern u32b seed_town[10];
 extern s16b num_repro;
 extern s16b object_level;
 extern s16b monster_level;
@@ -412,7 +411,6 @@ extern void center_panel(void);
 extern bool change_panel(int dir);
 extern void verify_panel(void);
 bool modify_panel(term *t, int wy, int wx);
-void town_adjust(int *dungeon_hgt, int *dungeon_wid);
 
 /* xtra3.c */
 void cnv_stat(int val, char *out_val, size_t out_len);

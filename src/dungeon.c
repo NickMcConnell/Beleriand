@@ -513,12 +513,6 @@ static void process_world(void)
     if ((randint0(MAX_M_ALLOC_CHANCE) == 0) && (!p_ptr->themed_level)) {
 	int n;
 
-	/* Hack for small towns */
-	if (!p_ptr->danger)
-	    n = MAX_SIGHT - 5;
-	else
-	    n = MAX_SIGHT + 5;
-
 	/* Make a new monster */
 	(void) alloc_monster(n, FALSE, FALSE);
     }
@@ -2293,10 +2287,6 @@ void play_game(void)
 
 	/* Hack -- seed for flavors */
 	seed_flavor = randint0(0x10000000);
-
-	/* Hack -- seed for town layouts -NRM- */
-	for (i = 0; i < 10; i++)
-	    seed_town[i] = randint0(0x10000000);
 
 	/* Roll up a new character */
 	player_birth(p_ptr->ht_birth ? TRUE : FALSE);

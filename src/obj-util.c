@@ -4179,9 +4179,6 @@ void display_itemlist(void)
 
     int floor_list[MAX_FLOOR_STACK];
 
-    /* Adjust for town */
-    if (p_ptr->danger == 0) town_adjust(&dungeon_hgt, &dungeon_wid);
-
     /* Clear the term if in a subwindow, set x otherwise */
     if (Term != angband_term[0]) {
 	clear_from(0);

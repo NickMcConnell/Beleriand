@@ -1180,13 +1180,6 @@ int rd_misc(void)
 	
 	/* Hack -- the "special seeds" */
 	rd_u32b(&seed_flavor);
-	rd_byte(&tmp8u);
-	for (i = 0; i < tmp8u; i++){
-	    rd_u32b(&tmp32u);
-	    if (i < NUM_TOWNS) 
-		seed_town[i] = tmp32u;
-	}
-
 
 	/* Special stuff */
 	rd_u16b(&p_ptr->quests);

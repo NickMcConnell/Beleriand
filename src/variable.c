@@ -80,7 +80,6 @@ s16b character_icky;		/* Depth of the game in special mode */
 s16b character_xtra;		/* Depth of the game in startup mode */
 
 u32b seed_flavor;		/* Hack -- consistent object colors */
-u32b seed_town[10];		/* Hack -- consistent town layout */
 
 s16b num_repro;			/* Current reproducer count */
 s16b object_level;		/* Current object creation level */

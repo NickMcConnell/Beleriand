@@ -346,14 +346,6 @@ static void get_level(struct player *p)
 	p->lev = 1;
 	p->max_lev = 1;
     }
-
-    /* Set home town */
-    if (OPT(adult_thrall))
-	p->home = 0;
-    else if (OPT(adult_dungeon))
-	p->home = 1;
-    else
-	p->home = towns[rp_ptr->hometown];
 }
 
 /*

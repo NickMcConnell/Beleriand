@@ -713,8 +713,6 @@ void wr_misc(void)
 
     /* Write the "object seeds" */
     wr_u32b(seed_flavor);
-    wr_byte(NUM_TOWNS);
-    for (i = 0; i < NUM_TOWNS; i++) wr_u32b(seed_town[i]);
   
   
     /* Special stuff */

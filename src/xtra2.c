@@ -201,19 +201,9 @@ void lose_exp(s32b amount)
 }
 
 
-void town_adjust(int *dungeon_hgt, int *dungeon_wid)
-{
-    bool small_town = ((p_ptr->stage < 151) && (!OPT(adult_dungeon)));
-
-    (*dungeon_hgt) /= 3;
-    (*dungeon_wid) /= (small_town ? 6 : 3);
-}
-
 /*
  * Modify the current panel to the given coordinates, adjusting only to
  * ensure the coordinates are legal, and return TRUE if anything done.
- *
- * The town should never be scrolled around.
  *
  * Note that monsters are no longer affected in any way by panel changes.
  *
@@ -224,9 +214,6 @@ bool modify_panel(term *t, int wy, int wx)
 {
 	int dungeon_hgt = ARENA_HGT;
 	int dungeon_wid = ARENA_WID;
-
-	/* Adjust for town */
-	if (p_ptr->danger == 0) town_adjust(&dungeon_hgt, &dungeon_wid);
 
 	/* Verify wy, adjust if needed */
 	if (wy > dungeon_hgt - SCREEN_HGT) wy = dungeon_hgt - SCREEN_HGT;

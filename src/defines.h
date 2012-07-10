@@ -160,21 +160,6 @@
 
 
 /**
- * Total number of towns 
- */
-#define NUM_TOWNS       10
-
-/**
- * Number of small towns 
- */
-#define NUM_TOWNS_SMALL  6
-
-/**
- * Number of large towns 
- */
-#define NUM_TOWNS_BIG    4
-
-/**
  * Maximum number of player "sex" types (see "table.c", etc)
  */
 #define MAX_SEXES            2
@@ -480,17 +465,6 @@
  * Normal levels get at least 16 monsters
  */
 #define MIN_M_ALLOC_LEVEL	16
-
-/**
- * The town starts out with 4 residents during the day
- */
-#define MIN_M_ALLOC_TD		4
-
-/**
- * The town starts out with 8 residents during the night
- */
-#define MIN_M_ALLOC_TN		8
-
 
 /**
  * A monster can only "multiply" (reproduce) if there are fewer than 100
