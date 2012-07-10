@@ -509,8 +509,8 @@ int chunk_get_idx(int z_offset, int y_offset, int x_offset)
 }
 
 /**
- * Find the region a set of coordinates is in - assume dungeons are always
- * directly below their entrance
+ * Find the region a set of coordinates is in - dungeons are treated as part
+ * of the region they are directly below
  */
 int find_region(int y_pos, int x_pos)
 {
@@ -520,15 +520,15 @@ int find_region(int y_pos, int x_pos)
     {
 	region_type *region = &region_info[i];
 
-	if ((y_pos < region->y_offset) || 
-	    (y_pos >= region->y_offset + region->height))
+	if ((y_pos / 10 < region->y_offset) ||
+	    (y_pos / 10 >= region->y_offset + region->height))
 	    continue;
 
-	if ((x_pos < region->x_offset) || 
-	    (x_pos >= region->x_offset + region->width))
+	if ((x_pos / 10 < region->x_offset) ||
+	    (x_pos / 10 >= region->x_offset + region->width))
 	    continue;
 
-	if (region->text[region->width * y_pos + x_pos] == ' ')
+	if (region->text[region->width * (y_pos / 10) + x_pos / 10] == ' ')
 	    continue;
 
 	break;
@@ -544,9 +544,9 @@ void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset,
 			 int x_offset)
 {
     if (((ref->y_pos == 0) && (y_offset == 0)) || 
-	((ref->y_pos >= MAX_Y_REGION - 1) && (y_offset == 2)) || 
-	((ref->x_pos <= 2) && (x_offset == 0)) ||
-	((ref->x_pos >= MAX_X_REGION - 3) && (x_offset == 2)))
+	((ref->y_pos >= 10 * MAX_Y_REGION - 1) && (y_offset == 2)) || 
+	((ref->x_pos == 0) && (x_offset == 0)) ||
+	((ref->x_pos >= 10 * MAX_X_REGION - 1) && (x_offset == 2)))
     {
 	ref->region = 0;
     }
@@ -554,7 +554,7 @@ void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset,
     {
 	ref->z_pos += z_offset;
 	ref->y_pos += (y_offset - 1);
-	ref->x_pos += 3 * (x_offset - 1);
+	ref->x_pos += (x_offset - 1);
 	if (z_offset == 0) 
 	    ref->region = find_region(ref->y_pos, ref->x_pos);
     }
@@ -605,7 +605,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     }
 
     /* Generate the chunk */
-    terrain = region_terrain[ref.y_pos][ref.x_pos];
+    terrain = region_terrain[ref.y_pos / 10][ref.x_pos / 10];
 
     switch (terrain)
     {
