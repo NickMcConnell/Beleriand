@@ -629,11 +629,11 @@ int make_formation(int y, int x, int base_feat1, int base_feat2, int *feat,
     return (total);
 }
 
-extern void plain_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void plain_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -649,11 +649,11 @@ extern void plain_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void forest_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void forest_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -669,11 +669,11 @@ extern void forest_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -689,11 +689,11 @@ extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void lake_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void lake_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -709,11 +709,11 @@ extern void lake_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void moor_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void moor_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -729,11 +729,11 @@ extern void moor_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -749,11 +749,11 @@ extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -769,11 +769,11 @@ extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void dark_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void dark_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -789,11 +789,11 @@ extern void dark_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void impass_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void impass_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -809,11 +809,11 @@ extern void impass_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void desert_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void desert_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -829,11 +829,11 @@ extern void desert_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void snow_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void snow_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -849,11 +849,11 @@ extern void snow_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void town_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void town_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -869,11 +869,11 @@ extern void town_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
 	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
 }
 
-extern void landmk_gen(chunk_ref ref, int y_offset, int x_offset, int x_small)
+extern void landmk_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
-    int x0 = x_offset * CHUNK_WID + x_small * CHUNK_HGT;
+    int x0 = x_offset * CHUNK_WID;
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)

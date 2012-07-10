@@ -88,16 +88,14 @@
 
 
 /**
- * Number of grids in each block (vertically)
- * Probably hard-coded to 11, see "generate.c"
+ * Number of grids in each chunk (vertically)
  */
 #define CHUNK_HGT	22
 
 /**
- * Number of grids in each block (horizontally)
- * Probably hard-coded to 11, see "generate.c"
+ * Number of grids in each chunkk (horizontally)
  */
-#define CHUNK_WID	66
+#define CHUNK_WID	22
 
 
 /**
@@ -141,7 +139,7 @@
  * Must be a multiple of SCREEN_WID
  * Must be less or equal to 256
  */
-#define DUNGEON_WID		198
+#define DUNGEON_WID		66
 
 /*
  * Radii for various detection spells. -BR-
