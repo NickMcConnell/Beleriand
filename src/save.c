@@ -816,8 +816,8 @@ void wr_dungeon(void)
     wr_u16b(p_ptr->last_stage);
     wr_u16b(p_ptr->py);
     wr_u16b(p_ptr->px);
-    wr_u16b(DUNGEON_HGT);
-    wr_u16b(DUNGEON_WID);
+    wr_u16b(ARENA_HGT);
+    wr_u16b(ARENA_WID);
     wr_u16b(CAVE_SIZE);
     wr_u16b(0);
   
@@ -832,9 +832,9 @@ void wr_dungeon(void)
 	prev_char = 0;
 	
 	/* Dump the cave */
-	for (y = 0; y < DUNGEON_HGT; y++)
+	for (y = 0; y < ARENA_HGT; y++)
 	{
-	    for (x = 0; x < DUNGEON_WID; x++)
+	    for (x = 0; x < ARENA_WID; x++)
 	    {
 		/* Extract the important cave_info flags */
 		tmp8u = cave_info[y][x][i];
@@ -871,9 +871,9 @@ void wr_dungeon(void)
     prev_char = 0;
   
     /* Dump the cave */
-    for (y = 0; y < DUNGEON_HGT; y++)
+    for (y = 0; y < ARENA_HGT; y++)
     {
-	for (x = 0; x < DUNGEON_WID; x++)
+	for (x = 0; x < ARENA_WID; x++)
 	{
 	    /* Extract a byte */
 	    tmp8u = cave_feat[y][x];

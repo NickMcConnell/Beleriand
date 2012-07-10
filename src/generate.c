@@ -171,8 +171,8 @@ static void town_gen_hack(void)
 {
     int i, y, x, k, n, py = 1, px = 1;
 
-    int qy = DUNGEON_HGT / 3;
-    int qx = DUNGEON_WID / 3;
+    int qy = ARENA_HGT / 3;
+    int qx = ARENA_WID / 3;
     int stage = p_ptr->stage;
     int last_stage = p_ptr->last_stage;
 
@@ -246,8 +246,8 @@ static void town_gen_hack(void)
 	    feature_type *f_ptr;
 
 	    /* Pick a location at least "three" from the outer walls */
-	    y = 1 + rand_range(3, DUNGEON_HGT / 3 - 4);
-	    x = 1 + rand_range(3, DUNGEON_WID / 3 - 4);
+	    y = 1 + rand_range(3, ARENA_HGT / 3 - 4);
+	    x = 1 + rand_range(3, ARENA_WID / 3 - 4);
 
 	    /* Require a floor grid */
 	    f_ptr = &f_info[cave_feat[y][x]];
@@ -352,7 +352,7 @@ static void town_gen_old(void)
 
     int qy = 0;
     int qx = 0;
-    int width = DUNGEON_WID / 3;
+    int width = ARENA_WID / 3;
 
     bool dummy;
 
@@ -373,8 +373,8 @@ static void town_gen_old(void)
     }
 
     /* Start with solid walls */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create "solid" perma-wall */
 	    cave_set_feat(y, x, FEAT_PERM_SOLID);
 	}
@@ -383,17 +383,17 @@ static void town_gen_old(void)
     /* Boundary walls (see town_illuminate() */
     for (x = qx; x < qx + width; x++) {
 	cave_set_feat(qy, x, FEAT_PERM_INNER);
-	cave_set_feat(qy + (DUNGEON_HGT / 3) - 1, x, FEAT_PERM_INNER);
+	cave_set_feat(qy + (ARENA_HGT / 3) - 1, x, FEAT_PERM_INNER);
     }
 
     /* Boundary walls (see town_illuminate() */
-    for (y = qy; y < qy + (DUNGEON_HGT / 3); y++) {
+    for (y = qy; y < qy + (ARENA_HGT / 3); y++) {
 	cave_set_feat(y, qx, FEAT_PERM_INNER);
 	cave_set_feat(y, qx + width - 1, FEAT_PERM_INNER);
     }
 
     /* Then place some floors */
-    for (y = qy + 1; y < qy + (DUNGEON_HGT / 3) - 1; y++) {
+    for (y = qy + 1; y < qy + (ARENA_HGT / 3) - 1; y++) {
 	for (x = qx + 1; x < qx + width - 1; x++) {
 	    /* Create empty floor */
 	    cave_set_feat(y, x, FEAT_FLOOR);
@@ -429,9 +429,9 @@ static void clear_cave(void)
     wipe_trap_list();
 
     /* Clear flags and flow information. */
-    for (y = 0; y < DUNGEON_HGT; y++)
+    for (y = 0; y < ARENA_HGT; y++)
     {
-	for (x = 0; x < DUNGEON_WID; x++)
+	for (x = 0; x < ARENA_WID; x++)
 	{
 	    /* No features */
 	    cave_feat[y][x] = 0;
@@ -452,7 +452,7 @@ static void clear_cave(void)
     p_ptr->px = p_ptr->py = 0;
 
     /* Hack -- illegal panel */
-    Term->offset_y = DUNGEON_HGT;
+    Term->offset_y = ARENA_HGT;
 }
 
 
@@ -473,8 +473,8 @@ void generate_cave(void)
 {
     int y, x, num;
 
-    level_hgt = DUNGEON_HGT;
-    level_wid = DUNGEON_WID;
+    level_hgt = ARENA_HGT;
+    level_wid = ARENA_WID;
     clear_cave();
 
     /* The dungeon is not ready */
@@ -494,8 +494,8 @@ void generate_cave(void)
 
 
 	/* Clear flags and flow information. */
-	for (y = 0; y < DUNGEON_HGT; y++) {
-	    for (x = 0; x < DUNGEON_WID; x++) {
+	for (y = 0; y < ARENA_HGT; y++) {
+	    for (x = 0; x < ARENA_WID; x++) {
 		/* No flags */
 		cave_wipe(cave_info[y][x]);
 

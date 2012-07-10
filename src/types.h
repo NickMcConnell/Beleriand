@@ -49,17 +49,17 @@
 /**
  * An array of 128 cave bitflag arrays
  */
-typedef bitflag grid_128[128][CAVE_SIZE];
+typedef bitflag grid_arena[ARENA_WID][CAVE_SIZE];
 
 /**
- * An array of DUNGEON_WID bytes
+ * An array of ARENA_WID bytes
  */
-typedef byte byte_wid[DUNGEON_WID];
+typedef byte byte_wid[ARENA_WID];
 
 /**
- * An array of DUNGEON_WID s16b's
+ * An array of ARENA_WID s16b's
  */
-typedef s16b s16b_wid[DUNGEON_WID];
+typedef s16b s16b_wid[ARENA_WID];
 
 /**
  * An array of CHUNK_WID cave bitflag arrays

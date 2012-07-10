@@ -1554,9 +1554,9 @@ bool detect_traps(int range, bool show)
 	animate_detect(range);
 
     /* Scan the map */
-    for (y = 0; y < DUNGEON_HGT; y++) 
+    for (y = 0; y < ARENA_HGT; y++) 
     {
-	for (x = 0; x < DUNGEON_WID; x++) 
+	for (x = 0; x < ARENA_WID; x++) 
 	{
 	    /* check range */
 	    if (distance(py, px, y, x) <= range) 
@@ -1613,8 +1613,8 @@ bool detect_doors(int range, bool show)
 	animate_detect(range);
 
     /* Scan the map */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 
 	    /* check range */
 	    if (distance(py, px, y, x) <= range) 
@@ -1680,8 +1680,8 @@ bool detect_stairs(int range, bool show)
 	animate_detect(range);
 
     /* Scan the map */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 
 	    /* check range */
 	    if (distance(py, px, y, x) <= range) 
@@ -1740,8 +1740,8 @@ bool detect_treasure(int range, bool show)
 	animate_detect(range);
 
     /* Scan the map */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 
 	    /* check range */
 	    if (distance(py, px, y, x) <= range) 
@@ -3878,10 +3878,10 @@ bool listen_to_natural_creatures(void)
     /* Find every trap on the level. */
 
     /* Scan all normal grids */
-    for (y = 1; y < DUNGEON_HGT - 1; y++) 
+    for (y = 1; y < ARENA_HGT - 1; y++) 
     {
 	/* Scan all normal grids */
-	for (x = 1; x < DUNGEON_WID - 1; x++) 
+	for (x = 1; x < ARENA_WID - 1; x++) 
 	{
 	    /* Detect invisible traps */
 	    if (cave_invisible_trap(y, x)) 

@@ -125,8 +125,8 @@ static void build_streamer(int feat, int chance)
 
 
     /* Hack -- Choose starting point */
-    y = rand_spread(DUNGEON_HGT / 2, DUNGEON_HGT / 4);
-    x = rand_spread(DUNGEON_WID / 2, DUNGEON_WID / 4);
+    y = rand_spread(ARENA_HGT / 2, ARENA_HGT / 4);
+    x = rand_spread(ARENA_WID / 2, ARENA_WID / 4);
 
     /* Choose a random compass direction */
     dir = start_dir = ddd[randint0(8)];
@@ -329,8 +329,8 @@ void destroy_level(bool new_level)
     /* Drop a few epi-centers */
     for (n = 0; n < epicenter_max; n++) {
 	/* Pick an epi-center */
-	x1 = rand_range(5, DUNGEON_WID - 1 - 5);
-	y1 = rand_range(5, DUNGEON_HGT - 1 - 5);
+	x1 = rand_range(5, ARENA_WID - 1 - 5);
+	y1 = rand_range(5, ARENA_HGT - 1 - 5);
 
 	/* Big area of affect */
 	for (y = (y1 - 15); y <= (y1 + 15); y++) {
@@ -1802,8 +1802,8 @@ extern void cave_gen(void)
 
 
     /* Hack -- Start with basic granite (or floor, if empty) */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 
 /* Empty levels are useful for testing rooms. */
 #if 0
@@ -1820,8 +1820,8 @@ extern void cave_gen(void)
     }
 
     /* Actual maximum number of rooms on this level */
-    dun->row_rooms = DUNGEON_HGT / BLOCK_HGT;
-    dun->col_rooms = DUNGEON_WID / BLOCK_WID;
+    dun->row_rooms = ARENA_HGT / BLOCK_HGT;
+    dun->col_rooms = ARENA_WID / BLOCK_WID;
 
     /* No stair locations yet */
     dun->stair_n = 0;
@@ -1882,7 +1882,7 @@ extern void cave_gen(void)
     }
 
     /* Special boundary walls -- Top */
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	y = 0;
 
 	/* Clear previous contents, add "solid" perma-wall */
@@ -1890,15 +1890,15 @@ extern void cave_gen(void)
     }
 
     /* Special boundary walls -- Bottom */
-    for (x = 0; x < DUNGEON_WID; x++) {
-	y = DUNGEON_HGT - 1;
+    for (x = 0; x < ARENA_WID; x++) {
+	y = ARENA_HGT - 1;
 
 	/* Clear previous contents, add "solid" perma-wall */
 	cave_set_feat(y, x, FEAT_PERM_SOLID);
     }
 
     /* Special boundary walls -- Left */
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	x = 0;
 
 	/* Clear previous contents, add "solid" perma-wall */
@@ -1906,8 +1906,8 @@ extern void cave_gen(void)
     }
 
     /* Special boundary walls -- Right */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	x = DUNGEON_WID - 1;
+    for (y = 0; y < ARENA_HGT; y++) {
+	x = ARENA_WID - 1;
 
 	/* Clear previous contents, add "solid" perma-wall */
 	cave_set_feat(y, x, FEAT_PERM_SOLID);
@@ -2057,8 +2057,8 @@ extern void cave_gen(void)
 
 		/* Pick a location */
 		while (1) {
-		    y = randint0(DUNGEON_HGT);
-		    x = randint0(DUNGEON_WID);
+		    y = randint0(ARENA_HGT);
+		    x = randint0(ARENA_WID);
 
 		    if (cave_exist_mon(r_ptr, y, x, FALSE))
 			break;
@@ -2091,8 +2091,8 @@ extern void cave_gen(void)
 
 
     /* Clear "temp" flags. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_TEMP);
 	}
     }

@@ -2232,7 +2232,7 @@ static bool get_move(monster_type * m_ptr, int *ty, int *tx, bool * fear,
     monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
     int i, start;
-    int y, x, targ_y = DUNGEON_HGT / 2, targ_x = DUNGEON_WID / 2;
+    int y, x, targ_y = ARENA_HGT / 2, targ_x = ARENA_WID / 2;
 
     int py = p_ptr->py;
     int px = p_ptr->px;
@@ -4576,12 +4576,12 @@ static void process_monster(monster_type * m_ptr)
 	else {
 	    int tmp_y, tmp_x;
 
-	    tmp_y = randint1(DUNGEON_HGT - 1);
-	    tmp_x = randint1(DUNGEON_WID - 1);
+	    tmp_y = randint1(ARENA_HGT - 1);
+	    tmp_x = randint1(ARENA_WID - 1);
 
 	    while (!cave_exist_mon(r_ptr, tmp_y, tmp_x, FALSE)) {
-		tmp_y = randint1(DUNGEON_HGT - 1);
-		tmp_x = randint1(DUNGEON_WID - 1);
+		tmp_y = randint1(ARENA_HGT - 1);
+		tmp_x = randint1(ARENA_WID - 1);
 	    }
 
 	    m_ptr->ty = tmp_y;

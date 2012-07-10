@@ -67,8 +67,8 @@ static coord path_start(int sy, int sx, int ty, int tx)
     coord pathend;
 
     /* make sure targets are in bounds, reflect back in if not */
-    ty += ABS(ty) - ty - ABS(DUNGEON_HGT - 1 - ty) + (DUNGEON_HGT - 1 - ty);
-    tx += ABS(tx) - tx - ABS(DUNGEON_WID - 1 - tx) + (DUNGEON_WID - 1 - tx);
+    ty += ABS(ty) - ty - ABS(ARENA_HGT - 1 - ty) + (ARENA_HGT - 1 - ty);
+    tx += ABS(tx) - tx - ABS(ARENA_WID - 1 - tx) + (ARENA_WID - 1 - tx);
 
     /* Set last point in case of out of bounds */
     fy = sy;
@@ -134,7 +134,7 @@ void river_move(int *xp)
 {
     int x = (*xp), diff;
 
-    diff = x - DUNGEON_WID / 2;
+    diff = x - ARENA_WID / 2;
     if (ABS(diff) < 10)
 	x = (diff < 0) ? (x - 10) : (x + 10);
 
@@ -149,7 +149,7 @@ void river_move(int *xp)
 static void alloc_paths(int stage, int last_stage)
 {
     int y, x, i, j, num, pathnum = 0, path, ty, tx;
-    int py = DUNGEON_HGT / 2, px = DUNGEON_WID / 2, pcoord = p_ptr->path_coord;
+    int py = ARENA_HGT / 2, px = ARENA_WID / 2, pcoord = p_ptr->path_coord;
 
     int north = stage_map[stage][NORTH];
     int east = stage_map[stage][EAST];
@@ -197,7 +197,7 @@ static void alloc_paths(int stage, int last_stage)
 	    jumped = FALSE;
 
 	    /* make paths to nowhere */
-	    ty = 1 + DUNGEON_HGT / 3 + randint1(20) - 10;
+	    ty = 1 + ARENA_HGT / 3 + randint1(20) - 10;
 	    tx = px + randint1(40) - 20;
 	    temp = path_start(1, px, ty, tx);
 	    for (j = MAX_PATHS - 1; j >= 0; j--) {
@@ -220,7 +220,7 @@ static void alloc_paths(int stage, int last_stage)
 
 	/* Place "num" paths */
 	for (i = 0; i < num; i++) {
-	    x = 1 + randint0(DUNGEON_WID / num - 2) + i * DUNGEON_WID / num;
+	    x = 1 + randint0(ARENA_WID / num - 2) + i * ARENA_WID / num;
 
 	    /* Hack - no paths in river */
 	    if (river)
@@ -229,7 +229,7 @@ static void alloc_paths(int stage, int last_stage)
 	    cave_set_feat(1, x, path);
 
 	    /* make paths to nowhere */
-	    ty = 1 + DUNGEON_HGT / 3 + randint1(20) - 10;
+	    ty = 1 + ARENA_HGT / 3 + randint1(20) - 10;
 	    tx = x + randint1(40) - 20;
 	    temp = path_start(1, x, ty, tx);
 	    for (j = MAX_PATHS - 1; j >= 0; j--) {
@@ -258,15 +258,15 @@ static void alloc_paths(int stage, int last_stage)
 
 	/* Way back */
 	if ((east == last_stage) && (p_ptr->create_stair)) {
-	    cave_set_feat(pcoord, DUNGEON_WID - 2, path);
+	    cave_set_feat(pcoord, ARENA_WID - 2, path);
 	    py = pcoord;
-	    px = DUNGEON_WID - 2;
+	    px = ARENA_WID - 2;
 	    jumped = FALSE;
 
 	    /* make paths to nowhere */
 	    ty = py + randint1(40) - 20;
-	    tx = DUNGEON_WID - DUNGEON_HGT / 3 - randint1(20) + 8;
-	    temp = path_start(py, DUNGEON_WID - 2, ty, tx);
+	    tx = ARENA_WID - ARENA_HGT / 3 - randint1(20) + 8;
+	    temp = path_start(py, ARENA_WID - 2, ty, tx);
 	    for (j = MAX_PATHS - 1; j >= 0; j--) {
 		if (j == 0)
 		    pathend[j] = temp;
@@ -287,13 +287,13 @@ static void alloc_paths(int stage, int last_stage)
 
 	/* Place "num" paths */
 	for (i = 0; i < num; i++) {
-	    y = 1 + randint0(DUNGEON_HGT / num - 2) + i * DUNGEON_HGT / num;
-	    cave_set_feat(y, DUNGEON_WID - 2, path);
+	    y = 1 + randint0(ARENA_HGT / num - 2) + i * ARENA_HGT / num;
+	    cave_set_feat(y, ARENA_WID - 2, path);
 
 	    /* make paths to nowhere */
 	    ty = y + randint1(40) - 20;
-	    tx = DUNGEON_WID - DUNGEON_HGT / 3 - randint1(20) + 8;
-	    temp = path_start(y, DUNGEON_WID - 2, ty, tx);
+	    tx = ARENA_WID - ARENA_HGT / 3 - randint1(20) + 8;
+	    temp = path_start(y, ARENA_WID - 2, ty, tx);
 	    for (j = MAX_PATHS - 1; j >= 0; j--) {
 		if (j == 0)
 		    pathend[j] = temp;
@@ -324,15 +324,15 @@ static void alloc_paths(int stage, int last_stage)
 	    if (river)
 		river_move(&pcoord);
 
-	    cave_set_feat(DUNGEON_HGT - 2, pcoord, path);
-	    py = DUNGEON_HGT - 2;
+	    cave_set_feat(ARENA_HGT - 2, pcoord, path);
+	    py = ARENA_HGT - 2;
 	    px = pcoord;
 	    jumped = FALSE;
 
 	    /* make paths to nowhere */
-	    ty = DUNGEON_HGT - DUNGEON_HGT / 3 - randint1(20) + 8;
+	    ty = ARENA_HGT - ARENA_HGT / 3 - randint1(20) + 8;
 	    tx = px + randint1(40) - 20;
-	    temp = path_start(DUNGEON_HGT - 2, px, ty, tx);
+	    temp = path_start(ARENA_HGT - 2, px, ty, tx);
 	    for (j = MAX_PATHS - 1; j >= 0; j--) {
 		if (j == 0)
 		    pathend[j] = temp;
@@ -353,18 +353,18 @@ static void alloc_paths(int stage, int last_stage)
 
 	/* Place "num" paths */
 	for (i = 0; i < num; i++) {
-	    x = 1 + randint0(DUNGEON_WID / num - 2) + i * DUNGEON_WID / num;
+	    x = 1 + randint0(ARENA_WID / num - 2) + i * ARENA_WID / num;
 
 	    /* Hack - no paths in river */
 	    if (river)
 		river_move(&x);
 
-	    cave_set_feat(DUNGEON_HGT - 2, x, path);
+	    cave_set_feat(ARENA_HGT - 2, x, path);
 
 	    /* make paths to nowhere */
-	    ty = DUNGEON_HGT - DUNGEON_HGT / 3 - randint1(20) + 8;
+	    ty = ARENA_HGT - ARENA_HGT / 3 - randint1(20) + 8;
 	    tx = x + randint1(40) - 20;
-	    temp = path_start(DUNGEON_HGT - 2, x, ty, tx);
+	    temp = path_start(ARENA_HGT - 2, x, ty, tx);
 	    for (j = MAX_PATHS - 1; j >= 0; j--) {
 		if (j == 0)
 		    pathend[j] = temp;
@@ -398,7 +398,7 @@ static void alloc_paths(int stage, int last_stage)
 
 	    /* make paths to nowhere */
 	    ty = py + randint1(40) - 20;
-	    tx = 1 + DUNGEON_HGT / 3 + randint1(20) - 10;
+	    tx = 1 + ARENA_HGT / 3 + randint1(20) - 10;
 	    temp = path_start(py, 1, ty, tx);
 	    for (j = MAX_PATHS - 1; j >= 0; j--) {
 		if (j == 0)
@@ -420,12 +420,12 @@ static void alloc_paths(int stage, int last_stage)
 
 	/* Place "num" paths */
 	for (i = 0; i < num; i++) {
-	    y = 1 + randint0(DUNGEON_HGT / num - 2) + i * DUNGEON_HGT / num;
+	    y = 1 + randint0(ARENA_HGT / num - 2) + i * ARENA_HGT / num;
 	    cave_set_feat(y, 1, path);
 
 	    /* make paths to nowhere */
 	    ty = y + randint1(40) - 20;
-	    tx = 1 + DUNGEON_HGT / 3 + randint1(20) - 10;
+	    tx = 1 + ARENA_HGT / 3 + randint1(20) - 10;
 	    temp = path_start(y, 1, ty, tx);
 	    for (j = MAX_PATHS - 1; j >= 0; j--) {
 		if (j == 0)
@@ -646,7 +646,7 @@ extern void plain_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void forest_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -666,7 +666,7 @@ extern void forest_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -686,7 +686,7 @@ extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void lake_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -706,7 +706,7 @@ extern void lake_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void moor_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -726,7 +726,7 @@ extern void moor_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -746,7 +746,7 @@ extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -766,7 +766,7 @@ extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void dark_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -786,7 +786,7 @@ extern void dark_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void impass_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -806,7 +806,7 @@ extern void impass_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void desert_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -826,7 +826,7 @@ extern void desert_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void snow_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -846,7 +846,7 @@ extern void snow_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void town_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -866,7 +866,7 @@ extern void town_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 extern void landmk_gen(chunk_ref ref, int y_offset, int x_offset)
@@ -886,7 +886,7 @@ extern void landmk_gen(chunk_ref ref, int y_offset, int x_offset)
     }
 
     if (!character_dungeon)
-	player_place(DUNGEON_HGT/2, DUNGEON_WID/2);
+	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
 
@@ -914,8 +914,8 @@ extern void plain_gen_old(void)
     feature_type *f_ptr;
 
     /* Hack -- Start with basic grass */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create grass */
 	    cave_feat[y][x] = FEAT_GRASS;
 	}
@@ -927,7 +927,7 @@ extern void plain_gen_old(void)
 
     /* Special boundary walls -- Top */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
@@ -947,13 +947,13 @@ extern void plain_gen_old(void)
 
     /* Special boundary walls -- Bottom */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
 	if (i < 0)
 	    i = 0;
-	for (y = DUNGEON_HGT - 1; y > DUNGEON_HGT - 1 - i; y--) {
+	for (y = ARENA_HGT - 1; y > ARENA_HGT - 1 - i; y--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -966,7 +966,7 @@ extern void plain_gen_old(void)
 
     /* Special boundary walls -- Left */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
@@ -985,13 +985,13 @@ extern void plain_gen_old(void)
 
     /* Special boundary walls -- Right */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
 	if (i < 0)
 	    i = 0;
-	for (x = DUNGEON_WID - 1; x > DUNGEON_WID - 1 - i; x--) {
+	for (x = ARENA_WID - 1; x > ARENA_WID - 1 - i; x--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -1008,8 +1008,8 @@ extern void plain_gen_old(void)
 	wild_type = ((randint0(5) == 0) ? 26 : 14);
 
 	/* Choose a place */
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_GRASS, FEAT_GRASS, form_feats,
 			   p_ptr->danger + 1);
@@ -1018,14 +1018,14 @@ extern void plain_gen_old(void)
     /* And some water */
     form_grids = 0;
     while (form_grids < 300) {
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	form_grids += make_formation(y, x, FEAT_GRASS, FEAT_GRASS, ponds, 10);
     }
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 	}
     }
@@ -1078,14 +1078,14 @@ extern void plain_gen_old(void)
 
 
     /* Clear "temp" flags. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_TEMP);
 
 	    /* Paranoia - remake the dungeon walls */
 
-	    if ((y == 0) || (x == 0) || (y == DUNGEON_HGT - 1)
-		|| (x == DUNGEON_WID - 1)) {
+	    if ((y == 0) || (x == 0) || (y == ARENA_HGT - 1)
+		|| (x == ARENA_WID - 1)) {
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	    }
 	}
@@ -1130,7 +1130,7 @@ extern void mtn_gen_old(void)
     int min, dist, floors = 0;
     int randpoints[20];
     coord pathpoints[20];
-    coord nearest_point = { DUNGEON_HGT / 2, DUNGEON_WID / 2 };
+    coord nearest_point = { ARENA_HGT / 2, ARENA_WID / 2 };
     coord stairs[3];
 
     /* Amusing hack to make paths work */
@@ -1144,8 +1144,8 @@ extern void mtn_gen_old(void)
 
 
     /* Hack -- Start with basic grass (lets paths work -NRM-) */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create grass */
 	    cave_feat[y][x] = FEAT_GRASS;
 	}
@@ -1153,7 +1153,7 @@ extern void mtn_gen_old(void)
 
 
     /* Special boundary walls -- Top */
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	y = 0;
 
 	/* Clear previous contents, add "solid" perma-wall */
@@ -1161,15 +1161,15 @@ extern void mtn_gen_old(void)
     }
 
     /* Special boundary walls -- Bottom */
-    for (x = 0; x < DUNGEON_WID; x++) {
-	y = DUNGEON_HGT - 1;
+    for (x = 0; x < ARENA_WID; x++) {
+	y = ARENA_HGT - 1;
 
 	/* Clear previous contents, add "solid" perma-wall */
 	cave_set_feat(y, x, FEAT_PERM_SOLID);
     }
 
     /* Special boundary walls -- Left */
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	x = 0;
 
 	/* Clear previous contents, add "solid" perma-wall */
@@ -1177,8 +1177,8 @@ extern void mtn_gen_old(void)
     }
 
     /* Special boundary walls -- Right */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	x = DUNGEON_WID - 1;
+    for (y = 0; y < ARENA_HGT; y++) {
+	x = ARENA_WID - 1;
 
 	/* Clear previous contents, add "solid" perma-wall */
 	cave_set_feat(y, x, FEAT_PERM_SOLID);
@@ -1197,8 +1197,8 @@ extern void mtn_gen_old(void)
 	/* Mim's cave on Amon Rudh */
 	i = 3;
 	while (i) {
-	    y = randint0(DUNGEON_HGT - 2) + 1;
-	    x = randint0(DUNGEON_WID - 2) + 1;
+	    y = randint0(ARENA_HGT - 2) + 1;
+	    x = randint0(ARENA_WID - 2) + 1;
 	    if ((cave_feat[y][x] == FEAT_ROAD)
 		|| (cave_feat[y][x] == FEAT_GRASS)) {
 		cave_set_feat(y, x, FEAT_MORE);
@@ -1214,8 +1214,8 @@ extern void mtn_gen_old(void)
 
 
     /* Make paths permanent */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++)
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++)
 	    if (cave_feat[y][x] == FEAT_ROAD) {
 		/* Hack - prepare for plateaux, connecting */
 		cave_on(cave_info[y][x], CAVE_ICKY);
@@ -1226,8 +1226,8 @@ extern void mtn_gen_old(void)
     /* Pick some joining points */
     for (j = 0; j < 20; j++)
 	randpoints[j] = randint0(floors);
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    if (cave_feat[y][x] == FEAT_ROAD)
 		floors--;
 	    else
@@ -1248,7 +1248,7 @@ extern void mtn_gen_old(void)
 	    x = stairs[j].x;
 
 	    /* Now join them up */
-	    min = DUNGEON_WID + DUNGEON_HGT;
+	    min = ARENA_WID + ARENA_HGT;
 	    for (i = 0; i < 20; i++) {
 		dist = distance(y, x, pathpoints[i].y, pathpoints[i].x);
 		if (dist < min) {
@@ -1268,8 +1268,8 @@ extern void mtn_gen_old(void)
 	/* Try for a plateau */
 	a = randint0(6) + 4;
 	b = randint0(5) + 4;
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	made_plat =
 	    generate_starburst_room(y - b, x - a, y + b, x + a, FALSE,
 				    FEAT_DOOR_HEAD + 2, TRUE);
@@ -1279,7 +1279,7 @@ extern void mtn_gen_old(void)
 	    plats--;
 
 	    /* Now join it up */
-	    min = DUNGEON_WID + DUNGEON_HGT;
+	    min = ARENA_WID + ARENA_HGT;
 	    for (i = 0; i < 20; i++) {
 		dist = distance(y, x, pathpoints[i].y, pathpoints[i].x);
 		if (dist < min) {
@@ -1303,13 +1303,13 @@ extern void mtn_gen_old(void)
 	wild_type = ((randint0(5) == 0) ? 26 : 16);
 
 	/* Choose a place */
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_GRASS, FEAT_GRASS, form_feats,
 			   p_ptr->danger * 2);
 	/* Now join it up */
-	min = DUNGEON_WID + DUNGEON_HGT;
+	min = ARENA_WID + ARENA_HGT;
 	for (i = 0; i < 20; i++) {
 	    dist = distance(y, x, pathpoints[i].y, pathpoints[i].x);
 	    if (dist < min) {
@@ -1322,8 +1322,8 @@ extern void mtn_gen_old(void)
     }
 
     /* Now change all the terrain to what we really want */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create grass */
 	    switch (cave_feat[y][x]) {
 	    case FEAT_GRASS:
@@ -1366,14 +1366,14 @@ extern void mtn_gen_old(void)
 
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 
 	    /* Paranoia - remake the dungeon walls */
 
-	    if ((y == 0) || (x == 0) || (y == DUNGEON_HGT - 1)
-		|| (x == DUNGEON_WID - 1)) {
+	    if ((y == 0) || (x == 0) || (y == ARENA_HGT - 1)
+		|| (x == ARENA_WID - 1)) {
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	    }
 	}
@@ -1429,8 +1429,8 @@ extern void mtn_gen_old(void)
 
 
     /* Clear "temp" flags. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_TEMP);
 	}
     }
@@ -1453,8 +1453,8 @@ extern void mtntop_gen_old(void)
     bool placed = FALSE;
 
     /* Hack -- Start with void */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create void */
 	    cave_feat[y][x] = FEAT_VOID;
 	}
@@ -1462,7 +1462,7 @@ extern void mtntop_gen_old(void)
 
 
     /* Special boundary walls -- Top */
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	y = 0;
 
 	/* Clear previous contents, add "solid" perma-wall */
@@ -1470,15 +1470,15 @@ extern void mtntop_gen_old(void)
     }
 
     /* Special boundary walls -- Bottom */
-    for (x = 0; x < DUNGEON_WID; x++) {
-	y = DUNGEON_HGT - 1;
+    for (x = 0; x < ARENA_WID; x++) {
+	y = ARENA_HGT - 1;
 
 	/* Clear previous contents, add "solid" perma-wall */
 	cave_set_feat(y, x, FEAT_PERM_SOLID);
     }
 
     /* Special boundary walls -- Left */
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	x = 0;
 
 	/* Clear previous contents, add "solid" perma-wall */
@@ -1486,8 +1486,8 @@ extern void mtntop_gen_old(void)
     }
 
     /* Special boundary walls -- Right */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	x = DUNGEON_WID - 1;
+    for (y = 0; y < ARENA_HGT; y++) {
+	x = ARENA_WID - 1;
 
 	/* Clear previous contents, add "solid" perma-wall */
 	cave_set_feat(y, x, FEAT_PERM_SOLID);
@@ -1497,8 +1497,8 @@ extern void mtntop_gen_old(void)
     while (!placed) {
 	a = randint0(6) + 4;
 	b = randint0(5) + 4;
-	y = DUNGEON_HGT / 2;
-	x = DUNGEON_WID / 2;
+	y = ARENA_HGT / 2;
+	x = ARENA_WID / 2;
 	placed =
 	    generate_starburst_room(y - b, x - a, y + b, x + a, FALSE,
 				    FEAT_ROAD, FALSE);
@@ -1586,8 +1586,8 @@ extern void mtntop_gen_old(void)
 	/* Try for a plateau */
 	a = randint0(6) + 4;
 	b = randint0(5) + 4;
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	made_plat =
 	    generate_starburst_room(y - b, x - a, y + b, x + a, FALSE,
 				    FEAT_ROAD, FALSE);
@@ -1631,14 +1631,14 @@ extern void mtntop_gen_old(void)
 
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 
 	    /* Paranoia - remake the dungeon walls */
 
-	    if ((y == 0) || (x == 0) || (y == DUNGEON_HGT - 1)
-		|| (x == DUNGEON_WID - 1)) {
+	    if ((y == 0) || (x == 0) || (y == ARENA_HGT - 1)
+		|| (x == ARENA_WID - 1)) {
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	    }
 	}
@@ -1670,8 +1670,8 @@ extern void mtntop_gen_old(void)
 
 
     /* Clear "temp" flags. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_TEMP);
 	}
     }
@@ -1707,8 +1707,8 @@ extern void forest_gen_old(void)
 
 
     /* Hack -- Start with basic grass so paths work */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create grass */
 	    cave_feat[y][x] = FEAT_GRASS;
 	}
@@ -1720,7 +1720,7 @@ extern void forest_gen_old(void)
 
     /* Special boundary walls -- Top */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
@@ -1740,13 +1740,13 @@ extern void forest_gen_old(void)
 
     /* Special boundary walls -- Bottom */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
 	if (i < 0)
 	    i = 0;
-	for (y = DUNGEON_HGT - 1; y > DUNGEON_HGT - 1 - i; y--) {
+	for (y = ARENA_HGT - 1; y > ARENA_HGT - 1 - i; y--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -1759,7 +1759,7 @@ extern void forest_gen_old(void)
 
     /* Special boundary walls -- Left */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
@@ -1778,13 +1778,13 @@ extern void forest_gen_old(void)
 
     /* Special boundary walls -- Right */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
 	if (i < 0)
 	    i = 0;
-	for (x = DUNGEON_WID - 1; x > DUNGEON_WID - 1 - i; x--) {
+	for (x = ARENA_WID - 1; x > ARENA_WID - 1 - i; x--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -1796,8 +1796,8 @@ extern void forest_gen_old(void)
     }
 
     /* Now place trees */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create trees */
 	    if (cave_feat[y][x] == FEAT_GRASS) {
 		if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
@@ -1824,8 +1824,8 @@ extern void forest_gen_old(void)
 	/* Try for a clearing */
 	a = randint0(6) + 4;
 	b = randint0(5) + 4;
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	made_plat =
 	    generate_starburst_room(y - b, x - a, y + b, x + a, FALSE,
 				    FEAT_GRASS, TRUE);
@@ -1840,8 +1840,8 @@ extern void forest_gen_old(void)
     }
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 	}
     }
@@ -1853,8 +1853,8 @@ extern void forest_gen_old(void)
 	wild_type = ((randint0(5) == 0) ? 26 : 18);
 
 	/* Choose a place */
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_TREE, FEAT_TREE2, form_feats,
 			   p_ptr->danger + 1);
@@ -1863,14 +1863,14 @@ extern void forest_gen_old(void)
     /* And some water */
     form_grids = 0;
     while (form_grids < 300) {
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	form_grids += make_formation(y, x, FEAT_TREE, FEAT_TREE2, ponds, 10);
     }
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 	}
     }
@@ -1922,13 +1922,13 @@ extern void forest_gen_old(void)
 
 
     /* Clear "temp" flags. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_TEMP);
 	    /* Paranoia - remake the dungeon walls */
 
-	    if ((y == 0) || (x == 0) || (y == DUNGEON_HGT - 1)
-		|| (x == DUNGEON_WID - 1))
+	    if ((y == 0) || (x == 0) || (y == ARENA_HGT - 1)
+		|| (x == ARENA_WID - 1))
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	}
     }
@@ -1961,8 +1961,8 @@ extern void swamp_gen_old(void)
 
 
     /* Hack -- Start with grass */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_feat[y][x] = FEAT_GRASS;
 	}
     }
@@ -1973,7 +1973,7 @@ extern void swamp_gen_old(void)
 
     /* Special boundary walls -- Top */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
@@ -1993,13 +1993,13 @@ extern void swamp_gen_old(void)
 
     /* Special boundary walls -- Bottom */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
 	if (i < 0)
 	    i = 0;
-	for (y = DUNGEON_HGT - 1; y > DUNGEON_HGT - 1 - i; y--) {
+	for (y = ARENA_HGT - 1; y > ARENA_HGT - 1 - i; y--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -2012,7 +2012,7 @@ extern void swamp_gen_old(void)
 
     /* Special boundary walls -- Left */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
@@ -2031,13 +2031,13 @@ extern void swamp_gen_old(void)
 
     /* Special boundary walls -- Right */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
 	if (i < 0)
 	    i = 0;
-	for (x = DUNGEON_WID - 1; x > DUNGEON_WID - 1 - i; x--) {
+	for (x = ARENA_WID - 1; x > ARENA_WID - 1 - i; x--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -2049,8 +2049,8 @@ extern void swamp_gen_old(void)
     }
 
     /* Hack -- add water */
-    for (y = 1; y < DUNGEON_HGT - 1; y++) {
-	for (x = 1; x < DUNGEON_WID - 1; x++) {
+    for (y = 1; y < ARENA_HGT - 1; y++) {
+	for (x = 1; x < ARENA_WID - 1; x++) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    if (tf_has(f_ptr->flags, TF_PERMANENT))
@@ -2069,16 +2069,16 @@ extern void swamp_gen_old(void)
 	wild_type = ((randint0(5) == 0) ? 26 : 20);
 
 	/* Choose a place */
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_GRASS, FEAT_WATER, form_feats,
 			   p_ptr->danger);
     }
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 	}
     }
@@ -2130,13 +2130,13 @@ extern void swamp_gen_old(void)
 
 
     /* Clear "temp" flags. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_TEMP);
 	    /* Paranoia - remake the dungeon walls */
 
-	    if ((y == 0) || (x == 0) || (y == DUNGEON_HGT - 1)
-		|| (x == DUNGEON_WID - 1))
+	    if ((y == 0) || (x == 0) || (y == ARENA_HGT - 1)
+		|| (x == ARENA_WID - 1))
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	}
     }
@@ -2170,8 +2170,8 @@ extern void desert_gen_old(void)
 
 
     /* Hack -- Start with basic grass so paths work */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create grass */
 	    cave_feat[y][x] = FEAT_GRASS;
 	}
@@ -2183,7 +2183,7 @@ extern void desert_gen_old(void)
 
     /* Special boundary walls -- Top */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
@@ -2203,13 +2203,13 @@ extern void desert_gen_old(void)
 
     /* Special boundary walls -- Bottom */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
 	if (i < 0)
 	    i = 0;
-	for (y = DUNGEON_HGT - 1; y > DUNGEON_HGT - 1 - i; y--) {
+	for (y = ARENA_HGT - 1; y > ARENA_HGT - 1 - i; y--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -2222,7 +2222,7 @@ extern void desert_gen_old(void)
 
     /* Special boundary walls -- Left */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
@@ -2241,13 +2241,13 @@ extern void desert_gen_old(void)
 
     /* Special boundary walls -- Right */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
 	if (i < 0)
 	    i = 0;
-	for (x = DUNGEON_WID - 1; x > DUNGEON_WID - 1 - i; x--) {
+	for (x = ARENA_WID - 1; x > ARENA_WID - 1 - i; x--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -2265,7 +2265,7 @@ extern void desert_gen_old(void)
 	wild_vaults = 0;
 
 	/* Angband! */
-	for (d = 0; d < DUNGEON_WID; d++) {
+	for (d = 0; d < ARENA_WID; d++) {
 	    for (y = 0; y < d; y++) {
 		x = d - y;
 		if (!in_bounds_fully(y, x))
@@ -2289,8 +2289,8 @@ extern void desert_gen_old(void)
     }
 
     /* Now place rubble, sand and magma */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create desert */
 	    if (cave_feat[y][x] == FEAT_GRASS) {
 		if (randint0(100) < 50)
@@ -2313,8 +2313,8 @@ extern void desert_gen_old(void)
 	/* Try for a clearing */
 	a = randint0(6) + 4;
 	b = randint0(5) + 4;
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	made_plat =
 	    generate_starburst_room(y - b, x - a, y + b, x + a, FALSE,
 				    FEAT_GRASS, TRUE);
@@ -2329,8 +2329,8 @@ extern void desert_gen_old(void)
     }
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 	}
     }
@@ -2342,16 +2342,16 @@ extern void desert_gen_old(void)
 	wild_type = ((randint0(5) == 0) ? 26 : 22);
 
 	/* Choose a place */
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_RUBBLE, FEAT_MAGMA, form_feats,
 			   p_ptr->danger);
     }
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 	}
     }
@@ -2403,13 +2403,13 @@ extern void desert_gen_old(void)
 
 
     /* Clear "temp" flags. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_TEMP);
 	    /* Paranoia - remake the dungeon walls */
 
-	    if ((y == 0) || (x == 0) || (y == DUNGEON_HGT - 1)
-		|| (x == DUNGEON_WID - 1))
+	    if ((y == 0) || (x == 0) || (y == ARENA_HGT - 1)
+		|| (x == ARENA_WID - 1))
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	}
     }
@@ -2426,8 +2426,8 @@ extern void desert_gen_old(void)
  */
 extern void river_gen_old(void)
 {
-    int i, j, k, y, x, y1 = DUNGEON_HGT / 2;
-    int mid[DUNGEON_HGT];
+    int i, j, k, y, x, y1 = ARENA_HGT / 2;
+    int mid[ARENA_HGT];
     int stage = p_ptr->stage;
     int last_stage = p_ptr->last_stage;
     int form_grids = 0;
@@ -2444,8 +2444,8 @@ extern void river_gen_old(void)
 
 
     /* Hack -- Start with basic grass */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create grass */
 	    cave_feat[y][x] = FEAT_GRASS;
 	}
@@ -2460,7 +2460,7 @@ extern void river_gen_old(void)
 
     /* Special boundary walls -- Top */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
@@ -2480,13 +2480,13 @@ extern void river_gen_old(void)
 
     /* Special boundary walls -- Bottom */
     i = 4;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 7)
 	    i = 7;
 	if (i < 0)
 	    i = 0;
-	for (y = DUNGEON_HGT - 1; y > DUNGEON_HGT - 1 - i; y--) {
+	for (y = ARENA_HGT - 1; y > ARENA_HGT - 1 - i; y--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -2499,7 +2499,7 @@ extern void river_gen_old(void)
 
     /* Special boundary walls -- Left */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
@@ -2518,13 +2518,13 @@ extern void river_gen_old(void)
 
     /* Special boundary walls -- Right */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
 	if (i < 0)
 	    i = 0;
-	for (x = DUNGEON_WID - 1; x > DUNGEON_WID - 1 - i; x--) {
+	for (x = ARENA_WID - 1; x > ARENA_WID - 1 - i; x--) {
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Clear previous contents, add "solid" perma-wall */
@@ -2536,8 +2536,8 @@ extern void river_gen_old(void)
     }
 
     /* Place the river, start in the middle third */
-    i = DUNGEON_WID / 3 + randint0(DUNGEON_WID / 3);
-    for (y = 1; y < DUNGEON_HGT - 1; y++) {
+    i = ARENA_WID / 3 + randint0(ARENA_WID / 3);
+    for (y = 1; y < ARENA_HGT - 1; y++) {
 	/* Remember the midpoint */
 	mid[y] = i;
 
@@ -2603,8 +2603,8 @@ extern void river_gen_old(void)
 	wild_type = ((randint0(5) == 0) ? 26 : 24);
 
 	/* Choose a place */
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 
 	form_grids +=
 	    make_formation(y, x, FEAT_GRASS, FEAT_GRASS, form_feats,
@@ -2612,8 +2612,8 @@ extern void river_gen_old(void)
     }
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 	}
     }
@@ -2682,13 +2682,13 @@ extern void river_gen_old(void)
 
 
     /* Clear "temp" flags. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_TEMP);
 	    /* Paranoia - remake the dungeon walls */
 
-	    if ((y == 0) || (x == 0) || (y == DUNGEON_HGT - 1)
-		|| (x == DUNGEON_WID - 1))
+	    if ((y == 0) || (x == 0) || (y == ARENA_HGT - 1)
+		|| (x == ARENA_WID - 1))
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	}
     }
@@ -2700,7 +2700,7 @@ extern void river_gen_old(void)
 bool place_web(int type)
 {
     vault_type *v_ptr;
-    int i, y, x = DUNGEON_WID / 2, cy, cx;
+    int i, y, x = ARENA_WID / 2, cy, cx;
     int *v_idx = malloc(z_info->v_max * sizeof(v_idx));
     int v_cnt = 0;
 
@@ -2730,8 +2730,8 @@ bool place_web(int type)
     /* Look for somewhere to put it */
     for (i = 0; i < 25; i++) {
 	/* Random top left corner */
-	cy = randint1(DUNGEON_HGT - 1 - v_ptr->hgt);
-	cx = randint1(DUNGEON_WID - 1 - v_ptr->wid);
+	cy = randint1(ARENA_HGT - 1 - v_ptr->hgt);
+	cx = randint1(ARENA_WID - 1 - v_ptr->wid);
 
 	/* Check to see if it will fit (only avoid big webs and edges) */
 	for (y = cy; y < cy + v_ptr->hgt; y++)
@@ -2796,8 +2796,8 @@ extern void valley_gen_old(void)
 
 
     /* Hack -- Start with trees */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Create trees */
 	    if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
 		> HIGHLAND_TREE_CHANCE)
@@ -2810,11 +2810,11 @@ extern void valley_gen_old(void)
     /* Prepare places for down slides */
     num += randint0(2);
     for (i = 0; i < num; i++)
-	path_x[i] = 1 + randint0(DUNGEON_WID / num - 2) + i * DUNGEON_WID / num;
+	path_x[i] = 1 + randint0(ARENA_WID / num - 2) + i * ARENA_WID / num;
 
     /* Special boundary walls -- Top */
     i = 5;
-    for (x = 0; x < DUNGEON_WID; x++) {
+    for (x = 0; x < ARENA_WID; x++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
@@ -2837,13 +2837,13 @@ extern void valley_gen_old(void)
     i = 5;
     j = 0;
     if (p_ptr->danger != 70) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    i += 1 - randint0(3);
 	    if (i > 10)
 		i = 10;
 	    if (i < 0)
 		i = 0;
-	    for (y = DUNGEON_HGT - 1; y > DUNGEON_HGT - 1 - i; y--)
+	    for (y = ARENA_HGT - 1; y > ARENA_HGT - 1 - i; y--)
 
 		/* Clear previous contents, add empty space */
 		cave_set_feat(y, x, FEAT_VOID);
@@ -2859,7 +2859,7 @@ extern void valley_gen_old(void)
 
     /* Special boundary walls -- Left */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
@@ -2874,13 +2874,13 @@ extern void valley_gen_old(void)
 
     /* Special boundary walls -- Right */
     i = 5;
-    for (y = 0; y < DUNGEON_HGT; y++) {
+    for (y = 0; y < ARENA_HGT; y++) {
 	i += 1 - randint0(3);
 	if (i > 10)
 	    i = 10;
 	if (i < 0)
 	    i = 0;
-	for (x = DUNGEON_WID - 1; x > DUNGEON_WID - 1 - i; x--)
+	for (x = ARENA_WID - 1; x > ARENA_WID - 1 - i; x--)
 
 	    /* Clear previous contents, add "solid" perma-wall */
 	    cave_set_feat(y, x, FEAT_PERM_SOLID);
@@ -2894,8 +2894,8 @@ extern void valley_gen_old(void)
 	/* Try for a clearing */
 	a = randint0(6) + 4;
 	b = randint0(5) + 4;
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	if (cave_feat[y][x] == FEAT_VOID)
 	    continue;
 	made_plat =
@@ -2913,23 +2913,23 @@ extern void valley_gen_old(void)
 
     /* Place some formations */
     while (form_grids < (40 * p_ptr->danger)) {
-	y = randint0(DUNGEON_HGT - 1) + 1;
-	x = randint0(DUNGEON_WID - 1) + 1;
+	y = randint0(ARENA_HGT - 1) + 1;
+	x = randint0(ARENA_WID - 1) + 1;
 	form_grids +=
 	    make_formation(y, x, FEAT_TREE, FEAT_TREE2, form_feats,
 			   p_ptr->danger + 1);
     }
 
     /* No longer "icky" */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_ICKY);
 	}
     }
 
     if (!p_ptr->path_coord) {
-	y = DUNGEON_HGT / 2 - 10 + randint0(20);
-	x = DUNGEON_WID / 2 - 15 + randint0(30);
+	y = ARENA_HGT / 2 - 10 + randint0(20);
+	x = ARENA_WID / 2 - 15 + randint0(30);
 	cave_set_feat(y, x, FEAT_GRASS);
 	player_place(y, x);
 	p_ptr->path_coord = 0;
@@ -2992,13 +2992,13 @@ extern void valley_gen_old(void)
 	place_web(13);
 
     /* Clear "temp" flags. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    cave_off(cave_info[y][x], CAVE_TEMP);
 	    /* Paranoia - remake the dungeon walls */
 
-	    if ((y == 0) || (x == 0) || (y == DUNGEON_HGT - 1)
-		|| (x == DUNGEON_WID - 1))
+	    if ((y == 0) || (x == 0) || (y == ARENA_HGT - 1)
+		|| (x == ARENA_WID - 1))
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	}
     }
@@ -3009,8 +3009,8 @@ extern void valley_gen_old(void)
 
 	k = randint1(3) + 1;
 	while (k > 0) {
-	    y = randint1(DUNGEON_HGT - 1);
-	    x = randint1(DUNGEON_WID - 1);
+	    y = randint1(ARENA_HGT - 1);
+	    x = randint1(ARENA_WID - 1);
 	    f_ptr = &f_info[cave_feat[y][x]];
 	    if (tf_has(f_ptr->flags, TF_TREE)) {
 		cave_set_feat(y, x, FEAT_MORE);

@@ -904,8 +904,8 @@ void map_info(unsigned y, unsigned x, grid_data *g)
     object_type *o_ptr;
     feature_type *f_ptr;
 
-    assert(x < DUNGEON_WID);
-    assert(y < DUNGEON_HGT);
+    assert(x < ARENA_WID);
+    assert(y < ARENA_HGT);
 
     /* Default "clear" values, others will be set later where appropriate. */
     g->first_k_idx = 0;
@@ -1418,8 +1418,8 @@ void prt_map(void)
 /**
  * Display the entire map
  */
-#define MAP_HGT (DUNGEON_HGT / RATIO)
-#define MAP_WID (DUNGEON_WID / RATIO)
+#define MAP_HGT (ARENA_HGT / RATIO)
+#define MAP_WID (ARENA_WID / RATIO)
 
 
 /**
@@ -1487,7 +1487,7 @@ void display_map(int *cy, int *cx)
     byte tp;
 
     /* Large array on the stack */
-    byte mp[DUNGEON_HGT][DUNGEON_WID];
+    byte mp[ARENA_HGT][ARENA_WID];
 
     monster_race *r_ptr = &r_info[0];
 
@@ -1496,12 +1496,12 @@ void display_map(int *cy, int *cx)
     map_wid = Term->wid - 2;
 
     /* Adjust for town */
-    dungeon_hgt = (p_ptr->danger ? DUNGEON_HGT : 2 * DUNGEON_HGT / 3);
-    dungeon_wid = (p_ptr->danger ? DUNGEON_WID : 2 * DUNGEON_WID / 3);
+    dungeon_hgt = (p_ptr->danger ? ARENA_HGT : 2 * ARENA_HGT / 3);
+    dungeon_wid = (p_ptr->danger ? ARENA_WID : 2 * ARENA_WID / 3);
     if (!(p_ptr->danger) && (p_ptr->stage < 151) && (!OPT(adult_dungeon)))
-	dungeon_wid = DUNGEON_WID / 2;
-    top_row = (p_ptr->danger ? 0 : DUNGEON_HGT / 3);
-    left_col = (p_ptr->danger ? 0 : DUNGEON_WID / 3);
+	dungeon_wid = ARENA_WID / 2;
+    top_row = (p_ptr->danger ? 0 : ARENA_HGT / 3);
+    left_col = (p_ptr->danger ? 0 : ARENA_WID / 3);
 
     /* Prevent accidents */
     if (map_hgt > dungeon_hgt)
@@ -3291,8 +3291,8 @@ void update_noise(void)
 
 
 	/* Erase all of the current flow (noise) information */
-	for (y = 0; y < DUNGEON_HGT; y++) {
-	    for (x = 0; x < DUNGEON_WID; x++) {
+	for (y = 0; y < ARENA_HGT; y++) {
+	    for (x = 0; x < ARENA_WID; x++) {
 		cave_cost[y][x] = 0;
 	    }
 	}
@@ -3422,8 +3422,8 @@ void update_smell(void)
     /* Loop the age and adjust scent values when necessary */
     if (scent_when <= 0) {
 	/* Scan the entire dungeon */
-	for (y = 0; y < DUNGEON_HGT; y++) {
-	    for (x = 0; x < DUNGEON_WID; x++) {
+	for (y = 0; y < ARENA_HGT; y++) {
+	    for (x = 0; x < ARENA_WID; x++) {
 		/* Ignore non-existent scent */
 		if (cave_when[y][x] == 0)
 		    continue;
@@ -3595,9 +3595,9 @@ void wiz_light(bool wizard)
     }
 
     /* Scan all normal grids */
-    for (y = 1; y < DUNGEON_HGT - 1; y++) {
+    for (y = 1; y < ARENA_HGT - 1; y++) {
 	/* Scan all normal grids */
-	for (x = 1; x < DUNGEON_WID - 1; x++) {
+	for (x = 1; x < ARENA_WID - 1; x++) {
 	    feature_type *f_ptr = &f_info[cave_feat[y][x]];
 	    
 	    /* Process all passable grids (or all grids, if a wizard) */
@@ -3660,8 +3660,8 @@ void wiz_dark(void)
 
 
     /* Forget every grid */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Process the grid */
 	    cave_off(cave_info[y][x], CAVE_MARK);
 	    cave_off(cave_info[y][x], CAVE_DTRAP);
@@ -3701,8 +3701,8 @@ void illuminate(void)
     int y, x;
 
     /* Apply light or darkness */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-	for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < ARENA_HGT; y++) {
+	for (x = 0; x < ARENA_WID; x++) {
 	    /* Grids outside town walls */
 	    if ((cave_feat[y][x] == FEAT_PERM_SOLID)  && !p_ptr->danger)
 	    {

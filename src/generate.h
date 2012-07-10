@@ -153,8 +153,8 @@ struct room_profile {
 /**
  * Maximum numbers of rooms along each axis (currently 6x18)
  */
-#define MAX_ROOMS_ROW	(DUNGEON_HGT / BLOCK_HGT)
-#define MAX_ROOMS_COL	(DUNGEON_WID / BLOCK_WID)
+#define MAX_ROOMS_ROW	(ARENA_HGT / BLOCK_HGT)
+#define MAX_ROOMS_COL	(ARENA_WID / BLOCK_WID)
 
 /*
  * Maximal number of room types
@@ -181,7 +181,7 @@ struct room_profile {
 /**
  * Height and width for the currently generated level
  *
- * This differs from DUNGEON_HGT (and dungeon_hgt) in that it bounds the part
+ * This differs from ARENA_HGT (and dungeon_hgt) in that it bounds the part
  * of the level that might actually contain open squares. It will vary from
  * level to level, unlike the constant.
  */

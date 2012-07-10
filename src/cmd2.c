@@ -1033,8 +1033,8 @@ static void chest_death(bool scatter, int y, int x, s16b o_idx)
 	if (scatter) {
 	    for (i = 0; i < 200; i++) {
 		/* Pick a totally random spot. */
-		y = randint0(DUNGEON_HGT);
-		x = randint0(DUNGEON_WID);
+		y = randint0(ARENA_HGT);
+		x = randint0(ARENA_WID);
 
 		/* Must be an empty floor. */
 		if (!cave_clean_bold(y, x))

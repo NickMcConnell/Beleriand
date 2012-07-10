@@ -3490,18 +3490,18 @@ static errr init_other(void)
     /*** Prepare dungeon arrays ***/
 
     /* Padded into array */
-    cave_info = C_ZNEW(DUNGEON_HGT, grid_128);
+    cave_info = C_ZNEW(ARENA_HGT, grid_arena);
 
     /* Feature array */
-    cave_feat = C_ZNEW(DUNGEON_HGT, byte_wid);
+    cave_feat = C_ZNEW(ARENA_HGT, byte_wid);
 
     /* Entity arrays */
-    cave_o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
-    cave_m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
+    cave_o_idx = C_ZNEW(ARENA_HGT, s16b_wid);
+    cave_m_idx = C_ZNEW(ARENA_HGT, s16b_wid);
 
     /* Flow arrays */
-    cave_cost = C_ZNEW(DUNGEON_HGT, byte_wid);
-    cave_when = C_ZNEW(DUNGEON_HGT, byte_wid);
+    cave_cost = C_ZNEW(ARENA_HGT, byte_wid);
+    cave_when = C_ZNEW(ARENA_HGT, byte_wid);
 
     /*** Write region terrain array ***/
     for (y = 0; y < MAX_Y_REGION; y++)

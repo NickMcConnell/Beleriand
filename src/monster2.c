@@ -2511,8 +2511,8 @@ bool alloc_monster(int dis, bool slp, bool quick)
     /* Find a legal, distant, unoccupied, space */
     while (TRUE) {
 	/* Pick a location */
-	y = randint0(DUNGEON_HGT);
-	x = randint0(DUNGEON_WID);
+	y = randint0(ARENA_HGT);
+	x = randint0(ARENA_WID);
 
 	/* Require a grid that the monster can exist in. */
 	if (!cave_exist_mon(r_ptr, y, x, FALSE))
@@ -4124,9 +4124,9 @@ void monster_death(int m_idx)
     else if ((r_ptr->level == 70) && (p_ptr->danger == 70)
 	     && !OPT(adult_dungeon)) {
 	/* Make a path */
-	for (y = p_ptr->py; y < DUNGEON_HGT - 2; y++)
+	for (y = p_ptr->py; y < ARENA_HGT - 2; y++)
 	    cave_set_feat(y, p_ptr->px, FEAT_ROAD);
-	cave_set_feat(DUNGEON_HGT - 2, p_ptr->px, FEAT_LESS_SOUTH);
+	cave_set_feat(ARENA_HGT - 2, p_ptr->px, FEAT_LESS_SOUTH);
 
 	/* Announce it */
 	msg("The way out of Nan Dungortheb is revealed!");

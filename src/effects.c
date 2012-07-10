@@ -2161,7 +2161,7 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
     case EF_DWARVES:
 	{
 	    wiz_light(FALSE);
-	    (void) detect_all(DUNGEON_WID, TRUE);
+	    (void) detect_all(ARENA_WID, TRUE);
 	    return TRUE;
 	}
     case EF_ELESSAR:

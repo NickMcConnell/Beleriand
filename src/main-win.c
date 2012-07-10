@@ -2555,13 +2555,13 @@ static void windows_map_aux(void)
 	byte ta;
 	wchar_t tc;
 
-	td->map_tile_wid = (td->tile_wid * td->cols) / DUNGEON_WID;
-	td->map_tile_hgt = (td->tile_hgt * td->rows) / DUNGEON_HGT;
+	td->map_tile_wid = (td->tile_wid * td->cols) / ARENA_WID;
+	td->map_tile_hgt = (td->tile_hgt * td->rows) / ARENA_HGT;
 
 	min_x = 0;
 	min_y = 0;
-	max_x = DUNGEON_WID;
-	max_y = DUNGEON_HGT;
+	max_x = ARENA_WID;
+	max_y = ARENA_HGT;
 
 	/* Draw the map */
 	for (x = min_x; x < max_x; x++)

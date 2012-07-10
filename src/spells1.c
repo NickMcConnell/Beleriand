@@ -3666,8 +3666,8 @@ static bool project_o(int who, int y, int x, int dam, int typ)
 
 			for (i = 0; i < 200; i++) {
 			    /* Pick a totally random spot. */
-			    oy = randint0(DUNGEON_HGT);
-			    ox = randint0(DUNGEON_WID);
+			    oy = randint0(ARENA_HGT);
+			    ox = randint0(ARENA_WID);
 
 			    /* Must be an empty floor. */
 			    if (!cave_clean_bold(oy, ox))

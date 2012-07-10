@@ -2241,9 +2241,9 @@ static bool build_type6(void)
     /* Turn all walls and magma not adjacent to floor into dungeon granite. */
     /* Turn all floors and adjacent grids into rooms, sometimes lighting them. */
     for (y = (y1 - 1 > 0 ? y1 - 1 : 0);
-	 y < (y2 + 2 < DUNGEON_HGT ? y2 + 2 : DUNGEON_HGT); y++) {
+	 y < (y2 + 2 < ARENA_HGT ? y2 + 2 : ARENA_HGT); y++) {
 	for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
-	     x < (x2 + 2 < DUNGEON_WID ? x2 + 2 : DUNGEON_WID); x++) {
+	     x < (x2 + 2 < ARENA_WID ? x2 + 2 : ARENA_WID); x++) {
 	    if ((cave_feat[y][x] == FEAT_WALL_INNER)
 		|| (cave_feat[y][x] == FEAT_MAGMA)) {
 		for (d = 0; d < 9; d++) {
@@ -2289,9 +2289,9 @@ static bool build_type6(void)
 
     /* Turn all inner wall grids adjacent to dungeon granite into outer walls. */
     for (y = (y1 - 1 > 0 ? y1 - 1 : 0);
-	 y < (y2 + 2 < DUNGEON_HGT ? y2 + 2 : DUNGEON_HGT); y++) {
+	 y < (y2 + 2 < ARENA_HGT ? y2 + 2 : ARENA_HGT); y++) {
 	for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
-	     x < (x2 + 2 < DUNGEON_WID ? x2 + 2 : DUNGEON_WID); x++) {
+	     x < (x2 + 2 < ARENA_WID ? x2 + 2 : ARENA_WID); x++) {
 	    /* Stay legal. */
 	    if (!in_bounds_fully(y, x))
 		continue;
@@ -2540,9 +2540,9 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 			dir = NORTH;
 		    else if (x == 1)
 			dir = WEST;
-		    else if (y == DUNGEON_HGT - 2)
+		    else if (y == ARENA_HGT - 2)
 			dir = SOUTH;
-		    else if (x == DUNGEON_WID - 2)
+		    else if (x == ARENA_WID - 2)
 			dir = EAST;
 		    else
 			break;

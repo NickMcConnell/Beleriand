@@ -490,21 +490,18 @@ char region_terrain[MAX_Y_REGION][MAX_X_REGION];
 byte *dummy;
 
 /**
- * Array[DUNGEON_HGT][256] of cave grid info flags (padded)
- *
- * These arrays are padded to a width of 256 to allow fast access to elements
- * in the array via "grid" values (see the GRID() macros).
+ * Array[ARENA_HGT][ARENA_WID] of cave grid info flags
  */
-bitflag (*cave_info)[256][CAVE_SIZE];
+bitflag (*cave_info)[ARENA_WID][CAVE_SIZE];
 
 /**
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid feature codes
+ * Array[ARENA_HGT][ARENA_WID] of cave grid feature codes
  */
-byte (*cave_feat)[DUNGEON_WID];
+byte (*cave_feat)[ARENA_WID];
 
 
 /**
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid object indexes
+ * Array[ARENA_HGT][ARENA_WID] of cave grid object indexes
  *
  * Note that this array yields the index of the top object in the stack of
  * objects in a given grid, using the "next_o_idx" field in that object to
@@ -514,10 +511,10 @@ byte (*cave_feat)[DUNGEON_WID];
  * any object is in a grid, and relatively fast determination of which objects
  * are in a grid.
  */
-s16b (*cave_o_idx)[DUNGEON_WID];
+s16b (*cave_o_idx)[ARENA_WID];
 
 /**
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid monster indexes
+ * Array[ARENA_HGT][ARENA_WID] of cave grid monster indexes
  *
  * Note that this array yields the index of the monster or player in a grid,
  * where negative numbers are used to represent the player, positive numbers
@@ -526,19 +523,19 @@ s16b (*cave_o_idx)[DUNGEON_WID];
  * the player structure, but provides extremely fast determination of which,
  * if any, monster or player is in any given grid.
  */
-s16b (*cave_m_idx)[DUNGEON_WID];
+s16b (*cave_m_idx)[ARENA_WID];
 
 /**
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "cost" values
+ * Array[ARENA_HGT][ARENA_WID] of cave grid flow "cost" values
  * Used to simulate character noise.
  */
-byte (*cave_cost)[DUNGEON_WID];
+byte (*cave_cost)[ARENA_WID];
 
 /**
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "when" stamps.
+ * Array[ARENA_HGT][ARENA_WID] of cave grid flow "when" stamps.
  * Used to store character scent trails.
  */
-byte (*cave_when)[DUNGEON_WID];
+byte (*cave_when)[ARENA_WID];
 
 /**
  * Current scent age marker.  Counts down from 250 to 0 and then loops.

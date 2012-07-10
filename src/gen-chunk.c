@@ -747,18 +747,18 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	}
     }
 
-    /* Re-align current playing area */
+    /* Re-align current playing arena */
     if (z_offset == 0)
     {
-	for (y = 0; y < DUNGEON_HGT - ABS(y_offset - 1) * CHUNK_HGT; y++)
+	for (y = 0; y < ARENA_HGT - ABS(y_offset - 1) * CHUNK_HGT; y++)
 	{
 	    int y_read, y_write;
 
 	    /* Work out what to copy */
 	    if (y_reverse)
 	    {
-		y_read = (DUNGEON_HGT - CHUNK_HGT - 1) - y;
-		y_write = (DUNGEON_HGT - 1) - y;
+		y_read = (ARENA_HGT - CHUNK_HGT - 1) - y;
+		y_write = (ARENA_HGT - 1) - y;
 	    }
 	    else
 	    {
@@ -766,7 +766,7 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		y_write = y;
 	    }
 
-	    for (x = 0; x < DUNGEON_WID - ABS(x_offset - 1) * CHUNK_WID; x++)
+	    for (x = 0; x < ARENA_WID - ABS(x_offset - 1) * CHUNK_WID; x++)
 	    {
 		int x_read, x_write;
 		int this_o_idx, next_o_idx;
@@ -774,8 +774,8 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		/* Work out what to copy */
 		if (x_reverse)
 		{
-		    x_read = (DUNGEON_WID - CHUNK_WID - 1) - x;
-		    x_write = (DUNGEON_WID - 1) - x;
+		    x_read = (ARENA_WID - CHUNK_WID - 1) - x;
+		    x_write = (ARENA_WID - 1) - x;
 		}
 		else
 		{

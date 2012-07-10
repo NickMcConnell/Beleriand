@@ -1822,8 +1822,8 @@ bool target_set_interactive(int mode, int x, int y)
 		    /*if (press.mouse.button == 3) {
 		      } else*/
 		{
-		    int dungeon_hgt = DUNGEON_HGT;
-		    int dungeon_wid = DUNGEON_WID;
+		    int dungeon_hgt = ARENA_HGT;
+		    int dungeon_wid = ARENA_WID;
 		
 		    /* Adjust for town */
 		    if (p_ptr->danger == 0) 
@@ -1990,8 +1990,8 @@ bool target_set_interactive(int mode, int x, int y)
 	
 	    /* Handle "direction" */
 	    if (d) {
-		int dungeon_hgt = DUNGEON_HGT;
-		int dungeon_wid = DUNGEON_WID;
+		int dungeon_hgt = ARENA_HGT;
+		int dungeon_wid = ARENA_WID;
 		int dy = ddy[d];
 		int dx = ddx[d];
 	    

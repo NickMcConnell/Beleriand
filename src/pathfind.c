@@ -79,8 +79,8 @@ static void fill_terrain_info(void)
     ox = MAX(p_ptr->px - MAX_PF_RADIUS / 2, 0);
     oy = MAX(p_ptr->py - MAX_PF_RADIUS / 2, 0);
 
-    ex = MIN(p_ptr->px + MAX_PF_RADIUS / 2 - 1, DUNGEON_WID);
-    ey = MIN(p_ptr->py + MAX_PF_RADIUS / 2 - 1, DUNGEON_HGT);
+    ex = MIN(p_ptr->px + MAX_PF_RADIUS / 2 - 1, ARENA_WID);
+    ey = MIN(p_ptr->py + MAX_PF_RADIUS / 2 - 1, ARENA_HGT);
 
     for (i = 0; i < MAX_PF_RADIUS * MAX_PF_RADIUS; i++)
 	terrain[0][i] = -1;

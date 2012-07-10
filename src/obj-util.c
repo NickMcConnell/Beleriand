@@ -4171,8 +4171,8 @@ void display_itemlist(void)
     int dx[MAX_ITEMLIST], dy[MAX_ITEMLIST];
     unsigned counter = 0;
 
-    int dungeon_hgt = DUNGEON_HGT;
-    int dungeon_wid = DUNGEON_WID;
+    int dungeon_hgt = ARENA_HGT;
+    int dungeon_wid = ARENA_WID;
 
     byte attr;
     char buf[80];

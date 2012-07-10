@@ -1358,13 +1358,13 @@ int rd_inventory(void)
 
 
 /**
- * Read the dungeon
+ * Read the playing arena
  *
  * The monsters/objects must be loaded in the same order
  * that they were stored, since the actual indexes matter.
  *
- * Note that the size of the dungeon is now hard-coded to
- * DUNGEON_HGT by DUNGEON_WID, and any dungeon with another
+ * Note that the size of the arena is hard-coded to
+ * ARENA_HGT by ARENA_WID, and any arena with another
  * size will be silently discarded by this routine.
  */
 int rd_dungeon(void)
@@ -1418,7 +1418,7 @@ int rd_dungeon(void)
     }
   
     /* Ignore illegal dungeons */
-    if ((ymax != DUNGEON_HGT) || (xmax != DUNGEON_WID))
+    if ((ymax != ARENA_HGT) || (xmax != ARENA_WID))
     {
 	/* XXX XXX XXX */
 	note(format("Ignoring illegal dungeon size (%d,%d).", xmax, ymax));
@@ -1426,7 +1426,7 @@ int rd_dungeon(void)
     }
   
     /* Ignore illegal dungeons */
-    if ((px < 0) || (px >= DUNGEON_WID) || (py < 0) || (py >= DUNGEON_HGT))
+    if ((px < 0) || (px >= ARENA_WID) || (py < 0) || (py >= ARENA_HGT))
     {
 	note(format("Ignoring illegal player location (%d,%d).", px, py));
 	return (1);
@@ -1440,7 +1440,7 @@ int rd_dungeon(void)
     for (n = 0; n < cave_size; n++)
     {
 	/* Load the dungeon data */
-	for (x = y = 0; y < DUNGEON_HGT; )
+	for (x = y = 0; y < ARENA_HGT; )
 	{
 	    /* Grab RLE info */
 	    rd_byte(&count);
@@ -1453,13 +1453,13 @@ int rd_dungeon(void)
 		cave_info[y][x][n] = tmp8u;
 	  
 		/* Advance/Wrap */
-		if (++x >= DUNGEON_WID)
+		if (++x >= ARENA_WID)
 		{
 		    /* Wrap */
 		    x = 0;
 		    
 		    /* Advance/Wrap */
-		    if (++y >= DUNGEON_HGT) break;
+		    if (++y >= ARENA_HGT) break;
 		}
 	    }
 	}
@@ -1468,7 +1468,7 @@ int rd_dungeon(void)
    /*** Run length decoding ***/
   
     /* Load the dungeon data */
-    for (x = y = 0; y < DUNGEON_HGT; )
+    for (x = y = 0; y < ARENA_HGT; )
     {
 	/* Grab RLE info */
 	rd_byte(&count);
@@ -1481,13 +1481,13 @@ int rd_dungeon(void)
 	    cave_set_feat(y, x, tmp8u);
 	  
 	    /* Advance/Wrap */
-	    if (++x >= DUNGEON_WID)
+	    if (++x >= ARENA_WID)
 	    {
 		/* Wrap */
 		x = 0;
 	      
 		/* Advance/Wrap */
-		if (++y >= DUNGEON_HGT) break;
+		if (++y >= ARENA_HGT) break;
 	    }
 	}
     }

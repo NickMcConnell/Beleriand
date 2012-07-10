@@ -132,14 +132,14 @@
  * Must be a multiple of SCREEN_HGT
  * Must be less or equal to 256
  */
-#define DUNGEON_HGT		66
+#define ARENA_HGT		66
 
 /**
  * Number of grids in each dungeon (from left to right)
  * Must be a multiple of SCREEN_WID
  * Must be less or equal to 256
  */
-#define DUNGEON_WID		66
+#define ARENA_WID		66
 
 /*
  * Radii for various detection spells. -BR-
@@ -2310,8 +2310,8 @@ enum
  * Determines if a map location is "meaningful"
  */
 #define in_bounds(Y,X) \
-	(((unsigned)(Y) < (unsigned)(DUNGEON_HGT)) && \
-	 ((unsigned)(X) < (unsigned)(DUNGEON_WID)))
+	(((unsigned)(Y) < (unsigned)(ARENA_HGT)) && \
+	 ((unsigned)(X) < (unsigned)(ARENA_WID)))
 
 /**
  * Determines if a map location is fully inside the outer walls
@@ -2319,8 +2319,8 @@ enum
  * often we need to exclude the outer walls from calculations.
  */
 #define in_bounds_fully(Y,X) \
-	(((Y) > 0) && ((Y) < DUNGEON_HGT-1) && \
-	 ((X) > 0) && ((X) < DUNGEON_WID-1))
+	(((Y) > 0) && ((Y) < ARENA_HGT - 1) && \
+	 ((X) > 0) && ((X) < ARENA_WID - 1))
 
 
 /**

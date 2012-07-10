@@ -114,8 +114,8 @@ void new_player_spot(void)
 	/* Then, search at random */
 	else {
 	    /* Pick a random grid */
-	    y = randint0(DUNGEON_HGT);
-	    x = randint0(DUNGEON_WID);
+	    y = randint0(ARENA_HGT);
+	    x = randint0(ARENA_WID);
 
 	    /* Refuse to start on anti-teleport (vault) grids */
 	    if (cave_has(cave_info[y][x], CAVE_ICKY))
@@ -320,8 +320,8 @@ void alloc_stairs(int feat, int num, int walls)
 	    /* Then, search at random. */
 	    else {
 		/* Pick a random grid */
-		y = randint0(DUNGEON_HGT);
-		x = randint0(DUNGEON_WID);
+		y = randint0(ARENA_HGT);
+		x = randint0(ARENA_WID);
 	    }
 
 	    /* Require "naked" floor grid */
@@ -381,8 +381,8 @@ void alloc_object(int set, int typ, int num)
 	    bool room;
 
 	    /* Location */
-	    y = randint0(DUNGEON_HGT);
-	    x = randint0(DUNGEON_WID);
+	    y = randint0(ARENA_HGT);
+	    x = randint0(ARENA_WID);
 	    f_ptr = &f_info[cave_feat[y][x]];
 
 	    /* Paranoia - keep objects out of the outer walls */

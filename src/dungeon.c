@@ -1847,8 +1847,8 @@ static void dungeon(void)
     bool just_arrived = TRUE;
 
     /* Hack -- enforce illegal panel */
-    Term->offset_y = DUNGEON_HGT;
-    Term->offset_x = DUNGEON_WID;
+    Term->offset_y = ARENA_HGT;
+    Term->offset_x = ARENA_WID;
 
     /* Not leaving */
     p_ptr->leaving = FALSE;

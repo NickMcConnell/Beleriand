@@ -222,8 +222,8 @@ void town_adjust(int *dungeon_hgt, int *dungeon_wid)
  */
 bool modify_panel(term *t, int wy, int wx)
 {
-	int dungeon_hgt = DUNGEON_HGT;
-	int dungeon_wid = DUNGEON_WID;
+	int dungeon_hgt = ARENA_HGT;
+	int dungeon_wid = ARENA_WID;
 
 	/* Adjust for town */
 	if (p_ptr->danger == 0) town_adjust(&dungeon_hgt, &dungeon_wid);
