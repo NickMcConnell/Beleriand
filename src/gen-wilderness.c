@@ -629,6 +629,87 @@ int make_formation(int y, int x, int base_feat1, int base_feat2, int *feat,
     return (total);
 }
 
+/**
+ * Find a given generation location in the list, or failing that the one
+ * after it
+ */
+int gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
+{
+    int idx = gen_loc_cnt / 2;
+
+    *upper = gen_loc_cnt - 1;
+    *lower = 0;
+
+    while ((gen_loc_list[idx].x_pos != x_pos) &&
+	   (gen_loc_list[idx].y_pos != y_pos) &&
+	   (gen_loc_list[idx].z_pos != z_pos))
+    {
+	if (*lower + 1 == *upper)
+	    break;
+
+	if (gen_loc_list[idx].x_pos > x_pos)
+	{
+	    *upper = idx;
+	    idx = (*upper + *lower) / 2;
+	    continue;
+	}
+	else if (gen_loc_list[idx].x_pos < x_pos)
+	{
+	    *lower = idx;
+	    idx = (*upper + *lower) / 2;
+	    continue;
+	}
+	else if (gen_loc_list[idx].y_pos > y_pos)
+	{
+	    *upper = idx;
+	    idx = (*upper + *lower) / 2;
+	    continue;
+	}
+	else if (gen_loc_list[idx].y_pos < y_pos)
+	{
+	    *lower = idx;
+	    idx = (*upper + *lower) / 2;
+	    continue;
+	}
+	else if (gen_loc_list[idx].z_pos > z_pos)
+	{
+	    *upper = idx;
+	    idx = (*upper + *lower) / 2;
+	    continue;
+	}
+	else if (gen_loc_list[idx].z_pos < z_pos)
+	{
+	    *lower = idx;
+	    idx = (*upper + *lower) / 2;
+	    continue;
+	}
+    }
+
+    /* Found without having to break */
+    if (*lower + 1 != *upper)
+    {
+	*lower = idx;
+	*upper = idx;
+	return idx;
+    }
+
+    /* Needs to go after the last element */
+    if ((gen_loc_list[*upper].x_pos <= x_pos) &&
+	(gen_loc_list[*upper].y_pos <= y_pos) &&
+	(gen_loc_list[*upper].z_pos <= z_pos))
+	return *upper + 1;
+
+    /* Needs to go before the first element */
+    if ((gen_loc_list[*lower].x_pos >= x_pos) &&
+	(gen_loc_list[*lower].y_pos >= y_pos) &&
+	(gen_loc_list[*lower].z_pos >= z_pos))
+	return 0;
+
+    /* Needs to go between upper and lower */
+    return *upper;
+
+}
+
 extern void plain_gen(chunk_ref ref, int y_offset, int x_offset)
 {
     int x, y;
