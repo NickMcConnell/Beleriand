@@ -1439,9 +1439,9 @@ typedef struct chunk_ref {
     u16b ch_idx;        /**< Index of this chunk */
     u16b age;           /**< Time in turns since this chunk was created */
     u16b region;        /**< Region the chunk is from */
-    byte z_pos;         /**< Depth of the chunk below ground */
-    byte y_pos;         /**< y position of the chunk */
-    byte x_pos;         /**< x position of the chunk */
+    u16b z_pos;         /**< Depth of the chunk below ground */
+    u16b y_pos;         /**< y position of the chunk */
+    u16b x_pos;         /**< x position of the chunk */
     world_chunk *chunk; /**< The actual chunk */
     u32b gen_loc_idx;   /**< The chunk index in the generated locations list */
     int adjacent[11];   /**< Adjacent chunks */

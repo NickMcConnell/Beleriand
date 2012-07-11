@@ -2295,8 +2295,8 @@ void play_game(void)
 	p_ptr->stage = 0;
 	chunk_list[0].region = 20;
 	chunk_list[0].z_pos = 0;
-	chunk_list[0].y_pos = 54;
-	chunk_list[0].x_pos = 43;
+	chunk_list[0].y_pos = 378;
+	chunk_list[0].x_pos = 301;
 	    //(OPT(adult_thrall) ? (OPT(adult_dungeon) ? 87 : 135) : p_ptr->home);
 	p_ptr->danger = 0;
 
