@@ -606,10 +606,10 @@ typedef struct world_region {
     char *text;
 
     byte danger;       	           /**< Region danger */
-    byte height;       	           /**< Region height */
-    byte width;       	           /**< Region width */
-    byte y_offset;                 /**< Region y location */
-    byte x_offset;                 /**< Region x location */
+    u16b height;       	           /**< Region height */
+    u16b width;       	           /**< Region width */
+    u16b y_offset;                 /**< Region y location */
+    u16b x_offset;                 /**< Region x location */
 
 } region_type;
 

@@ -511,10 +511,8 @@ static void process_world(void)
 
     /* Check for creature generation, except on themed levels */
     if ((randint0(MAX_M_ALLOC_CHANCE) == 0) && (!p_ptr->themed_level)) {
-	int n;
-
 	/* Make a new monster */
-	(void) alloc_monster(n, FALSE, FALSE);
+	(void) alloc_monster(MAX_SIGHT + 5, FALSE, FALSE);
     }
 
     /* Hack - if there is a ghost now, and there was not before, give a
@@ -2295,8 +2293,8 @@ void play_game(void)
 	p_ptr->stage = 0;
 	chunk_list[0].region = 20;
 	chunk_list[0].z_pos = 0;
-	chunk_list[0].y_pos = 378;
-	chunk_list[0].x_pos = 301;
+	chunk_list[0].y_pos = 3780;
+	chunk_list[0].x_pos = 3010;
 	    //(OPT(adult_thrall) ? (OPT(adult_dungeon) ? 87 : 135) : p_ptr->home);
 	p_ptr->danger = 0;
 

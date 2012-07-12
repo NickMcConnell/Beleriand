@@ -237,8 +237,8 @@ int chunk_find(chunk_ref ref)
 /**
  * Store a chunk from the current playing area into the chunk list
  */
-int chunk_store(int y_offset, int x_offset, u16b region, byte z_pos, byte y_pos,
-		byte x_pos, bool write)
+int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
+		u16b x_pos, bool write)
 {
     int i;
     int max = 0, idx = 0;
