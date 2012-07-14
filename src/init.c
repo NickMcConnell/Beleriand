@@ -3504,6 +3504,8 @@ static errr init_other(void)
     cave_when = C_ZNEW(ARENA_HGT, byte_wid);
 
     /*** Write region terrain array ***/
+    region_terrain = mem_zalloc(MAX_Y_REGION * MAX_X_REGION);
+
     for (y = 0; y < MAX_Y_REGION; y++)
 	for (x = 0; x < MAX_X_REGION; x++)
 	    region_terrain[y][x] = 'W';
@@ -4366,6 +4368,8 @@ void cleanup_angband(void)
     FREE(trap_list);
     FREE(m_list);
     FREE(o_list);
+
+    mem_free(region_terrain);
 
     /* Flow arrays */
     FREE(cave_when);

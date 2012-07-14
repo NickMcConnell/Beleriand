@@ -1043,9 +1043,9 @@ void wr_chunks(void)
 	wr_u16b(ref->ch_idx);
 	wr_u16b(ref->age);
 	wr_u16b(ref->region);
-	wr_byte(ref->z_pos);
-	wr_byte(ref->y_pos);
-	wr_byte(ref->x_pos);
+	wr_u16b(ref->z_pos);
+	wr_u16b(ref->y_pos);
+	wr_u16b(ref->x_pos);
 	for (i = 0; i < 11; i++)
 	    wr_u16b(ref->adjacent[i]);
 

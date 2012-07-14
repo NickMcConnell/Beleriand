@@ -481,9 +481,9 @@ u16b (*temp_path)[NUM_STAGES];
 u16b (*race_prob)[NUM_STAGES];
 
 /**
- * Terrain array 
+ * Array[MAX_Y_REGION][MAX_X_REGION] of region terrain grids 
  */
-char region_terrain[MAX_Y_REGION][MAX_X_REGION];
+char (*region_terrain)[MAX_X_REGION];
 
 /* Dummy array */
 byte *dummy;

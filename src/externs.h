@@ -135,7 +135,7 @@ extern u16b (*adjacency)[NUM_STAGES];
 extern u16b (*stage_path)[NUM_STAGES];
 extern u16b (*temp_path)[NUM_STAGES];
 extern u16b (*race_prob)[NUM_STAGES];
-extern char region_terrain[MAX_Y_REGION][MAX_X_REGION];
+extern char (*region_terrain)[MAX_X_REGION];
 extern byte *dummy;
 extern bitflag (*cave_info)[ARENA_WID][CAVE_SIZE];
 extern byte (*cave_feat)[ARENA_WID];

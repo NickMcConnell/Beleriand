@@ -1804,9 +1804,9 @@ int rd_chunks(void)
 	rd_u16b(&ref->ch_idx);
 	rd_u16b(&ref->age);
 	rd_u16b(&ref->region);
-	rd_byte(&ref->z_pos);
-	rd_byte(&ref->y_pos);
-	rd_byte(&ref->x_pos);
+	rd_u16b(&ref->z_pos);
+	rd_u16b(&ref->y_pos);
+	rd_u16b(&ref->x_pos);
 	for (i = 0; i < 11; i++)
 	{
 	    rd_u16b(&tmp16u);
