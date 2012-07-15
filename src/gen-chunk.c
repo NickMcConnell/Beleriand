@@ -519,6 +519,7 @@ int find_region(int y_pos, int x_pos)
     for (i = 0; i < z_info->region_max; i++)
     {
 	region_type *region = &region_info[i];
+	int entry;
 
 	if ((y_pos / 10 < region->y_offset) ||
 	    (y_pos / 10 >= region->y_offset + region->height))
@@ -528,7 +529,8 @@ int find_region(int y_pos, int x_pos)
 	    (x_pos / 10 >= region->x_offset + region->width))
 	    continue;
 
-	if (region->text[region->width * (y_pos / 10) + x_pos / 10] == ' ')
+	entry = region->width * (region->y_offset - y_pos) / 10 + x_pos / 10;
+	if (region->text[entry] == ' ')
 	    continue;
 
 	break;

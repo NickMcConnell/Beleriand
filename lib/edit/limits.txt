@@ -32,7 +32,7 @@ M:E:192
 M:R:800
 
 # Maximum number of regions
-M:G:80
+M:G:66
 
 # Maximum number of vaults
 M:V:300
