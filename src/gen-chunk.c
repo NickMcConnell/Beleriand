@@ -529,7 +529,7 @@ int find_region(int y_pos, int x_pos)
 	    (x_pos / 10 >= region->x_offset + region->width))
 	    continue;
 
-	entry = region->width * (region->y_offset - y_pos) / 10 + x_pos / 10;
+	entry = region->width * ((y_pos / 10) - region->y_offset) + x_pos / 10;
 	if (region->text[entry] == ' ')
 	    continue;
 
