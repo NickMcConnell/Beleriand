@@ -1175,8 +1175,6 @@ int rd_squelch(void)
 int rd_misc(void)
 {
 	byte tmp8u;
-	u32b tmp32u;
-	int i;
 	
 	/* Hack -- the "special seeds" */
 	rd_u32b(&seed_flavor);
@@ -1380,16 +1378,6 @@ int rd_dungeon(void)
 
     /*** Basic info ***/
   
-    /* Hack - rewrite stage_map if necessary */
-    if (OPT(adult_dungeon))
-    {
-	for (i = 0; i < NUM_STAGES; i++)
-	    for (n = 0; n < 9; n++)
-		stage_map[i][n] = dungeon_map[i][n];
-    }
-
-
-
     /* Header info */
     rd_s16b(&stage);
     rd_s16b(&last_stage);
@@ -1404,9 +1392,9 @@ int rd_dungeon(void)
     cave_size = MAX(2, cave_size);
   
     /* Ignore illegal dungeons */
-    if ((stage < 0) || (stage >= NUM_STAGES))
+    if ((stage < 0) || (stage >= MAX_CHUNKS))
     {
-	note(format("Ignoring illegal stage (%d)", stage));
+	note(format("Ignoring illegal chunk (%d)", stage));
 	return (0);
     }
   
@@ -1499,20 +1487,6 @@ int rd_dungeon(void)
 	return (-1);
     }
   
-    /* Hack -- Repair dungeon level */
-    if (stage_map[p_ptr->stage][LOCALITY] == UNDERWORLD) 
-    {
-	stage_map[p_ptr->stage][UP] = p_ptr->last_stage;
-	stage_map[p_ptr->last_stage][DOWN] = p_ptr->stage;
-	stage_map[p_ptr->stage][DEPTH] = stage_map[p_ptr->last_stage][DEPTH] + 1;
-    }
-    else if (stage_map[p_ptr->stage][LOCALITY] == MOUNTAIN_TOP) 
-    {
-	stage_map[p_ptr->stage][DOWN] = p_ptr->last_stage;
-	stage_map[p_ptr->last_stage][UP] = p_ptr->stage;
-	stage_map[p_ptr->stage][DEPTH] = stage_map[p_ptr->last_stage][DEPTH] + 1;
-    }
-
     /*** Success ***/
   
     /* The dungeon is ready */
