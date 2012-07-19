@@ -199,14 +199,40 @@ void chunk_wipe(int idx)
 
     /* Free everything */
     mem_free(chunk->cave_info);
+    chunk->cave_info = NULL;
     mem_free(chunk->cave_feat);
+    chunk->cave_feat = NULL;
     mem_free(chunk->cave_o_idx);
+    chunk->cave_o_idx = NULL;
     mem_free(chunk->cave_m_idx);
+    chunk->cave_m_idx = NULL;
     mem_free(chunk->o_list);
+    chunk->o_list = NULL;
     mem_free(chunk->m_list);
+    chunk->m_list = NULL;
     mem_free(chunk->trap_list);
+    chunk->trap_list = NULL;
     mem_free(chunk);
-    chunk = NULL;
+    chunk_list[idx].chunk = NULL;
+}
+
+/**
+ * Age off a chunk from the chunk_list
+ */
+void chunk_age_off(int idx)
+{
+    int i;
+    chunk_ref *ref = &chunk_list[idx];
+
+    ref->age = 0;
+    ref->region = 0;
+    ref->z_pos = 0;
+    ref->y_pos = 0;
+    ref->x_pos = 0;
+    ref->gen_loc_idx = 0;
+    chunk_wipe(idx);
+    for (i = 0; i < 11; i++)  
+	ref->adjacent[i] = MAX_CHUNKS;  
 
     /* Decrement the counter */
     chunk_cnt--;
@@ -292,9 +318,9 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
     chunk_list[idx].ch_idx = idx;
 
     /* Test for persistence */
-    if ((p_ptr->danger == 0) || !write)
-	chunk_list[idx].age = 0;
-    else
+    //if ((p_ptr->danger == 0) || !write)
+//	chunk_list[idx].age = 0;
+    //  else
 	chunk_list[idx].age = 1;
 
     chunk_list[idx].region = region;
@@ -568,11 +594,15 @@ void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset,
  */
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 {
-    int n, z_off, y_off, x_off;
+    int n, z_off, y_off, x_off, idx;
     char terrain;
 
+    /* If no region, return */
+    if (!ref.region)
+	return;
+
     /* Store the chunk reference */
-    int idx = chunk_store(1, 1, ref.region, ref.z_pos, ref.y_pos, ref.x_pos, 
+    idx = chunk_store(1, 1, ref.region, ref.z_pos, ref.y_pos, ref.x_pos, 
 			  FALSE);
     
     /* Set adjacencies */

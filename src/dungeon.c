@@ -451,6 +451,21 @@ static void process_world(void)
     if (turn % 10)
 	return;
 
+    /* Age the chunks */
+    for (i = 0; i < chunk_max; i++)
+    {
+	if (chunk_list[i].chunk)
+	{
+	    /* Age */
+	    if (chunk_list[i].age) 
+		chunk_list[i].age += 10;
+
+	    /* Age off */
+	    if (chunk_list[i].age > 2000)
+		chunk_age_off(i);
+	}
+    }
+
     /* Play an ambient sound at regular intervals. */
     if (!(turn % ((10L * TOWN_DAWN) / 4))) {
 	play_ambient_sound();
