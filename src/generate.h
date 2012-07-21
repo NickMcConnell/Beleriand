@@ -278,6 +278,7 @@ void place_random_door(int y, int x);
 void alloc_stairs(int feat, int num, int walls);
 void alloc_object(int set, int typ, int num);
 
+void compact_chunks(void);
 void chunk_age_off(int idx);
 int chunk_find(chunk_ref ref);
 void chunk_read(int idx, int y_offset, int x_offset);

@@ -461,7 +461,7 @@ static void process_world(void)
 		chunk_list[i].age += 10;
 
 	    /* Age off */
-	    if (chunk_list[i].age > 2000)
+	    if (chunk_list[i].age > 20000)
 		chunk_age_off(i);
 	}
     }
@@ -2026,18 +2026,21 @@ static void dungeon(void)
 
     /* Main loop */
     while (TRUE) {
-	/* Hack -- Compact the monster list occasionally */
+	/* Compact the monster list occasionally */
 	if (m_cnt + 32 > z_info->m_max) compact_monsters(64);
 
-	/* Hack -- Compress the monster list occasionally */
+	/* Compress the monster list occasionally */
 	if (m_cnt + 32 < m_max) compact_monsters(0);
 
 
-	/* Hack -- Compact the object list occasionally */
+	/* Compact the object list occasionally */
 	if (o_cnt + 32 > z_info->o_max) compact_objects(64);
 
-	/* Hack -- Compress the object list occasionally */
+	/* Compress the object list occasionally */
 	if (o_cnt + 32 < o_max) compact_objects(0);
+
+	/* Compress the chunk list occasionally */
+	if (chunk_cnt + 32 < chunk_max) compact_chunks();
 
 
 	/*** Apply energy ***/
@@ -2211,8 +2214,6 @@ static void process_some_user_pref_files(void)
  */ 
 void play_game(void)
 {
-    int i;
-
     /* Initialize */
     bool new_game = init_angband();
 

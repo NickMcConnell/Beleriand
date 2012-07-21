@@ -1902,7 +1902,7 @@ int rd_chunks(void)
 	chunk_cnt++;
     }
 
-    chunk_max = chunk_cnt;
+    chunk_max = chunk_cnt + 1;
 
     return 0;
 }

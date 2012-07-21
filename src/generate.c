@@ -60,108 +60,6 @@ bool underworld;
 int wild_vaults;
 
 
-/**
- * Builds a store at a given pseudo-location
- *
- * As of 2.8.1 (?) the town is actually centered in the middle of a
- * complete level, and thus the top left corner of the town itself
- * is no longer at (0,0), but rather, at (qy,qx), so the constants
- * in the comments below should be mentally modified accordingly.
- *
- * As of 2.7.4 (?) the stores are placed in a more "user friendly"
- * configuration, such that the four "center" buildings always
- * have at least four grids between them, to allow easy running,
- * and the store doors tend to face the middle of town.
- *
- * The stores now lie inside boxes from 3-9 and 12-18 vertically,
- * and from 7-17, 21-31, 35-45, 49-59.  Note that there are thus
- * always at least 2 open grids between any disconnected walls.
- * 
- * The home only appears if it is the player's home town.
- *
- * Note the use of town_illuminate() to handle all "illumination"
- * and "memorization" issues.
- */
-static void build_store(int n, int yy, int xx, int stage)
-{
-    int y, x, y0, x0, y1, x1, y2, x2, tmp;
-
-    int qy = 0;
-    int qx = 0;
-
-
-    /* Find the "center" of the store */
-    y0 = qy + yy * 9 + 6;
-    x0 = qx + xx * 11 + 11;
-
-    /* Determine the store boundaries */
-    y1 = y0 - (1 + randint1((yy == 0) ? 2 : 1));
-    y2 = y0 + (1 + randint1((yy == 1) ? 2 : 1));
-    x1 = x0 - (1 + randint1(3));
-    x2 = x0 + (1 + randint1(3));
-
-    /* Build an invulnerable rectangular building */
-    for (y = y1; y <= y2; y++) {
-	for (x = x1; x <= x2; x++) {
-	    /* Create the building */
-	  cave_set_feat(y, x, FEAT_PERM_EXTRA);
-	}
-    }
-
-    /* Pick a door direction (S,N,E,W) */
-    tmp = randint0(4);
-
-    /* Re-roll "annoying" doors */
-    if (((tmp == 0) && (yy == 1)) || ((tmp == 1) && (yy == 0))
-	|| ((tmp == 2) && (xx == 3)) || ((tmp == 3) && (xx == 0))) {
-	/* Pick a new direction */
-	tmp = randint0(4);
-    }
-
-    /* Extract a "door location" */
-    switch (tmp) {
-	/* Bottom side */
-    case 0:
-	{
-	    y = y2;
-	    x = rand_range(x1, x2);
-	    break;
-	}
-
-	/* Top side */
-    case 1:
-	{
-	    y = y1;
-	    x = rand_range(x1, x2);
-	    break;
-	}
-
-	/* Right side */
-    case 2:
-	{
-	    y = rand_range(y1, y2);
-	    x = x2;
-	    break;
-	}
-
-	/* Left side */
-    default:
-	{
-	    y = rand_range(y1, y2);
-	    x = x1;
-	    break;
-	}
-    }
-
-    /* Clear previous contents, add a store door */
-    cave_set_feat(y, x, FEAT_DOOR_HEAD);
-}
-
-
-
-
-
-
 
 /**
  * Clear the dungeon, ready for generation to begin.
@@ -283,8 +181,8 @@ void generate_cave(void)
 	{
 	    for (x = 0; x < 3; x++)
 	    {
-		int chunk_idx;
-		int adj_index = chunk_offset_to_adjacent(0, y, x);
+		//int chunk_idx;
+		//int adj_index = chunk_offset_to_adjacent(0, y, x);
 		chunk_ref ref = CHUNK_EMPTY;
 		
 		/* Get the location data */

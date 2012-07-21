@@ -28,6 +28,115 @@
  * being top left.
  */
 
+/**
+ * Wipe the actual details of a chunk
+ */
+void chunk_wipe(int idx)
+{
+    world_chunk *chunk = chunk_list[idx].chunk;
+
+    /* Free everything */
+    mem_free(chunk->cave_info);
+    chunk->cave_info = NULL;
+    mem_free(chunk->cave_feat);
+    chunk->cave_feat = NULL;
+    mem_free(chunk->cave_o_idx);
+    chunk->cave_o_idx = NULL;
+    mem_free(chunk->cave_m_idx);
+    chunk->cave_m_idx = NULL;
+    mem_free(chunk->o_list);
+    chunk->o_list = NULL;
+    mem_free(chunk->m_list);
+    chunk->m_list = NULL;
+    mem_free(chunk->trap_list);
+    chunk->trap_list = NULL;
+    mem_free(chunk);
+    chunk_list[idx].chunk = NULL;
+}
+
+/**
+ * Delete a chunk from the chunk_list
+ */
+void chunk_delete(int idx)
+{
+    int i;
+    chunk_ref *ref = &chunk_list[idx];
+
+    ref->age = 0;
+    ref->region = 0;
+    ref->z_pos = 0;
+    ref->y_pos = 0;
+    ref->x_pos = 0;
+    ref->gen_loc_idx = 0;
+    if (ref->chunk)
+	chunk_wipe(idx);
+    for (i = 0; i < 11; i++)
+	ref->adjacent[i] = MAX_CHUNKS;
+}
+
+/*
+ * Move a chunk from index i1 to index i2 in the chunk list
+ */
+static void compact_chunks_aux(int i1, int i2)
+{
+    int i, j;
+
+    chunk_ref *chunk;
+
+
+    /* Do nothing */
+    if (i1 == i2)
+	return;
+
+    /* Repair chunks */
+    for (i = 1; i < chunk_max; i++)
+    {
+	/* Get the chunk */
+	chunk = &chunk_list[i];
+
+	/* Skip dead chunks */
+	if (!chunk->region)
+	    continue;
+
+	/* Repair adjacencies */
+	for (j = 0; j < 11; j++)
+	    if (chunk->adjacent[j] == i1)
+		chunk->adjacent[j] = i2;
+
+    }
+    /* Fix index */
+    chunk = &chunk_list[i1];
+    chunk->ch_idx = i2;
+
+    /* Move chunk */
+    memcpy(&chunk_list[i2], &chunk_list[i1], sizeof(chunk_ref));
+
+    /* Delete the old one */
+    chunk_delete(i1);
+}
+
+/**
+ * Move all chunks to the start of the array
+ */
+void compact_chunks(void)
+{
+    int i;
+
+    /* Excise dead chunks (backwards!) */
+    for (i = chunk_max - 1; i >= 1; i--) {
+	chunk_ref *chunk = &chunk_list[i];
+
+	/* Skip real chunks */
+	if (chunk->region)
+	    continue;
+
+	/* Move last chunk into open hole */
+	compact_chunks_aux(chunk_max - 1, i);
+
+	/* Compress chunk_max */
+	chunk_max--;
+    }
+}
 
 /**
  * Write a world_chunk to memory and return a pointer to it
@@ -179,41 +288,7 @@ world_chunk *chunk_write(int y_offset, int x_offset)
 	}
     }
 
-    /* Re-allocate memory to save space 
-    new->o_list = (object_type *) 
-	mem_realloc(new->o_list, new->o_cnt * sizeof(object_type));
-    new->m_list = (monster_type *) 
-	mem_realloc(new->m_list, new->m_cnt * sizeof(monster_type));
-    new->trap_list = (trap_type *) 
-	mem_realloc(new->trap_list, new->trap_max * sizeof(trap_type)); */
-	
     return new;
-}
-
-/**
- * Free a chunk
- */
-void chunk_wipe(int idx)
-{
-    world_chunk *chunk = chunk_list[idx].chunk;
-
-    /* Free everything */
-    mem_free(chunk->cave_info);
-    chunk->cave_info = NULL;
-    mem_free(chunk->cave_feat);
-    chunk->cave_feat = NULL;
-    mem_free(chunk->cave_o_idx);
-    chunk->cave_o_idx = NULL;
-    mem_free(chunk->cave_m_idx);
-    chunk->cave_m_idx = NULL;
-    mem_free(chunk->o_list);
-    chunk->o_list = NULL;
-    mem_free(chunk->m_list);
-    chunk->m_list = NULL;
-    mem_free(chunk->trap_list);
-    chunk->trap_list = NULL;
-    mem_free(chunk);
-    chunk_list[idx].chunk = NULL;
 }
 
 /**
@@ -221,18 +296,8 @@ void chunk_wipe(int idx)
  */
 void chunk_age_off(int idx)
 {
-    int i;
-    chunk_ref *ref = &chunk_list[idx];
-
-    ref->age = 0;
-    ref->region = 0;
-    ref->z_pos = 0;
-    ref->y_pos = 0;
-    ref->x_pos = 0;
-    ref->gen_loc_idx = 0;
-    chunk_wipe(idx);
-    for (i = 0; i < 11; i++)  
-	ref->adjacent[i] = MAX_CHUNKS;  
+    /* Delete the chunk */
+    chunk_delete(idx);
 
     /* Decrement the counter */
     chunk_cnt--;
