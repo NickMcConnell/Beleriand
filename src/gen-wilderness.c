@@ -633,15 +633,15 @@ int make_formation(int y, int x, int base_feat1, int base_feat2, int *feat,
  * Find a given generation location in the list, or failing that the one
  * after it
  */
-int gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
+bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
 {
     int idx = gen_loc_cnt / 2;
 
     *upper = gen_loc_cnt - 1;
     *lower = 0;
 
-    while ((gen_loc_list[idx].x_pos != x_pos) &&
-	   (gen_loc_list[idx].y_pos != y_pos) &&
+    while ((gen_loc_list[idx].x_pos != x_pos) ||
+	   (gen_loc_list[idx].y_pos != y_pos) ||
 	   (gen_loc_list[idx].z_pos != z_pos))
     {
 	if (*lower + 1 == *upper)
@@ -690,23 +690,29 @@ int gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
     {
 	*lower = idx;
 	*upper = idx;
-	return idx;
+	return TRUE;
     }
 
     /* Needs to go after the last element */
     if ((gen_loc_list[*upper].x_pos <= x_pos) &&
 	(gen_loc_list[*upper].y_pos <= y_pos) &&
 	(gen_loc_list[*upper].z_pos <= z_pos))
-	return *upper + 1;
+    {
+	*upper = gen_loc_cnt;
+	return FALSE;
+    }
 
     /* Needs to go before the first element */
     if ((gen_loc_list[*lower].x_pos >= x_pos) &&
 	(gen_loc_list[*lower].y_pos >= y_pos) &&
 	(gen_loc_list[*lower].z_pos >= z_pos))
-	return 0;
+    {
+	*upper = 0;
+	return FALSE;
+    }
 
     /* Needs to go between upper and lower */
-    return *upper;
+    return FALSE;
 
 }
 

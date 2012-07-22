@@ -660,6 +660,7 @@ void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset,
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 {
     int n, z_off, y_off, x_off, idx;
+    int z_pos = ref.z_pos, y_pos = ref.y_pos, x_pos = ref.x_pos;
     char terrain;
 
     /* If no region, return */
@@ -667,8 +668,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	return;
 
     /* Store the chunk reference */
-    idx = chunk_store(1, 1, ref.region, ref.z_pos, ref.y_pos, ref.x_pos, 
-			  FALSE);
+    idx = chunk_store(1, 1, ref.region, z_pos, y_pos, x_pos, FALSE);
     
     /* Set adjacencies */
     for (n = 0; n < 11; n++)
@@ -678,9 +678,9 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 
 	/* Set the reference data for the adjacent chunk */
 	chunk_adjacent_to_offset(n, &z_off, &y_off, &x_off);
-	ref1.z_pos = ref.z_pos;
-	ref1.y_pos = ref.y_pos;
-	ref1.x_pos = ref.x_pos;
+	ref1.z_pos = z_pos;
+	ref1.y_pos = y_pos;
+	ref1.x_pos = x_pos;
 	ref1.region = ref.region;
 	chunk_adjacent_data(&ref1, z_off, y_off, x_off);
 
@@ -698,12 +698,10 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	    chunk_list[idx].adjacent[n] = chunk_idx;
 	    chunk_list[chunk_idx].adjacent[10 - n] = idx;
 	}
-	else
-	    chunk_list[idx].adjacent[n] = MAX_CHUNKS;
     }
 
     /* Generate the chunk */
-    terrain = region_terrain[ref.y_pos / 10][ref.x_pos / 10];
+    terrain = region_terrain[y_pos / 10][x_pos / 10];
 
     switch (terrain)
     {

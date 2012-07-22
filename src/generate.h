@@ -291,6 +291,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset);
 void chunk_change(int z_offset, int y_offset, int x_offset);
 
 extern bool no_vault(void);
+bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
 extern void plain_gen(chunk_ref ref, int y_offset, int x_offset);
 extern void forest_gen(chunk_ref ref, int y_offset, int x_offset);
 extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset);

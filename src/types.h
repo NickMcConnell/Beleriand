@@ -1470,11 +1470,12 @@ typedef struct terrain_change {
 } terrain_change;
 
 /**
- * cave_info flags which will effect generation of adjacent chunks
+ * cave_info flags which will affect generation of adjacent chunks
  */
 typedef struct edge_effect {
     byte y;
     byte x;
+    byte terrain;
     bitflag info[CAVE_SIZE];
     struct edge_effect *next;
 } edge_effect;
