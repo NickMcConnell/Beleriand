@@ -661,11 +661,16 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 {
     int n, z_off, y_off, x_off, idx;
     int z_pos = ref.z_pos, y_pos = ref.y_pos, x_pos = ref.x_pos;
+    int lower, upper;
     char terrain;
+    bool reload;
 
     /* If no region, return */
     if (!ref.region)
 	return;
+
+    /* See if we've been generated before */
+    reload = gen_loc_find(x_pos, y_pos, z_pos, &lower, &upper);
 
     /* Store the chunk reference */
     idx = chunk_store(1, 1, ref.region, z_pos, y_pos, x_pos, FALSE);
