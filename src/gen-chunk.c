@@ -99,7 +99,7 @@ static void compact_chunks_aux(int i1, int i2)
 	    continue;
 
 	/* Repair adjacencies */
-	for (j = 0; j < 11; j++)
+	for (j = 0; j < DIR_MAX; j++)
 	    if (chunk->adjacent[j] == i1)
 		chunk->adjacent[j] = i2;
 
@@ -553,8 +553,8 @@ void chunk_read(int idx, int y_offset, int x_offset)
  */
 int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset)
 {
-    if (z_offset == -1) return 0;
-    else if (z_offset == 1) return 10;
+    if (z_offset == -1) return DIR_UP;
+    else if (z_offset == 1) return DIR_DOWN;
     else if ((y_offset >= 0) && (y_offset <= 2) &&
 	     (x_offset >= 0) && (x_offset <= 2))
 	return (7 - 3 * y_offset + x_offset);
@@ -566,15 +566,15 @@ int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset)
  */
 void chunk_adjacent_to_offset(int adjacent, int *z_off, int *y_off, int *x_off)
 {
-    if (adjacent == 0)
+    if (adjacent == DIR_UP)
     {
 	*z_off = -1;
 	*y_off = 0;
 	*x_off = 0;
     }
-    else if (adjacent == 10)
+    else if (adjacent == DIR_DOWN)
     {
-	*z_off = -1;
+	*z_off = 1;
 	*y_off = 0;
 	*x_off = 0;
     }
@@ -655,6 +655,21 @@ void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset,
 }
 
 /**
+ * Copy an edge effect
+ */
+void edge_copy(edge_effect *dest, edge_effect *source)
+{
+    size_t i;
+
+    dest->y = source->y;
+    dest->x = source->x;
+    dest->terrain = source->terrain;
+    for (i = 0; i < CAVE_SIZE; i++)
+	dest->info[i] = source->info[i];
+    dest->next = NULL;
+}
+
+/**
  * Generate a chunk
  */
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
@@ -664,6 +679,14 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     int lower, upper;
     char terrain;
     bool reload;
+    edge_effect east[CHUNK_HGT] = {{0}};
+    edge_effect west[CHUNK_HGT] = {{0}};
+    edge_effect north[CHUNK_WID] = {{0}};
+    edge_effect south[CHUNK_WID] = {{0}};
+    edge_effect vertical[CHUNK_HGT][CHUNK_WID] = {{{0}}};
+    edge_effect *first = NULL;
+    edge_effect *next = NULL;
+    edge_effect *last = NULL;
 
     /* If no region, return */
     if (!ref.region)
@@ -676,7 +699,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     idx = chunk_store(1, 1, ref.region, z_pos, y_pos, x_pos, FALSE);
     
     /* Set adjacencies */
-    for (n = 0; n < 11; n++)
+    for (n = 0; n < DIR_MAX; n++)
     {
 	chunk_ref ref1 = CHUNK_EMPTY;
 	int chunk_idx;
@@ -690,7 +713,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	chunk_adjacent_data(&ref1, z_off, y_off, x_off);
 
 	/* Self-reference (not strictly necessary) */
-	if (n == 5)
+	if (n == DIR_NONE)
 	{
 	    ref1.adjacent[n] = idx;
 	    continue;
@@ -703,7 +726,119 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	    chunk_list[idx].adjacent[n] = chunk_idx;
 	    chunk_list[chunk_idx].adjacent[10 - n] = idx;
 	}
+
+	/* Look for old ones and get edge effects */
+	if ((x_off == 0) || (y_off == 0))
+	{
+	    int low, high;
+	    bool exists = gen_loc_find(ref1.x_pos, ref1.y_pos, ref1.z_pos, 
+				       &low, &high);
+	    gen_loc *loc = NULL;
+	    edge_effect *start = NULL;
+
+	    if (exists)
+	    {
+		/* Get the location */
+		loc = &gen_loc_list[low];
+
+		/* Find edge effects */
+		switch (n)
+		{
+		case DIR_UP:
+		{
+		    for (start = loc->effect; start->next; start = start->next)
+		    {
+			if (tf_has(f_info[start->terrain].flags, TF_DOWNSTAIR) 
+			    || tf_has(f_info[start->terrain].flags, TF_FALL))
+			{
+			    edge_copy(&vertical[start->y][start->x], start);
+			    if (!first)
+			    {
+				first = &vertical[start->y][start->x];
+				last = first;
+			    }
+			    else
+			    {
+				
+			    }
+			}
+		    }
+		    break;
+		}
+		case DIR_S:
+		{
+		    for (start = loc->effect; start->next; start = start->next)
+		    {
+			if (start->y == 0)
+			{
+			    edge_copy(&north[start->x], start);
+			    if (!first)
+				first = &north[start->x];
+			}
+		    }
+		    break;
+		}
+		case DIR_W:
+		{
+		    for (start = loc->effect; start->next; start = start->next)
+		    {
+			if (start->x == CHUNK_WID - 1)
+			{
+			    edge_copy(&east[start->y], start);
+			    if (!first)
+				first = &east[start->y];
+			}
+		    }
+		    break;
+		}
+		case DIR_E:
+		{
+		    for (start = loc->effect; start->next; start = start->next)
+		    {
+			if (start->x == 0)
+			{
+			    edge_copy(&west[start->y], start);
+			    if (!first)
+				first = &west[start->y];
+			}
+		    }
+		    break;
+		}
+		case DIR_N:
+		{
+		    for (start = loc->effect; start->next; start = start->next)
+		    {
+			if (start->y == CHUNK_HGT - 1)
+			{
+			    edge_copy(&south[start->x], start);
+			    if (!first)
+				first = &south[start->x];
+			}
+		    }
+		    break;
+		}
+		case DIR_DOWN:
+		{
+		    for (start = loc->effect; start->next; start = start->next)
+		    {
+			if (tf_has(f_info[start->terrain].flags, TF_UPSTAIR))
+			{
+			    edge_copy(&vertical[start->y][start->x], start);
+			    if (!first)
+				first = &vertical[start->y][start->x];
+			}
+		    }
+		    break;
+		}
+		}
+	    }
+	}
     }
+
+    /* Put the edge effects in a list */
+    for (n = 0; n < CHUNK_HGT; n++)
+	;
+    
 
     /* Generate the chunk */
     terrain = region_terrain[y_pos / 10][x_pos / 10];
@@ -780,6 +915,19 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	ocean_gen(ref, y_offset, x_offset);
 	break;
     }
+    }
+
+    /* Do terrain changes */
+    if (reload)
+    {
+	/* Change any terrain that has changed since first generation */
+    }
+
+    /* Write edge effects */
+    else
+    {
+	/* go over edges, stairs without a read effect from elsewhere, and
+	 * write them to this gen_loc */ 
     }
 
 }

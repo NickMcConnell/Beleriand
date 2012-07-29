@@ -2521,6 +2521,27 @@ extern int PlayerUID;
 #define MAX_RUNE        7
  */
 
+/**
+ * Adjacency directions
+ */
+
+enum
+{
+	DIR_UP = 0,
+	DIR_SW,
+	DIR_S,
+	DIR_SE,
+	DIR_W,
+	DIR_NONE,
+	DIR_E,
+	DIR_NW,
+	DIR_N,
+	DIR_NE,
+	DIR_DOWN,
+
+	DIR_MAX
+};
+
 /** 
  * Maximum rune mana reserve 
  */
