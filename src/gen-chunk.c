@@ -670,6 +670,24 @@ void edge_copy(edge_effect *dest, edge_effect *source)
 }
 
 /**
+ * Add an edge effect to the list
+ */
+void edge_add(edge_effect *first, edge_effect *latest, edge_effect *current)
+{
+    if (first)
+    {
+	latest->next = current;
+	latest = latest->next;
+    }
+    else
+    {
+	first = current;
+	latest = first;
+    }
+    latest->next = NULL;
+}
+
+/**
  * Generate a chunk
  */
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
@@ -685,8 +703,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     edge_effect south[CHUNK_WID] = {{0}};
     edge_effect vertical[CHUNK_HGT][CHUNK_WID] = {{{0}}};
     edge_effect *first = NULL;
-    edge_effect *next = NULL;
-    edge_effect *last = NULL;
+    edge_effect *latest = NULL;
 
     /* If no region, return */
     if (!ref.region)
@@ -752,15 +769,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 			    || tf_has(f_info[start->terrain].flags, TF_FALL))
 			{
 			    edge_copy(&vertical[start->y][start->x], start);
-			    if (!first)
-			    {
-				first = &vertical[start->y][start->x];
-				last = first;
-			    }
-			    else
-			    {
-				
-			    }
+			    edge_add(first, latest, &vertical[start->y][start->x]);
 			}
 		    }
 		    break;
@@ -772,8 +781,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 			if (start->y == 0)
 			{
 			    edge_copy(&north[start->x], start);
-			    if (!first)
-				first = &north[start->x];
+			    edge_add(first, latest, &north[start->x]);
 			}
 		    }
 		    break;
@@ -785,8 +793,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 			if (start->x == CHUNK_WID - 1)
 			{
 			    edge_copy(&east[start->y], start);
-			    if (!first)
-				first = &east[start->y];
+			    edge_add(first, latest, &east[start->y]);
 			}
 		    }
 		    break;
@@ -798,8 +805,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 			if (start->x == 0)
 			{
 			    edge_copy(&west[start->y], start);
-			    if (!first)
-				first = &west[start->y];
+			    edge_add(first, latest, &west[start->y]);
 			}
 		    }
 		    break;
@@ -811,8 +817,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 			if (start->y == CHUNK_HGT - 1)
 			{
 			    edge_copy(&south[start->x], start);
-			    if (!first)
-				first = &south[start->x];
+			    edge_add(first, latest, &south[start->x]);
 			}
 		    }
 		    break;
@@ -834,11 +839,6 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	    }
 	}
     }
-
-    /* Put the edge effects in a list */
-    for (n = 0; n < CHUNK_HGT; n++)
-	;
-    
 
     /* Generate the chunk */
     terrain = region_terrain[y_pos / 10][x_pos / 10];
