@@ -292,19 +292,32 @@ void chunk_change(int z_offset, int y_offset, int x_offset);
 
 extern bool no_vault(void);
 bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
-extern void plain_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void forest_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void lake_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void moor_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void dark_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void impass_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void desert_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void snow_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void town_gen(chunk_ref ref, int y_offset, int x_offset);
-extern void landmk_gen(chunk_ref ref, int y_offset, int x_offset);
+extern void plain_gen(chunk_ref ref, int y_offset, int x_offset, 
+		      edge_effect *first);
+extern void forest_gen(chunk_ref ref, int y_offset, int x_offset, 
+		       edge_effect *first);
+extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset, 
+		      edge_effect *first);
+extern void lake_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first);
+extern void moor_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first);
+extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset, 
+		    edge_effect *first);
+extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset, 
+		      edge_effect *first);
+extern void dark_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first);
+extern void impass_gen(chunk_ref ref, int y_offset, int x_offset, 
+		       edge_effect *first);
+extern void desert_gen(chunk_ref ref, int y_offset, int x_offset, 
+		       edge_effect *first);
+extern void snow_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first);
+extern void town_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first);
+extern void landmk_gen(chunk_ref ref, int y_offset, int x_offset, 
+		       edge_effect *first);
 extern void cave_gen(void);
 extern void generate_cave(void);
 

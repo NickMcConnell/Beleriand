@@ -716,7 +716,8 @@ bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
 
 }
 
-extern void plain_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void plain_gen(chunk_ref ref, int y_offset, int x_offset, 
+		      edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -736,7 +737,8 @@ extern void plain_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void forest_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void forest_gen(chunk_ref ref, int y_offset, int x_offset, 
+		       edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -756,7 +758,8 @@ extern void forest_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset, 
+		      edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -776,7 +779,8 @@ extern void ocean_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void lake_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void lake_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -796,7 +800,8 @@ extern void lake_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void moor_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void moor_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -816,7 +821,8 @@ extern void moor_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset, 
+		    edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -836,7 +842,8 @@ extern void mtn_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset, 
+		      edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -856,7 +863,8 @@ extern void swamp_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void dark_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void dark_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -876,7 +884,8 @@ extern void dark_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void impass_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void impass_gen(chunk_ref ref, int y_offset, int x_offset, 
+		       edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -896,7 +905,8 @@ extern void impass_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void desert_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void desert_gen(chunk_ref ref, int y_offset, int x_offset, 
+		       edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -916,7 +926,8 @@ extern void desert_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void snow_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void snow_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -936,7 +947,8 @@ extern void snow_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void town_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void town_gen(chunk_ref ref, int y_offset, int x_offset, 
+		     edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;
@@ -956,7 +968,8 @@ extern void town_gen(chunk_ref ref, int y_offset, int x_offset)
 	player_place(ARENA_HGT/2, ARENA_WID/2);
 }
 
-extern void landmk_gen(chunk_ref ref, int y_offset, int x_offset)
+extern void landmk_gen(chunk_ref ref, int y_offset, int x_offset, 
+		       edge_effect *first)
 {
     int x, y;
     int y0 = y_offset * CHUNK_HGT;

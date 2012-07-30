@@ -851,72 +851,72 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     {
     case '.':
     {
-	plain_gen(ref, y_offset, x_offset);
+	plain_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '+':
     {
-	forest_gen(ref, y_offset, x_offset);
+	forest_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '-':
     {
-	lake_gen(ref, y_offset, x_offset);
+	lake_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '~':
     {
-	ocean_gen(ref, y_offset, x_offset);
+	ocean_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case ',':
     {
-	moor_gen(ref, y_offset, x_offset);
+	moor_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '^':
     {
-	mtn_gen(ref, y_offset, x_offset);
+	mtn_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '_':
     {
-	swamp_gen(ref, y_offset, x_offset);
+	swamp_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '|':
     {
-	dark_gen(ref, y_offset, x_offset);
+	dark_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case 'X':
     {
-	impass_gen(ref, y_offset, x_offset);
+	impass_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '/':
     {
-	desert_gen(ref, y_offset, x_offset);
+	desert_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '*':
     {
-	snow_gen(ref, y_offset, x_offset);
+	snow_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '=':
     {
-	town_gen(ref, y_offset, x_offset);
+	town_gen(ref, y_offset, x_offset, first);
 	break;
     }
     case '&':
     {
-	landmk_gen(ref, y_offset, x_offset);
+	landmk_gen(ref, y_offset, x_offset, first);
 	break;
     }
     default:
     {
-	ocean_gen(ref, y_offset, x_offset);
+	ocean_gen(ref, y_offset, x_offset, first);
 	break;
     }
     }
