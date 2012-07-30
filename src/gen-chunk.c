@@ -780,8 +780,9 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		    {
 			if (start->y == 0)
 			{
-			    edge_copy(&north[start->x], start);
-			    edge_add(first, latest, &north[start->x]);
+			    edge_copy(&south[start->x], start);
+			    south[start->x].y = CHUNK_HGT;
+			    edge_add(first, latest, &south[start->x]);
 			}
 		    }
 		    break;
@@ -792,8 +793,9 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		    {
 			if (start->x == CHUNK_WID - 1)
 			{
-			    edge_copy(&east[start->y], start);
-			    edge_add(first, latest, &east[start->y]);
+			    edge_copy(&west[start->y], start);
+			    west[start->y].x = 255;
+			    edge_add(first, latest, &west[start->y]);
 			}
 		    }
 		    break;
@@ -804,8 +806,9 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		    {
 			if (start->x == 0)
 			{
-			    edge_copy(&west[start->y], start);
-			    edge_add(first, latest, &west[start->y]);
+			    edge_copy(&east[start->y], start);
+			    east[start->y].x = CHUNK_WID;
+			    edge_add(first, latest, &east[start->y]);
 			}
 		    }
 		    break;
@@ -816,8 +819,9 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		    {
 			if (start->y == CHUNK_HGT - 1)
 			{
-			    edge_copy(&south[start->x], start);
-			    edge_add(first, latest, &south[start->x]);
+			    edge_copy(&north[start->x], start);
+			    north[start->x].y = 255;
+			    edge_add(first, latest, &north[start->x]);
 			}
 		    }
 		    break;
