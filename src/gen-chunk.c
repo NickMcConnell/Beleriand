@@ -924,14 +924,42 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     /* Do terrain changes */
     if (reload)
     {
+	terrain_change *change;
+
 	/* Change any terrain that has changed since first generation */
+	for (change = loc->change; change; change = change->next)
+	{
+	    int y = y_offset * CHUNK_HGT + change->y;
+	    int x = x_offset * CHUNK_WID + change->x;
+
+	    cave_set_feat(y, x, change->terrain);
+	}
     }
 
     /* Write edge effects */
     else
     {
+	size_t i;
+	int y, x;
+	int y0 = CHUNK_HGT * y_offset;
+	int x0 = CHUNK_WID * x_offset;
+	edge_effect *edge = loc->effect;
+
+	if (south[0].terrain == 0)
+	{
+	    for (x = 0; x < CHUNK_WID; x++)
+	    {
+		edge->y = CHUNK_HGT - 1;
+		edge->x = x;
+		edge->terrain = cave_feat[y0 + CHUNK_HGT - 1][x0 + x];
+		for (i = 0; i < CAVE_SIZE; i++)
+		    edge->info[i] = cave_info[y][x][i];
+
+		
+
 	/* go over edges, stairs without a read effect from elsewhere, and
 	 * write them to this gen_loc */ 
+	
     }
 
 }
