@@ -833,8 +833,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 			if (tf_has(f_info[start->terrain].flags, TF_UPSTAIR))
 			{
 			    edge_copy(&vertical[start->y][start->x], start);
-			    if (!first)
-				first = &vertical[start->y][start->x];
+			    edge_add(first, latest, &vertical[start->y][start->x]);
 			}
 		    }
 		    break;
@@ -940,11 +939,67 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     else
     {
 	size_t i;
+	int num_effects = 0;
 	int y, x;
 	int y0 = CHUNK_HGT * y_offset;
 	int x0 = CHUNK_WID * x_offset;
-	edge_effect *edge = loc->effect;
+	edge_effect *edge;
 
+	/* Count the non-zero edge effects needed */
+	for (i = 0; i < CHUNK_HGT; i++)
+	{
+	    if (south[i].terrain == 0) num_effects++;
+	    if (north[i].terrain == 0) num_effects++;
+	    for (x = 0; x < CHUNK_WID; x++)
+	    {
+		if (vertical[i][x].terrain == 0)
+		{
+		    if (tf_has(f_info[start->terrain].flags, TF_DOWNSTAIR) 
+			|| tf_has(f_info[start->terrain].flags, TF_FALL)
+			||tf_has(f_info[start->terrain].flags, TF_UPSTAIR))
+			num_effects++;
+		}
+	    }
+	}
+	for (i = 0; i < CHUNK_WID; i++)
+	{
+	    if (west[i].terrain == 0) num_effects++;
+	    if (east[i].terrain == 0) num_effects++;
+	}
+
+	/* Now write them */
+	loc->effect = mem_zalloc(num_effects * sizeof(edge_effect));
+	num_effects = 0;
+	for (i = 0; i < CHUNK_HGT; i++)
+	{
+	    if (south[i].terrain == 0)
+	    {
+		
+	    }
+	    if (north[i].terrain == 0)
+	    {
+	    }
+	    for (x = 0; x < CHUNK_WID; x++)
+	    {
+		if (vertical[i][x].terrain == 0)
+		{
+		    if (tf_has(f_info[start->terrain].flags, TF_DOWNSTAIR) 
+			|| tf_has(f_info[start->terrain].flags, TF_FALL)
+			||tf_has(f_info[start->terrain].flags, TF_UPSTAIR))
+		    {
+		    }
+		}
+	    }
+	}
+	for (i = 0; i < CHUNK_WID; i++)
+	{
+	    if (west[i].terrain == 0)
+	    {
+	    }
+	    if (east[i].terrain == 0)
+	    {
+	    }
+	}
 	if (south[0].terrain == 0)
 	{
 	    for (x = 0; x < CHUNK_WID; x++)
