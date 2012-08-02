@@ -716,6 +716,34 @@ bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
 
 }
 
+/**
+ * Find a given generation location in the list, or failing that the one
+ * after it
+ */
+void gen_loc_make(int x_pos, int y_pos, int z_pos, int lower, int upper)
+{
+    int i;
+
+    /* Increase the count, extend the array if necessary */
+    gen_loc_cnt++;
+    if ((gen_loc_cnt % GEN_LOC_INCR) == 0)
+    {
+	gen_loc_max += GEN_LOC_INCR;
+	gen_loc_list = mem_realloc(gen_loc_list, gen_loc_max);
+    }
+
+    /* Move everything along one to make space */
+    for (i = gen_loc_cnt; i > upper; i--)
+	memcpy(&gen_loc_list[i], &gen_loc_list[i - 1], sizeof(gen_loc));
+
+    /* Copy the new data in */
+    gen_loc_list[upper].x_pos = x_pos;
+    gen_loc_list[upper].y_pos = y_pos;
+    gen_loc_list[upper].z_pos = z_pos;
+    gen_loc_list[upper].change = NULL;
+    gen_loc_list[upper].effect = NULL;
+}
+
 extern void plain_gen(chunk_ref ref, int y_offset, int x_offset, 
 		      edge_effect *first)
 {

@@ -292,6 +292,7 @@ void chunk_change(int z_offset, int y_offset, int x_offset);
 
 extern bool no_vault(void);
 bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
+void gen_loc_make(int x_pos, int y_pos, int z_pos, int lower, int upper);
 extern void plain_gen(chunk_ref ref, int y_offset, int x_offset, 
 		      edge_effect *first);
 extern void forest_gen(chunk_ref ref, int y_offset, int x_offset, 
