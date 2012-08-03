@@ -637,7 +637,14 @@ bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
 {
     int idx = gen_loc_cnt / 2;
 
-    *upper = gen_loc_cnt - 1;
+    /* Special case for before the array is populated */
+    if (gen_loc_cnt == 0)
+    {
+	*upper = *lower = 0;
+	return FALSE;
+    }
+
+    *upper = gen_loc_cnt;
     *lower = 0;
 
     while ((gen_loc_list[idx].x_pos != x_pos) ||

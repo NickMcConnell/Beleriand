@@ -938,7 +938,6 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     /* Write edge effects */
     else
     {
-	size_t i;
 	int num_effects = 0;
 	int y, x;
 	int y0 = CHUNK_HGT * y_offset;
@@ -973,7 +972,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	    = mem_zalloc(num_effects * sizeof(edge_effect));
 	edge = gen_loc_list[upper].effect;
 	num_effects = 0;
-	for (x = 0; x < CHUNK_WID; i++)
+	for (x = 0; x < CHUNK_WID; x++)
 	{
 	    if (south[x].terrain == 0)
 	    {
@@ -1023,7 +1022,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		edge->next = &edge[++num_effects];
 		edge = edge->next;
 	    }
-	    if (east[i].terrain == 0)
+	    if (east[y].terrain == 0)
 	    {
 		edge->y = y;
 		edge->x = CHUNK_WID - 1;
