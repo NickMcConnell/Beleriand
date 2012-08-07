@@ -665,19 +665,19 @@ void edge_copy(edge_effect *dest, edge_effect *source)
 /**
  * Add an edge effect to the list
  */
-void edge_add(edge_effect *first, edge_effect *latest, edge_effect *current)
+void edge_add(edge_effect **first, edge_effect **latest, edge_effect **current)
 {
-    if (first)
+    if (*first)
     {
-	latest->next = current;
-	latest = latest->next;
+	(*latest)->next = *current;
+	*latest = (*latest)->next;
     }
     else
     {
-	first = current;
-	latest = first;
+	*first = *current;
+	*latest = *first;
     }
-    latest->next = NULL;
+    (*latest)->next = NULL;
 }
 
 /**
@@ -757,6 +757,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	    {
 		/* Get the location */
 		loc = &gen_loc_list[low];
+		first = NULL;
 
 		/* Find edge effects */
 		switch (n)
@@ -765,11 +766,13 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		{
 		    for (start = loc->effect; start->next; start = start->next)
 		    {
+			edge_effect *current = &vertical[start->y][start->x];
+
 			if (tf_has(f_info[start->terrain].flags, TF_DOWNSTAIR) 
 			    || tf_has(f_info[start->terrain].flags, TF_FALL))
 			{
-			    edge_copy(&vertical[start->y][start->x], start);
-			    edge_add(first, latest, &vertical[start->y][start->x]);
+			    edge_copy(current, start);
+			    edge_add(&first, &latest, &current);
 			}
 		    }
 		    break;
@@ -778,11 +781,13 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		{
 		    for (start = loc->effect; start->next; start = start->next)
 		    {
+			edge_effect *current = &south[start->x];
+
 			if (start->y == 0)
 			{
-			    edge_copy(&south[start->x], start);
-			    south[start->x].y = CHUNK_HGT;
-			    edge_add(first, latest, &south[start->x]);
+			    edge_copy(current, start);
+			    current->y = CHUNK_HGT;
+			    edge_add(&first, &latest, &current);
 			}
 		    }
 		    break;
@@ -791,11 +796,13 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		{
 		    for (start = loc->effect; start->next; start = start->next)
 		    {
+			edge_effect *current = &west[start->y];
+
 			if (start->x == CHUNK_WID - 1)
 			{
-			    edge_copy(&west[start->y], start);
-			    west[start->y].x = 255;
-			    edge_add(first, latest, &west[start->y]);
+			    edge_copy(current, start);
+			    current->x = 255;
+			    edge_add(&first, &latest, &current);
 			}
 		    }
 		    break;
@@ -804,11 +811,13 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		{
 		    for (start = loc->effect; start->next; start = start->next)
 		    {
+			edge_effect *current = &east[start->y];
+
 			if (start->x == 0)
 			{
-			    edge_copy(&east[start->y], start);
-			    east[start->y].x = CHUNK_WID;
-			    edge_add(first, latest, &east[start->y]);
+			    edge_copy(current, start);
+			    current->x = CHUNK_WID;
+			    edge_add(&first, &latest, &current);
 			}
 		    }
 		    break;
@@ -817,11 +826,13 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		{
 		    for (start = loc->effect; start->next; start = start->next)
 		    {
+			edge_effect *current = &north[start->x];
+
 			if (start->y == CHUNK_HGT - 1)
 			{
-			    edge_copy(&north[start->x], start);
-			    north[start->x].y = 255;
-			    edge_add(first, latest, &north[start->x]);
+			    edge_copy(current, start);
+			    current->y = 255;
+			    edge_add(&first, &latest, &current);
 			}
 		    }
 		    break;
@@ -830,10 +841,12 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		{
 		    for (start = loc->effect; start->next; start = start->next)
 		    {
+			edge_effect *current = &vertical[start->y][start->x];
+
 			if (tf_has(f_info[start->terrain].flags, TF_UPSTAIR))
 			{
-			    edge_copy(&vertical[start->y][start->x], start);
-			    edge_add(first, latest, &vertical[start->y][start->x]);
+			    edge_copy(current, start);
+			    edge_add(&first, &latest, &current);
 			}
 		    }
 		    break;
