@@ -3462,7 +3462,7 @@ static void autoinscribe_free(void)
  */
 static errr init_other(void)
 {
-    int i, y, x;
+    int i, j, y, x;
 
 
     /*** Prepare the various "bizarre" arrays ***/
@@ -3576,7 +3576,13 @@ static errr init_other(void)
     /*** Prepare the world chunk array ***/
 
     chunk_list = (chunk_ref *)mem_zalloc(MAX_CHUNKS * sizeof(chunk_ref));
-  
+
+    /* Set all the adjacencies to null */
+    for (i = 0; i < MAX_CHUNKS; i++)
+	for (j = 0; j < DIR_MAX; j++)
+	    chunk_list[i].adjacent[j] = MAX_CHUNKS;
+
+
     /*** Prepare the options ***/
     option_set_defaults();
 
