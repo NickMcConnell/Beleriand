@@ -700,6 +700,15 @@ bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
 	return TRUE;
     }
 
+    /* Check lower */
+    if ((gen_loc_list[*lower].x_pos == x_pos) &&
+	(gen_loc_list[*lower].y_pos == y_pos) &&
+	(gen_loc_list[*lower].z_pos == z_pos))
+    {
+	*upper = *lower;
+	return TRUE;
+    }
+
     /* Needs to go after the last element */
     if ((gen_loc_list[*upper].x_pos <= x_pos) &&
 	(gen_loc_list[*upper].y_pos <= y_pos) &&

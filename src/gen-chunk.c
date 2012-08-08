@@ -993,7 +993,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		edge->x = x;
 		edge->terrain = cave_feat[y0 + CHUNK_HGT - 1][x0 + x];
 		cave_copy(edge->info, cave_info[y0 + CHUNK_HGT - 1][x0 + x]);
-		edge->next = &edge[++num_effects];
+		edge->next = edge + 1;
 		edge = edge->next;
 	    }
 	    if (north[x].terrain == 0)
@@ -1002,7 +1002,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		edge->x = x;
 		edge->terrain = cave_feat[y0][x0 + x];
 		cave_copy(edge->info, cave_info[y0][x0 + x]);
-		edge->next = &edge[++num_effects];
+		edge->next = edge + 1;
 		edge = edge->next;
 	    }
 	    for (y = 0; y < CHUNK_HGT; y++)
@@ -1018,7 +1018,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 			edge->x = x;
 			edge->terrain = cave_feat[y0 + y][x0 + x];
 			cave_copy(edge->info, cave_info[y0 + y][x0 + x]);
-			edge->next = &edge[++num_effects];
+			edge->next = edge + 1;
 			edge = edge->next;
 		    }
 		}
@@ -1032,7 +1032,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		edge->x = 0;
 		edge->terrain = cave_feat[y0 + y][x0];
 		cave_copy(edge->info, cave_info[y0 + y][x0]);
-		edge->next = &edge[++num_effects];
+		edge->next = edge + 1;
 		edge = edge->next;
 	    }
 	    if (east[y].terrain == 0)
@@ -1041,7 +1041,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 		edge->x = CHUNK_WID - 1;
 		edge->terrain = cave_feat[y0 + y][x0 + CHUNK_WID - 1];
 		cave_copy(edge->info, cave_info[y0 + y][x0 + CHUNK_WID - 1]);
-		edge->next = &edge[++num_effects];
+		edge->next = edge + 1;
 		edge = edge->next;
 	    }
 	}
