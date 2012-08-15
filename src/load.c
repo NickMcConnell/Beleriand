@@ -1953,7 +1953,7 @@ int rd_locations(void)
 	/* Read the edge effects */
 	rd_u16b(&num_effects);
 	if (num_effects)
-	    effect = malloc(num_effects * (2 + cave_size + sizeof(effect)));
+	    effect = malloc(num_effects * (3 + cave_size + sizeof(effect)));
 	location->effect = effect;
 	for (j = 0; j < num_effects; j++)
 	{
@@ -1961,6 +1961,7 @@ int rd_locations(void)
 
 	    rd_byte(&effect[j].y);
 	    rd_byte(&effect[j].x);
+	    rd_byte(&effect[j].terrain);
 	    for (k = 0; k < cave_size; k++)
 		rd_byte(&effect[j].info[k]);
 	    if (j + 1 < num_effects)

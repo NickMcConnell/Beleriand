@@ -1215,6 +1215,7 @@ void wr_locations(void)
 	{
 	    wr_byte(effect->y);
 	    wr_byte(effect->x);
+	    wr_byte(effect->terrain);
 	    for (j = 0; j < CAVE_SIZE; j++)
 		wr_byte(effect->info[j]);
 	}
