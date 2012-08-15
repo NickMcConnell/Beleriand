@@ -758,7 +758,7 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	if (chunk_idx < MAX_CHUNKS)
 	{
 	    chunk_list[idx].adjacent[n] = chunk_idx;
-	    chunk_list[chunk_idx].adjacent[10 - n] = idx;
+	    chunk_list[chunk_idx].adjacent[DIR_MAX - n - 1] = idx;
 	}
 
 	/* Look for old ones and get edge effects */

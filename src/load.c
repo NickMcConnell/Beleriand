@@ -34,6 +34,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "generate.h"
 #include "history.h"
 #include "monster.h"
 #include "tvalsval.h"
@@ -1753,7 +1754,7 @@ int rd_traps(void)
 
 int rd_chunks(void)
 {
-    int i, j, n, y, x;
+    int i, j, n, z, y, x;
   
     byte count;
     byte tmp8u;
@@ -1775,12 +1776,13 @@ int rd_chunks(void)
 	chunk_ref *ref = &chunk_list[chunk_cnt];
 	world_chunk *chunk = ref->chunk;
 
-	rd_u16b(&ref->ch_idx);
+	ref->ch_idx = j;
 	rd_u16b(&ref->age);
 	rd_u16b(&ref->region);
 	rd_u16b(&ref->z_pos);
 	rd_u16b(&ref->y_pos);
 	rd_u16b(&ref->x_pos);
+	rd_u32b(&ref->gen_loc_idx);
 	for (i = 0; i < 11; i++)
 	{
 	    rd_u16b(&tmp16u);
@@ -1904,6 +1906,32 @@ int rd_chunks(void)
 
     chunk_max = chunk_cnt + 1;
 
+    /* Repair chunks */
+    for (i = 0; i < chunk_max; i++)
+    {
+	int idx;
+
+	/* Get the chunk */
+	chunk_ref *chunk = &chunk_list[i];
+
+	/* Skip dead chunks */
+	if (!chunk->region)
+	    continue;
+
+	/* Repair adjacencies */
+	for (j = 0; j < DIR_MAX; j++)
+	{
+	    chunk_ref ref = CHUNK_EMPTY;
+
+	    chunk_adjacent_to_offset(j, &z, &y, &x);
+	    chunk_adjacent_data(&ref, z, y, x);
+	    idx = chunk_find(ref);
+	    chunk->adjacent[j] = idx;
+	    if (idx < MAX_CHUNKS)
+		chunk_list[idx].adjacent[DIR_MAX - j - 1] = i;
+	}
+    }
+
     return 0;
 }
 
@@ -1918,7 +1946,7 @@ int rd_locations(void)
 
     for (i = 0; i < gen_loc_cnt; i++)
     {
-	gen_loc *location = &gen_loc_list[i];
+	gen_loc *location = NULL;
 	u16b num_changes = 0, num_effects = 0;
 	terrain_change *change = NULL;
 	edge_effect *effect = NULL;
@@ -1929,6 +1957,7 @@ int rd_locations(void)
 	    gen_loc_max += GEN_LOC_INCR;
 	    if (i > 0) gen_loc_list = mem_realloc(gen_loc_list, gen_loc_max);
 	}
+	location = &gen_loc_list[i];
 
 	rd_u16b(&location->x_pos);
 	rd_u16b(&location->y_pos);

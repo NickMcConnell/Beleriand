@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "squelch.h"
+#include "generate.h"
 #include "history.h"
 #include "monster.h"
 #include "option.h"
@@ -709,8 +710,6 @@ void wr_squelch(void)
 
 void wr_misc(void)
 {
-    int i;
-
     /* Write the "object seeds" */
     wr_u32b(seed_flavor);
   
@@ -1028,10 +1027,10 @@ void wr_chunks(void)
     byte count;
     byte prev_char;
   
-  
     if (p_ptr->is_dead)
 	return;
 
+    compact_chunks();
     wr_u16b(chunk_max);
     wr_u16b(CAVE_SIZE);
 
@@ -1040,12 +1039,12 @@ void wr_chunks(void)
 	chunk_ref *ref = &chunk_list[j];
 	world_chunk *chunk = ref->chunk;
 
-	wr_u16b(ref->ch_idx);
 	wr_u16b(ref->age);
 	wr_u16b(ref->region);
 	wr_u16b(ref->z_pos);
 	wr_u16b(ref->y_pos);
 	wr_u16b(ref->x_pos);
+	wr_u32b(ref->gen_loc_idx);
 	for (i = 0; i < 11; i++)
 	    wr_u16b(ref->adjacent[i]);
 
