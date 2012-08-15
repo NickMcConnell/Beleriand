@@ -1919,9 +1919,9 @@ int rd_locations(void)
     for (i = 0; i < gen_loc_cnt; i++)
     {
 	gen_loc *location = &gen_loc_list[i];
-	u16b num_changes, num_effects;
-	terrain_change *change;
-	edge_effect *effect;
+	u16b num_changes = 0, num_effects = 0;
+	terrain_change *change = NULL;
+	edge_effect *effect = NULL;
 
 	/* Increase the array size if necessary */
 	if ((i % GEN_LOC_INCR) == 0)
