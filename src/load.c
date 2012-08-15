@@ -1937,7 +1937,7 @@ int rd_locations(void)
 	/* Read the terrain changes */
 	rd_u16b(&num_changes);
 	if (num_changes)
-	    change = malloc(num_changes * (3 + sizeof(change)));
+	    change = mem_zalloc(num_changes * sizeof(terrain_change));
 	location->change = change;
 	for (j = 0; j < num_changes; j++)
 	{
@@ -1953,7 +1953,7 @@ int rd_locations(void)
 	/* Read the edge effects */
 	rd_u16b(&num_effects);
 	if (num_effects)
-	    effect = malloc(num_effects * (3 + cave_size + sizeof(effect)));
+	    effect = mem_zalloc(num_effects * sizeof(edge_effect));
 	location->effect = effect;
 	for (j = 0; j < num_effects; j++)
 	{
