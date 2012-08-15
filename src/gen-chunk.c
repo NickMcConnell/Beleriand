@@ -55,11 +55,12 @@ void chunk_wipe(int idx)
 }
 
 /**
- * Delete a chunk from the chunk_list
+ * Delete a chunk ref from the chunk_list
  */
 void chunk_delete(int idx)
 {
-    int i;
+    int i, j;
+    chunk_ref *chunk;
     chunk_ref *ref = &chunk_list[idx];
 
     ref->age = 0;
@@ -72,17 +73,33 @@ void chunk_delete(int idx)
 	chunk_wipe(idx);
     for (i = 0; i < 11; i++)
 	ref->adjacent[i] = MAX_CHUNKS;
+
+    /* Repair chunks */
+    for (i = 0; i < chunk_max; i++)
+    {
+	/* Get the chunk */
+	chunk = &chunk_list[i];
+
+	/* Skip dead chunks */
+	if (!chunk->region)
+	    continue;
+
+	/* Repair adjacencies */
+	for (j = 0; j < DIR_MAX; j++)
+	    if (chunk->adjacent[j] == idx)
+		chunk->adjacent[j] = MAX_CHUNKS;
+
+    }
 }
 
 /*
- * Move a chunk from index i1 to index i2 in the chunk list
+ * Move a chunk ref from index i1 to index i2 in the chunk list
  */
 static void compact_chunks_aux(int i1, int i2)
 {
     int i, j;
 
     chunk_ref *chunk;
-
 
     /* Do nothing */
     if (i1 == i2)
@@ -104,6 +121,7 @@ static void compact_chunks_aux(int i1, int i2)
 		chunk->adjacent[j] = i2;
 
     }
+
     /* Fix index */
     chunk = &chunk_list[i1];
     chunk->ch_idx = i2;
@@ -116,14 +134,14 @@ static void compact_chunks_aux(int i1, int i2)
 }
 
 /**
- * Move all chunks to the start of the array
+ * Move all chunk refs to the start of the array
  */
 void compact_chunks(void)
 {
     int i;
 
     /* Excise dead chunks (backwards!) */
-    for (i = chunk_max - 1; i >= 1; i--) {
+    for (i = chunk_max - 1; i >= 0; i--) {
 	chunk_ref *chunk = &chunk_list[i];
 
 	/* Skip real chunks */
@@ -357,7 +375,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
 		    idx = i;
 		}
 
-	    chunk_wipe(idx);
+	    chunk_delete(idx);
 
 	    /* Decrement the maximum if necessary */
 	    if (idx == chunk_max)
@@ -540,7 +558,6 @@ void chunk_read(int idx, int y_offset, int x_offset)
 
     /* Wipe it */
     chunk_wipe(idx);
-    chunk_list[idx].chunk = NULL;
 }
 
 /**
