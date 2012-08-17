@@ -154,6 +154,9 @@ void compact_chunks(void)
 	/* Compress chunk_max */
 	chunk_max--;
     }
+
+    /* Repair the list */
+    chunk_fix_all();
 }
 
 /**
@@ -317,6 +320,9 @@ void chunk_age_off(int idx)
 
     /* Decrement the counter */
     chunk_cnt--;
+
+    /* Repair the list */
+    chunk_fix_all();
 }
 
 /**
@@ -412,6 +418,9 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
 
     /* Write the chunk */
     if (write) chunk_list[idx].chunk = chunk_write(y_offset, x_offset);
+
+    /* Repair the list */
+    chunk_fix_all();
 
     return idx;
 }
@@ -600,6 +609,60 @@ void chunk_adjacent_to_offset(int adjacent, int *z_off, int *y_off, int *x_off)
 }
 
 /**
+ * Check and repair all the entries in the chunk_list
+ */
+void chunk_fix_all(void)
+{
+    int n, z_off, y_off, x_off, idx;
+
+    for (idx = 0; idx < MAX_CHUNKS; idx++)
+    {
+	/* Get the chunk ref */
+	chunk_ref *ref = &chunk_list[idx];
+
+	/* Remove dead chunks */
+	if (!ref->region)
+	{
+	    chunk_delete(idx);
+	    continue;
+	}
+
+	/* Set the index */
+	ref->ch_idx = idx;
+
+	/* Set adjacencies */
+	for (n = 0; n < DIR_MAX; n++)
+	{
+	    chunk_ref ref1 = CHUNK_EMPTY;
+	    int chunk_idx;
+
+	    /* Self-reference (not strictly necessary) */
+	    if (n == DIR_NONE)
+	    {
+		ref->adjacent[n] = idx;
+		continue;
+	    }
+
+	    /* Set to the default */
+	    ref->adjacent[n] = MAX_CHUNKS;
+
+	    /* Get the reference data for the adjacent chunk */
+	    chunk_adjacent_to_offset(n, &z_off, &y_off, &x_off);
+	    ref1.z_pos = ref->z_pos;
+	    ref1.y_pos = ref->y_pos;
+	    ref1.x_pos = ref->x_pos;
+	    ref1.region = ref->region;
+	    chunk_adjacent_data(&ref1, z_off, y_off, x_off);
+
+	    /* Deal with existing chunks */
+	    chunk_idx = chunk_find(ref1);
+	    if (chunk_idx < MAX_CHUNKS)
+		ref->adjacent[n] = chunk_idx;
+	}
+    }
+}
+
+/**
  * Translate offset from current chunk into a chunk_list index
  */
 int chunk_get_idx(int z_offset, int y_offset, int x_offset)
@@ -732,36 +795,15 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     /* Store the chunk reference */
     idx = chunk_store(1, 1, ref.region, z_pos, y_pos, x_pos, FALSE);
     
-    /* Set adjacencies */
+    /* Get adjacent data */
     for (n = 0; n < DIR_MAX; n++)
     {
-	chunk_ref ref1 = CHUNK_EMPTY;
 	int chunk_idx;
 
-	/* Set the reference data for the adjacent chunk */
+	/* Get the reference data for the adjacent chunk */
 	chunk_adjacent_to_offset(n, &z_off, &y_off, &x_off);
-	ref1.z_pos = z_pos;
-	ref1.y_pos = y_pos;
-	ref1.x_pos = x_pos;
-	ref1.region = ref.region;
-	chunk_adjacent_data(&ref1, z_off, y_off, x_off);
 
-	/* Self-reference (not strictly necessary) */
-	if (n == DIR_NONE)
-	{
-	    ref1.adjacent[n] = idx;
-	    continue;
-	}
-
-	/* Deal with existing chunks */
-	chunk_idx = chunk_find(ref1);
-	if (chunk_idx < MAX_CHUNKS)
-	{
-	    chunk_list[idx].adjacent[n] = chunk_idx;
-	    chunk_list[chunk_idx].adjacent[DIR_MAX - n - 1] = idx;
-	}
-
-	/* Look for old ones and get edge effects */
+	/* Look for old chunks and get edge effects */
 	if ((x_off == 0) || (y_off == 0))
 	{
 	    int low, high;
