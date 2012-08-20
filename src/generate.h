@@ -288,6 +288,7 @@ int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset);
 void chunk_adjacent_to_offset(int adjacent, int *z_off, int *y_off, int *x_off);
 void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset, 
 			 int x_offset);
+void chunk_fix_all(void);
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset);
 void chunk_change(int z_offset, int y_offset, int x_offset);
 

@@ -798,10 +798,14 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     /* Get adjacent data */
     for (n = 0; n < DIR_MAX; n++)
     {
-	int chunk_idx;
+	chunk_ref ref1 = CHUNK_EMPTY;
 
 	/* Get the reference data for the adjacent chunk */
 	chunk_adjacent_to_offset(n, &z_off, &y_off, &x_off);
+	ref1.x_pos = x_pos;
+	ref1.y_pos = y_pos;
+	ref1.z_pos = z_pos;
+	chunk_adjacent_data(&ref1, z_off, y_off, x_off);
 
 	/* Look for old chunks and get edge effects */
 	if ((x_off == 0) || (y_off == 0))
