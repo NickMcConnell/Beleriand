@@ -745,7 +745,7 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int lower, int upper)
     if ((gen_loc_cnt % GEN_LOC_INCR) == 0)
     {
 	gen_loc_max += GEN_LOC_INCR;
-	gen_loc_list = mem_realloc(gen_loc_list, gen_loc_max);
+	gen_loc_list = mem_realloc(gen_loc_list, gen_loc_max * sizeof(gen_loc));
     }
 
     /* Move everything along one to make space */

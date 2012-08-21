@@ -1932,7 +1932,7 @@ int rd_locations(void)
 	if ((i % GEN_LOC_INCR) == 0)
 	{
 	    gen_loc_max += GEN_LOC_INCR;
-	    if (i > 0) gen_loc_list = mem_realloc(gen_loc_list, gen_loc_max);
+	    if (i > 0) gen_loc_list = mem_realloc(gen_loc_list, gen_loc_max * sizeof(gen_loc));
 	}
 	location = &gen_loc_list[i];
 
