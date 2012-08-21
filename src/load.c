@@ -1773,7 +1773,7 @@ int rd_chunks(void)
   
     for (j = 0; j < chunk_max; j++)
     {
-	chunk_ref *ref = &chunk_list[chunk_cnt];
+	chunk_ref *ref = &chunk_list[chunk_cnt++];
 	world_chunk *chunk = ref->chunk;
 
 	ref->ch_idx = j;
@@ -1901,36 +1901,13 @@ int rd_chunks(void)
 	    rd_trap(t_ptr);
 	}
 	ref->chunk = chunk;
-	chunk_cnt++;
     }
 
-    chunk_max = chunk_cnt + 1;
+    chunk_max = chunk_cnt;
+    chunk_cnt--;
 
     /* Repair chunks */
-    for (i = 0; i < chunk_max; i++)
-    {
-	int idx;
-
-	/* Get the chunk */
-	chunk_ref *chunk = &chunk_list[i];
-
-	/* Skip dead chunks */
-	if (!chunk->region)
-	    continue;
-
-	/* Repair adjacencies */
-	for (j = 0; j < DIR_MAX; j++)
-	{
-	    chunk_ref ref = CHUNK_EMPTY;
-
-	    chunk_adjacent_to_offset(j, &z, &y, &x);
-	    chunk_adjacent_data(&ref, z, y, x);
-	    idx = chunk_find(ref);
-	    chunk->adjacent[j] = idx;
-	    if (idx < MAX_CHUNKS)
-		chunk_list[idx].adjacent[DIR_MAX - j - 1] = i;
-	}
-    }
+    chunk_fix_all();
 
     return 0;
 }
