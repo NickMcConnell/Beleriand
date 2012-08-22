@@ -383,7 +383,8 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
 
 	    chunk_delete(idx);
 
-	    /* Decrement the maximum if necessary */
+	    /* Decrement the counter, and the maximum if necessary */
+	    chunk_cnt--;
 	    if (idx == chunk_max)
 		chunk_max--;
 	}
@@ -395,7 +396,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
 		if (!chunk_list[idx].region) break;
 	}
     
-	/* Increment the counters */
+	/* Increment the counter, and the maximum if necessary */
 	chunk_cnt++;
 	if (idx == chunk_max)
 	    chunk_max++;
