@@ -1929,10 +1929,10 @@ int rd_locations(void)
 	edge_effect *effect = NULL;
 
 	/* Increase the array size if necessary */
-	if ((i % GEN_LOC_INCR) == 0)
+	if (((i % GEN_LOC_INCR) == 0) && (i > 0))
 	{
 	    gen_loc_max += GEN_LOC_INCR;
-	    if (i > 0) gen_loc_list = mem_realloc(gen_loc_list, gen_loc_max * sizeof(gen_loc));
+	    gen_loc_list = mem_realloc(gen_loc_list, gen_loc_max * sizeof(gen_loc));
 	}
 	location = &gen_loc_list[i];
 
