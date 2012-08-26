@@ -490,6 +490,9 @@ void player_init(struct player *p)
 
     p->inventory = C_ZNEW(ALL_INVEN_TOTAL, struct object);
 
+    /* No locations generated yet */
+    gen_loc_cnt = 0;
+
     /* First turn. */
     turn = 1;
     p_ptr->energy = 0;
