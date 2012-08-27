@@ -1767,13 +1767,12 @@ int rd_chunks(void)
 
     rd_u16b(&chunk_max);
     rd_u16b(&cave_size);
-    chunk_cnt = 0;
 
     /*** Run length decoding ***/
   
     for (j = 0; j < chunk_max; j++)
     {
-	chunk_ref *ref = &chunk_list[chunk_cnt++];
+	chunk_ref *ref = &chunk_list[j];
 	world_chunk *chunk = ref->chunk;
 
 	ref->ch_idx = j;
@@ -1903,8 +1902,7 @@ int rd_chunks(void)
 	ref->chunk = chunk;
     }
 
-    chunk_max = chunk_cnt;
-    chunk_cnt--;
+    chunk_cnt = chunk_max;
 
     /* Repair chunks */
     chunk_fix_all();

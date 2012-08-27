@@ -106,7 +106,7 @@ static void compact_chunks_aux(int i1, int i2)
 	return;
 
     /* Repair chunks */
-    for (i = 1; i < chunk_max; i++)
+    for (i = 0; i < chunk_max; i++)
     {
 	/* Get the chunk */
 	chunk = &chunk_list[i];
@@ -131,6 +131,7 @@ static void compact_chunks_aux(int i1, int i2)
 
     /* Delete the old one */
     chunk_delete(i1);
+    chunk_cnt--;
 }
 
 /**
