@@ -1754,7 +1754,7 @@ int rd_traps(void)
 
 int rd_chunks(void)
 {
-    int i, j, n, z, y, x;
+    int i, j, n, y, x;
   
     byte count;
     byte tmp8u;
@@ -1917,6 +1917,10 @@ int rd_locations(void)
 
     size_t i, j;
     u16b cave_size;
+
+    /* Only if the player's alive */
+    if (p_ptr->is_dead)
+	return 0;
 
     rd_u16b(&cave_size);
     rd_u32b(&gen_loc_cnt);

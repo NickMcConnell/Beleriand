@@ -1173,6 +1173,9 @@ void wr_locations(void)
 {
     size_t i, j;
 
+    if (p_ptr->is_dead)
+	return;
+
     wr_u16b(CAVE_SIZE);
     wr_u32b(gen_loc_cnt);
 
