@@ -597,19 +597,20 @@ static void grid_get_attr(grid_data *g, byte *a)
     }
     else if (tf_has(f_ptr->flags, TF_TORCH))
     {
-	if (g->lighting == FEAT_LIGHTING_BRIGHT) {
-	    if (*a == TERM_WHITE)
-		*a = TERM_YELLOW;
-	} else if (g->lighting == FEAT_LIGHTING_DARK) {
-	    if (*a == TERM_WHITE)
-		*a = TERM_L_DARK;
+	if (g->lighting == FEAT_LIGHTING_BRIGHT) 
+	{
+	    *a = get_color(*a, ATTR_LIGHT, 1);
+	} 
+	else if (g->lighting == FEAT_LIGHTING_DARK) 
+	{
+	    *a = get_color(*a, ATTR_DARK, 1);
 	}
     }
     else
     {
-	if (g->lighting == FEAT_LIGHTING_DARK) {
-	    if (*a == TERM_WHITE)
-		*a = TERM_SLATE;
+	if (g->lighting == FEAT_LIGHTING_DARK) 
+	{
+	    *a = get_color(*a, ATTR_DARK, 1);
 	}
     }
 }

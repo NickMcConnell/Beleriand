@@ -517,7 +517,6 @@ static void process_world(void)
 	}
     }
 
-
     /*** Process the monsters ***/
 
     /* Hack - see if there is already a player ghost on the level */

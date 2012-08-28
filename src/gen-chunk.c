@@ -1142,7 +1142,6 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
  */
 void chunk_change(int z_offset, int y_offset, int x_offset)
 {
-    size_t j;
     int i, x, y;
     bool y_reverse = FALSE, x_reverse = FALSE;
     bool chunk_exists[10] = { 0 };
@@ -1238,12 +1237,9 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 		/* Terrain */
 		cave_feat[y_write][x_write] = cave_feat[y_read][x_read];
 		cave_feat[y_read][x_read] = 0;
-		for (j = 0; j < CAVE_SIZE; j++)
-		{
-		    cave_copy(cave_info[y_write][x_write],
-			      cave_info[y_read][x_read]);
-		    cave_wipe(cave_info[y_read][x_read]);
-		}
+		cave_copy(cave_info[y_write][x_write],
+			  cave_info[y_read][x_read]);
+		cave_wipe(cave_info[y_read][x_read]);
 
 		/* Objects */
 		if (cave_o_idx[y_read][x_read])

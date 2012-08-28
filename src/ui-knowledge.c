@@ -226,7 +226,7 @@ static int feat_order(int feat)
 
     default:
 	{
-	    return 8;
+	    return 7;
 	}
     }
 }
