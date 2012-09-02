@@ -406,11 +406,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
     /* Set all the values */
     chunk_list[idx].ch_idx = idx;
 
-    /* Test for persistence */
-    //if ((p_ptr->danger == 0) || !write)
-//	chunk_list[idx].age = 0;
-    //  else
-	chunk_list[idx].age = 1;
+    chunk_list[idx].age = 1;
 
     chunk_list[idx].region = region;
     chunk_list[idx].y_pos = y_pos;
@@ -1198,6 +1194,8 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	}
     }
 
+    forget_view();
+
     /* Re-align current playing arena */
     if (z_offset == 0)
     {
@@ -1361,7 +1359,7 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 
 		    for (yy = y0; yy < y0 + CHUNK_HGT; yy++)
 			for (xx = x0; xx < x0 + CHUNK_WID; xx++)
-			    cave_off(cave_info[yy][xx], CAVE_MARK);
+			    cave_wipe(cave_info[yy][xx]);
 
 		    chunk_generate(ref, y, x);
 		}
