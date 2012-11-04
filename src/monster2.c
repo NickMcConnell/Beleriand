@@ -1089,7 +1089,7 @@ void display_monlist(void)
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
 			attr = TERM_VIOLET;
-		else if (r_ptr->level > p_ptr->depth)
+		else if (r_ptr->level > p_ptr->danger)
 			attr = TERM_RED;
 		else
 			attr = TERM_WHITE;
@@ -1161,7 +1161,7 @@ void display_monlist(void)
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
 			attr = TERM_VIOLET;
-		else if (r_ptr->level > p_ptr->depth)
+		else if (r_ptr->level > p_ptr->danger)
 			attr = TERM_RED;
 		else
 			attr = TERM_WHITE;
