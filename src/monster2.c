@@ -4346,6 +4346,11 @@ void monster_death(int m_idx)
 	    /* Mega-Hack -- Prepare to make "Grond" */
 	    object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND), MAXIMISE);
 
+	    /* Origin */
+	    i_ptr->origin = ORIGIN_DROP;
+	    i_ptr->origin_xtra = m_ptr->r_idx;
+	    i_ptr->origin_stage = p_ptr->stage;
+
 	    /* Mega-Hack -- Mark this item as "Grond" */
 	    i_ptr->name1 = ART_GROND;
 
@@ -4355,12 +4360,16 @@ void monster_death(int m_idx)
 	    /* Drop it in the dungeon */
 	    drop_near(i_ptr, -1, y, x, TRUE);
 
-
 	    /* Get local object */
 	    i_ptr = &object_type_body;
 
 	    /* Mega-Hack -- Prepare to make "Morgoth" */
 	    object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH), MAXIMISE);
+
+	    /* Origin */
+	    i_ptr->origin = ORIGIN_DROP;
+	    i_ptr->origin_xtra = m_ptr->r_idx;
+	    i_ptr->origin_stage = p_ptr->stage;
 
 	    /* Mega-Hack -- Mark this item as "Morgoth" */
 	    i_ptr->name1 = ART_MORGOTH;
@@ -4379,6 +4388,10 @@ void monster_death(int m_idx)
 
 	    /* Mega-Hack -- Prepare to make "Ungoliant" */
 	    object_prep(i_ptr, lookup_kind(TV_CLOAK, SV_UNLIGHT_CLOAK), MAXIMISE);
+	    /* Origin */
+	    i_ptr->origin = ORIGIN_DROP;
+	    i_ptr->origin_xtra = m_ptr->r_idx;
+	    i_ptr->origin_stage = p_ptr->stage;
 
 	    /* Mega-Hack -- Mark this item as "Ungoliant" */
 	    i_ptr->name1 = ART_UNGOLIANT;
@@ -4439,11 +4452,17 @@ void monster_death(int m_idx)
 	}
 
 	/* Make chest. */
-	else if (rf_has(r_ptr->flags, RF_DROP_CHEST)) {
+	else if (rf_has(r_ptr->flags, RF_DROP_CHEST)) 
+	{
 	    required_tval = TV_CHEST;
-	    if (make_object(i_ptr, FALSE, FALSE, TRUE)) {
+	    if (make_object(i_ptr, FALSE, FALSE, TRUE)) 
+	    {
+		/* Origin */
+		i_ptr->origin = (visible ? ORIGIN_DROP : ORIGIN_DROP_UNKNOWN);
+		i_ptr->origin_xtra = m_ptr->r_idx;
+		i_ptr->origin_stage = p_ptr->stage;
 
-		/* Assume seen XXX XXX XXX */
+		/* Assume seen */
 		dump_item++;
 
 		/* Drop it in the dungeon */
@@ -4453,11 +4472,17 @@ void monster_death(int m_idx)
 	}
 
 	/* Make Object */
-	else {
+	else 
+	{
 	    /* Make an object */
-	    if (make_object(i_ptr, good, great, FALSE)) {
+	    if (make_object(i_ptr, good, great, FALSE)) 
+	    {
+		/* Origin */
+		i_ptr->origin = (visible ? ORIGIN_DROP : ORIGIN_DROP_UNKNOWN);
+		i_ptr->origin_stage = p_ptr->stage;
+		i_ptr->origin_xtra = m_ptr->r_idx;
 
-		/* Assume seen XXX XXX XXX */
+		/* Assume seen */
 		dump_item++;
 
 		/* Drop it in the dungeon */
@@ -4475,7 +4500,8 @@ void monster_death(int m_idx)
 
 
     /* Take note of any dropped treasure */
-    if (visible && (dump_item || dump_gold)) {
+    if (visible && (dump_item || dump_gold)) 
+    {
 	/* Take notes on treasure */
 	lore_treasure(m_idx, dump_item, dump_gold);
     }

@@ -1261,7 +1261,7 @@ bool chaotic_effects(monster_type * m_ptr)
 	    delete_monster(my, mx);
 
 	    /* Shiny new object */
-	    place_object(my, mx, FALSE, FALSE, FALSE);
+	    place_object(my, mx, FALSE, FALSE, FALSE, ORIGIN_CHAOS);
 
 	    /* Can't hit that */
 	    return (FALSE);
@@ -3263,7 +3263,7 @@ static bool project_f(int who, int y, int x, int dist, int dam, int typ)
 			}
 
 			/* Place object */
-			place_object(y, x, FALSE, FALSE, FALSE);
+			place_object(y, x, FALSE, FALSE, FALSE, ORIGIN_RUBBLE);
 		    }
 		}
 	    }
@@ -3744,7 +3744,7 @@ static bool project_o(int who, int y, int x, int dam, int typ)
 			}
 
 			/* New object */
-			place_object(y, x, FALSE, FALSE, FALSE);
+			place_object(y, x, FALSE, FALSE, FALSE, ORIGIN_CHAOS);
 		    }
 		}
 
