@@ -1241,7 +1241,8 @@ static void update_maps(game_event_type type, game_event_data * data,
     /* Single point to be redrawn */
     else {
 	grid_data g;
-	byte a, ta;
+	int a;
+	byte ta;
 	wchar_t c, tc;
 
 	int ky, kx;
@@ -1902,7 +1903,7 @@ static void show_splashscreen(game_event_type type, game_event_data * data,
     {
 	int i, y, x;
       
-	byte a = 0;
+	int a = 0;
 	wchar_t c = L' ';
       
 	bool okay = TRUE;
@@ -1995,7 +1996,7 @@ static void show_splashscreen(game_event_type type, game_event_data * data,
     {
 	int i, y, x;
       
-	byte a = 0;
+	int a = 0;
 	wchar_t c = L' ';
       
 	bool okay = TRUE;
