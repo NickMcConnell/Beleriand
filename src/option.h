@@ -91,6 +91,12 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_flush_disturb		46
 #define OPT_notify_recharge		47
 
+#define OPT_auto_scum   		48
+#define OPT_hard_mode   		49
+#define OPT_solid_walls   		50
+#define OPT_hybrid_walls   		51
+
+
 #define OPT_birth_point_based           (OPT_BIRTH+0)
 #define OPT_birth_auto_roller           (OPT_BIRTH+1)
 #define OPT_birth_take_notes            (OPT_BIRTH+2)
