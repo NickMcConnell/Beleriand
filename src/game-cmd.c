@@ -145,6 +145,10 @@ struct item_selector item_selector[] =
       "You have nothing to fire.",
       obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
 
+    { CMD_THROW, "Throw which item? ",
+      "You have nothing to throw.",
+      obj_can_throw, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
+
     { CMD_USE_STAFF, "Use which staff? ",
       "You have no staff to use.",
       obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
@@ -558,7 +562,6 @@ void process_command(cmd_context ctx, bool no_request)
 			case CMD_ACTIVATE:
 			case CMD_READ_SCROLL:
 			case CMD_FIRE:
-			case CMD_THROW:
 			{
 				bool get_target = FALSE;
 
@@ -582,6 +585,17 @@ void process_command(cmd_context ctx, bool no_request)
 				break;
 			}
 			
+			 /* This takes an item number and a target */
+			case CMD_THROW:
+			{
+			    if (!get_aim_dir(&cmd->arg[1].direction))
+				return;
+
+			    cmd->arg_present[1] = TRUE;
+
+			    break;
+			}
+
 			/* This takes a choice and a direction. */
 			case CMD_CAST:
 			{
