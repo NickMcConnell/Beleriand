@@ -71,7 +71,7 @@ void chunk_delete(int idx)
     ref->gen_loc_idx = 0;
     if (ref->chunk)
 	chunk_wipe(idx);
-    for (i = 0; i < 11; i++)
+    for (i = 0; i < DIR_MAX; i++)
 	ref->adjacent[i] = MAX_CHUNKS;
 
     /* Repair chunks */

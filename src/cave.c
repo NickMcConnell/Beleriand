@@ -1485,8 +1485,6 @@ void display_map(int *cy, int *cx)
     /* Adjust for town */
     dungeon_hgt = (p_ptr->danger ? ARENA_HGT : 2 * ARENA_HGT / 3);
     dungeon_wid = (p_ptr->danger ? ARENA_WID : 2 * ARENA_WID / 3);
-    if (!(p_ptr->danger) && (p_ptr->stage < 151) && (!OPT(adult_dungeon)))
-	dungeon_wid = ARENA_WID / 2;
     top_row = (p_ptr->danger ? 0 : ARENA_HGT / 3);
     left_col = (p_ptr->danger ? 0 : ARENA_WID / 3);
 
@@ -1604,155 +1602,7 @@ void display_map(int *cy, int *cx)
  */
 void regional_map(int num, int size)
 {
-    int i, j, col, row;
-    int *stage = malloc(size * sizeof(*stage));
-    int north, east, south, west;
-    const char *lev;
-
-    /* Get the side length */
-    num = 2 * num + 1;
-
-    /* Initialise */
-    for (i = 0; i < size; i++)
-	stage[i] = 0;
-
-    /* Set the centre */
-    stage[size / 2] = p_ptr->stage;
-
-    /* Redo the right number of times */
-    for (j = 0; j < num; j++) {
-	/* Pass across the whole array */
-	for (i = 0; i < size; i++) {
-	    /* See what's adjacent */
-	    north = (i > (num - 1) ? (i - num) : -1);
-	    east = ((i % num) != (num - 1) ? (i + 1) : -1);
-	    south = (i < (size - num) ? (i + num) : -1);
-	    west = ((i % num) ? (i - 1) : -1);
-
-	    /* Set them */
-	    if ((north >= 0) && (stage_map[stage[i]][NORTH]) && (!stage[north]))
-		stage[north] = stage_map[stage[i]][NORTH];
-	    if ((east >= 0) && (stage_map[stage[i]][EAST]) && (!stage[east]))
-		stage[east] = stage_map[stage[i]][EAST];
-	    if ((south >= 0) && (stage_map[stage[i]][SOUTH]) && (!stage[south]))
-		stage[south] = stage_map[stage[i]][SOUTH];
-	    if ((west >= 0) && (stage_map[stage[i]][WEST]) && (!stage[west]))
-		stage[west] = stage_map[stage[i]][WEST];
-	}
-    }
-
-    /* Now print the info */
-    for (i = 0; i < size; i++) {
-	/* Nowhere */
-	if (!stage[i])
-	    continue;
-
-	/* Get the place */
-	col = (i % num) * 10 + COL_MAP;
-	row = (i / num) * 4 + ROW_MAP;
-
-	/* Get the level string */
-	lev = format("Level %d", stage_map[stage[i]][DEPTH]);
-
-	switch (stage_map[stage[i]][STAGE_TYPE]) {
-	case TOWN:
-	    {
-		c_put_str(TERM_SLATE, "Town", row, col);
-		break;
-	    }
-	case PLAIN:
-	    {
-		c_put_str(TERM_UMBER, "Plain", row, col);
-		break;
-	    }
-	case FOREST:
-	    {
-		c_put_str(TERM_GREEN, "Forest", row, col);
-		break;
-	    }
-	case MOUNTAIN:
-	    {
-		c_put_str(TERM_L_DARK, "Mountain", row, col);
-		break;
-	    }
-	case SWAMP:
-	    {
-		c_put_str(TERM_L_GREEN, "Swamp", row, col);
-		break;
-	    }
-	case RIVER:
-	    {
-		c_put_str(TERM_BLUE, "River", row, col);
-		break;
-	    }
-	case DESERT:
-	    {
-		c_put_str(TERM_L_UMBER, "Desert", row, col);
-		break;
-	    }
-	case VALLEY:
-	    {
-		c_put_str(TERM_RED, "Valley", row, col);
-		break;
-	    }
-	default:
-	    break;
-	}
-	if (stage[i] == p_ptr->stage)
-	    c_put_str(TERM_VIOLET, "Current ", row, col);
-	c_put_str(TERM_WHITE, lev, row + 1, col);
-	if (stage_map[stage[i]][EAST])
-	    c_put_str(TERM_WHITE, "-", row + 1, col + 8);
-	if (stage_map[stage[i]][DOWN]) {
-	    if (stage_map[stage[i]][STAGE_TYPE] == MOUNTAINTOP)
-		switch (stage_map[stage_map[stage[i]][DOWN]][STAGE_TYPE]) {
-		case TOWN:
-		    {
-			c_put_str(TERM_SLATE, "(Town)", row + 2, col);
-			break;
-		    }
-		case PLAIN:
-		    {
-			c_put_str(TERM_UMBER, "(Plain)", row + 2, col);
-			break;
-		    }
-		case FOREST:
-		    {
-			c_put_str(TERM_GREEN, "(Forest)", row + 2, col);
-			break;
-		    }
-		case MOUNTAIN:
-		    {
-			c_put_str(TERM_L_DARK, "(Mountain)", row + 2, col);
-			break;
-		    }
-		case RIVER:
-		    {
-			c_put_str(TERM_BLUE, "(River)", row + 2, col);
-			break;
-		    }
-		case DESERT:
-		    {
-			c_put_str(TERM_L_UMBER, "(Desert)", row + 2, col);
-			break;
-		    }
-		case VALLEY:
-		    {
-			c_put_str(TERM_RED, "(Valley)", row + 2, col);
-			break;
-		    }
-		default:
-		    break;
-	    } else
-		c_put_str(TERM_L_RED, "(Dungeon)", row + 2, col);
-	}
-	if (stage_map[stage[i]][SOUTH])
-	    c_put_str(TERM_WHITE, "|", row + 3, col + 3);
-	if ((stage_map[stage[i]][SOUTH]) && (!stage_map[stage[i]][DOWN]))
-	    c_put_str(TERM_WHITE, "|", row + 2, col + 3);
-    }
-    free(stage);
-
+    /* Completely redo for BELE */
 }
 
 /**
@@ -1798,7 +1648,8 @@ void do_cmd_view_map(void)
     (void) inkey_ex();
 
     /* Regional map if not in the dungeon */
-    if (stage_map[p_ptr->stage][STAGE_TYPE] != CAVE) {
+    if (chunk_list[p_ptr->stage].z_pos <= 0) 
+    {
 
 	/* Flush */
 	Term_fresh();
@@ -2162,8 +2013,8 @@ void forget_view(void)
 {
 	int x, y;
 
-	for (y = 0; y < CAVE_INFO_Y; y++) {
-		for (x = 0; x < CAVE_INFO_X; x++) {
+	for (y = 0; y < ARENA_HGT; y++) {
+		for (x = 0; x < ARENA_WID; x++) {
 		    if (!cave_has(cave_info[y][x], CAVE_VIEW))
 			continue;
 		    cave_off(cave_info[y][x], CAVE_VIEW);
@@ -2265,8 +2116,8 @@ static void mark_wasseen(void)
 {
 	int x, y;
 	/* Save the old "view" grids for later */
-	for (y = 0; y < CAVE_INFO_Y; y++) {
-	    for (x = 0; x < CAVE_INFO_X; x++) {
+	for (y = 0; y < ARENA_HGT; y++) {
+	    for (x = 0; x < ARENA_WID; x++) {
 		if (cave_has(cave_info[y][x], CAVE_SEEN))
 		    cave_on(cave_info[y][x], CAVE_TEMP);
 		cave_off(cave_info[y][x], CAVE_VIEW);
@@ -2429,14 +2280,14 @@ void update_view(void)
 	cave_on(cave_info[p_ptr->py][p_ptr->px], CAVE_SEEN);
 
     /* View squares we have LOS to */
-    for (y = 0; y < CAVE_INFO_Y; y++)
-	for (x = 0; x < CAVE_INFO_X; x++)
+    for (y = 0; y < ARENA_HGT; y++)
+	for (x = 0; x < ARENA_WID; x++)
 	    update_view_one(y, x, radius, p_ptr->py, p_ptr->px);
 
     /*** Step 3 -- Complete the algorithm ***/
     
-    for (y = 0; y < CAVE_INFO_Y; y++)
-	for (x = 0; x < CAVE_INFO_X; x++)
+    for (y = 0; y < ARENA_HGT; y++)
+	for (x = 0; x < ARENA_WID; x++)
 	    update_one(y, x, p_ptr->timed[TMD_BLIND]);
 }
 

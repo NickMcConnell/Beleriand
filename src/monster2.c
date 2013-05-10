@@ -482,7 +482,7 @@ s16b get_mon_num(int level)
 
 
     /* Sometimes, monsters in the dungeon can be out of depth */
-    if (p_ptr->depth != 0) 
+    if (p_ptr->danger != 0) 
     {
 	/* Occasional boost to maximum level */
 	if (randint0(NASTY_MON) == 0) 

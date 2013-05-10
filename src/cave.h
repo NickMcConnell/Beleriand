@@ -42,8 +42,5 @@ extern void disturb(int stop_search, int unused_flag);
 extern bool is_quest(int stage);
 extern bool dtrap_edge(int y, int x);
 
-#define CAVE_INFO_Y	DUNGEON_HGT
-#define CAVE_INFO_X	256
-
 
 #endif /* !CAVE_H */
