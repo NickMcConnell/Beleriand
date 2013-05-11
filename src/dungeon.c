@@ -2303,9 +2303,6 @@ void play_game(void)
     /* Flash a message */
     prt("Please wait...", 0, 0);
 
-    /* Initialize race probabilities */
-    if (init_race_probs()) quit("Cannot initialize race probs");
-
     /* Allow big cursor */
     smlcurs = FALSE;
 

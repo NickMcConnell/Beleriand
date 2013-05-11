@@ -470,19 +470,6 @@ byte *temp_y;
 byte *temp_x;
 
 /**
- * Arrays[NUM_STAGES][NUM_STAGES] of numbers of paths between nearby stages
- */
-u16b (*adjacency)[NUM_STAGES];
-u16b (*stage_path)[NUM_STAGES];
-u16b (*temp_path)[NUM_STAGES];
-
-/**
- * Array[NUM_STAGES][32] of racial probability boosts for each stage; will need
- * to be expanded if z_info->p_max goes above 32.
- */
-u16b (*race_prob)[NUM_STAGES];
-
-/**
  * Array[MAX_Y_REGION][MAX_X_REGION] of region terrain grids 
  */
 char (*region_terrain)[MAX_X_REGION];

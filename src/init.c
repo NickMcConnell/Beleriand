@@ -3882,125 +3882,6 @@ static errr init_alloc(void)
 
 
 /**
- * Initialize the racial probability array
- */
-extern errr init_race_probs(void)
-{
-    int i, j, k, n;
-
-    /* Make the array */
-    race_prob = C_ZNEW(32, u16b_stage);
-
-    /*** Prepare temporary adjacency arrays ***/
-    adjacency = C_ZNEW(NUM_STAGES, u16b_stage);
-    stage_path = C_ZNEW(NUM_STAGES, u16b_stage);
-    temp_path = C_ZNEW(NUM_STAGES, u16b_stage);
-      
-    /* Make the adjacency matrix */
-    for (i = 0; i < NUM_STAGES; i++)
-    {
-	/* Initialise this row */
-	for (k = 0; k < NUM_STAGES; k++)
-	{
-	    adjacency[i][k] = 0;
-	    stage_path[i][k] = 0;
-	    temp_path[i][k] = 0;
-	}
-	  
-	/* Add 1s where there's an adjacent stage (not up or down) */
-	for (k = 2; k < 6; k++)
-	    if (stage_map[i][k] != 0) 
-	    {
-		adjacency[i][stage_map[i][k]] = 1;
-		temp_path[i][stage_map[i][k]] = 1;
-	    }
-    }
-      
-    /* Power it up (squaring 3 times gives eighth power) */
-    for (n = 0; n < 3; n++)
-    {
-	/* Square */
-	for (i = 0; i < NUM_STAGES; i++)
-	    for (j = 0; j < NUM_STAGES; j++)
-	    {
-		stage_path[i][j] = 0;
-		for (k = 0; k < NUM_STAGES; k++)
-		    stage_path[i][j] += temp_path[i][k] * temp_path[k][j];
-	    }
-	  
-	/* Copy it over for the next squaring or final multiply */
-	for (i = 0; i < NUM_STAGES; i++)
-	    for (j = 0; j < NUM_STAGES; j++)
-		temp_path[i][j] = stage_path[i][j];
-	  
-    }
-      
-    /* Get the max of length 8 and length 9 paths */
-    for (i = 0; i < NUM_STAGES; i++)
-	for (j = 0; j < NUM_STAGES; j++)
-	{
-	    /* Multiply to get the length 9s */
-	    stage_path[i][j] = 0;
-	    for (k = 0; k < NUM_STAGES; k++)
-		stage_path[i][j] += temp_path[i][k] * adjacency[k][j];
-	    
-	    /* Now replace by the length 8s if it's larger */
-	    if (stage_path[i][j] < temp_path[i][j])
-		stage_path[i][j] = temp_path[i][j];
-	    
-	}
-
-    /* We now have the maximum of the number of paths of length 8 and the 
-     * number of paths of length 9 (we need to try odd and even length paths,
-     * as using just one leads to anomalies) from any stage to any other,
-     * which we will use as a basis for the racial probability table for 
-     * racially based monsters in any given stage.  For a stage, we give 
-     * every race a 1, then add the number of paths of length 8 from their 
-     * hometown to that stage.  We then turn every row entry into the 
-     * cumulative total of the row to that point.  Whenever a racially based 
-     * monster is called for, we will take a random integer less than the 
-     * last entry of the row for that stage, and proceed along the row, 
-     * allocating the race corresponding to the position where we first 
-     *exceed that integer.
-     */
-
-    for (i = 0; i < NUM_STAGES; i++)
-    {
-	int prob = 0;
-	  
-	/* No more than 32 races */
-	for (j = 0; j < 32; j++)
-	{
-	    /* Nobody lives nowhere */
-	    if (stage_map[i][LOCALITY] == NOWHERE)
-	    {
-		race_prob[j][i] = 0;
-		continue;
-	    }
-	      
-	    /* Invalid race */
-	    if (j >= z_info->p_max) 
-	    {
-		race_prob[j][i] = 0;
-		continue;
-	    }
-	      
-	    /* Enter the cumulative probability */
-	    prob += 1 + stage_path[towns[p_info[j].hometown]][i];
-	    race_prob[j][i] = prob;
-	} 
-    }
-      
-    /* Free the temporary arrays */
-    FREE(temp_path);
-    FREE(adjacency);
-    FREE(stage_path);
-  
-    return 0;     
-}      
-    
-
-/**
  * Hack - identify set item artifacts.
  *
  * Go through the list of Set Items and identify all artifacts in each set
@@ -4212,10 +4093,6 @@ void cleanup_angband(void)
 {
     /* Free the macros */
     keymap_free();
-
-    /* Free racial probability arrays */
-    FREE(race_prob);
-    FREE(dummy);
 
     /* Free the artifact lists */
     FREE(artifact_normal);

@@ -3938,20 +3938,16 @@ bool make_attack_ranged(monster_type * m_ptr, int attack)
 	    m_ptr->old_p_race = m_ptr->p_race;
 
 	    /* Check if the new monster is racial */
-	    if (!(rf_has(q_ptr->flags, RF_RACIAL))) {
+	    if (!(rf_has(q_ptr->flags, RF_RACIAL))) 
+	    {
 		/* No race */
 		m_ptr->p_race = NON_RACIAL;
-	    } else {
+	    } 
+	    else 
+	    {
 		/* If the old monster wasn't racial, we need a race */
-		if (!(rf_has(r_ptr->flags, RF_RACIAL))) {
-		    temp = randint0(race_prob[z_info->p_max - 1][p_ptr->stage]);
-
-		    for (k = 0; k < z_info->p_max; k++)
-			if (race_prob[k][p_ptr->stage] > temp) {
-			    m_ptr->p_race = k;
-			    break;
-			}
-		}
+		if (!(rf_has(r_ptr->flags, RF_RACIAL)))
+		    m_ptr->p_race = randint0(z_info->p_max - 1);
 	    }
 
 
@@ -3961,10 +3957,10 @@ bool make_attack_ranged(monster_type * m_ptr, int attack)
 	    /* Hack - do a complete redraw - unnecessary? */
 	    p_ptr->redraw |= PR_MAP;
 	}
-
+	
 	break;
     }
-
+    
     case RSF_XXX8:
     {
 	break;

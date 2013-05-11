@@ -2512,24 +2512,21 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
     n_ptr->group_leader = group_leader;
 
     /* Initialize racial monster */
-    if (rf_has(r_ptr->flags, RF_RACIAL)) {
+    if (rf_has(r_ptr->flags, RF_RACIAL)) 
+    {
 	int chance, k;
 
 	/* Race is already chosen for group mode */
-	if (group_mode) {
+	if (group_mode) 
+	{
 	    n_ptr->p_race = group_race;
 	    n_ptr->group = group_id;
 	}
 
 	/* Choose a race */
-	else {
-	    k = randint0(race_prob[z_info->p_max - 1][p_ptr->stage]);
-
-	    for (i = 0; i < z_info->p_max; i++)
-		if (race_prob[i][p_ptr->stage] > k) {
-		    n_ptr->p_race = i;
-		    break;
-		}
+	else 
+	{
+	    n_ptr->p_race = randint0(z_info->p_max - 1);
 
 	    /* Hack for Estolad themed level - Edain or Druedain */
 	    if (p_ptr->themed_level == THEME_ESTOLAD)
@@ -2540,7 +2537,8 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 
 	    /* Go into group mode if necessary */
 	    if (rf_has(r_ptr->flags, RF_FRIEND)
-		|| rf_has(r_ptr->flags, RF_FRIENDS)) {
+		|| rf_has(r_ptr->flags, RF_FRIENDS)) 
+	    {
 		group_mode = TRUE;
 		group_race = n_ptr->p_race;
 	    }

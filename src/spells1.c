@@ -1263,7 +1263,6 @@ bool chaotic_effects(monster_type * m_ptr)
 	/* Shapechange */
     case 14:
 	{
-	    int i, k;
 	    monster_race *q_ptr;
 
 	    /* Pick a "new" monster race */
@@ -1285,21 +1284,16 @@ bool chaotic_effects(monster_type * m_ptr)
 		m_ptr->old_p_race = m_ptr->p_race;
 
 		/* Check if the new monster is racial */
-		if (!(rf_has(q_ptr->flags, RF_RACIAL))) {
+		if (!(rf_has(q_ptr->flags, RF_RACIAL))) 
+		{
 		    /* No race */
 		    m_ptr->p_race = NON_RACIAL;
-		} else {
+		} 
+		else 
+		{
 		    /* If the old monster wasn't racial, we need a race */
-		    if (!(rf_has(r_ptr->flags, RF_RACIAL))) {
-			k = randint0(race_prob[z_info->p_max - 1]
-				     [p_ptr->stage]);
-
-			for (i = 0; i < z_info->p_max; i++)
-			    if (race_prob[i][p_ptr->stage] > k) {
-				m_ptr->p_race = i;
-				break;
-			    }
-		    }
+		    if (!(rf_has(r_ptr->flags, RF_RACIAL)))
+			m_ptr->p_race = randint0(z_info->p_max - 1);
 		}
 
 		/* Set the shapechange counter */
@@ -5639,8 +5633,8 @@ static bool project_m(int who, int y, int x, int dam, int typ, int flg)
 	tmp = poly_r_idx(m_ptr->r_idx, FALSE);
 
 	/* Handle shapechange */
-	if ((tmp != m_ptr->r_idx) && (tmp != 0)) {
-	    int i, k;
+	if ((tmp != m_ptr->r_idx) && (tmp != 0)) 
+	{
 	    monster_race *q_ptr;
 
 	    /* New monster race */
@@ -5657,22 +5651,18 @@ static bool project_m(int who, int y, int x, int dam, int typ, int flg)
 	    m_ptr->old_p_race = m_ptr->p_race;
 
 	    /* Check if the new monster is racial */
-	    if (!(rf_has(q_ptr->flags, RF_RACIAL))) {
+	    if (!(rf_has(q_ptr->flags, RF_RACIAL))) 
+	    {
 		/* No race */
 		m_ptr->p_race = NON_RACIAL;
-	    } else {
+	    } 
+	    else 
+	    {
 		/* If the old monster wasn't racial, we need a race */
-		if (!(rf_has(r_ptr->flags, RF_RACIAL))) {
-		    k = randint0(race_prob[z_info->p_max - 1][p_ptr->stage]);
-
-		    for (i = 0; i < z_info->p_max; i++)
-			if (race_prob[i][p_ptr->stage] > k) {
-			    m_ptr->p_race = i;
-			    break;
-			}
-		}
+		if (!(rf_has(r_ptr->flags, RF_RACIAL)))
+		    m_ptr->p_race = randint0(z_info->p_max - 1);
 	    }
-
+	    
 	    /* Set the shapechange counter */
 	    m_ptr->schange = 5 + damroll(2, 5);
 	}
