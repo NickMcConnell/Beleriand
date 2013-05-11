@@ -1403,8 +1403,9 @@ bool set_recall(int v)
     bool notice = FALSE;
 
     /* No use until the player has been somewhere */
-    if (((p_ptr->stage == p_ptr->home) && (!p_ptr->recall_pt)) || (!p_ptr->home)
-	|| (OPT(adult_ironman) && !p_ptr->total_winner)) {
+    if (((p_ptr->stage == p_ptr->home) && (!p_ptr->recall_pt)) || 
+	(!p_ptr->home)) 
+    {
 	msg("Nothing happens.");
 	return (FALSE);
     }

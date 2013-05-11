@@ -816,12 +816,6 @@ void teleport_player_level(bool friendly)
 {
     int poss;
 
-    /* Disable for ironman */
-    if (OPT(adult_ironman)) {
-	msg("Nothing happens.");
-	return;
-    }
-
     /* Check for specialty resistance on hostile teleports */
     if ((friendly == FALSE) && (player_has(PF_PHASEWALK))) {
 	msg("Teleport Resistance!");

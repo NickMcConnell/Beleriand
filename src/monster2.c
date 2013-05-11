@@ -4594,10 +4594,6 @@ void monster_death(int m_idx)
     if (r_ptr->level == 100)
 	build_quest_stairs(y, x, "staircase");
 
-    /* ...or a portal for ironmen wilderness games */
-    else if (OPT(adult_ironman) && !OPT(adult_dungeon) && (p_ptr->danger != 100))
-	build_quest_stairs(y, x, "portal");
-
     /* or a path out of Nan Dungortheb for wilderness games */
     else if ((r_ptr->level == 70) && (p_ptr->danger == 70)
 	     && !OPT(adult_dungeon)) {

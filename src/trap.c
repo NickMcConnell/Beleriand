@@ -450,11 +450,6 @@ static int pick_trap(int feat, int trap_level)
 		if (stage_map[p_ptr->stage][STAGE_TYPE] > CAVE)
 		    trap_is_okay = FALSE;
 
-		/* Trap doors only in dungeons in ironman */
-		if (OPT(adult_ironman)
-		    && (stage_map[p_ptr->stage][STAGE_TYPE] < CAVE))
-		    trap_is_okay = FALSE;
-
 		break;
 	    }
 
@@ -1248,8 +1243,10 @@ void hit_trap_aux(int y, int x, int trap)
 	    }
 
 	    /* trap of forgetting. */
-	    else if (nastyness < 35) {
-		if (check_save(100)) {
+	    else if (nastyness < 35) 
+	    {
+		if (check_save(100)) 
+		{
 		    msg("You hang on to your memories!");
 		} else if (lose_all_info()) {
 		    msg("Your memories fade away.");
@@ -1257,15 +1254,12 @@ void hit_trap_aux(int y, int x, int trap)
 	    }
 
 	    /* trap of alter reality. */
-	    else if (nastyness < 50) {
-		if (OPT(adult_ironman))
-		    msg("Nothing happens.");
-		else {
-		    msg("The world changes!");
-
-		    /* Leaving */
-		    p_ptr->leaving = TRUE;
-		}
+	    else if (nastyness < 50) 
+	    {
+		msg("The world changes!");
+		
+		/* Leaving */
+		p_ptr->leaving = TRUE;
 	    }
 
 	    /* trap of remold player. */

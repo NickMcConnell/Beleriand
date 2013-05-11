@@ -95,28 +95,6 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	}
     }
 
-    /* Handle ironman */
-    if (OPT(adult_ironman))
-    {
-	/* Upstairs */
-	if (tf_has(f_ptr->flags, TF_STAIR))
-	{
-	    msg("Nothing happens.");
-	    return;
-	}
-	else
-	{
-	    int next = stage_map[p_ptr->stage][path_data[i].direction];
-
-	    /* New towns are OK */
-	    if ((next == p_ptr->last_stage) || stage_map[next][DEPTH])
-	    {
-		msg("Nothing happens.");
-		return;
-	    }
-	}
-    }
-
     /* Make certain the player really wants to leave a themed level. -LM- */
     if (p_ptr->themed_level)
 	if (!get_check("This level will never appear again.  Really leave?"))
@@ -278,21 +256,6 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	}
     }
 
-    /* Handle ironman */
-    if (OPT(adult_ironman) && !p_ptr->danger && !OPT(adult_dungeon)) {
-	int j, other;
-	int next = stage_map[p_ptr->stage][path_data[i].direction];
-
-	/* Check if this is the right way out of town */
-	for (j = NORTH; j <= WEST; i++) {
-	    other = stage_map[p_ptr->stage][j];
-	    if (stage_map[next][DEPTH] < stage_map[other][DEPTH]) {
-		msg("Nothing happens.");
-		return;
-	    }
-	}
-    }
-
     /* Make certain the player really wants to leave a themed level. -LM- */
     if (p_ptr->themed_level)
 	if (!get_check("This level will never appear again.  Really leave?"))
@@ -307,35 +270,13 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
     /* Remember where we came from */
     p_ptr->last_stage = p_ptr->stage;
 
-    if (pstair == FEAT_MORE) {
-	int location;
-
-	/* Magical portal for ironman */
-	if (OPT(adult_ironman) && !stage_map[p_ptr->stage][DOWN]
-	    && !OPT(adult_dungeon)) {
-	    /* Get choice */
-	    if (!jump_menu(p_ptr->danger + 1, &location))
-		return;
-
-	    /* Land properly */
-	    p_ptr->last_stage = NOWHERE;
-
-	    /* New stage */
-	    p_ptr->stage = location;
-
-	    /* New depth */
-	    p_ptr->danger = stage_map[location][DEPTH];
-
-	    /* Leaving */
-	    p_ptr->leaving = TRUE;
-
-	    return;
-	}
-
+    if (pstair == FEAT_MORE) 
+    {
 	/* Magical portal for dungeon-only games */
 	if (OPT(adult_dungeon) && (p_ptr->danger)
 	    && ((stage_map[p_ptr->stage][LOCALITY]) !=
-		(stage_map[stage_map[p_ptr->stage][DOWN]][LOCALITY]))) {
+		(stage_map[stage_map[p_ptr->stage][DOWN]][LOCALITY]))) 
+	{
 	    /* Land properly */
 	    p_ptr->last_stage = NOWHERE;
 
