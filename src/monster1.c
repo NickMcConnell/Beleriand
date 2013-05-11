@@ -382,16 +382,6 @@ extern void describe_monster(int r_idx, bool spoilers)
 	rf_on(mon_flags, RF_ESCORTS);
 
     /* Assume some "location" flags */
-    if (rf_has(r_ptr->flags, RF_ANGBAND))
-	rf_on(mon_flags, RF_ANGBAND);
-    if (rf_has(r_ptr->flags, RF_RUDH))
-	rf_on(mon_flags, RF_RUDH);
-    if (rf_has(r_ptr->flags, RF_NARGOTHROND))
-	rf_on(mon_flags, RF_NARGOTHROND);
-    if (rf_has(r_ptr->flags, RF_DUNGORTHEB))
-	rf_on(mon_flags, RF_DUNGORTHEB);
-    if (rf_has(r_ptr->flags, RF_GAURHOTH))
-	rf_on(mon_flags, RF_GAURHOTH);
     if (rf_has(r_ptr->flags, RF_DUNGEON))
 	rf_on(mon_flags, RF_DUNGEON);
 
@@ -563,16 +553,6 @@ extern void describe_monster(int r_idx, bool spoilers)
 
 	strcpy(location_desc, "");
 
-	if (rf_has(mon_flags, RF_ANGBAND))
-	    strcpy(location_desc, " in Angband");
-	if (rf_has(mon_flags, RF_RUDH))
-	    strcpy(location_desc, " in Amon Rûdh");
-	if (rf_has(mon_flags, RF_NARGOTHROND))
-	    strcpy(location_desc, " in Nargothrond");
-	if (rf_has(mon_flags, RF_DUNGORTHEB))
-	    strcpy(location_desc, " in Nan Dungortheb");
-	if (rf_has(mon_flags, RF_GAURHOTH))
-	    strcpy(location_desc, " in Tol-In-Gaurhoth");
 	if (rf_has(mon_flags, RF_DUNGEON))
 	    strcpy(location_desc, " in dungeons");
 
