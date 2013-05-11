@@ -2437,13 +2437,13 @@ void play_game(void)
 		strcpy(p_ptr->died_from, "Cheating death");
 
 		/* New stage */
-		p_ptr->stage = p_ptr->home;
+		//p_ptr->stage = p_ptr->home;  BELE stuff to do
 
 		/* New depth */
-		p_ptr->danger = 0;
+		//p_ptr->danger = 0;
 
 		/* Leaving */
-		p_ptr->leaving = TRUE;
+		//p_ptr->leaving = TRUE;
 	    }
 	}
 

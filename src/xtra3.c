@@ -927,16 +927,11 @@ static size_t prt_depth(int row, int col)
     s16b attr = TERM_L_BLUE;
     int region, level;
 
-    region = stage_map[p_ptr->stage][LOCALITY];
+    region = chunk_list[p_ptr->stage].region;
 
-    level = stage_map[p_ptr->stage][DEPTH];
+    level = chunk_list[p_ptr->stage].z_pos;
 
-    if (level)
-	strnfmt(depths, sizeof(depths), "%s %d", locality_name[region],
-		level);
-    else
-	strnfmt(depths, sizeof(depths), "%s", locality_name[region]);
-
+    strnfmt(depths, sizeof(depths), "%s %d", region_info[region].name, level);
 
     /* Right-Adjust the "depth", and clear old values */
     c_put_str(attr, depths, row, col);

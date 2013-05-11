@@ -1528,17 +1528,7 @@ static void do_cmd_wiz_jump(void)
 	return;
     }
 
-    /* New stage */
-    p_ptr->stage = new_place;
-
-    /* New depth */
-    p_ptr->danger = stage_map[new_place][DEPTH];
-
-    /* Land properly */
-    p_ptr->last_stage = NOWHERE;
-
-    /* Leaving */
-    p_ptr->leaving = TRUE;
+//BELE work to do here
 }
 
 

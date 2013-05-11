@@ -442,12 +442,12 @@ static int pick_trap(int feat, int trap_level)
 		    trap_is_okay = FALSE;
 
 		/* Hack -- no trap doors at the bottom of dungeons */
-		if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		    && (!stage_map[p_ptr->stage][DOWN]))
-		    trap_is_okay = FALSE;
+		//if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
+		//  && (!stage_map[p_ptr->stage][DOWN]))
+		//  trap_is_okay = FALSE;  BELE max depth needed
 
-		/* Trap doors only in dungeons or normal wilderness */
-		if (stage_map[p_ptr->stage][STAGE_TYPE] > CAVE)
+		/* Trap doors only in dungeons for now */
+		if (chunk_list[p_ptr->stage].z_pos == 0)
 		    trap_is_okay = FALSE;
 
 		break;
@@ -648,17 +648,6 @@ void hit_trap_aux(int y, int x, int trap)
     {
 	    Rand_quick = FALSE;
 
-	    /* Paranoia -NRM- */
-	    if (((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		 || (stage_map[p_ptr->stage][STAGE_TYPE] == VALLEY))
-		&& (!stage_map[p_ptr->stage][DOWN])) {
-		cave_off(cave_info[y][x], CAVE_MARK);
-		remove_trap(y, x, FALSE, trap);
-		msg("The trap fails!");
-		break;
-	    }
-
-
 	    msg("You fall through a trap door!");
 	    if (p_ptr->state.ffall) {
 		notice_obj(OF_FEATHER, 0);
@@ -667,24 +656,7 @@ void hit_trap_aux(int y, int x, int trap)
 		dam = damroll(2, 8);
 		take_hit(dam, name);
 	    }
-	    /* Remember where we came from */
-	    p_ptr->last_stage = p_ptr->stage;
-
-	    if (!stage_map[p_ptr->stage][DOWN]) {
-		/* Set the ways forward and back */
-		stage_map[255][UP] = p_ptr->stage;
-		stage_map[p_ptr->stage][DOWN] = 255;
-		stage_map[255][DEPTH] = p_ptr->danger + 1;
-	    }
-
-	    /* New stage */
-	    p_ptr->stage = stage_map[p_ptr->stage][DOWN];
-
-	    /* New depth */
-	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-	    /* Leaving */
-	    p_ptr->leaving = TRUE;
+	    chunk_change(1, 0, 0);
 
 	    Rand_quick = TRUE;
 
@@ -1357,7 +1329,7 @@ void hit_trap_aux(int y, int x, int trap)
 	/* teleport trap */
     case TRAP_PORTAL:
 	{
-	    if (stage_map[p_ptr->stage][STAGE_TYPE] >= CAVE)
+	    if (chunk_list[p_ptr->stage].z_pos != 0)
 		msg("You teleport across the dungeon.");
 	    else
 		msg("You teleport across the wilderness.");

@@ -82,9 +82,9 @@ void shapechange(s16b shape)
 	shapedesc = "werewolf";
 	break;
     case SHAPE_VAMPIRE:
-	if ((stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)
-	    && (stage_map[p_ptr->stage][STAGE_TYPE] != VALLEY)
-	    && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))) {
+	if ((chunk_list[p_ptr->stage].z_pos == 0)
+	    && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))) 
+	{
 	    msg("The sunlight prevents your shapechange!");
 	    shape = SHAPE_NORMAL;
 	    p_ptr->schange = (byte) shape;
@@ -2217,7 +2217,8 @@ void stair_creation(void)
     }
 
     /* Doesn't work outside caves */
-    if (stage_map[p_ptr->stage][STAGE_TYPE] != CAVE) {
+    if (chunk_list[p_ptr->stage].z_pos == 0) 
+    {
 	msg("You can only create stairs in caves!");
 	return;
     }
@@ -2226,11 +2227,11 @@ void stair_creation(void)
     delete_object(py, px);
 
     /* Create a staircase */
-    if (is_quest(p_ptr->stage) || (!stage_map[p_ptr->stage][DOWN])) 
+    if (is_quest(p_ptr->stage))//BELE || (!stage_map[p_ptr->stage]) 
     {
 	cave_set_feat(py, px, FEAT_LESS);
     } 
-    else if (!stage_map[p_ptr->stage][UP]) 
+    else if (chunk_list[p_ptr->stage].z_pos == 0) 
     {
 	cave_set_feat(py, px, FEAT_MORE);
     } 
@@ -4663,7 +4664,8 @@ void earthquake(int cy, int cx, int r, bool volcano)
 	    sx = x;
 	}
 
-	if (stage_map[p_ptr->stage][STAGE_TYPE] == CAVE) {
+	if (chunk_list[p_ptr->stage].z_pos != 0) 
+	{
 	    /* Random message */
 	    switch (randint1(3)) {
 	    case 1:
@@ -4683,9 +4685,12 @@ void earthquake(int cy, int cx, int r, bool volcano)
 		    break;
 		}
 	    }
-	} else {
+	} 
+	else 
+	{
 	    /* Random message */
-	    switch (randint1(3)) {
+	    switch (randint1(3)) 
+	    {
 	    case 1:
 		{
 		    msg("There is a mighty upheaval of the earth!");
@@ -4885,7 +4890,7 @@ void earthquake(int cy, int cx, int r, bool volcano)
 		bool floor = tf_has(f_ptr->flags, TF_FLOOR);
 
 		/* Allow more things to be destroyed outside */
-		if (stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)
+		if (chunk_list[p_ptr->stage].z_pos == 0)
 		    floor = TRUE;
 
 		/* Delete objects */

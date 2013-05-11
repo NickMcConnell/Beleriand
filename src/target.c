@@ -735,7 +735,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 {
     s16b this_o_idx = 0, next_o_idx = 0;
 
-    const char *s1, *s2, *s3, *s4, *s5;
+    const char *s1, *s2, *s3;
 
     bool boring;
 
@@ -1168,30 +1168,15 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		(feat == FEAT_LAVA) || tf_has(f_ptr->flags, TF_TREE))
 		s3 = "";
 
-	    /* Hack - destination of surface paths */
-	    if (tf_has(f_ptr->flags, TF_PATH))
-	    {
-		s4 = " to ";
-		s5 = locality_name[stage_map[stage_map[p_ptr->stage]
-					     [NORTH +
-					      (feat - FEAT_LESS_NORTH) / 2]]
-				   [LOCALITY]];
-	    }
-	    else
-	    {
-		s4 = "";
-		s5 = "";
-	    }
-
 	    /* Display a message */
 	    if (p_ptr->wizard) {
 		strnfmt(out_val, sizeof(out_val), "%s%s%s%s%s%s, %s (%d:%d).", 
-			s1, s2, s3, name, s4, s5, coords, y, x);
+			s1, s2, s3, name, coords, y, x);
 	    } 
 	    else 
 	    {
 		strnfmt(out_val, sizeof(out_val), "%s%s%s%s%s%s, %s.", s1, s2, 
-			s3, name, s4, s5, coords);
+			s3, name, coords);
 	    }
 
 	    prt(out_val, 0, 0);
