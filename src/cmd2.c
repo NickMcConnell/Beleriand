@@ -22,33 +22,13 @@
 #include "angband.h"
 #include "cave.h"
 #include "files.h"
+#include "generate.h"
 #include "history.h"
 #include "monster.h"
 #include "spells.h"
 #include "squelch.h"
 #include "trap.h"
 
-
-/** Path translations */
-
-typedef struct {
-    int path;
-    int direction;
-    int return_path;
-    bool eastwest;
-} pather;
-
-static const pather path_data[] =
-{
-    {FEAT_LESS_NORTH, NORTH, FEAT_MORE_SOUTH, FALSE},
-    {FEAT_MORE_NORTH, NORTH, FEAT_LESS_SOUTH, FALSE},
-    {FEAT_LESS_EAST, EAST, FEAT_MORE_WEST, TRUE},
-    {FEAT_MORE_EAST, EAST, FEAT_LESS_WEST, TRUE},
-    {FEAT_LESS_SOUTH, SOUTH, FEAT_MORE_NORTH, FALSE},
-    {FEAT_MORE_SOUTH, SOUTH, FEAT_LESS_NORTH, FALSE},
-    {FEAT_LESS_WEST, WEST, FEAT_MORE_EAST, TRUE},
-    {FEAT_MORE_WEST, WEST, FEAT_LESS_EAST, TRUE}
-};
 
 /**
  * Go to less danger
@@ -57,42 +37,20 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 {
     int py = p_ptr->py;
     int px = p_ptr->px;
-    size_t i;
 
     byte pstair = cave_feat[py][px];
     feature_type *f_ptr = &f_info[pstair];
 
-    /* Get the path data */
-    for (i = 0; i < N_ELEMENTS(path_data); i++)
-    {
-	if (path_data[i].path == pstair) break;
-    }
-
-    /* Undefined path */
-    if (!(tf_has(f_ptr->flags, TF_STAIR) || tf_has(f_ptr->flags, TF_PATH)))
-    {
-	msg("I see no path or staircase here.");
-	return;
-    }
-
     /* Check for appropriate terrain */
-    if (!(tf_has(f_ptr->flags, TF_STAIR) || tf_has(f_ptr->flags, TF_PATH)))
+    if (!tf_has(f_ptr->flags, TF_STAIR))
     {
-	msg("I see no path or staircase here.");
+	msg("I see no staircase here.");
 	return;
     }
     else if (tf_has(f_ptr->flags, TF_DOWNSTAIR))
     {
-	if (tf_has(f_ptr->flags, TF_PATH))
-	{
-	    msg("This is a path to greater danger.");
-	    return;
-	}
-	else
-	{
-	    msg("This staircase leads down.");
-	    return;
-	}
+	msg("This staircase leads down.");
+	return;
     }
 
     /* Make certain the player really wants to leave a themed level. -LM- */
@@ -108,7 +66,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
     if (pstair == FEAT_LESS)
     {
 	/* stairs */
-	msgt(MSG_STAIRS_DOWN, "You enter a maze of up staircases.");
+	msgt(MSG_STAIRS_UP, "You climb the stairs.");
 
 	/* make the way back */
 	p_ptr->create_stair = FEAT_MORE;
@@ -116,58 +74,17 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
     else if (pstair == FEAT_LESS_SHAFT)
     {
 	/* shaft */
-	msgt(MSG_STAIRS_DOWN, "You enter a maze of up staircases.");
+	msgt(MSG_STAIRS_UP, "You climb the stairs.");
 
 	/* make the way back */
 	p_ptr->create_stair = FEAT_MORE_SHAFT;
     }
+
+    /* New chunk */
+    if (pstair == FEAT_LESS_SHAFT)
+	chunk_change(-2, 0, 0);
     else
-    {
-	/* path */
-	msgt(MSG_STAIRS_DOWN, "You enter a winding path to less danger.");
-
-	/* make the way back */
-	p_ptr->create_stair = path_data[i].return_path;
-    }
-
-    /* Remember where we came from */
-    p_ptr->last_stage = p_ptr->stage;
-
-    /* New stage (really need a check here...) */
-    if (tf_has(f_ptr->flags, TF_PATH))
-	p_ptr->stage =
-	    stage_map[p_ptr->stage][path_data[i].direction];
-    else if (pstair == FEAT_LESS_SHAFT)
-	p_ptr->stage = stage_map[stage_map[p_ptr->stage][UP]][UP];
-    else
-	p_ptr->stage = stage_map[p_ptr->stage][UP];
-
-    /* Handle underworld stuff */
-    if (stage_map[p_ptr->last_stage][LOCALITY] == UNDERWORLD)
-    {
-	/* Reset */
-	stage_map[255][UP] = 0;
-	stage_map[p_ptr->stage][DOWN] = 0;
-	stage_map[255][DEPTH] = 0;
-
-	/* No way back */
-	p_ptr->create_stair = 0;
-    }
-
-    /* Record the non-obvious exit coordinate */
-    if (tf_has(f_ptr->flags, TF_PATH))
-    {
-	if (path_data[i].eastwest)
-	    p_ptr->path_coord = py;
-	else
-	    p_ptr->path_coord = px;
-    }
-
-    /* Set the depth */
-    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-    /* Leaving */
-    p_ptr->leaving = TRUE;
+	chunk_change(-1, 0, 0);
 }
 
 
@@ -178,35 +95,20 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 {
     int py = p_ptr->py;
     int px = p_ptr->px;
-    size_t i;
 
     byte pstair = cave_feat[py][px];
     feature_type *f_ptr = &f_info[pstair];
 
-    /* Get the path data */
-    for (i = 0; i < N_ELEMENTS(path_data); i++)
-    {
-	if (path_data[i].path == pstair) break;
-    }
-
     /* Check for appropriate terrain */
-    if (!(tf_has(f_ptr->flags, TF_STAIR) || tf_has(f_ptr->flags, TF_PATH)))
+    if (!tf_has(f_ptr->flags, TF_STAIR))
     {
-	msg("I see no path or staircase here.");
+	msg("I see no staircase here.");
 	return;
     }
     else if (tf_has(f_ptr->flags, TF_UPSTAIR))
     {
-	if (tf_has(f_ptr->flags, TF_PATH))
-	{
-	    msg("This is a path to less danger.");
-	    return;
-	}
-	else
-	{
-	    msg("This staircase leads up.");
-	    return;
-	}
+	msg("This staircase leads up.");
+	return;
     }
 
     /* Make certain the player really wants to leave a themed level. -LM- */
@@ -219,17 +121,10 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
     p_ptr->energy_use = 100;
 
     /* Success */
-
-    /* Remember where we came from */
-    p_ptr->last_stage = p_ptr->stage;
-
     if (pstair == FEAT_MORE) 
     {
 	/* stairs */
-	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
-
-	/* New stage */
-	p_ptr->stage = stage_map[p_ptr->stage][DOWN];
+	msgt(MSG_STAIRS_DOWN, "You descend the stairs.");
 
 	/* make the way back */
 	p_ptr->create_stair = FEAT_LESS;
@@ -237,62 +132,17 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
     else if (pstair == FEAT_MORE_SHAFT)
     {
 	/* stairs */
-	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
-
-	/* New stage */
-	p_ptr->stage = stage_map[stage_map[p_ptr->stage][DOWN]][DOWN];
+	msgt(MSG_STAIRS_DOWN, "You descend the stairs.");
 
 	/* make the way back */
 	p_ptr->create_stair = FEAT_LESS_SHAFT;
     }
+
+    /* New chunk */
+    if (pstair == FEAT_MORE_SHAFT)
+	chunk_change(2, 0, 0);
     else
-    {
-	/* New stage */
-	p_ptr->stage =
-	    stage_map[p_ptr->stage][path_data[i].direction];
-
-	/* Check for Nan Dungortheb */
-	if (stage_map[p_ptr->stage][LOCALITY] == NAN_DUNGORTHEB)
-
-	    /* scree slope */
-	    msgt(MSG_STAIRS_DOWN,
-		    "You slide down amidst a small avalanche.");
-
-	else
-	{
-	    /* Make the way back */
-	    p_ptr->create_stair = path_data[i].return_path;
-
-	    /* path */
-	    msgt(MSG_STAIRS_DOWN,
-		    "You enter a winding path to greater danger.");
-	}
-    }
-
-    /* Handle mountaintop stuff */
-    if (stage_map[p_ptr->last_stage][LOCALITY] == MOUNTAIN_TOP)
-    {
-	/* Reset */
-	stage_map[256][DOWN] = 0;
-	stage_map[p_ptr->stage][UP] = 0;
-	stage_map[256][DEPTH] = 0;
-
-	/* No way back */
-	p_ptr->create_stair = 0;
-    }
-
-    /* Record the non-obvious exit coordinate */
-    if (path_data[i].eastwest)
-	p_ptr->path_coord = py;
-    else
-	p_ptr->path_coord = px;
-
-    /* Set the depth */
-    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-    /* Leaving */
-    p_ptr->leaving = TRUE;
-
+	chunk_change(1, 0, 0);
 }
 
 
