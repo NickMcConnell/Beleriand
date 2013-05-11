@@ -121,7 +121,7 @@ void shapechange(s16b shape)
 	feature_type *f_ptr = &f_info[cave_feat[y][x]];
 
 	if (tf_has(f_ptr->flags, TF_FALL)) 
-	    fall_off_cliff();
+	    fall_off_cliff(0);
 
 	else if (cave_invisible_trap(y, x))
 	{
@@ -4948,7 +4948,7 @@ void earthquake(int cy, int cx, int r, bool volcano)
 		{
 		    /* Chance of falling */
 		    if (abyss > randint1(total)) {
-			fall_off_cliff();
+			fall_off_cliff(0);
 		    } else {
 			msg("You are crushed!");
 			damage = damroll(10, 8);

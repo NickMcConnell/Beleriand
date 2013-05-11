@@ -297,7 +297,7 @@ extern int make_metric(int wgt);
 /* cmd1.c */
 bool search(bool verbose);
 extern byte py_pickup(int pickup, int y, int x);
-extern void fall_off_cliff(void);
+extern void fall_off_cliff(int levels);
 extern void move_player(int dir);
 
 /* cmd2.c */

@@ -1367,4 +1367,11 @@ void arena_realign(int y_offset, int x_offset)
 void chunk_change(int z_offset, int y_offset, int x_offset)
 {
     if (z_offset == 0) arena_realign(y_offset, x_offset);
+
+    /* Where we fell from */
+    //p_ptr->last_stage = p_ptr->stage;
+
+    /* Leaving */
+    //p_ptr->leaving = TRUE;
+
 }

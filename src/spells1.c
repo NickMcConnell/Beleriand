@@ -422,7 +422,7 @@ static void thrust_away(int who, int t_y, int t_x, int grids_away)
 	if (tf_has(f_ptr->flags, TF_FALL) && (p_ptr->schange != SHAPE_BAT)
 	    && (p_ptr->schange != SHAPE_WYRM)) {
 	    msg("You are hurled over the cliff!");
-	    fall_off_cliff();
+	    fall_off_cliff(0);
 	    return;
 	}
     }
@@ -628,7 +628,7 @@ void teleport_player(int dis, bool safe)
 	else if (tf_has(f_ptr->flags, TF_FALL)) 
 	{
 	    msg("You land in mid-air!");
-	    fall_off_cliff();
+	    fall_off_cliff(0);
 	}
     }
 
@@ -798,7 +798,7 @@ void teleport_player_to(int ny, int nx, bool friendly)
 	else if (tf_has(f_ptr->flags, TF_FALL)) 
 	{
 	    msg("You land in mid-air!");
-	    fall_off_cliff();
+	    fall_off_cliff(0);
 	}
     }
 

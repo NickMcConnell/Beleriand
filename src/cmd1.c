@@ -659,82 +659,33 @@ byte py_pickup(int pickup, int y, int x)
 /**
  * Handle falling off cliffs 
  */
-void fall_off_cliff(void)
+void fall_off_cliff(int levels)
 {
-    int i = 0, dam;
+    int dam;
 
     msg("You fall into the darkness!");
 
-    /* Where we fell from */
-    p_ptr->last_stage = p_ptr->stage;
+    /* New chunk */
+    chunk_change(1, 0, 0);
 
-    /* From the mountaintop */
-    if (stage_map[p_ptr->stage][LOCALITY] == MOUNTAIN_TOP) {
-	p_ptr->stage = stage_map[p_ptr->stage][DOWN];
-	p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-	/* Reset */
-	stage_map[256][DOWN] = 0;
-	stage_map[p_ptr->stage][UP] = 0;
-	stage_map[256][DEPTH] = 0;
-
+    /* Hit the ground... */
+    if (!tf_has(f_info[cave_feat[p_ptr->py][p_ptr->px]].flags, TF_FALL))
+    {
 	if (p_ptr->state.ffall) {
 	    notice_obj(OF_FEATHER, 0);
-	    dam = damroll(2, 8);
-	    (void) inc_timed(TMD_STUN, damroll(2, 8), TRUE);
-	    (void) inc_timed(TMD_CUT, damroll(2, 8), TRUE);
+	    dam = damroll(2 * levels, 8);
+	    (void) inc_timed(TMD_STUN, damroll(2 * levels, 8), TRUE);
+	    (void) inc_timed(TMD_CUT, damroll(2 * levels, 8), TRUE);
 	} else {
-	    dam = damroll(4, 8);
-	    (void) inc_timed(TMD_STUN, damroll(4, 8), TRUE);
-	    (void) inc_timed(TMD_CUT, damroll(4, 8), TRUE);
+	    dam = damroll(4 * levels, 8);
+	    (void) inc_timed(TMD_STUN, damroll(4 * levels, 8), TRUE);
+	    (void) inc_timed(TMD_CUT, damroll(4 * levels, 8), TRUE);
 	}
 	take_hit(dam, "falling off a precipice");
     }
 
-    /* Nan Dungortheb */
-    else {
-	/* Fall at least one level */
-	for (i = 0; i < 1; i = randint0(3)) {
-	    p_ptr->stage = stage_map[p_ptr->stage][SOUTH];
-	    p_ptr->danger++;
-	    if (p_ptr->state.ffall) {
-		notice_obj(OF_FEATHER, 0);
-		dam = damroll(2, 8);
-		(void) inc_timed(TMD_STUN, damroll(2, 8), TRUE);
-		(void) inc_timed(TMD_CUT, damroll(2, 8), TRUE);
-	    } else {
-		dam = damroll(4, 8);
-		(void) inc_timed(TMD_STUN, damroll(4, 8), TRUE);
-		(void) inc_timed(TMD_CUT, damroll(4, 8), TRUE);
-	    }
-	    take_hit(dam, "falling off a precipice");
-	    if (p_ptr->danger == 70)
-		break;
-	}
-
-	/* Check for quests */
-	if (OPT(adult_dungeon) && is_quest(p_ptr->stage)
-	    && (p_ptr->danger < 100)) {
-	    int i;
-	    monster_race *r_ptr = NULL;
-
-	    /* Find the questor */
-	    for (i = 0; i < z_info->r_max; i++) {
-		r_ptr = &r_info[i];
-		if ((rf_has(r_ptr->flags, RF_QUESTOR))
-		    && (r_ptr->level == p_ptr->danger))
-		    break;
-	    }
-
-	    /* Announce */
-	    msg("This level is home to %s.", r_ptr->name);
-	}
-
-    }
-
-    /* Leaving */
-    p_ptr->leaving = TRUE;
-
+    /* ...or not */
+    else fall_off_cliff(levels + 1);
 }
 
 /**
@@ -1070,7 +1021,7 @@ void move_player(int dir)
 	
 	/* Fall off a cliff */
 	if (falling)
-	    fall_off_cliff();
+	    fall_off_cliff(0);
 	
 	/* Spontaneous Searching */
 	if (p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] > 49) {
