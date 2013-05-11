@@ -4346,7 +4346,9 @@ void monster_death(int m_idx)
 	    /* Origin */
 	    i_ptr->origin = ORIGIN_DROP;
 	    i_ptr->origin_xtra = m_ptr->r_idx;
-	    i_ptr->origin_stage = p_ptr->stage;
+	    i_ptr->origin_z = chunk_list[p_ptr->stage].z_pos;
+	    i_ptr->origin_y = chunk_list[p_ptr->stage].y_pos;
+	    i_ptr->origin_x = chunk_list[p_ptr->stage].x_pos;
 
 	    /* Mega-Hack -- Mark this item as "Grond" */
 	    i_ptr->name1 = ART_GROND;
@@ -4366,7 +4368,9 @@ void monster_death(int m_idx)
 	    /* Origin */
 	    i_ptr->origin = ORIGIN_DROP;
 	    i_ptr->origin_xtra = m_ptr->r_idx;
-	    i_ptr->origin_stage = p_ptr->stage;
+	    i_ptr->origin_z = chunk_list[p_ptr->stage].z_pos;
+	    i_ptr->origin_y = chunk_list[p_ptr->stage].y_pos;
+	    i_ptr->origin_x = chunk_list[p_ptr->stage].x_pos;
 
 	    /* Mega-Hack -- Mark this item as "Morgoth" */
 	    i_ptr->name1 = ART_MORGOTH;
@@ -4388,7 +4392,9 @@ void monster_death(int m_idx)
 	    /* Origin */
 	    i_ptr->origin = ORIGIN_DROP;
 	    i_ptr->origin_xtra = m_ptr->r_idx;
-	    i_ptr->origin_stage = p_ptr->stage;
+	    i_ptr->origin_z = chunk_list[p_ptr->stage].z_pos;
+	    i_ptr->origin_y = chunk_list[p_ptr->stage].y_pos;
+	    i_ptr->origin_x = chunk_list[p_ptr->stage].x_pos;
 
 	    /* Mega-Hack -- Mark this item as "Ungoliant" */
 	    i_ptr->name1 = ART_UNGOLIANT;
@@ -4457,7 +4463,9 @@ void monster_death(int m_idx)
 		/* Origin */
 		i_ptr->origin = (visible ? ORIGIN_DROP : ORIGIN_DROP_UNKNOWN);
 		i_ptr->origin_xtra = m_ptr->r_idx;
-		i_ptr->origin_stage = p_ptr->stage;
+		i_ptr->origin_z = chunk_list[p_ptr->stage].z_pos;
+		i_ptr->origin_y = chunk_list[p_ptr->stage].y_pos;
+		i_ptr->origin_x = chunk_list[p_ptr->stage].x_pos;
 
 		/* Assume seen */
 		dump_item++;
@@ -4476,7 +4484,9 @@ void monster_death(int m_idx)
 	    {
 		/* Origin */
 		i_ptr->origin = (visible ? ORIGIN_DROP : ORIGIN_DROP_UNKNOWN);
-		i_ptr->origin_stage = p_ptr->stage;
+		i_ptr->origin_z = chunk_list[p_ptr->stage].z_pos;
+		i_ptr->origin_y = chunk_list[p_ptr->stage].y_pos;
+		i_ptr->origin_x = chunk_list[p_ptr->stage].x_pos;
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Assume seen */

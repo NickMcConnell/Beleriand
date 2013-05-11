@@ -730,7 +730,9 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 
 	/* Mark as cheat, and where created */
 	i_ptr->origin = ORIGIN_CHEAT;
-	i_ptr->origin_stage = p_ptr->stage;
+	i_ptr->origin_z = chunk_list[p_ptr->stage].z_pos;
+	i_ptr->origin_y = chunk_list[p_ptr->stage].y_pos;
+	i_ptr->origin_x = chunk_list[p_ptr->stage].x_pos;
 	
     }
 

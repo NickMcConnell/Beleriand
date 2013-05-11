@@ -18,8 +18,9 @@
  */
 
 #include "angband.h"
-#include "effects.h"
 #include "cmds.h"
+#include "effects.h"
+#include "generate.h"
 #include "tvalsval.h"
 #include "z-textblock.h"
 
@@ -1499,16 +1500,11 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 bool describe_origin(textblock *tb, const object_type *o_ptr)
 {
     char origin_text[80];
+    int region = find_region(o_ptr->origin_y, o_ptr->origin_x);
 
     /* Format location of origin */
-    if (stage_map[o_ptr->origin_stage][DEPTH])
-	strnfmt(origin_text, sizeof(origin_text), "%s Level %d",
-		locality_name[stage_map[o_ptr->origin_stage][LOCALITY]], 
-		stage_map[o_ptr->origin_stage][DEPTH]);
-    else
-	strnfmt(origin_text, sizeof(origin_text), "%s %s",
-		locality_name[stage_map[o_ptr->origin_stage][LOCALITY]], 
-		"Town");
+    strnfmt(origin_text, sizeof(origin_text), "%s Level %d",
+		region_info[region].name, o_ptr->origin_z);
 
     switch (o_ptr->origin)
     {

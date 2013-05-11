@@ -712,7 +712,9 @@ static void chest_death(bool scatter, int y, int x, s16b o_idx)
 
 	/* Record origin */
 	i_ptr->origin = ORIGIN_CHEST;
-	i_ptr->origin_stage = o_ptr->origin_stage;
+	i_ptr->origin_z = o_ptr->origin_z;
+	i_ptr->origin_y = o_ptr->origin_y;
+	i_ptr->origin_x = o_ptr->origin_x;
 	i_ptr->origin_xtra = o_ptr->origin_xtra;
 
 	/* If chest scatters its contents, pick any floor square. */

@@ -1924,7 +1924,9 @@ void place_object(int y, int x, bool good, bool great, bool exact_kind, byte ori
     {
 	/* Set the origin */
 	i_ptr->origin = origin;
-	i_ptr->origin_stage = p_ptr->stage;
+	i_ptr->origin_z = chunk_list[p_ptr->stage].z_pos;
+	i_ptr->origin_y = chunk_list[p_ptr->stage].y_pos;
+	i_ptr->origin_x = chunk_list[p_ptr->stage].x_pos;
 
 	/* Give it to the floor */
 	if (!floor_carry(y, x, i_ptr)) 

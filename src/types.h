@@ -700,7 +700,9 @@ typedef struct object {
     s16b held_m_idx;	/**< Monster holding us (if any) */
 
     byte origin;        /* How this item was found */
-    byte origin_stage;  /* Where the item was found */
+    u16b origin_z;      /* Where the item was found - z */
+    u16b origin_y;      /* Where the item was found - y */
+    u16b origin_x;      /* Where the item was found - x */
     u16b origin_xtra;   /* Extra information about origin */
     
     quark_t note;		/**< Inscription index */

@@ -112,7 +112,9 @@ static int rd_item(object_type *o_ptr)
     rd_byte(&o_ptr->marked);
   
     rd_byte(&o_ptr->origin);
-    rd_byte(&o_ptr->origin_stage);
+    rd_u16b(&o_ptr->origin_z);
+    rd_u16b(&o_ptr->origin_y);
+    rd_u16b(&o_ptr->origin_x);
     rd_u16b(&o_ptr->origin_xtra);
 
     /* Flags */
