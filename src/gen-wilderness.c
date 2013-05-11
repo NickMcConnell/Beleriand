@@ -3146,22 +3146,6 @@ extern void valley_gen_old(void)
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	}
     }
-
-    /* Maybe place a few random portals. */
-    if (OPT(adult_dungeon) && stage_map[p_ptr->stage][DOWN]) {
-	feature_type *f_ptr = NULL;
-
-	k = randint1(3) + 1;
-	while (k > 0) {
-	    y = randint1(ARENA_HGT - 1);
-	    x = randint1(ARENA_WID - 1);
-	    f_ptr = &f_info[cave_feat[y][x]];
-	    if (tf_has(f_ptr->flags, TF_TREE)) {
-		cave_set_feat(y, x, FEAT_MORE);
-		k--;
-	    }
-	}
-    }
 }
 
 

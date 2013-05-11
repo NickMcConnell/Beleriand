@@ -4595,8 +4595,8 @@ void monster_death(int m_idx)
 	build_quest_stairs(y, x, "staircase");
 
     /* or a path out of Nan Dungortheb for wilderness games */
-    else if ((r_ptr->level == 70) && (p_ptr->danger == 70)
-	     && !OPT(adult_dungeon)) {
+    else if ((r_ptr->level == 70) && (p_ptr->danger == 70)) 
+    {
 	/* Make a path */
 	for (y = p_ptr->py; y < ARENA_HGT - 2; y++)
 	    cave_set_feat(y, p_ptr->px, FEAT_ROAD);

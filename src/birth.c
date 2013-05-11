@@ -328,7 +328,8 @@ static void get_level(struct player *p)
 {
 
     /* Check if they're an "advanced race" */
-    if ((rp_ptr->start_lev - 1) && !OPT(adult_thrall) && !OPT(adult_dungeon)) {
+    if ((rp_ptr->start_lev - 1) && !OPT(adult_thrall)) 
+    {
 	/* Add the experience */
 	p->exp = player_exp[rp_ptr->start_lev - 2];
 	p->max_exp = player_exp[rp_ptr->start_lev - 2];
@@ -336,7 +337,9 @@ static void get_level(struct player *p)
 	/* Set the level */
 	p->lev = rp_ptr->start_lev;
 	p->max_lev = rp_ptr->start_lev;
-    } else {			/* Paranoia */
+    } 
+    else 
+    {			/* Paranoia */
 
 	/* Add the experience */
 	p->exp = 0;
@@ -679,7 +682,7 @@ static void player_outfit(struct player *p)
 	    i_ptr->origin = ORIGIN_BIRTH;
 
 	    /* Nasty hack for "advanced" races -NRM- */
-	    if ((!OPT(adult_thrall)) && (!OPT(adult_dungeon)))
+	    if (!OPT(adult_thrall))
 		object_upgrade(i_ptr);
 
 	    object_aware(i_ptr);
@@ -1076,7 +1079,7 @@ static void do_birth_reset(bool use_quickstart, birther * quickstart_prev)
  */
 void player_birth(bool quickstart_allowed)
 {
-    int i, j;
+    int i;
     game_command blank = { CMD_NULL, 0, {{0}} };
     game_command *cmd = &blank;
 
@@ -1302,29 +1305,6 @@ void player_birth(bool quickstart_allowed)
     message_add("====================", MSG_GENERIC);
     message_add("  ", MSG_GENERIC);
     message_add(" ", MSG_GENERIC);
-
-
-    /* Set map, quests */
-    if (OPT(adult_dungeon)) {
-	for (i = 0; i < NUM_STAGES; i++)
-	    for (j = 0; j < 9; j++)
-		stage_map[i][j] = dungeon_map[i][j];
-
-	/* Mim */
-	q_list[0].stage = 31;
-
-	/* Glaurung */
-	q_list[1].stage = 56;
-
-	/* Ungoliant */
-	q_list[2].stage = 71;
-
-	/* Sauron */
-	q_list[3].stage = 86;
-
-	/* Morgoth */
-	q_list[4].stage = 101;
-    }
 
 
     /* Give the player some money */

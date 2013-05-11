@@ -1332,7 +1332,7 @@ bool recall_menu(void)
     ui_event evt = { 0 };
     int cursor = 0;
     int num_entries;
-    int num_poss = OPT(adult_dungeon) ? 1 : 4;
+    int num_poss = 4;
 
     int i;
 

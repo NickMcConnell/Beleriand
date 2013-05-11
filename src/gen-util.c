@@ -184,8 +184,6 @@ void place_random_stairs(int y, int x)
     /* Choose a staircase */
     if (!p_ptr->danger) {
 	place_down_stairs(y, x);
-    } else if (OPT(adult_dungeon) && !stage_map[p_ptr->stage][DOWN]) {
-	place_up_stairs(y, x);
     } else if (randint0(100) < 50) {
 	place_down_stairs(y, x);
     } else {

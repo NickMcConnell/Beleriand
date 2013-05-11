@@ -217,17 +217,14 @@ static void race_help(int i, void *db, const region *l)
 	}
 	
 	text_out_e("Hit die: %d\n", p_info[i].r_mhp);
-	if (!OPT(adult_dungeon))
-	  {
-	    text_out_e("Difficulty: Level %d\n", p_info[i].difficulty);
-      
-	    /* Color code difficulty factor */
-	    if (p_info[i].difficulty < 3) color = TERM_GREEN;
-	    else if (p_info[i].difficulty < 15) color = TERM_ORANGE;
-	    else color = TERM_RED;
-      
-	    text_out_c(color, format("Home town: %-15s\n", locality_name[stage_map[towns[p_info[i].hometown]][LOCALITY]]));
-	  }
+	text_out_e("Difficulty: Level %d\n", p_info[i].difficulty);
+	
+	/* Color code difficulty factor */
+	if (p_info[i].difficulty < 3) color = TERM_GREEN;
+	else if (p_info[i].difficulty < 15) color = TERM_ORANGE;
+	else color = TERM_RED;
+	
+	text_out_c(color, format("Home town: %-15s\n", locality_name[stage_map[towns[p_info[i].hometown]][LOCALITY]]));
 	text_out_e("Infravision: %d ft", p_info[i].infra * 10);
 	
 	/* Reset text_out() indentation */

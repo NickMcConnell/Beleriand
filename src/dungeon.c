@@ -2219,7 +2219,6 @@ static void process_some_user_pref_files(void)
  */ 
 void play_game(void)
 {
-    int i;
     u32b window_flag[ANGBAND_TERM_MAX];
 
     /* Initialize */
@@ -2335,7 +2334,6 @@ void play_game(void)
 	chunk_list[0].z_pos = 0;
 	chunk_list[0].y_pos = 3780;
 	chunk_list[0].x_pos = 3010;
-	    //(OPT(adult_thrall) ? (OPT(adult_dungeon) ? 87 : 135) : p_ptr->home);
 	p_ptr->danger = 0;
 
 	/* Read the default options */

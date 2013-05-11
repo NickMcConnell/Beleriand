@@ -107,29 +107,6 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
     /* Success */
     if (pstair == FEAT_LESS)
     {
-	/* Magical portal for dungeon-only games */
-	if (OPT(adult_dungeon) && (p_ptr->danger != 1)
-	    && ((stage_map[p_ptr->stage][LOCALITY]) !=
-		(stage_map[stage_map[p_ptr->stage][UP]][LOCALITY])))
-	{
-	    /* Land properly */
-	    p_ptr->last_stage = NOWHERE;
-
-	    /* Portal */
-	    msgt(MSG_STAIRS_UP, "You trigger a magic portal.");
-
-	    /* New stage */
-	    p_ptr->stage = stage_map[p_ptr->stage][UP];
-
-	    /* New depth */
-	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-	    /* Leaving */
-	    p_ptr->leaving = TRUE;
-
-	    return;
-	}
-
 	/* stairs */
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of up staircases.");
 
@@ -138,30 +115,6 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
     }
     else if (pstair == FEAT_LESS_SHAFT)
     {
-	/* Magical portal for dungeon-only games */
-	if (OPT(adult_dungeon) && (p_ptr->danger != 2)
-	    && ((stage_map[p_ptr->stage][LOCALITY]) !=
-		(stage_map[stage_map[stage_map[p_ptr->stage][UP]][UP]]
-		 [LOCALITY])))
-	{
-	    /* Land properly */
-	    p_ptr->last_stage = NOWHERE;
-
-	    /* Portal */
-	    msgt(MSG_STAIRS_UP, "You trigger a magic portal.");
-
-	    /* New stage */
-	    p_ptr->stage = stage_map[stage_map[p_ptr->stage][UP]][UP];
-
-	    /* New depth */
-	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-	    /* Leaving */
-	    p_ptr->leaving = TRUE;
-
-	    return;
-	}
-
 	/* shaft */
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of up staircases.");
 
@@ -272,29 +225,6 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 
     if (pstair == FEAT_MORE) 
     {
-	/* Magical portal for dungeon-only games */
-	if (OPT(adult_dungeon) && (p_ptr->danger)
-	    && ((stage_map[p_ptr->stage][LOCALITY]) !=
-		(stage_map[stage_map[p_ptr->stage][DOWN]][LOCALITY]))) 
-	{
-	    /* Land properly */
-	    p_ptr->last_stage = NOWHERE;
-
-	    /* Portal */
-	    msgt(MSG_STAIRS_DOWN, "You trigger a magic portal.");
-
-	    /* New stage */
-	    p_ptr->stage = stage_map[p_ptr->stage][DOWN];
-
-	    /* New depth */
-	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-	    /* Leaving */
-	    p_ptr->leaving = TRUE;
-
-	    return;
-	}
-
 	/* stairs */
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
 
@@ -306,29 +236,6 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
     }
     else if (pstair == FEAT_MORE_SHAFT)
     {
-	/* Magical portal for dungeon-only games */
-	if (OPT(adult_dungeon)
-	    && ((stage_map[p_ptr->stage][LOCALITY]) !=
-		(stage_map[stage_map[stage_map[p_ptr->stage][DOWN]][DOWN]]
-		 [LOCALITY]))) {
-	    /* Land properly */
-	    p_ptr->last_stage = NOWHERE;
-
-	    /* Portal */
-	    msgt(MSG_STAIRS_DOWN, "You trigger a magic portal.");
-
-	    /* New stage */
-	    p_ptr->stage = stage_map[stage_map[p_ptr->stage][DOWN]][DOWN];
-
-	    /* New depth */
-	    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-	    /* Leaving */
-	    p_ptr->leaving = TRUE;
-
-	    return;
-	}
-
 	/* stairs */
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
 
@@ -382,23 +289,6 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 
     /* Set the depth */
     p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-    /* Check for quests */
-    if (OPT(adult_dungeon) && is_quest(p_ptr->stage) && (p_ptr->danger < 100)) {
-	int i;
-	monster_race *r_ptr = NULL;
-
-	/* Find the questor */
-	for (i = 0; i < z_info->r_max; i++) {
-	    r_ptr = &r_info[i];
-	    if ((rf_has(r_ptr->flags, RF_QUESTOR))
-		&& (r_ptr->level == p_ptr->danger))
-		break;
-	}
-
-	/* Give the info */
-	msg("This level is home to %s.", r_ptr->name);
-    }
 
     /* Leaving */
     p_ptr->leaving = TRUE;

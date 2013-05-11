@@ -1449,13 +1449,6 @@ bool jump_menu(int level, int *location)
     size_t i;
     u16b *choice;
 
-    /* Dungeon only is easy */
-    if (OPT(adult_dungeon))
-    {
-	*location = level + 1;
-	return TRUE;
-    }
-
     /* Create the array */
     choice = C_ZNEW(15, u16b);
 
