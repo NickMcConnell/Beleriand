@@ -950,7 +950,7 @@ static bool build_type1(void)
     bool light = FALSE;
 
     /* Occasional light */
-    if ((p_ptr->danger <= randint1(35)) && (!underworld))
+    if (p_ptr->danger <= randint1(35))
 	light = TRUE;
 
 
@@ -2385,13 +2385,14 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 	    }
 
 	    /* Lay down a floor or grass */
-	    if (((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		 || (stage_map[p_ptr->stage][STAGE_TYPE] == DESERT)
-		 || (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
-		&& (p_ptr->themed_level != THEME_SLAIN))
+	    // BELE  vault floors all floor for now
+	    //if (((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
+	    //	 || (stage_map[p_ptr->stage][STAGE_TYPE] == DESERT)
+	    //	 || (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
+	    //	&& (p_ptr->themed_level != THEME_SLAIN))
 		cave_set_feat(y, x, FEAT_FLOOR);
-	    else
-		cave_set_feat(y, x, FEAT_GRASS);
+		//else
+		//cave_set_feat(y, x, FEAT_GRASS);
 
 	    /* Part of a vault.  Can be lit.  May be "icky". */
 	    if (icky)
@@ -2399,7 +2400,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		cave_on(cave_info[y][x], CAVE_ICKY);
 		cave_on(cave_info[y][x], CAVE_ROOM);
 	    }
-	    else if (stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
+	    else //BELE if (stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
 		cave_on(cave_info[y][x], CAVE_ROOM);
 	    if (light)
 		cave_on(cave_info[y][x], CAVE_GLOW);
@@ -2411,7 +2412,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		{
 		    if (p_ptr->themed_level)
 			cave_set_feat(y, x, FEAT_PERM_SOLID);
-		    else if (stage_map[p_ptr->stage][STAGE_TYPE] == VALLEY)
+		    else if (strncmp(region_info[chunk_list[p_ptr->stage].region].name, "Nan Dun", 7) == 0)
 		    {
 			if (randint1(3) == 1)
 			    cave_set_feat(y, x, FEAT_FLOOR);
@@ -2506,7 +2507,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		/* Up stairs (and player location in themed level).  */
 	    case '<':
 		{
-		    if (stage_map[p_ptr->stage][UP])
+		    if (chunk_list[p_ptr->stage].z_pos > 0)
 			cave_set_feat(y, x, FEAT_LESS);
 
 		    /* Place player only in themed level, and only once. */
@@ -2521,89 +2522,18 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 	    case '>':
 		{
 		    /* No down stairs at bottom or on quests */
-		    if (is_quest(p_ptr->stage)
-			|| (!stage_map[p_ptr->stage][DOWN]))
+		    if (is_quest(p_ptr->stage))
+			//BELE need lowest level || (!stage_map[p_ptr->stage][DOWN]))
 			break;
 
 		    cave_set_feat(y, x, FEAT_MORE);
 		    break;
 		}
-		/* Wilderness paths. */
-	    case '\\':
-		{
-		    int adj;
-		    byte dir;
-		    bool more;
-
-		    /* Work out which direction */
-		    if (y == 1)
-			dir = NORTH;
-		    else if (x == 1)
-			dir = WEST;
-		    else if (y == ARENA_HGT - 2)
-			dir = SOUTH;
-		    else if (x == ARENA_WID - 2)
-			dir = EAST;
-		    else
-			break;
-		    adj = stage_map[p_ptr->stage][dir];
-
-		    /* Cancel the path if nowhere to go */
-		    if (!adj)
-			break;
-
-		    /* Set the feature */
-		    more = (stage_map[adj][DEPTH] > p_ptr->danger);
-		    switch (dir) {
-		    case NORTH:
-			{
-			    if (more)
-				cave_set_feat(y, x, FEAT_MORE_NORTH);
-			    else
-				cave_set_feat(y, x, FEAT_LESS_NORTH);
-			    break;
-			}
-		    case EAST:
-			{
-			    if (more)
-				cave_set_feat(y, x, FEAT_MORE_EAST);
-			    else
-				cave_set_feat(y, x, FEAT_LESS_EAST);
-			    break;
-			}
-		    case SOUTH:
-			{
-			    if (more)
-				cave_set_feat(y, x, FEAT_MORE_SOUTH);
-			    else
-				cave_set_feat(y, x, FEAT_LESS_SOUTH);
-			    break;
-			}
-		    case WEST:
-			{
-			    if (more)
-				cave_set_feat(y, x, FEAT_MORE_WEST);
-			    else
-				cave_set_feat(y, x, FEAT_LESS_WEST);
-			    break;
-			}
-		    }
-
-		    /* Place the player? */
-		    if ((adj == p_ptr->last_stage) && (p_ptr->themed_level)
-			&& (!placed)) {
-			player_place(y, x);
-			placed = TRUE;
-		    } else {
-			panic_y = y;
-			panic_x = x;
-		    }
-		    break;
-		}
+		//BELE case '\\': wilderness path themed levels only
 	    }
 	}
     }
-
+    
     /* Place dungeon monsters and objects */
     for (t = data, y = y1; y <= y2; y++) {
 	for (x = x1; x <= x2; x++, t++) {
@@ -2932,7 +2862,7 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 
     /* Ensure that the player is always placed in a themed level. */
     if ((p_ptr->themed_level) && (!placed)) {
-	if (stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
+	if (chunk_list[p_ptr->stage].z_pos > 0)
 	    new_player_spot();
 	else
 	    player_place(panic_y, panic_x);

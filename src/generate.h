@@ -85,8 +85,7 @@ struct room_profile {
 /** 
  * 1/chance of being a themed level - higher in wilderness -NRM-
  */
-#define THEMED_LEVEL_CHANCE  (stage_map[p_ptr->stage][STAGE_TYPE] == CAVE \
-			      ? 180 : 70)
+#define THEMED_LEVEL_CHANCE  (chunk_list[p_ptr->stage].z_pos > 0 ? 180 : 70)
 
 
 /*
@@ -240,7 +239,6 @@ struct dun_data {
 
 extern dun_data *dun;
 extern bool moria_level;
-extern bool underworld;
 extern int wild_vaults;
 extern char mon_symbol_at_depth[12][13];
 

@@ -289,12 +289,12 @@ void alloc_stairs(int feat, int num, int walls)
 {
     int y, x, i, j;
     feature_type *f_ptr;
-    bool no_down_shaft = (!stage_map[stage_map[p_ptr->stage][DOWN]][DOWN]
-			  || is_quest(stage_map[p_ptr->stage][DOWN])
-			  || is_quest(p_ptr->stage));
-    bool no_up_shaft = (!stage_map[stage_map[p_ptr->stage][UP]][UP]);
-    bool morgy = is_quest(p_ptr->stage)
-	&& stage_map[p_ptr->stage][DEPTH] == 100;
+    bool no_down_shaft = //(!stage_map[stage_map[p_ptr->stage][DOWN]][DOWN]
+	//|| is_quest(stage_map[p_ptr->stage][DOWN]) BELE lowest level needed
+	(is_quest(p_ptr->stage));
+    bool no_up_shaft = (chunk_list[p_ptr->stage].z_pos <= 1);
+    bool morgy = is_quest(p_ptr->stage);
+    //BELE M is only quest? && stage_map[p_ptr->stage][DEPTH] == 100;
 
 
     /* Place "num" stairs */
@@ -337,15 +337,18 @@ void alloc_stairs(int feat, int num, int walls)
 	    if (no_up_shaft && (feat == FEAT_LESS_SHAFT))
 		return;
 
-	    /* Town or no way up -- must go down */
-	    if ((!p_ptr->danger) || (!stage_map[p_ptr->stage][UP])) {
+	    /* No way up -- must go down */
+	    if (chunk_list[p_ptr->stage].z_pos == 0) 
+	    {
 		/* Clear previous contents, add down stairs */
 		if (feat != FEAT_MORE_SHAFT)
 		    cave_set_feat(y, x, FEAT_MORE);
 	    }
 
 	    /* Bottom of dungeon, Morgoth or underworld -- must go up */
-	    else if ((!stage_map[p_ptr->stage][DOWN]) || underworld || morgy) {
+	    //else if ((!stage_map[p_ptr->stage][DOWN]) || morgy) BELE 
+	    else if (morgy) 
+	    {
 		/* Clear previous contents, add up stairs */
 		if (feat != FEAT_LESS_SHAFT)
 		    cave_set_feat(y, x, FEAT_LESS);

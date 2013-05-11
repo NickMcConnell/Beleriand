@@ -38,13 +38,13 @@ int wild_type = 0;
 extern bool no_vault(void)
 {
     /* No vaults on mountaintops */
-    if (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAINTOP)
-	return (TRUE);
-
+    //if (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAINTOP)
+//	return (TRUE);
+// BELE there will be some
     /* No vaults on dungeon entrances */
-    if ((stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)
-	&& (stage_map[p_ptr->stage][DOWN]))
-	return (TRUE);
+    //  if ((stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)
+//	&& (stage_map[p_ptr->stage][DOWN]))
+//	return (TRUE);
 
     /* Anywhere else is OK */
     return (FALSE);

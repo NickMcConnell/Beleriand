@@ -50,11 +50,6 @@ dun_data *dun;
 bool moria_level;
 
 /**
- * Is the level underworld?
- */
-bool underworld;
-
-/**
  * Number of wilderness vaults
  */
 int wild_vaults;
