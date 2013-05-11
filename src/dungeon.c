@@ -1843,20 +1843,13 @@ static void dungeon(void)
     }
 
     /* Track depth */
-    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
+    p_ptr->danger = region_info[chunk_list[p_ptr->stage].region].danger;
 
     /* Autosave */
     is_autosave = TRUE;
     save_game();
     is_autosave = FALSE;
     message_flush();
-
-    /* No stairs down from Quest */
-    if ((is_quest(p_ptr->stage))
-	&& ((p_ptr->create_stair == FEAT_MORE)
-	    || (p_ptr->create_stair == FEAT_MORE_SHAFT)))
-	p_ptr->create_stair = 0;
-
 
     /* No stairs from town or if not allowed */
     if (p_ptr->danger && OPT(adult_no_stairs)) {
