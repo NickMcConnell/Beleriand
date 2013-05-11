@@ -224,7 +224,7 @@ static void race_help(int i, void *db, const region *l)
 	else if (p_info[i].difficulty < 15) color = TERM_ORANGE;
 	else color = TERM_RED;
 	
-	text_out_c(color, format("Home town: %-15s\n", locality_name[stage_map[towns[p_info[i].hometown]][LOCALITY]]));
+	text_out_c(color, format("Home town: %-15s\n", "Homeless"));  //BELE hometown!!
 	text_out_e("Infravision: %d ft", p_info[i].infra * 10);
 	
 	/* Reset text_out() indentation */

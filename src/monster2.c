@@ -4523,11 +4523,11 @@ void monster_death(int m_idx)
 
 
     /* Mark quests as complete */
-    for (i = 0; i < MAX_Q_IDX; i++) {
+    //for (i = 0; i < MAX_Q_IDX; i++) {
 	/* Note completed quests */
-	if (stage_map[q_list[i].stage][1] == r_ptr->level)
-	    q_list[i].stage = 0;
-    }
+	//if (stage_map[q_list[i].stage][1] == r_ptr->level)
+    //  q_list[i].stage = 0;
+    //}  BELE quests need sorting
 
     /* Mark Sauron's other forms as dead */
     if ((r_ptr->level == 85) && (rf_has(r_ptr->flags, RF_QUESTOR)))

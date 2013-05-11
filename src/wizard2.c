@@ -1385,7 +1385,7 @@ static void do_cmd_wiz_cure_all(void)
 }
 
 
-/* Jump menu code */
+/* Jump menu code *///BELE this whole section needs fixing
 
 /**
  * Choice of location 
@@ -1410,7 +1410,7 @@ void jump_display(menu_type *menu, int oid, bool cursor, int row, int col,
 
     byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 
-    c_prt(attr, locality_name[stage_map[choice[oid]][LOCALITY]], row, col);
+    //c_prt(attr, locality_name[stage_map[choice[oid]][LOCALITY]], row, col);
 
 }
 
@@ -1427,9 +1427,9 @@ bool jump_action(menu_type *menu, const ui_event *evt, int oid)
     {
 	place = idx;
 	/* Accept request */
-	msg("You jump to %s level %d.",
-		   locality_name[stage_map[place][LOCALITY]],
-		   stage_map[place][DEPTH]);
+	//msg("You jump to %s level %d.",
+	//	   locality_name[stage_map[place][LOCALITY]],
+	//	   stage_map[place][DEPTH]);
     } 
     else
 	return TRUE;
@@ -1456,7 +1456,7 @@ bool jump_menu(int level, int *location)
 
     /* Get the possible stages */
     for (i = 0; i < NUM_STAGES; i++)
-	if ((stage_map[i][DEPTH] == level) && (stage_map[i][LOCALITY] != 0))
+	//if ((stage_map[i][DEPTH] == level) && (stage_map[i][LOCALITY] != 0))
 	    choice[j++] = i;
 
     /* Clear space */

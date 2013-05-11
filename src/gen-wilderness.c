@@ -1003,31 +1003,6 @@ extern void mtn_gen_old(void)
      * stage, place the player -NRM- */
     alloc_paths(stage, last_stage);
 
-    /* Dungeon entrance */
-    if ((stage_map[stage][DOWN])
-	&& (stage_map[stage_map[stage][DOWN]][LOCALITY] != UNDERWORLD)) {
-	/* Set the flag */
-	amon_rudh = TRUE;
-
-	/* Mim's cave on Amon Rudh */
-	i = 3;
-	while (i) {
-	    y = randint0(ARENA_HGT - 2) + 1;
-	    x = randint0(ARENA_WID - 2) + 1;
-	    if ((cave_feat[y][x] == FEAT_ROAD)
-		|| (cave_feat[y][x] == FEAT_GRASS)) {
-		cave_set_feat(y, x, FEAT_MORE);
-		i--;
-		stairs[2 - i].y = y;
-		stairs[2 - i].x = x;
-		if ((i == 0)
-		    && (stage_map[p_ptr->last_stage][STAGE_TYPE] == CAVE))
-		    player_place(y, x);
-	    }
-	}
-    }
-
-
     /* Make paths permanent */
     for (y = 0; y < ARENA_HGT; y++) {
 	for (x = 0; x < ARENA_WID; x++)
@@ -1969,7 +1944,7 @@ extern void desert_gen_old(void)
 {
     bool made_plat;
 
-    int i, j, k, y, x, d;
+    int i, j, k, y, x;
     int plats, a, b;
     int stage = p_ptr->stage;
     int last_stage = p_ptr->last_stage;
@@ -1979,7 +1954,6 @@ extern void desert_gen_old(void)
 			  FEAT_DUNE, FEAT_QUARTZ, FEAT_NONE
     };
     bool dummy;
-    bool made_gate = FALSE;
     feature_type *f_ptr;
 
 
@@ -2070,36 +2044,6 @@ extern void desert_gen_old(void)
 		&& !(tf_has(f_ptr->flags, TF_PERMANENT))) {
 		cave_set_feat(y, x, FEAT_PERM_SOLID);
 	    }
-	}
-    }
-
-    /* Dungeon entrance */
-    if ((stage_map[stage][DOWN])
-	&& (stage_map[stage_map[stage][DOWN]][LOCALITY] != UNDERWORLD)) {
-	/* Hack - no vaults */
-	wild_vaults = 0;
-
-	/* Angband! */
-	for (d = 0; d < ARENA_WID; d++) {
-	    for (y = 0; y < d; y++) {
-		x = d - y;
-		if (!in_bounds_fully(y, x))
-		    continue;
-		if (cave_feat[y][x] == FEAT_ROAD) {
-		    /* The gate of Angband */
-		    cave_set_feat(y, x, FEAT_MORE);
-		    made_gate = TRUE;
-		    if ((stage_map[p_ptr->last_stage][STAGE_TYPE] == CAVE)
-			|| (turn < 10))
-			player_place(y, x);
-		    break;
-		} else {
-		    /* The walls of Thangorodrim */
-		    cave_set_feat(y, x, FEAT_WALL_SOLID);
-		}
-	    }
-	    if (made_gate)
-		break;
 	}
     }
 
