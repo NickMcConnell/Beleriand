@@ -1132,11 +1132,11 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 }
 
 /**
- * Handle the player moving from one chunk to an adjacent one.  This function
- * needs to handle moving in the eight surface directions, plus up or down
- * one level, and the consequent moving of chunks to and from chunk_list.
+ * Deal with re-aligning the playing arena on the same z-level
+ *
+ * Used for walking off the edge of a chunk
  */
-void chunk_change(int z_offset, int y_offset, int x_offset)
+void arena_realign(int y_offset, int x_offset)
 {
     int i, x, y;
     bool y_reverse = FALSE, x_reverse = FALSE;
@@ -1150,8 +1150,7 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	x_reverse = TRUE;
 
     /* Get the new centre chunk */
-    if (z_offset == 0) 
-	new_idx = chunk_offset_to_adjacent(0, y_offset, x_offset);
+    new_idx = chunk_offset_to_adjacent(0, y_offset, x_offset);
 
     /* Unload chunks no longer required */
     for (y = 0; y < 3; y++)
@@ -1161,26 +1160,22 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	    chunk_ref *ref = NULL;
 	    int chunk_idx;
 
-	    /* Same level, so some chunks remain */
-	    if (z_offset == 0)
+	    /* Keep chunks adjacent to the new centre */
+	    if ((ABS(x_offset - x) < 2) && (ABS(y_offset - y) < 2))
 	    {
-		/* Keep chunks adjacent to the new centre */
-		if ((ABS(x_offset - x) < 2) && (ABS(y_offset - y) < 2))
-		{
-		    int adj_index;
-		    int new_y = y + 1 - y_offset;
-		    int new_x = x + 1 - x_offset;
-
-		    if ((new_y < 0) || (new_x < 0)) continue;
-
-		    /* Record this one as existing */
-		    adj_index = chunk_offset_to_adjacent(0, new_y, new_x);
-		    if (adj_index == -1)
-			quit_fmt("Bad chunk index at y offset %d, x offset %d",
+		int adj_index;
+		int new_y = y + 1 - y_offset;
+		int new_x = x + 1 - x_offset;
+		
+		if ((new_y < 0) || (new_x < 0)) continue;
+		
+		/* Record this one as existing */
+		adj_index = chunk_offset_to_adjacent(0, new_y, new_x);
+		if (adj_index == -1)
+		    quit_fmt("Bad chunk index at y offset %d, x offset %d",
 				 new_y, new_x);
-		    chunk_exists[adj_index] = TRUE;
-		    continue;
-		}
+		chunk_exists[adj_index] = TRUE;
+		continue;
 	    }
 
 	    /* Access the chunk's placeholder in chunk_list.
@@ -1197,175 +1192,179 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
     forget_view();
 
     /* Re-align current playing arena */
-    if (z_offset == 0)
+    for (y = 0; y < ARENA_HGT - ABS(y_offset - 1) * CHUNK_HGT; y++)
     {
-	for (y = 0; y < ARENA_HGT - ABS(y_offset - 1) * CHUNK_HGT; y++)
+	int y_read, y_write;
+
+	/* Work out what to copy */
+	if (y_reverse)
 	{
-	    int y_read, y_write;
+	    y_read = (ARENA_HGT - CHUNK_HGT - 1) - y;
+	    y_write = (ARENA_HGT - 1) - y;
+	}
+	else
+	{
+	    y_read = y + CHUNK_HGT * (y_offset - 1);
+	    y_write = y;
+	}
+
+	for (x = 0; x < ARENA_WID - ABS(x_offset - 1) * CHUNK_WID; x++)
+	{
+	    int x_read, x_write;
+	    int this_o_idx, next_o_idx;
 
 	    /* Work out what to copy */
-	    if (y_reverse)
+	    if (x_reverse)
 	    {
-		y_read = (ARENA_HGT - CHUNK_HGT - 1) - y;
-		y_write = (ARENA_HGT - 1) - y;
+		x_read = (ARENA_WID - CHUNK_WID - 1) - x;
+		x_write = (ARENA_WID - 1) - x;
 	    }
 	    else
 	    {
-		y_read = y + CHUNK_HGT * (y_offset - 1);
-		y_write = y;
+		x_read = x + CHUNK_WID * (x_offset - 1);
+		x_write = x;
 	    }
 
-	    for (x = 0; x < ARENA_WID - ABS(x_offset - 1) * CHUNK_WID; x++)
+	    /* Terrain */
+	    cave_feat[y_write][x_write] = cave_feat[y_read][x_read];
+	    cave_feat[y_read][x_read] = 0;
+	    cave_copy(cave_info[y_write][x_write],
+		      cave_info[y_read][x_read]);
+	    cave_wipe(cave_info[y_read][x_read]);
+
+	    /* Objects */
+	    if (cave_o_idx[y_read][x_read])
 	    {
-		int x_read, x_write;
-		int this_o_idx, next_o_idx;
-
-		/* Work out what to copy */
-		if (x_reverse)
+		cave_o_idx[y_write][x_write] = cave_o_idx[y_read][x_read];
+		for (this_o_idx = cave_o_idx[y_read][x_read]; this_o_idx;
+		     this_o_idx = next_o_idx)
 		{
-		    x_read = (ARENA_WID - CHUNK_WID - 1) - x;
-		    x_write = (ARENA_WID - 1) - x;
-		}
-		else
-		{
-		    x_read = x + CHUNK_WID * (x_offset - 1);
-		    x_write = x;
-		}
-
-		/* Terrain */
-		cave_feat[y_write][x_write] = cave_feat[y_read][x_read];
-		cave_feat[y_read][x_read] = 0;
-		cave_copy(cave_info[y_write][x_write],
-			  cave_info[y_read][x_read]);
-		cave_wipe(cave_info[y_read][x_read]);
-
-		/* Objects */
-		if (cave_o_idx[y_read][x_read])
-		{
-		    cave_o_idx[y_write][x_write] = cave_o_idx[y_read][x_read];
-		    for (this_o_idx = cave_o_idx[y_read][x_read]; this_o_idx;
-			 this_o_idx = next_o_idx)
-		    {
-			object_type *o_ptr = &o_list[this_o_idx];
-
-			/* Adjust stuff */
-			o_ptr->iy = y_write;
-			o_ptr->ix = x_write;
-			next_o_idx = o_ptr->next_o_idx;
-		    }
-		    cave_o_idx[y_read][x_read] = 0;
-		}
-
-		/* Monsters */
-		if (cave_m_idx[y_read][x_read] > 0)
-		{
-		    monster_type *m_ptr = &m_list[cave_m_idx[y_read][x_read]];
+		    object_type *o_ptr = &o_list[this_o_idx];
 
 		    /* Adjust stuff */
-		    m_ptr->fy = y_write;
-		    m_ptr->fx = x_write;
-
-		    if ((m_ptr->ty >= -((y_offset - 1) * CHUNK_HGT)) &&
-			(m_ptr->ty < (4 - y_offset) * CHUNK_HGT) &&
-			(m_ptr->tx >= -((x_offset - 1) * CHUNK_WID)) &&
-			(m_ptr->tx < (4 - x_offset) * CHUNK_WID))
-		    {
-			m_ptr->ty = m_ptr->ty + (y_offset - 1) * CHUNK_HGT;
-			m_ptr->tx = m_ptr->tx + (x_offset - 1) * CHUNK_WID;
-		    }
-		    if ((m_ptr->y_terr >= -((y_offset - 1) * CHUNK_HGT)) &&
-			(m_ptr->y_terr < (4 - y_offset) * CHUNK_HGT) &&
-			(m_ptr->x_terr >= -((x_offset - 1) * CHUNK_WID)) &&
-			(m_ptr->x_terr < (4 - x_offset) * CHUNK_WID))
-		    {
-			m_ptr->y_terr =
-			    m_ptr->y_terr + (y_offset - 1) * CHUNK_HGT;
-			m_ptr->x_terr =
-			    m_ptr->x_terr + (x_offset - 1) * CHUNK_WID;
-		    }
-		    cave_m_idx[y_write][x_write] = cave_m_idx[y_read][x_read];
-		    cave_m_idx[y_read][x_read] = 0;
+		    o_ptr->iy = y_write;
+		    o_ptr->ix = x_write;
+		    next_o_idx = o_ptr->next_o_idx;
 		}
-		/* Remove the player for now */
-		else if (cave_m_idx[y_read][x_read] < 0)
-		    cave_m_idx[y_read][x_read] = 0;
+		cave_o_idx[y_read][x_read] = 0;
 	    }
-	}
 
-	/* Traps */
-	for (i = 0; i < trap_max; i++)
-	{
-	    /* Point to this trap */
-	    trap_type *t_ptr = &trap_list[i];
-	    int ty = t_ptr->fy;
-	    int tx = t_ptr->fx;
-
-	    if ((ty >= -((y_offset - 1) * CHUNK_HGT)) &&
-		(ty < (4 - y_offset) * CHUNK_HGT) &&
-		(tx >= -((x_offset - 1) * CHUNK_WID)) &&
-		(tx < (4 - x_offset) * CHUNK_WID))
+	    /* Monsters */
+	    if (cave_m_idx[y_read][x_read] > 0)
 	    {
-		/* Adjust stuff */
-		t_ptr->fy = ty + (y_offset - 1) * CHUNK_HGT;
-		t_ptr->fx = tx + (x_offset - 1) * CHUNK_WID;
-	    }
-	    else
-		/* Shouldn't happen */
-		remove_trap(t_ptr->fy, t_ptr->fx, FALSE, i);
-	}
+		monster_type *m_ptr = &m_list[cave_m_idx[y_read][x_read]];
 
-	/* Move the player */
-	p_ptr->py -= CHUNK_HGT * (y_offset - 1);
-	p_ptr->px -= CHUNK_WID * (x_offset - 1);
-	cave_m_idx[p_ptr->py][p_ptr->px] = -1;
-	p_ptr->last_stage = p_ptr->stage;
-	p_ptr->stage = chunk_list[p_ptr->stage].adjacent[new_idx];
+		/* Adjust stuff */
+		m_ptr->fy = y_write;
+		m_ptr->fx = x_write;
+
+		if ((m_ptr->ty >= -((y_offset - 1) * CHUNK_HGT)) &&
+		    (m_ptr->ty < (4 - y_offset) * CHUNK_HGT) &&
+		    (m_ptr->tx >= -((x_offset - 1) * CHUNK_WID)) &&
+		    (m_ptr->tx < (4 - x_offset) * CHUNK_WID))
+		{
+		    m_ptr->ty = m_ptr->ty + (y_offset - 1) * CHUNK_HGT;
+		    m_ptr->tx = m_ptr->tx + (x_offset - 1) * CHUNK_WID;
+		}
+		if ((m_ptr->y_terr >= -((y_offset - 1) * CHUNK_HGT)) &&
+		    (m_ptr->y_terr < (4 - y_offset) * CHUNK_HGT) &&
+		    (m_ptr->x_terr >= -((x_offset - 1) * CHUNK_WID)) &&
+		    (m_ptr->x_terr < (4 - x_offset) * CHUNK_WID))
+		{
+		    m_ptr->y_terr =
+			m_ptr->y_terr + (y_offset - 1) * CHUNK_HGT;
+		    m_ptr->x_terr =
+			m_ptr->x_terr + (x_offset - 1) * CHUNK_WID;
+		}
+		cave_m_idx[y_write][x_write] = cave_m_idx[y_read][x_read];
+		cave_m_idx[y_read][x_read] = 0;
+	    }
+	    /* Remove the player for now */
+	    else if (cave_m_idx[y_read][x_read] < 0)
+		cave_m_idx[y_read][x_read] = 0;
+	}
     }
+
+    /* Traps */
+    for (i = 0; i < trap_max; i++)
+    {
+	/* Point to this trap */
+	trap_type *t_ptr = &trap_list[i];
+	int ty = t_ptr->fy;
+	int tx = t_ptr->fx;
+
+	if ((ty >= -((y_offset - 1) * CHUNK_HGT)) &&
+	    (ty < (4 - y_offset) * CHUNK_HGT) &&
+	    (tx >= -((x_offset - 1) * CHUNK_WID)) &&
+	    (tx < (4 - x_offset) * CHUNK_WID))
+	{
+	    /* Adjust stuff */
+	    t_ptr->fy = ty + (y_offset - 1) * CHUNK_HGT;
+	    t_ptr->fx = tx + (x_offset - 1) * CHUNK_WID;
+	}
+	else
+	    /* Shouldn't happen */
+	    remove_trap(t_ptr->fy, t_ptr->fx, FALSE, i);
+    }
+
+    /* Move the player */
+    p_ptr->py -= CHUNK_HGT * (y_offset - 1);
+    p_ptr->px -= CHUNK_WID * (x_offset - 1);
+    cave_m_idx[p_ptr->py][p_ptr->px] = -1;
+    p_ptr->last_stage = p_ptr->stage;
+    p_ptr->stage = chunk_list[p_ptr->stage].adjacent[new_idx];
 
 
     /* Reload or generate chunks to fill the playing area. 
      * Note that chunk generation needs to write the adjacent[] entries */
-    if (z_offset == 0)
+    for (y = 0; y < 3; y++)
     {
-	for (y = 0; y < 3; y++)
+	for (x = 0; x < 3; x++)
 	{
-	    for (x = 0; x < 3; x++)
-	    {
-		int chunk_idx;
-		int adj_index = chunk_offset_to_adjacent(0, y, x);
-		chunk_ref ref = CHUNK_EMPTY;
+	    int chunk_idx;
+	    int adj_index = chunk_offset_to_adjacent(0, y, x);
+	    chunk_ref ref = CHUNK_EMPTY;
 		
-		/* Already in the current playing area */
-		if (chunk_exists[adj_index])
-		    continue;
+	    /* Already in the current playing area */
+	    if (chunk_exists[adj_index])
+		continue;
 	    
-		/* Get the location data */
-		ref.region = chunk_list[p_ptr->stage].region;
-		ref.z_pos = 0;
-		ref.y_pos = chunk_list[p_ptr->stage].y_pos;
-		ref.x_pos = chunk_list[p_ptr->stage].x_pos;
-		chunk_adjacent_data(&ref, 0, y, x);
+	    /* Get the location data */
+	    ref.region = chunk_list[p_ptr->stage].region;
+	    ref.z_pos = 0;
+	    ref.y_pos = chunk_list[p_ptr->stage].y_pos;
+	    ref.x_pos = chunk_list[p_ptr->stage].x_pos;
+	    chunk_adjacent_data(&ref, 0, y, x);
 	    
-		/* Load it if it already exists */
-		chunk_idx = chunk_find(ref);
-		if ((chunk_idx != MAX_CHUNKS) && chunk_list[chunk_idx].chunk)
-		    chunk_read(chunk_idx, y, x);
+	    /* Load it if it already exists */
+	    chunk_idx = chunk_find(ref);
+	    if ((chunk_idx != MAX_CHUNKS) && chunk_list[chunk_idx].chunk)
+		chunk_read(chunk_idx, y, x);
 
-		/* Otherwise generate a new one */
-		else 
-		{
-		    int xx, yy;
-		    int x0 = x * CHUNK_WID, y0 = y * CHUNK_HGT;
+	    /* Otherwise generate a new one */
+	    else 
+	    {
+		int xx, yy;
+		int x0 = x * CHUNK_WID, y0 = y * CHUNK_HGT;
 
-		    for (yy = y0; yy < y0 + CHUNK_HGT; yy++)
-			for (xx = x0; xx < x0 + CHUNK_WID; xx++)
-			    cave_wipe(cave_info[yy][xx]);
+		for (yy = y0; yy < y0 + CHUNK_HGT; yy++)
+		    for (xx = x0; xx < x0 + CHUNK_WID; xx++)
+			cave_wipe(cave_info[yy][xx]);
 
-		    chunk_generate(ref, y, x);
-		}
+		chunk_generate(ref, y, x);
 	    }
 	}
     }
     illuminate();
     update_view();
+}
+
+/**
+ * Handle the player moving from one chunk to an adjacent one.  This function
+ * needs to handle moving in the eight surface directions, plus up or down
+ * one level, and the consequent moving of chunks to and from chunk_list.
+ */
+void chunk_change(int z_offset, int y_offset, int x_offset)
+{
+    if (z_offset == 0) arena_realign(y_offset, x_offset);
 }
