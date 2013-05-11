@@ -1081,8 +1081,6 @@ bool cast_spell(int tval, int sindex, int dir, int plev)
 	}
     case SPELL_WORD_OF_RECALL:
 	{
-	    if (!word_recall(randint0(20) + 15))
-		break;
 	    break;
 	}
     case SPELL_WORD_OF_DESTRUCTION:
@@ -1419,8 +1417,6 @@ bool cast_spell(int tval, int sindex, int dir, int plev)
 	}
     case PRAYER_WORD_OF_RECALL:
 	{
-	    if (!word_recall(randint0(20) + 15))
-		break;
 	    break;
 	}
     case PRAYER_ALTER_REALITY:

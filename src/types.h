@@ -1220,8 +1220,6 @@ typedef struct player {
 
     bool black_breath;
 			/**< Major experience draining */
-    s16b word_recall;
-			/**< Word of recall counter */
 
     s16b energy;	/**< Current energy */
 

@@ -1395,67 +1395,6 @@ bool recall_menu(void)
 }
 
 /**
- * Set "p_ptr->word_recall", notice observable changes
- */
-bool set_recall(int v)
-{
-
-    bool notice = FALSE;
-
-    /* No use until the player has been somewhere */
-    if (((p_ptr->stage == p_ptr->home) && (!p_ptr->recall_pt)) || 
-	(!p_ptr->home)) 
-    {
-	msg("Nothing happens.");
-	return (FALSE);
-    }
-
-    /* Hack -- Force good values */
-    v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-    /* Open */
-    if (v) {
-	if (!p_ptr->word_recall) {
-	    inward = (p_ptr->stage != p_ptr->home);
-
-	    if (!recall_menu())
-		return FALSE;
-	    msg("The air about you becomes charged...");
-	    notice = TRUE;
-	}
-    }
-
-    /* Shut */
-    else {
-	if (p_ptr->word_recall) {
-	    msg("A tension leaves the air around you...");
-	    notice = TRUE;
-	}
-    }
-
-    /* Use the value */
-    p_ptr->word_recall = v;
-
-    /* Nothing to notice */
-    if (!notice)
-	return (FALSE);
-
-    /* Disturb */
-    if (OPT(disturb_state))
-	disturb(0, 0);
-
-    /* Redraw status */
-    p_ptr->redraw |= PR_STATUS;
-
-    /* Handle stuff */
-    handle_stuff(p_ptr);
-
-    /* Result */
-    return (TRUE);
-}
-
-
-/**
  * Hack - displays areas effected by detection spells.
  *
  */

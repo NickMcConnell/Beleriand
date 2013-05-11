@@ -613,7 +613,6 @@ void wr_player(void)
   
     wr_s16b(p_ptr->food);
     wr_s16b(p_ptr->energy);
-    wr_s16b(p_ptr->word_recall);
     wr_s16b(p_ptr->state.see_infra);
 
     /* Find the number of timed effects */

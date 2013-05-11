@@ -402,7 +402,6 @@ extern char xchar_trans(byte c);
 extern void check_experience(void);
 extern void gain_exp(s32b amount);
 extern void lose_exp(s32b amount);
-bool word_recall(int v);
 int motion_dir(int y1, int x1, int y2, int x2);
 extern int target_dir(struct keypress ch);
 extern bool get_rep_dir(int *dp);

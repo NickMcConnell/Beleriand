@@ -2631,10 +2631,6 @@ int apply_dispel(int power)
 	clear_timed(TMD_OPP_POIS, TRUE);
 	num_effects += 1;
     }
-    if (p_ptr->word_recall && (!check_save(power))) {
-	set_recall(0);
-	num_effects += 1;
-    }
     if ((p_ptr->special_attack & (ATTACK_CONFUSE)) && (!check_save(power))) {
 	p_ptr->special_attack &= ~(ATTACK_CONFUSE);
 	msg("Your hands stop glowing.");

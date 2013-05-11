@@ -438,16 +438,14 @@ static void print_tomb(void)
     center_string(buf, tmp);
     put_str(buf, 13, offset);
 
-    if (p_ptr->danger)
+    if (chunk_list[p_ptr->stage].z_pos > 0)
 	sprintf(tmp, "Killed in %s level %d",
-		locality_name[stage_map[p_ptr->stage][LOCALITY]], p_ptr->danger);
+		region_info[chunk_list[p_ptr->stage].region].name, 
+		chunk_list[p_ptr->stage].z_pos);
     else if (boat)
 	sprintf(tmp, "Sailed victorious to Aman.");
     else if (tree)
 	sprintf(tmp, "Retired to Fangorn Forest.");
-    else
-	sprintf(tmp, "Killed in %s town",
-		locality_name[stage_map[p_ptr->stage][LOCALITY]]);
     center_string(buf, tmp);
     put_str(buf, 14, offset);
 

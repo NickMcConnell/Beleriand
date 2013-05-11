@@ -2336,9 +2336,7 @@ enum
  * Is the player outside?
  */
 #define outside \
-    ((stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)	\
-     && (stage_map[p_ptr->stage][STAGE_TYPE] != VALLEY) \
-       && ((p_ptr->stage < 151) || (p_ptr->stage > 153)))
+    (chunk_list[p_ptr->stage].z_pos == 0)
 
 			 
 /**

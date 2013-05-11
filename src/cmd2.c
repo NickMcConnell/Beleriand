@@ -829,7 +829,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 
     /* Scatter contents. */
     if (trap & (CHEST_SCATTER)) {
-	if (stage_map[p_ptr->stage][STAGE_TYPE] >= CAVE)
+	if (chunk_list[p_ptr->stage].z_pos > 0)
 	    msg
 		("The contents of the chest scatter all over the dungeon!");
 	else

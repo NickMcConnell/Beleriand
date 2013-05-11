@@ -1241,53 +1241,6 @@ static void process_world(void)
 	    }
 	}
     }
-
-    /* Delayed Word-of-Recall */
-    if (p_ptr->word_recall) {
-	/* Count down towards recall */
-	p_ptr->word_recall--;
-
-	/* Activate the recall */
-	if (!p_ptr->word_recall) {
-	    /* Disturbing! */
-	    disturb(0, 0);
-
-	    /* Sound */
-	    sound(MSG_TPLEVEL);
-
-	    /* Determine the level */
-	    if (p_ptr->stage != p_ptr->home) {
-		msg("You feel yourself yanked homewards!");
-
-		/* Homeward bound */
-		p_ptr->last_stage = NOWHERE;
-		p_ptr->stage = p_ptr->home;
-
-		/* Reset depth */
-		p_ptr->danger = 0;
-
-		/* Leaving */
-		p_ptr->leaving = TRUE;
-	    } else {
-		msg("You feel yourself yanked away!");
-
-		/* New stage */
-		p_ptr->last_stage = NOWHERE;
-		p_ptr->stage = p_ptr->recall_pt;
-
-		/* Reset depth */
-		p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-		/* Leaving */
-		p_ptr->leaving = TRUE;
-	    }
-
-	    /* Sound */
-	    sound(MSG_TPLEVEL);
-
-	    p_ptr->redraw |= PR_STATUS;
-	}
-    }
 }
 
 
@@ -1445,7 +1398,7 @@ static void process_player(void)
 		&& !p_ptr->timed[TMD_POISONED] && !p_ptr->timed[TMD_AFRAID]
 		&& !p_ptr->timed[TMD_STUN] && !p_ptr->timed[TMD_CUT]
 		&& !p_ptr->timed[TMD_SLOW] && !p_ptr->timed[TMD_PARALYZED]
-		&& !p_ptr->timed[TMD_IMAGE] && !p_ptr->word_recall) {
+		&& !p_ptr->timed[TMD_IMAGE]) {
 		disturb(0, 0);
 	    }
 	}
@@ -2489,16 +2442,6 @@ void play_game(void)
 
 		/* Hack -- Prevent starvation */
 		(void) set_food(PY_FOOD_MAX - 1);
-
-		/* Hack -- cancel recall */
-		if (p_ptr->word_recall) {
-		    /* Message */
-		    msg("A tension leaves the air around you...");
-		    message_flush();
-
-		    /* Hack -- Prevent recall */
-		    p_ptr->word_recall = 0;
-		}
 
 		/* Note cause of death XXX XXX XXX */
 		strcpy(p_ptr->died_from, "Cheating death");

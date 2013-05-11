@@ -100,7 +100,6 @@ extern bool choose_ele_resist(void);
 extern void create_athelas(void);
 extern void dimen_door(void);
 void rebalance_weapon(void);
-extern bool set_recall(int v);
 extern bool hp_player(int num);
 extern void magic_spiking(void);
 extern bool lay_rune(int type);

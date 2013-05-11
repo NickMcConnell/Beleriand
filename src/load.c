@@ -996,7 +996,6 @@ int rd_player(void)
     /* Read the flags */
     rd_s16b(&p_ptr->food);
     rd_s16b(&p_ptr->energy);
-    rd_s16b(&p_ptr->word_recall);
     rd_s16b(&p_ptr->state.see_infra);
   
     /* Find the number of timed effects */

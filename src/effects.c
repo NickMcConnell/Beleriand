@@ -1145,8 +1145,6 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
     case EF_RECALL:
 	{
 	    *ident = TRUE;
-	    if (!word_recall(randint0(20) + 15))
-		return FALSE;
 	    return TRUE;
 	}
 
@@ -2344,8 +2342,6 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
 	}
     case EF_AVAVIR:
 	{
-	    if (!word_recall(randint0(20) + 15))
-		return FALSE;
 	    return TRUE;
 	}
     case EF_TOTILA:
@@ -2942,8 +2938,6 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
     }
     case EF_RAND_RECALL:
     {
-	if (!word_recall(randint0(20) + 15))
-	    return TRUE;
 	return TRUE;
     }
     case EF_RAND_REGAIN:

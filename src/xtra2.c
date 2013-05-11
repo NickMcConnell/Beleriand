@@ -40,19 +40,6 @@
 void verify_panel_int(bool centered);
 
 /**
- * Set "p_ptr->word_recall", notice observable changes
- */
-bool word_recall(int v)
-{
-    if (!p_ptr->word_recall) {
-	return set_recall(v);
-    } else {
-	return set_recall(0);
-    }
-}
-
-
-/**
  * Advance experience levels and print experience
  */
 void check_experience(void)
