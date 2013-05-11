@@ -76,10 +76,6 @@ typedef byte byte_chunk[CHUNK_WID];
  */
 typedef s16b s16b_chunk[CHUNK_WID];
 
-/**
- * An array of NUM_STAGES u16b's
- */
-typedef u16b u16b_stage[NUM_STAGES];
 
 
 

@@ -226,12 +226,6 @@
 #define MAX_RECALL_PTS   4
 
 /**
- * Number of stages.  The relationship between individual stages is defined
- * in the stage_map array in tables.c.     -NRM-
- */
-#define NUM_STAGES      412
-
-/**
  * Maximum number of live world chunks.
  */
 #define MAX_CHUNKS      256

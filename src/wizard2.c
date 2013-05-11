@@ -1455,9 +1455,9 @@ bool jump_menu(int level, int *location)
     choice = C_ZNEW(15, u16b);
 
     /* Get the possible stages */
-    for (i = 0; i < NUM_STAGES; i++)
+    //for (i = 0; i < NUM_STAGES; i++)
 	//if ((stage_map[i][DEPTH] == level) && (stage_map[i][LOCALITY] != 0))
-	    choice[j++] = i;
+//	    choice[j++] = i;
 
     /* Clear space */
     area.page_rows = j + 2;
