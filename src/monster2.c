@@ -4565,8 +4565,8 @@ void monster_death(int m_idx)
 	p_ptr->total_winner = TRUE;
 
 	/* Have a home now */
-	if (!p_ptr->home)
-	    p_ptr->home = towns[rp_ptr->hometown];
+	//if (!p_ptr->home)
+	//  p_ptr->home = towns[rp_ptr->hometown]; BELE hometown!
 
 	/* Redraw the "title" */
 	p_ptr->redraw |= (PR_TITLE);
