@@ -4325,13 +4325,15 @@ static void process_monster(monster_type * m_ptr)
 
     /* Handle territorial monsters */
     if ((rf_has(r_ptr->flags, RF_TERRITORIAL))
-	&& (stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)) {
+	&& (chunk_list[p_ptr->stage].z_pos == 0)) 
+    {
 	/* Territorial monsters get a direct energy boost when close to home */
 	int from_home =
 	    distance(m_ptr->y_terr, m_ptr->x_terr, m_ptr->fy, m_ptr->fx);
 
 	/* Step up in units of a fifth of monster detection range */
-	for (i = 5; i > 0; i--) {
+	for (i = 5; i > 0; i--) 
+	{
 	    if ((from_home * i) > (scan_range * 5))
 		break;
 	}
@@ -4341,7 +4343,8 @@ static void process_monster(monster_type * m_ptr)
 
 	/* If target is too far away from home, go back */
 	if (distance(m_ptr->y_terr, m_ptr->x_terr, m_ptr->ty, m_ptr->tx) >
-	    5 * scan_range) {
+	    5 * scan_range) 
+	{
 	    m_ptr->ty = m_ptr->y_terr;
 	    m_ptr->tx = m_ptr->x_terr;
 	}

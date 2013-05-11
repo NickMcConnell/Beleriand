@@ -544,78 +544,16 @@ s16b get_mon_num(int level)
 		&& (r_ptr->level != p_ptr->danger))
 		continue;
 
-	    /* Hack - handle dungeon specific -NRM- */
-	    if ((rf_has(r_ptr->flags, RF_RUDH))
-		&& (stage_map[p_ptr->stage][LOCALITY] != AMON_RUDH))
-		continue;
-
-	    if ((rf_has(r_ptr->flags, RF_NARGOTHROND))
-		&& (stage_map[p_ptr->stage][LOCALITY] != NARGOTHROND))
-		continue;
-
-	    if ((rf_has(r_ptr->flags, RF_DUNGORTHEB))
-		&& (stage_map[p_ptr->stage][LOCALITY] != NAN_DUNGORTHEB))
-		continue;
-
-	    if ((rf_has(r_ptr->flags, RF_GAURHOTH))
-		&& (stage_map[p_ptr->stage][LOCALITY] != TOL_IN_GAURHOTH))
-		continue;
-
-	    if ((rf_has(r_ptr->flags, RF_ANGBAND))
-		&& (stage_map[p_ptr->stage][LOCALITY] != ANGBAND))
-		continue;
-
 	    /* Hack - dungeon-only monsters */
 	    if ((rf_has(r_ptr->flags, RF_DUNGEON))
-		&& (stage_map[p_ptr->stage][STAGE_TYPE] != CAVE))
-		continue;
-
-	    /* Hack - choose flying monsters for mountaintop */
-	    if ((stage_map[p_ptr->stage][LOCALITY] == MOUNTAIN_TOP)
-		&& !(rf_has(r_ptr->flags, RF_FLYING)))
+		&& (chunk_list[p_ptr->stage].z_pos == 0))
 		continue;
 
 	    /* Accept */
 	    table[i].prob3 = table[i].prob2;
 
-	    /* Now modifications for locality etc follow -NRM- */
-
-	    /* Nan Dungortheb is spiderland, bad for humans and humanoids */
-	    if (stage_map[p_ptr->stage][LOCALITY] == NAN_DUNGORTHEB) {
-		if (r_ptr->d_char == 'S')
-		    table[i].prob3 *= 5;
-		if ((r_ptr->d_char == 'p') || (r_ptr->d_char == 'h'))
-		    table[i].prob3 /= 3;
-	    }
-
-	    /* Tol-In-Gaurhoth is full of wolves and undead */
-	    if (stage_map[p_ptr->stage][LOCALITY] == TOL_IN_GAURHOTH) {
-		if (r_ptr->d_char == 'C')
-		    table[i].prob3 *= 4;
-		else if (rf_has(r_ptr->flags, RF_UNDEAD))
-		    table[i].prob3 *= 2;
-	    }
-
-	    /* Most animals don't like desert and mountains */
-	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == DESERT)
-		|| (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN)) {
-		if ((r_ptr->d_char == 'R') || (r_ptr->d_char == 'J')
-		    || (r_ptr->d_char == 'c'))
-		    table[i].prob3 *= 2;
-		else if (rf_has(r_ptr->flags, RF_ANIMAL))
-		    table[i].prob3 /= 2;
-	    }
-
-	    /* Most animals do like forest */
-	    if (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST) {
-		if (r_ptr->d_char == 'R')
-		    table[i].prob3 /= 2;
-		else if ((rf_has(r_ptr->flags, RF_ANIMAL))
-			 && (r_ptr->d_char != 'Z'))
-		    table[i].prob3 *= 2;
-	    }
-
-
+	    /* Now modifications for locality etc follow -NRM- 
+	     BELE all gone */
 
 	    /* Keep low-level monsters rare */
 	    if (table[i].level < depth_rare)
@@ -2370,8 +2308,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
     /* No light hating monsters in daytime */
     if ((rf_has(r_ptr->flags, RF_HURT_LIGHT))
 	&& ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))
-	&& (stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)
-	&& (stage_map[p_ptr->stage][STAGE_TYPE] != VALLEY))
+	&& (chunk_list[p_ptr->stage].z_pos == 0))
 
 	return (FALSE);
 
@@ -2447,14 +2384,14 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
     {
 	int val = r_ptr->sleep;
 	n_ptr->csleep = ((val * 2) + randint1(val * 10));
-    } else if (!((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))
-	       && (stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)
-	       && (p_ptr->danger) && (!character_dungeon))
+    } 
+    else if (!((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))
+	     && (chunk_list[p_ptr->stage].z_pos == 0)
+	     && (p_ptr->danger) && (!character_dungeon))
 	n_ptr->csleep += 20;
 
     /* Enforce no sleeping if needed */
-    if ((stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAINTOP)
-	&& (tf_has(f_ptr->flags, TF_FALL)))
+    if (tf_has(f_ptr->flags, TF_FALL))
 	n_ptr->csleep = 0;
 
     /* Assign maximal hitpoints */
@@ -2552,7 +2489,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	if (chance < 0)
 	    chance = 0;
 	k = randint0(chance + 20);
-	if ((k > 20) || (stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
+	if ((k > 20) || (chunk_list[p_ptr->stage].z_pos > 0)
 	    || (p_ptr->themed_level == THEME_WARLORDS)
 	    || cave_has(cave_info[y][x], CAVE_ICKY))
 	    n_ptr->hostile = -1;
@@ -2970,8 +2907,7 @@ bool alloc_monster(int dis, bool slp, bool quick)
 
 	/* Monsters flying only on mountaintop */
 	f_ptr = &f_info[cave_feat[y][x]];
-	if (tf_has(f_ptr->flags, TF_FALL)
-	    && (stage_map[p_ptr->stage][STAGE_TYPE] != MOUNTAINTOP))
+	if (tf_has(f_ptr->flags, TF_FALL))
 	    continue;
 
 	/* Do not put random monsters in marked rooms. */
