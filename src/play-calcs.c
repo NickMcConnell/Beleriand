@@ -2575,13 +2575,14 @@ extern void calc_bonuses(object_type inventory[], player_state *state,
     state->evasion_chance = 0;
 
     /* Evasion AC boost */
-    if (player_has(PF_EVASION)
-	|| ((player_has(PF_DWARVEN))
-	    && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
-	|| ((player_has(PF_PLAINSMAN))
-	    && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
-	|| ((player_has(PF_EDAIN))
-	    && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST))) {
+    if (player_has(PF_EVASION))
+	//|| ((player_has(PF_DWARVEN))
+	//  && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
+	//|| ((player_has(PF_PLAINSMAN))
+	//  && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
+	//|| ((player_has(PF_EDAIN))
+	//  && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST))) 
+    {
 	int cur_wgt = 0;
 	int evasion_wgt;
 	int max_bonus;

@@ -535,13 +535,13 @@ bool make_attack_normal(monster_type * m_ptr, int y, int x)
 	}
 
 	/* Try for Evasion */
-	if (((player_has(PF_EVASION))
-	     || ((player_has(PF_DWARVEN))
-		 && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
-	     || ((player_has(PF_PLAINSMAN))
-		 && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
-	     || ((player_has(PF_EDAIN))
-		 && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
+	if (player_has(PF_EVASION)
+	    //|| ((player_has(PF_DWARVEN)) BELE race specialties
+	    //	 && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
+	    //|| ((player_has(PF_PLAINSMAN))
+	    //	 && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
+	    //|| ((player_has(PF_EDAIN))
+	    //	 && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
 	    && (randint1(100) <= p_ptr->state.evasion_chance)
 	    && (!p_ptr->timed[TMD_PARALYZED])) {
 	    /* Message */

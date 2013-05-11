@@ -6046,13 +6046,13 @@ static bool project_p(int who, int d, int y, int x, int dam, int typ)
 	    int dodging = 0;
 
 	    /* Try for Evasion */
-	    if (((player_has(PF_EVASION))
-		 || ((player_has(PF_DWARVEN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
-		 || ((player_has(PF_PLAINSMAN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
-		 || ((player_has(PF_EDAIN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
+	    if (player_has(PF_EVASION)
+		 //|| ((player_has(PF_DWARVEN))
+		 //  && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
+		 //|| ((player_has(PF_PLAINSMAN))
+		 //  && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
+		 //|| ((player_has(PF_EDAIN))
+		 //  && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
 		&& (randint1(75) <= p_ptr->state.evasion_chance)) {
 		/* Message */
 		msg("You Evade the boulder!");
@@ -6115,13 +6115,13 @@ static bool project_p(int who, int d, int y, int x, int dam, int typ)
     case GF_SHOT:
 	{
 	    /* Try for Evasion */
-	    if (((player_has(PF_EVASION))
-		 || ((player_has(PF_DWARVEN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
-		 || ((player_has(PF_PLAINSMAN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
-		 || ((player_has(PF_EDAIN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
+	    if (player_has(PF_EVASION)
+		//|| ((player_has(PF_DWARVEN))
+		//     && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
+		//|| ((player_has(PF_PLAINSMAN))
+		//   && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
+		//|| ((player_has(PF_EDAIN))
+		//   && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
 		&& (randint1(75) <= p_ptr->state.evasion_chance)) {
 		/* Message */
 		msg("You Evade the missile!");
@@ -6187,13 +6187,13 @@ static bool project_p(int who, int d, int y, int x, int dam, int typ)
 	    dam += terrain_adjustment;
 
 	    /* Try for Evasion */
-	    if (((player_has(PF_EVASION))
-		 || ((player_has(PF_DWARVEN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
-		 || ((player_has(PF_PLAINSMAN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
-		 || ((player_has(PF_EDAIN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
+	    if (player_has(PF_EVASION)
+		// || ((player_has(PF_DWARVEN))
+		//     && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
+		//|| ((player_has(PF_PLAINSMAN))
+		//   && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
+		//|| ((player_has(PF_EDAIN))
+		//   && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
 		&& (randint1(75) <= p_ptr->state.evasion_chance)) {
 		/* Message */
 		msg("You Evade the missile!");
@@ -6265,13 +6265,13 @@ static bool project_p(int who, int d, int y, int x, int dam, int typ)
 	    dam += terrain_adjustment;
 
 	    /* Try for Evasion */
-	    if (((player_has(PF_EVASION))
-		 || ((player_has(PF_DWARVEN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
-		 || ((player_has(PF_PLAINSMAN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
-		 || ((player_has(PF_EDAIN))
-		     && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
+	    if (player_has(PF_EVASION)
+		// || ((player_has(PF_DWARVEN))
+		//   && (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
+		//|| ((player_has(PF_PLAINSMAN))
+		//   && (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
+		//|| ((player_has(PF_EDAIN))
+		//     && (stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)))
 		&& (randint1(75) <= p_ptr->state.evasion_chance)) {
 		/* Message */
 		msg("You Evade the missile!");
