@@ -1191,8 +1191,6 @@ typedef struct player {
     s16b home;		/**< Home town */
     s16b danger;       	/**< Cur danger */
 
-    s16b recall[4];	/**< Recall points */
-    s16b recall_pt;	/**< Which recall point is active */
     s16b stage;		/**< Current chunk */
     s16b last_stage;	/**< Previous chunk */
 

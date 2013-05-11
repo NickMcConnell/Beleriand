@@ -602,9 +602,6 @@ void wr_player(void)
   
     /* Max Player and Dungeon Levels */
     wr_s16b(p_ptr->max_lev);
-    wr_byte(MAX_RECALL_PTS);
-    for (i = 0; i < MAX_RECALL_PTS; i++) wr_s16b(p_ptr->recall[i]);
-    wr_s16b(p_ptr->recall_pt);
   
     /* More info */
     wr_s16b(p_ptr->speed_boost);	/* Specialty Fury */

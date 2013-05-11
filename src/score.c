@@ -62,13 +62,14 @@ typedef struct
  */
 static int max_depth(void)
 {
-  int i, max = stage_map[p_ptr->stage][DEPTH];
+    //int i, max = stage_map[p_ptr->stage][DEPTH];
 
-  for (i = 0; i < 4; i++)
-    {
-      if (max < stage_map[p_ptr->recall[i]][DEPTH])
-	max = stage_map[p_ptr->recall[i]][DEPTH];
-    }
+    //for (i = 0; i < 4; i++)
+    //{
+    //if (max < stage_map[p_ptr->recall[i]][DEPTH])
+//	max = stage_map[p_ptr->recall[i]][DEPTH];
+    //  }  BELE 
+    int max = 0;
 
   return (max);
 }

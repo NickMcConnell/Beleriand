@@ -896,7 +896,7 @@ int rd_player(void)
 {
     int i;
 
-    byte max_recall_pts, tmd_max, rune_tail, max_specialties;
+    byte tmd_max, rune_tail, max_specialties;
   
     byte tmp8u;
     u32b tmp32u;
@@ -979,10 +979,6 @@ int rd_player(void)
     rd_u16b(&p_ptr->csp_frac);
   
     rd_s16b(&p_ptr->max_lev);
-    rd_byte(&max_recall_pts);
-    for (i = 0; i < max_recall_pts; i++)	
-	rd_s16b(&p_ptr->recall[i]);
-    rd_s16b(&p_ptr->recall_pt);
 
     /* Hack -- Repair maximum player level */
     if (p_ptr->max_lev < p_ptr->lev) p_ptr->max_lev = p_ptr->lev;

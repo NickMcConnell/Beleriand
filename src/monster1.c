@@ -582,10 +582,11 @@ extern void describe_monster(int r_idx, bool spoilers)
 
 
 	/* Determine "con" of the monster (default is TERM_WHITE) */
-	if (r_ptr->level < p_ptr->recall[0] - 5)
-	    con_color = TERM_SLATE;
-	if (r_ptr->level > p_ptr->recall[0] + 1)
-	    con_color = TERM_RED;
+	//if (r_ptr->level < p_ptr->recall[0] - 5)
+	//  con_color = TERM_SLATE;
+	//if (r_ptr->level > p_ptr->recall[0] + 1)
+	//    con_color = TERM_RED;
+	//  BELE needs some max danger value
 
 	/* Build the description of rarity and location. */
 	if (rf_has(r_ptr->flags, RF_QUESTOR)) {

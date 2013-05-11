@@ -1696,7 +1696,8 @@ extern void py_steal(int y, int x)
 	    purse *= 1 + randint1(3) + randint1(r_ptr->level / 30);
 
 	/* Pickings are scarce in a land of many thieves. */
-	purse = purse * (p_ptr->danger + 5) / (p_ptr->recall[0] + 5);
+	//BELE purse = purse * (p_ptr->danger + 5) / (p_ptr->recall[0] + 5);
+	purse = purse * (p_ptr->danger + 5) / (p_ptr->danger + 5);
 
 	/* Increase player gold. */
 	p_ptr->au += purse;
