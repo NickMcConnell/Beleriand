@@ -413,12 +413,9 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
   
   /* Save the level and such */
   strnfmt(entry->cur_lev, sizeof(entry->cur_lev), "%3d", p_ptr->lev);
-  if (p_ptr->danger)
-    strnfmt(entry->cur_dun, sizeof(entry->cur_dun), "%s level %d", 
-	    locality_name[stage_map[p_ptr->stage][LOCALITY]], p_ptr->danger);
-  else
-    strnfmt(entry->cur_dun, sizeof(entry->cur_dun), "%s Town", 
-	    locality_name[stage_map[p_ptr->stage][LOCALITY]]);
+  strnfmt(entry->cur_dun, sizeof(entry->cur_dun), "%s level %d", 
+	    region_info[chunk_list[p_ptr->stage].region].name, 
+	    chunk_list[p_ptr->stage].z_pos);
   
   strnfmt(entry->max_lev, sizeof(entry->max_lev), "%3d", p_ptr->max_lev);
   strnfmt(entry->max_dun, sizeof(entry->max_dun), "%3d", max_depth());

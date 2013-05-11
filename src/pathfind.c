@@ -535,8 +535,7 @@ static void run_init(int dir)
     p_ptr->run_old_dir = dir;
 
     /* If it's wilderness, done -NRM- */
-    if ((stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)
-	&& (stage_map[p_ptr->stage][STAGE_TYPE] != TOWN))
+    if (chunk_list[p_ptr->stage].z_pos == 0)
 	return;
 
     /* Assume looking for open area */
@@ -640,8 +639,8 @@ static bool run_test(void)
     max = (prev_dir & 0x01) + 1;
 
     /* Simplistic running for outdoors -NRM- */
-    if ((stage_map[p_ptr->stage][STAGE_TYPE] != CAVE)
-	&& (stage_map[p_ptr->stage][STAGE_TYPE] != TOWN)) {
+    if (chunk_list[p_ptr->stage].z_pos == 0)
+    {
 	/* Look at every newly adjacent square. */
 	for (i = -max; i <= max; i++) {
 	    s16b this_o_idx, next_o_idx = 0;
