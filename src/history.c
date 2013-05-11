@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "generate.h"
 #include "history.h"
 
 /*
@@ -155,7 +156,8 @@ bool history_lose_artifact(byte a_idx)
  *
  * Return TRUE on success.
  */
-bool history_add_full(u16b type, byte a_idx, s16b place, s16b clev, s32b turn, const char *text)
+bool history_add_full(u16b type, byte a_idx, u16b z_pos, u16b y_pos, 
+		      u16b x_pos, s16b clev, s32b turn, const char *text)
 {
 	/* Allocate the history list if needed */
 	if (!history_list)
@@ -167,7 +169,9 @@ bool history_add_full(u16b type, byte a_idx, s16b place, s16b clev, s32b turn, c
 
 	/* History list exists and is not full.  Add an entry at the current counter location. */
 	history_list[history_ctr].type = type;
-	history_list[history_ctr].place = place;
+	history_list[history_ctr].z_pos = z_pos;
+	history_list[history_ctr].y_pos = y_pos;
+	history_list[history_ctr].x_pos = x_pos;
 	history_list[history_ctr].clev = clev;
 	history_list[history_ctr].a_idx = a_idx;
 	history_list[history_ctr].turn = turn;
@@ -189,7 +193,11 @@ bool history_add_full(u16b type, byte a_idx, s16b place, s16b clev, s32b turn, c
  */
 bool history_add(const char *event, u16b type, byte a_idx)
 {
-	return history_add_full(type, a_idx, p_ptr->stage, p_ptr->lev, turn, event);
+    u16b z_pos = chunk_list[p_ptr->stage].z_pos;
+    u16b y_pos = chunk_list[p_ptr->stage].y_pos;
+    u16b x_pos = chunk_list[p_ptr->stage].x_pos;
+
+    return history_add_full(type, a_idx, z_pos, y_pos, x_pos, p_ptr->lev, turn, event);
 }
 
 
@@ -348,17 +356,14 @@ static void print_history_header(void)
 
 static void history_get_place(char *place, size_t len, int i)
 {
-    int region = stage_map[history_list[i].place][LOCALITY];
-    int lev = stage_map[history_list[i].place][DEPTH];
+    u16b z_pos = history_list[i].z_pos;
+    u16b y_pos = history_list[i].y_pos;
+    u16b x_pos = history_list[i].x_pos;
+    int region = find_region(y_pos, x_pos);
     char buf[30];
 
     /* Get the location name */
-    if (lev)
-	strnfmt(buf, sizeof(buf), "%15s%4d ", locality_name[region], lev);
-    else if ((region != UNDERWORLD) && (region != MOUNTAIN_TOP))
-	strnfmt(buf, sizeof(buf), "%15s Town", locality_name[region]);
-    else
-	strnfmt(buf, sizeof(buf), "%15s     ", locality_name[region]);
+    strnfmt(buf, sizeof(buf), "%15s%4d ", region_info[region].name, z_pos);
 
     my_strcpy(place, buf, len);
 }

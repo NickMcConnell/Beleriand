@@ -2241,8 +2241,7 @@ extern void desert_gen_old(void)
  */
 extern void river_gen_old(void)
 {
-    int i, j, k, y, x, y1 = ARENA_HGT / 2;
-    int mid[ARENA_HGT];
+    int i, j, k, y, x = ARENA_HGT / 2;
     int stage = p_ptr->stage;
     int last_stage = p_ptr->last_stage;
     int form_grids = 0;
@@ -2353,9 +2352,6 @@ extern void river_gen_old(void)
     /* Place the river, start in the middle third */
     i = ARENA_WID / 3 + randint0(ARENA_WID / 3);
     for (y = 1; y < ARENA_HGT - 1; y++) {
-	/* Remember the midpoint */
-	mid[y] = i;
-
 	for (x = i - randint0(5) - 10; x < i + randint0(5) + 10; x++) {
 	    /* Make the river */
 	    cave_set_feat(y, x, FEAT_WATER);

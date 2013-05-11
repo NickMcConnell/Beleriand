@@ -1708,19 +1708,24 @@ int rd_history(void)
     for (i = 0; i < tmp32u; i++)
     {
 	s32b turn;
-	s16b dlev, clev;
+	s16b clev;
 	u16b type;
+	u16b z_pos;
+	u16b y_pos;
+	u16b x_pos;
 	byte art_name;
 	char text[80];
 		
 	rd_u16b(&type);
 	rd_s32b(&turn);
-	rd_s16b(&dlev);
+	rd_u16b(&z_pos);
+	rd_u16b(&y_pos);
+	rd_u16b(&x_pos);
 	rd_s16b(&clev);
 	rd_byte(&art_name);
 	rd_string(text, sizeof(text));
 		
-	history_add_full(type, art_name, dlev, clev, turn, text);
+	history_add_full(type, art_name, z_pos, y_pos, x_pos, clev, turn, text);
     }
 
     return 0;

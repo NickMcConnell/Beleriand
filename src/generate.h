@@ -284,6 +284,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
 		u16b x_pos, bool write);
 int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset);
 void chunk_adjacent_to_offset(int adjacent, int *z_off, int *y_off, int *x_off);
+int find_region(int y_pos, int x_pos);
 void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset, 
 			 int x_offset);
 void chunk_fix_all(void);

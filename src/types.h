@@ -1362,7 +1362,9 @@ struct autoinscription {
 struct history_info
 {
     u16b type;		/**< Kind of history item */
-    s16b place;		/**< Place when this item was recorded */
+    u16b z_pos;		/**< z position this item was recorded */
+    u16b y_pos;		/**< y position this item was recorded */
+    u16b x_pos;		/**< x position this item was recorded */
     s16b clev;		/**< Character level when this item was recorded */
     byte a_idx;		/**< Artifact this item relates to */
     s32b turn;		/**< Turn this item was recorded on */

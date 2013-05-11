@@ -983,7 +983,9 @@ void wr_history(void)
 	{
 		wr_u16b(history_list[i].type);
 		wr_s32b(history_list[i].turn);
-		wr_s16b(history_list[i].place);
+		wr_u16b(history_list[i].z_pos);
+		wr_u16b(history_list[i].y_pos);
+		wr_u16b(history_list[i].x_pos);
 		wr_s16b(history_list[i].clev);
 		wr_byte(history_list[i].a_idx);
 		wr_string(history_list[i].event);
