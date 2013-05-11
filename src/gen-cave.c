@@ -1604,72 +1604,7 @@ bool themed_level_ok(byte choice)
     if (p_ptr->themed_level_appeared & (1L << (choice - 1)))
 	return (FALSE);
 
-    /* Check the location */
-    switch (choice) {
-    case THEME_ELEMENTAL:
-	{
-	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		&& (p_ptr->danger >= 35) && (p_ptr->danger <= 70))
-		break;
-	    return (FALSE);
-	}
-    case THEME_DRAGON:
-	{
-	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		&& (p_ptr->danger >= 40) && (p_ptr->danger <= 80))
-		break;
-	    return (FALSE);
-	}
-    case THEME_WILDERNESS:
-	{
-	    if (stage_map[p_ptr->stage][STAGE_TYPE] == DESERT)
-		break;
-	    return (FALSE);
-	}
-    case THEME_DEMON:
-	{
-	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		&& (p_ptr->danger >= 60) && (p_ptr->danger <= 255))
-		break;
-	    return (FALSE);
-	}
-    case THEME_MINE:
-	{
-	    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		&& (p_ptr->danger >= 20) && (p_ptr->danger <= 45))
-		break;
-	    return (FALSE);
-	}
-    case THEME_WARLORDS:
-	{
-	    if (((stage_map[p_ptr->stage][STAGE_TYPE] == FOREST)
-		 || (stage_map[p_ptr->stage][STAGE_TYPE] == PLAIN))
-		&& (p_ptr->danger >= 20))
-		break;
-	    return (FALSE);
-	}
-    case THEME_AELUIN:
-	{
-	    if (stage_map[p_ptr->stage][LOCALITY] == DORTHONION)
-		break;
-	    return (FALSE);
-	}
-    case THEME_ESTOLAD:
-	{
-	    if ((stage_map[p_ptr->stage][LOCALITY] == EAST_BELERIAND)
-		&& (p_ptr->danger >= 10))
-		break;
-	    return (FALSE);
-	}
-    case THEME_SLAIN:
-	{
-	    if (stage_map[p_ptr->stage][LOCALITY] == ANFAUGLITH)
-		break;
-	    return (FALSE);
-	}
-    default:
-	return (FALSE);
-    }
+    //BELE this will have to be completely different
 
     /* Must be OK */
     return (TRUE);
@@ -1768,15 +1703,10 @@ extern void cave_gen(void)
     dun = &dun_body;
 
     moria_level = FALSE;
-    underworld = FALSE;
-
-    /* Teleport level from wilderness */
-    if (stage_map[p_ptr->stage][LOCALITY] == UNDERWORLD)
-	underworld = TRUE;
 
     /* It is possible for levels to be moria-style. */
     if (((p_ptr->danger >= 10) && (p_ptr->danger < 40)
-	 && (randint0(MORIA_LEVEL_CHANCE) == 0)) || (underworld)) {
+	 && (randint0(MORIA_LEVEL_CHANCE) == 0))) {
 	moria_level = TRUE;
 	if (OPT(cheat_room))
 	    msg("Moria level");
@@ -2014,10 +1944,7 @@ extern void cave_gen(void)
     /* Moria levels have a high proportion of cave dwellers. */
     if (moria_level) {
 	/* Set global monster restriction variables. */
-	if (underworld)
-	    mon_restrict('x', (byte) p_ptr->danger, &dummy, TRUE);
-	else
-	    mon_restrict('0', (byte) p_ptr->danger, &dummy, TRUE);
+	mon_restrict('0', (byte) p_ptr->danger, &dummy, TRUE);
     } else {
 	/* Remove all monster restrictions. */
 	mon_restrict('\0', (byte) p_ptr->danger, &dummy, TRUE);
