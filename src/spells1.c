@@ -814,8 +814,6 @@ void teleport_player_to(int ny, int nx, bool friendly)
  */
 void teleport_player_level(bool friendly)
 {
-    int poss;
-
     /* Check for specialty resistance on hostile teleports */
     if ((friendly == FALSE) && (player_has(PF_PHASEWALK))) {
 	msg("Teleport Resistance!");
@@ -829,140 +827,50 @@ void teleport_player_level(bool friendly)
 	return;
     }
 
-    /* Remember where we came from */
-    p_ptr->last_stage = p_ptr->stage;
-
-    if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE) && (p_ptr->stage != 255)) {
-	if (is_quest(p_ptr->stage) || (!stage_map[p_ptr->stage][DOWN])) {
+    if (chunk_list[p_ptr->stage].z_pos != 0)
+    {
+	if (is_quest(p_ptr->stage)) 
+	{
 	    msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
 
 	    /* New stage */
-	    p_ptr->stage = stage_map[p_ptr->stage][UP];
-
+	    chunk_change(-1, 0, 0);
 	}
 
-	else if (!stage_map[p_ptr->stage][UP]) {
+	else if (chunk_list[p_ptr->stage].z_pos == 1) 
+	{
 	    msgt(MSG_TPLEVEL, "You sink through the floor.");
 
 	    /* New stage */
-	    p_ptr->stage = stage_map[p_ptr->stage][DOWN];
-
+	    chunk_change(1, 0, 0);
 	}
 
-	else {
+	else 
+	{
 
-	    if (randint0(100) < 50) {
+	    if (randint0(100) < 50) 
+	    {
 		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
 
 		/* New stage */
-		p_ptr->stage = stage_map[p_ptr->stage][UP];
-
+		chunk_change(-1, 0, 0);
 	    }
 
-	    else {
+	    else 
+	    {
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
 		/* New stage */
-		p_ptr->stage = stage_map[p_ptr->stage][DOWN];
-
+		chunk_change(1, 0, 0);
 	    }
 	}
     }
 
-    /* Caution - assumes Nan Dungortheb levels are contiguous South */
-    else if (stage_map[p_ptr->stage][STAGE_TYPE] == VALLEY) {
-	msgt(MSG_TPLEVEL, "You fly through the air.");
-
-	/* Got to go up */
-	if (stage_map[p_ptr->stage + 1][STAGE_TYPE] != VALLEY)
-	    p_ptr->stage--;
-
-	/* Got to go down */
-	else if (stage_map[p_ptr->stage - 1][STAGE_TYPE] != VALLEY)
-	    p_ptr->stage++;
-
-	else {
-	    /* We have a choice */
-	    poss = randint0(2);
-
-	    /* New stage */
-	    if (poss)
-		p_ptr->stage++;
-	    else
-		p_ptr->stage--;
-	}
+    /* Nothing in wilderness */
+    else 
+    {
+	msg("Nothing happens.");
     }
-
-    /* Heh heh */
-    else if ((p_ptr->stage != 255) && (p_ptr->stage != 256)) {
-	if ((randint0(100) < 50)
-	    && !(stage_map[p_ptr->stage][STAGE_TYPE] == SWAMP)
-	    && !(stage_map[p_ptr->stage][STAGE_TYPE] == TOWN)) {
-	    msgt(MSG_TPLEVEL, "You rise into the air.");
-
-	    /* Set the ways forward and back */
-	    stage_map[256][DOWN] = p_ptr->stage;
-	    stage_map[p_ptr->stage][UP] = 256;
-	    stage_map[256][DEPTH] = p_ptr->danger + 1;
-
-	    /* New stage */
-	    p_ptr->stage = stage_map[p_ptr->stage][UP];
-
-	}
-
-	else {
-	    msgt(MSG_TPLEVEL, "You sink through the ground.");
-
-	    /* Set the ways forward and back, if not there already */
-	    if (!stage_map[p_ptr->stage][DOWN]) {
-		stage_map[255][UP] = p_ptr->stage;
-		stage_map[p_ptr->stage][DOWN] = 255;
-		stage_map[255][DEPTH] = p_ptr->danger + 1;
-	    }
-
-	    /* New stage */
-	    p_ptr->stage = stage_map[p_ptr->stage][DOWN];
-
-	}
-
-
-    }
-
-    /* Got to go back */
-    else {
-	if (p_ptr->stage == 255) {
-	    msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
-
-	    /* New stage */
-	    p_ptr->stage = stage_map[p_ptr->stage][UP];
-
-	    /* Reset */
-	    stage_map[255][UP] = 0;
-	    stage_map[p_ptr->stage][DOWN] = 0;
-	    stage_map[255][DEPTH] = 0;
-	}
-
-	else if (p_ptr->stage == 256) {
-	    msgt(MSG_TPLEVEL, "You plunge downward.");
-
-	    /* New stage */
-	    p_ptr->stage = stage_map[p_ptr->stage][DOWN];
-
-	    /* Reset */
-	    stage_map[256][DOWN] = 0;
-	    stage_map[p_ptr->stage][UP] = 0;
-	    stage_map[256][DEPTH] = 0;
-	}
-    }
-
-    /* New depth */
-    p_ptr->danger = stage_map[p_ptr->stage][DEPTH];
-
-    /* Leaving */
-    p_ptr->leaving = TRUE;
-
-    /* Sound */
-    sound(MSG_TPLEVEL);
 }
 
 /** 
