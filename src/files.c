@@ -1208,7 +1208,8 @@ sprintf(buf1, "%d feet", p_ptr->state.see_infra * 10);
 	dump_ptr = (char_attr *) &line[current_line];
 	dump_put_str(TERM_WHITE, "Current Location :", 1);
 	sprintf(buf, "%s Level %d",
-		locality_name[stage_map[p_ptr->stage][LOCALITY]], p_ptr->danger);
+		region_info[chunk_list[p_ptr->stage].region].name, 
+		chunk_list[p_ptr->stage].z_pos);
 	dump_put_str(TERM_L_GREEN, buf, 20);
 	current_line++;
 
@@ -1216,26 +1217,11 @@ sprintf(buf1, "%d feet", p_ptr->state.see_infra * 10);
 	    dump_ptr = (char_attr *) &line[current_line];
 	    dump_put_str(TERM_WHITE, "Previous Location:", 1);
 	    sprintf(buf, "%s Level %d",
-		    locality_name[stage_map[p_ptr->last_stage][LOCALITY]],
-		    stage_map[p_ptr->last_stage][DEPTH]);
+		    region_info[chunk_list[p_ptr->last_stage].region].name, 
+		    chunk_list[p_ptr->last_stage].z_pos);
 	    dump_put_str(TERM_L_GREEN, buf, 20);
 	    current_line++;
 	}
-
-	/* Recall points */
-	for (i = 0; i < 4; i++) {
-	    if (p_ptr->recall[i] == 0)
-		continue;
-	    dump_ptr = (char_attr *) &line[current_line];
-	    sprintf(buf, "Recall Point %d   :", i + 1);
-	    dump_put_str(TERM_WHITE, buf, 1);
-	    sprintf(buf, "%s Level %d",
-		    locality_name[stage_map[p_ptr->recall[i]][LOCALITY]],
-		    stage_map[p_ptr->recall[i]][DEPTH]);
-	    dump_put_str(TERM_L_GREEN, buf, 20);
-	    current_line++;
-	}
-
 
 	/* Heading */
 	current_line++;
@@ -1743,15 +1729,8 @@ sprintf(buf1, "%d feet", p_ptr->state.see_infra * 10);
 	/* Get the location name */
 	if (p_ptr->danger)
 	    strnfmt(place, sizeof(place), "%15s%4d ",
-		    locality_name[stage_map[p_ptr->stage][LOCALITY]],
-		    p_ptr->danger);
-	else if ((stage_map[p_ptr->stage][LOCALITY] != UNDERWORLD)
-		 && (stage_map[p_ptr->stage][LOCALITY] != MOUNTAIN_TOP))
-	    strnfmt(place, sizeof(place), "%15s Town",
-		    locality_name[stage_map[p_ptr->stage][LOCALITY]]);
-	else
-	    strnfmt(place, sizeof(place), "%15s     ",
-		    locality_name[stage_map[p_ptr->stage][LOCALITY]]);
+		    region_info[chunk_list[p_ptr->stage].region].name, 
+		    chunk_list[p_ptr->stage].z_pos);
 
 	/* Make preliminary part of note */
 	strnfmt(info_note, sizeof(info_note), "%10d%22s%5d    ", turn,

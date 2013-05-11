@@ -2838,7 +2838,7 @@ bool effect_do(effect_type effect, bool * ident, bool aware, int dir)
 	    fire_ball(GF_SHARD, dir, 150, 4, FALSE);
 	} else {
 	    msg("...and an awful cacophony shakes %s!",
-		       locality_name[stage_map[p_ptr->stage][LOCALITY]]);
+		       region_info[chunk_list[p_ptr->stage].region].name);
 	    fire_ball(GF_SOUND, dir, 150, 4, FALSE);
 	}
 	return TRUE;
