@@ -455,9 +455,16 @@ extern void plain_gen(chunk_ref ref, int y_offset, int x_offset,
 extern void forest_gen(chunk_ref ref, int y_offset, int x_offset, 
 		       edge_effect *first)
 {
-    int x, y;
+    int x, y, plats, j;
     int y0 = y_offset * CHUNK_HGT;
     int x0 = x_offset * CHUNK_WID;
+    int form_grids = 0;
+
+    int form_feats[8] = { FEAT_GRASS, FEAT_RUBBLE, FEAT_MAGMA, FEAT_WALL_SOLID,
+			  FEAT_GRASS, FEAT_QUARTZ, FEAT_NONE
+    };
+    int ponds[2] = { FEAT_WATER, FEAT_NONE };
+
 
     /* Write the location stuff */
     for (y = 0; y < CHUNK_HGT; y++)
@@ -465,8 +472,60 @@ extern void forest_gen(chunk_ref ref, int y_offset, int x_offset,
 	for (x = 0; x < CHUNK_HGT; x++)
 	{
 	    /* Terrain */
-	    cave_set_feat(y0 + y, x0 + x, FEAT_TREE);
+	    if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
+		> HIGHLAND_TREE_CHANCE)
+		cave_set_feat(y0 + y, x0 + x, FEAT_TREE2);
+	    else
+		cave_set_feat(y0 + y, x0 + x, FEAT_TREE);
 	}
+    }
+
+    /* Make a few clearings */
+    plats = rand_range(1, 2);
+
+    /* Try fairly hard */
+    for (j = 0; j < 50; j++) 
+    {
+	int a, b;
+	bool made_plat;
+
+	/* Try for a clearing */
+	a = randint0(5) + 2;
+	b = randint0(5) + 2;
+	y = randint0(CHUNK_HGT - 1) + 1;
+	x = randint0(CHUNK_WID - 1) + 1;
+	made_plat =
+	    generate_starburst_room(y0 + y - b, x0 + x - a, y0 + y + b, x0 + x + a, FALSE,
+				    FEAT_GRASS, TRUE);
+
+	/* Success ? */
+	if (made_plat)
+	    plats--;
+
+	/* Done ? */
+	if (!plats)
+	    break;
+    }
+
+    /* Place some formations */
+    while (form_grids < randint0(20)) {
+	/* Set the "vault" type */
+	wild_type = ((randint0(5) == 0) ? 26 : 18);
+
+	/* Choose a place */
+	y = randint0(CHUNK_HGT - 1) + 1;
+	x = randint0(CHUNK_WID - 1) + 1;
+	form_grids +=
+	    make_formation(y, x, FEAT_TREE, FEAT_TREE2, form_feats,
+			   3);
+    }
+
+    /* And some water */
+    form_grids = 0;
+    while (form_grids < randint0(30)) {
+	y = randint0(CHUNK_HGT - 1) + 1;
+	x = randint0(CHUNK_WID - 1) + 1;
+	form_grids += make_formation(y, x, FEAT_TREE, FEAT_TREE2, ponds, 10);
     }
 
     if (!character_dungeon)
