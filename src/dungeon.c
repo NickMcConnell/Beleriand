@@ -2269,7 +2269,7 @@ void play_game(void)
 	character_dungeon = FALSE;
 
 	/* Hack -- seed for flavors */
-	seed_flavor = randint0(0x10000000);
+	seed_flavor = randint0(0xffffffff);
 
 	/* Roll up a new character */
 	player_birth(p_ptr->ht_birth ? TRUE : FALSE);

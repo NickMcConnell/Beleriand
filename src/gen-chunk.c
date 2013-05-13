@@ -921,6 +921,13 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
     /* Generate the chunk */
     terrain = region_terrain[y_pos / 10][x_pos / 10];
 
+    /* Set the RNG to give reproducible results */
+    Rand_quick = TRUE;
+    Rand_value = ((y_pos & 0x1fff) << 19);
+    Rand_value |= ((z_pos & 0x3f) << 13);
+    Rand_value |= (x_pos & 0x1fff);
+    Rand_value ^= seed_flavor;
+
     switch (terrain)
     {
     case '.':
@@ -994,6 +1001,8 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	break;
     }
     }
+
+    Rand_quick = FALSE;
 
     /* Do terrain changes */
     if (reload)
