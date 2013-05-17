@@ -399,6 +399,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
     
 	/* Increment the counter, and the maximum if necessary */
 	chunk_cnt++;
+	assert (chunk_max <= MAX_CHUNKS);
 	if (idx == chunk_max)
 	    chunk_max++;
     }

@@ -2264,12 +2264,16 @@ void play_game(void)
     }
 
     /* Roll new character */
-    if (new_game) {
+    if (new_game)
+    {
+	u32b seed_temp;
+
 	/* The dungeon is not ready */
 	character_dungeon = FALSE;
 
-	/* Hack -- seed for flavors */
-	seed_flavor = randint0(0xffffffff);
+	/* Master seed */
+	seed_temp = randint0(0x10000000);
+	seed_flavor = (seed_temp << 4) | randint0(0x100);
 
 	/* Roll up a new character */
 	player_birth(p_ptr->ht_birth ? TRUE : FALSE);
