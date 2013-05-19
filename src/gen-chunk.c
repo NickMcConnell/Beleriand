@@ -36,22 +36,46 @@ void chunk_wipe(int idx)
     world_chunk *chunk = chunk_list[idx].chunk;
 
     /* Free everything */
-    mem_free(chunk->cave_info);
-    chunk->cave_info = NULL;
-    mem_free(chunk->cave_feat);
-    chunk->cave_feat = NULL;
-    mem_free(chunk->cave_o_idx);
-    chunk->cave_o_idx = NULL;
-    mem_free(chunk->cave_m_idx);
-    chunk->cave_m_idx = NULL;
-    mem_free(chunk->o_list);
-    chunk->o_list = NULL;
-    mem_free(chunk->m_list);
-    chunk->m_list = NULL;
-    mem_free(chunk->trap_list);
-    chunk->trap_list = NULL;
-    mem_free(chunk);
-    chunk_list[idx].chunk = NULL;
+    if (chunk->cave_info)
+    {
+	mem_free(chunk->cave_info);
+	chunk->cave_info = NULL;
+    }
+    if (chunk->cave_feat)
+    {
+	mem_free(chunk->cave_feat);
+	chunk->cave_feat = NULL;
+    }
+    if (chunk->cave_o_idx)
+    {
+	mem_free(chunk->cave_o_idx);
+	chunk->cave_o_idx = NULL;
+    }
+    if (chunk->cave_m_idx)
+    {
+	mem_free(chunk->cave_m_idx);
+	chunk->cave_m_idx = NULL;
+    }
+    if (chunk->o_list)
+    {
+	mem_free(chunk->o_list);
+	chunk->o_list = NULL;
+    }
+    if (chunk->m_list)
+    {
+	mem_free(chunk->m_list);
+	chunk->m_list = NULL;
+    }
+    if (chunk->trap_list)
+    {
+	mem_free(chunk->trap_list);
+	chunk->trap_list = NULL;
+    }
+    if (chunk)
+    {
+	mem_free(chunk);
+	chunk_list[idx].chunk = NULL;
+    }
 }
 
 /**
