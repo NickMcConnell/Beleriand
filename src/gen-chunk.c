@@ -371,7 +371,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
     if (idx == MAX_CHUNKS)
     {
 	/* Too many chunks */
-	if (chunk_cnt + 1 >= MAX_CHUNKS)
+	if (chunk_cnt >= MAX_CHUNKS)
 	{
 	    /* Find and delete the oldest chunk */
 	    idx = 0;
@@ -563,6 +563,9 @@ void chunk_read(int idx, int y_offset, int x_offset)
 	    }
 	}
     }
+
+    /* Reset the age */
+    chunk_list[idx].age = 1;
 
     /* Wipe it */
     chunk_wipe(idx);
@@ -1161,6 +1164,7 @@ void arena_realign(int y_offset, int x_offset)
 
     /* Get the new centre chunk */
     new_idx = chunk_offset_to_adjacent(0, y_offset, x_offset);
+    assert(new_idx < MAX_CHUNKS);
 
     /* Unload chunks no longer required */
     for (y = 0; y < 3; y++)
