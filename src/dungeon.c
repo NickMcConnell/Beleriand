@@ -1843,7 +1843,7 @@ static void dungeon(void)
     }
 
     /* Track depth */
-    p_ptr->danger = region_info[chunk_list[p_ptr->stage].region].danger;
+    //p_ptr->danger = region_info[chunk_list[p_ptr->stage].region].danger;
 
     /* Autosave */
     is_autosave = TRUE;

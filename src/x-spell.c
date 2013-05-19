@@ -1424,7 +1424,7 @@ bool cast_spell(int tval, int sindex, int dir, int plev)
 	    msg("The world changes!");
 	    
 	    /* Leaving */
-	    p_ptr->leaving = TRUE;
+	    //p_ptr->leaving = TRUE;
 
 	    break;
 	}

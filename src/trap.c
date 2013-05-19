@@ -1226,13 +1226,13 @@ void hit_trap_aux(int y, int x, int trap)
 	    }
 
 	    /* trap of alter reality. */
-	    else if (nastyness < 50) 
-	    {
-		msg("The world changes!");
+	    //else if (nastyness < 50) 
+	    //{
+	    //msg("The world changes!");
 		
 		/* Leaving */
-		p_ptr->leaving = TRUE;
-	    }
+	    //	p_ptr->leaving = TRUE;
+	    //}
 
 	    /* trap of remold player. */
 	    else if (nastyness < 75) {

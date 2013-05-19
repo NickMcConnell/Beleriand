@@ -1404,12 +1404,46 @@ void arena_realign(int y_offset, int x_offset)
  */
 void chunk_change(int z_offset, int y_offset, int x_offset)
 {
-    if (z_offset == 0) arena_realign(y_offset, x_offset);
+    if (z_offset == 0)
+    {
+	arena_realign(y_offset, x_offset);
+	return;
+    }
 
-    /* Where we fell from */
-    //p_ptr->last_stage = p_ptr->stage;
+    /* Where we came from */
+    p_ptr->last_stage = p_ptr->stage;
 
     /* Leaving */
-    //p_ptr->leaving = TRUE;
+    p_ptr->leaving = TRUE;
 
+    /* Store the old surface chunks */
+    if (p_ptr->danger == 0)
+    {
+	int x, y;
+
+	/* Unload chunks no longer required */
+	for (y = 0; y < 3; y++)
+	{
+	    for (x = 0; x < 3; x++)
+	    {
+		chunk_ref *ref = NULL;
+		int chunk_idx;
+
+		/* Access the chunk's placeholder in chunk_list.
+		 * Quit if it isn't valid */
+		chunk_idx = chunk_get_idx(0, y, x);
+		ref = &chunk_list[chunk_idx];
+
+		/* Store it */
+		(void) chunk_store(y, x, ref->region, ref->z_pos, ref->y_pos,
+				   ref->x_pos, TRUE);
+	    }
+	}
+    }
+
+    /* Set danger level */
+    p_ptr->danger += z_offset;
+
+    /* New level */
+    //generate_cave();
 }

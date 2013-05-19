@@ -172,32 +172,31 @@ void generate_cave(void)
 	if (no_vault())
 	    wild_vaults = 0;
 
-	for (y = 0; y < 3; y++)
+	/* Surface... */
+	if (p_ptr->danger == 0)
 	{
-	    for (x = 0; x < 3; x++)
+	    for (y = 0; y < 3; y++)
 	    {
-		//int chunk_idx;
-		//int adj_index = chunk_offset_to_adjacent(0, y, x);
-		chunk_ref ref = CHUNK_EMPTY;
-		
-		/* Get the location data */
-		ref.region = chunk_list[p_ptr->stage].region;
-		ref.z_pos = chunk_list[p_ptr->stage].z_pos;
-		ref.y_pos = chunk_list[p_ptr->stage].y_pos;
-		ref.x_pos = chunk_list[p_ptr->stage].x_pos;
-		chunk_adjacent_data(&ref, 0, y, x);
-	    
-		/* Load it if it already exists
-		chunk_idx = chunk_find(ref);
-		if (chunk_idx != MAX_CHUNKS)
-		    chunk_read(chunk_idx, y, x); */
+		for (x = 0; x < 3; x++)
+		{
+		    chunk_ref ref = CHUNK_EMPTY;
 
-		/* Generate a new chunk */
-		//else 
-		//{
+		    /* Get the location data */
+		    ref.region = chunk_list[p_ptr->stage].region;
+		    ref.z_pos = chunk_list[p_ptr->stage].z_pos;
+		    ref.y_pos = chunk_list[p_ptr->stage].y_pos;
+		    ref.x_pos = chunk_list[p_ptr->stage].x_pos;
+		    chunk_adjacent_data(&ref, 0, y, x);
+
+		    /* Generate a new chunk */
 		    chunk_generate(ref, y, x);
-		    //}
+		}
 	    }
+	}
+	/* ...or cave */
+	else
+	{
+	    cave_gen();
 	}
 
 	okay = TRUE;

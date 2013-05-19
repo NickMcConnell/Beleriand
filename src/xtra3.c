@@ -929,7 +929,8 @@ static size_t prt_depth(int row, int col)
 
     region = chunk_list[p_ptr->stage].region;
 
-    level = chunk_list[p_ptr->stage].z_pos;
+    //level = chunk_list[p_ptr->stage].z_pos;  BELE vv Hack for now
+    level = p_ptr->danger;
 
     strnfmt(depths, sizeof(depths), "%s %d", region_info[region].name, level);
 
