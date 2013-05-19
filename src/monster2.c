@@ -2030,19 +2030,27 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 
     /* Monster 1 */
-    if (m1 > 0) {
+    if (m1 > 0)
+    {
 	m_ptr = &m_list[m1];
 
-	/* Move monster */
-	m_ptr->fy = y2;
-	m_ptr->fx = x2;
+	/* Make sure it's really there */
+	if (m_ptr->r_idx != 0)
+	{
+	    /* Move monster */
+	    m_ptr->fy = y2;
+	    m_ptr->fx = x2;
 
-	/* Update monster */
-	update_mon(m1, TRUE);
+	    /* Update monster */
+	    update_mon(m1, TRUE);
 
-	/* Redraw monster list */
-	p_ptr->redraw |= (PR_MONLIST);
+	    /* Redraw monster list */
+	    p_ptr->redraw |= (PR_MONLIST);
+	}
+	else
+	    delete_monster_idx(m1);
     }
+
 
     /* Player 1 */
     else if (m1 < 0) {
@@ -2053,18 +2061,25 @@ void monster_swap(int y1, int x1, int y2, int x2)
     }
 
     /* Monster 2 */
-    if (m2 > 0) {
+    if (m2 > 0)
+    {
 	m_ptr = &m_list[m2];
 
-	/* Move monster */
-	m_ptr->fy = y1;
-	m_ptr->fx = x1;
+	/* Make sure it's really there */
+	if (m_ptr->r_idx != 0)
+	{
+	    /* Move monster */
+	    m_ptr->fy = y1;
+	    m_ptr->fx = x1;
 
-	/* Update monster */
-	update_mon(m2, TRUE);
+	    /* Update monster */
+	    update_mon(m2, TRUE);
 
-	/* Redraw monster list */
-	p_ptr->redraw |= (PR_MONLIST);
+	    /* Redraw monster list */
+	    p_ptr->redraw |= (PR_MONLIST);
+	}
+	else
+	    delete_monster_idx(m2);
     }
 
     /* Player 2 */
