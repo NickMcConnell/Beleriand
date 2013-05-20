@@ -2014,6 +2014,8 @@ void monster_swap(int y1, int x1, int y2, int x2)
 {
     int m1, m2;
     int y_offset, x_offset;
+    int old_y_offset = p_ptr->py / CHUNK_HGT;
+    int old_x_offset = p_ptr->px / CHUNK_WID;
     bool player_moved = FALSE;
 
     monster_type *m_ptr;
@@ -2127,8 +2129,26 @@ void monster_swap(int y1, int x1, int y2, int x2)
     /* Deal with change of chunk */
     y_offset = p_ptr->py / CHUNK_HGT;
     x_offset = p_ptr->px / CHUNK_WID;
-    if ((y_offset != 1) || (x_offset != 1))
-	chunk_change(0, y_offset, x_offset);
+
+    /* On the surface, re-align */
+    if (p_ptr->danger == 0)
+    {
+	if ((y_offset != 1) || (x_offset != 1))
+	    chunk_change(0, y_offset, x_offset);
+    }
+    /* In the dungeon, change stage */
+    else
+    {
+	int y0 = old_y_offset - y_offset;
+	int x0 = old_x_offset - x_offset;
+	int adj_index = chunk_offset_to_adjacent(0, 1 - y0, 1 - x0);
+
+	if (adj_index != DIR_NONE)
+	{
+	    p_ptr->last_stage = p_ptr->stage;
+	    p_ptr->stage = chunk_list[p_ptr->stage].adjacent[adj_index];
+	}
+    }
 }
 
 
@@ -2139,16 +2159,7 @@ s16b player_place(int y, int x)
 {
     /* Paranoia XXX XXX */
     if (cave_m_idx[y][x] != 0)
-	return (0);
-
-    /* No stairs if we don't do that */
-    if (OPT(adult_no_stairs) && !p_ptr->themed_level && p_ptr->danger)
-    {
-	if (outside)
-	    cave_set_feat(y, x, FEAT_ROAD);
-	else
-	    cave_set_feat(y, x, FEAT_FLOOR);
-    }
+	delete_monster(y, x);
 
     /* Save player location */
     p_ptr->py = y;

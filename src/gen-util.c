@@ -64,81 +64,8 @@ int next_to_walls(int y, int x)
  */
 void new_player_spot(void)
 {
-    int i = 0;
-    int y, x;
-    feature_type *f_ptr;
-
-    /* 
-     * Check stored stair locations, then search at random.
-     */
-    while (TRUE) {
-	i++;
-
-	/* Scan stored locations first. */
-	if (i < dun->stair_n) {
-	    /* Get location */
-	    y = dun->stair[i].y;
-	    x = dun->stair[i].x;
-
-	    /* Require exactly three adjacent walls */
-	    if (next_to_walls(y, x) != 3)
-		continue;
-
-	    /* If character starts on stairs, ... */
-	    if (!OPT(adult_no_stairs) || !p_ptr->danger) {
-		/* Accept stairs going the right way or floors. */
-		if (p_ptr->create_stair) {
-		    /* Accept correct stairs */
-		    if (cave_feat[y][x] == p_ptr->create_stair)
-			break;
-
-		    /* Accept floors, build correct stairs. */
-		    f_ptr = &f_info[cave_feat[y][x]];
-		    if (cave_naked_bold(y, x) && tf_has(f_ptr->flags, TF_FLOOR)) 
-		    {
-			cave_set_feat(y, x, p_ptr->create_stair);
-			break;
-		    }
-		}
-	    }
-
-	    /* If character doesn't start on stairs, ... */
-	    else {
-		/* Accept only "naked" floor grids */
-		f_ptr = &f_info[cave_feat[y][x]];
-		if (cave_naked_bold(y, x) && tf_has(f_ptr->flags, TF_FLOOR))		    
-		    break;
-	    }
-	}
-	
-	/* Then, search at random */
-	else {
-	    /* Pick a random grid */
-	    y = randint0(ARENA_HGT);
-	    x = randint0(ARENA_WID);
-
-	    /* Refuse to start on anti-teleport (vault) grids */
-	    if (cave_has(cave_info[y][x], CAVE_ICKY))
-		continue;
-
-	    /* Must be a "naked" floor grid */
-	    f_ptr = &f_info[cave_feat[y][x]];
-	    if (!(cave_naked_bold(y, x) && tf_has(f_ptr->flags, TF_FLOOR)))
-		continue;
-
-	    /* Player prefers to be near walls. */
-	    if (i < 300 && (next_to_walls(y, x) < 2))
-		continue;
-	    else if (i < 600 && (next_to_walls(y, x) < 1))
-		continue;
-
-	    /* Success */
-	    break;
-	}
-    }
-
     /* Place the player */
-    player_place(y, x);
+    player_place(p_ptr->py, p_ptr->px);
 }
 
 

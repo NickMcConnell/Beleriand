@@ -373,6 +373,28 @@ int chunk_find(chunk_ref ref)
 }
 
 /**
+ * Delete all the same age dungeon chunks (wiping out all of a level
+ * if some goes)
+ */
+void chunk_delete_level(int age)
+{
+    int i;
+
+    for (i = 0; i < MAX_CHUNKS; i++)
+    {
+	if (chunk_list[i].age == age)
+	{
+	    chunk_delete(i);
+
+	    /* Decrement the counter, and the maximum if necessary */
+	    chunk_cnt--;
+	    if (i == chunk_max)
+		chunk_max--;
+	}
+    }
+}
+
+/**
  * Store a chunk from the current playing area into the chunk list
  */
 int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
@@ -407,6 +429,10 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos, u16b y_pos,
 		}
 
 	    chunk_delete(idx);
+
+	    /* Delete whole levels at once */
+	    if (chunk_list[idx].z_pos > 0)
+		chunk_delete_level(max);
 
 	    /* Decrement the counter, and the maximum if necessary */
 	    chunk_cnt--;
@@ -1398,6 +1424,51 @@ void arena_realign(int y_offset, int x_offset)
 }
 
 /**
+ * Deal with moving the playing arena to a different z-level
+ *
+ * Used for stairs, teleport level, falling
+ */
+void level_change(int z_offset)
+{
+    int x, y;
+    int new_idx;
+
+    /* Unload chunks no longer required */
+    for (y = 0; y < 3; y++)
+    {
+	for (x = 0; x < 3; x++)
+	{
+	    chunk_ref *ref = NULL;
+	    int chunk_idx;
+
+	    /* Access the chunk's placeholder in chunk_list.
+	     * Quit if it isn't valid */
+	    chunk_idx = chunk_get_idx(0, y, x);
+	    ref = &chunk_list[chunk_idx];
+
+	    /* Store it */
+	    (void) chunk_store(y, x, ref->region, ref->z_pos, ref->y_pos,
+			       ref->x_pos, TRUE);
+	}
+    }
+
+    forget_view();
+
+    /* Get the new centre chunk */
+    new_idx = chunk_offset_to_adjacent(z_offset, 0, 0);
+
+    /* Set the chunk (possibly invalid) */
+    p_ptr->last_stage = p_ptr->stage;
+    p_ptr->stage = chunk_list[p_ptr->stage].adjacent[new_idx];
+
+    /* Leaving */
+    p_ptr->leaving = TRUE;
+
+    /* Set danger level */
+    p_ptr->danger += z_offset;
+}
+
+/**
  * Handle the player moving from one chunk to an adjacent one.  This function
  * needs to handle moving in the eight surface directions, plus up or down
  * one level, and the consequent moving of chunks to and from chunk_list.
@@ -1409,41 +1480,6 @@ void chunk_change(int z_offset, int y_offset, int x_offset)
 	arena_realign(y_offset, x_offset);
 	return;
     }
-
-    /* Where we came from */
-    p_ptr->last_stage = p_ptr->stage;
-
-    /* Leaving */
-    p_ptr->leaving = TRUE;
-
-    /* Store the old surface chunks */
-    if (p_ptr->danger == 0)
-    {
-	int x, y;
-
-	/* Unload chunks no longer required */
-	for (y = 0; y < 3; y++)
-	{
-	    for (x = 0; x < 3; x++)
-	    {
-		chunk_ref *ref = NULL;
-		int chunk_idx;
-
-		/* Access the chunk's placeholder in chunk_list.
-		 * Quit if it isn't valid */
-		chunk_idx = chunk_get_idx(0, y, x);
-		ref = &chunk_list[chunk_idx];
-
-		/* Store it */
-		(void) chunk_store(y, x, ref->region, ref->z_pos, ref->y_pos,
-				   ref->x_pos, TRUE);
-	    }
-	}
-    }
-
-    /* Set danger level */
-    p_ptr->danger += z_offset;
-
-    /* New level */
-    //generate_cave();
+    else
+	level_change(z_offset);
 }

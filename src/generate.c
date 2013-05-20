@@ -196,7 +196,87 @@ void generate_cave(void)
 	/* ...or cave */
 	else
 	{
-	    cave_gen();
+	    /* No existing level */
+	    if (p_ptr->stage == MAX_CHUNKS)
+	    {
+		int y_offset, x_offset;
+
+		/* Generate a level */
+		cave_gen();
+
+		/* Chunk it */
+		y_offset = p_ptr->py / CHUNK_HGT;
+		x_offset = p_ptr->px / CHUNK_WID;
+		for (y = 0; y < 3; y++)
+		{
+		    for (x = 0; x < 3; x++)
+		    {
+			chunk_ref ref = CHUNK_EMPTY;
+			int idx;
+			int y0 = y - y_offset;
+			int x0 = x - x_offset;
+
+			/* Get the location data */
+			ref.region = chunk_list[p_ptr->last_stage].region;
+			ref.z_pos = p_ptr->danger;
+			ref.y_pos = chunk_list[p_ptr->last_stage].y_pos + y0;
+			ref.x_pos = chunk_list[p_ptr->last_stage].x_pos + x0;
+
+			/* Store the chunk reference */
+			idx = chunk_store(1, 1, ref.region, ref.z_pos,
+					  ref.y_pos, ref.x_pos, FALSE);
+
+			/* Is this where the player is? */
+			if ((y0 == 0) && (x0 == 0))
+			    p_ptr->stage = idx;
+		    }
+		}
+	    }
+	    /* Otherwise load up the chunks */
+	    else
+	    {
+		int centre;
+
+		/* Find the centre */
+		for (centre = 0; centre < MAX_CHUNKS; centre++)
+		{
+		    if (chunk_list[centre].age == chunk_list[p_ptr->stage].age)
+		    {
+			int j;
+
+			for (j = 0; j < 9; j++)
+			{
+			    if (chunk_list[centre].adjacent[j] == MAX_CHUNKS)
+				break;
+			}
+			if (j == 9) break;
+		    }
+		}
+		if (centre == MAX_CHUNKS) quit("No centre chunk");
+
+		for (y = 0; y < 3; y++)
+		{
+		    for (x = 0; x < 3; x++)
+		    {
+			int chunk_idx;
+			chunk_ref ref = CHUNK_EMPTY;
+
+			/* Get the location data */
+			ref.region = chunk_list[centre].region;
+			ref.z_pos = p_ptr->danger;
+			ref.y_pos = chunk_list[centre].y_pos + y - 1;
+			ref.x_pos = chunk_list[centre].x_pos + x - 1;
+
+			/* Load it */
+			chunk_idx = chunk_find(ref);
+			if ((chunk_idx != MAX_CHUNKS) &&
+			    chunk_list[chunk_idx].chunk)
+			    chunk_read(chunk_idx, y, x);
+			else
+			    quit("Failed to find chunk!");
+		    }
+		}
+	    }
 	}
 
 	okay = TRUE;

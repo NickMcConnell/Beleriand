@@ -325,6 +325,31 @@ static bool find_space(int *y, int *x, int height, int width)
     int blocks_high = 1 + ((height - 1) / BLOCK_HGT);
     int blocks_wide = 1 + ((width - 1) / BLOCK_WID);
 
+    /* Deal with type 0 rooms */
+    if (height * width == 1)
+    {
+	while (block_y > p_ptr->py) block_y--;
+	while (block_x > p_ptr->px) block_x--;
+
+	/* Acquire the location of the room */
+	(*y) = ((2 * block_y + 1) * BLOCK_HGT) / 2;
+	(*x) = ((2 * block_x + 1) * BLOCK_WID) / 2;
+
+	/* Save the room location */
+	if (dun->cent_n < CENT_MAX)
+	{
+	    dun->cent[dun->cent_n].y = *y;
+	    dun->cent[dun->cent_n].x = *x;
+	    dun->cent_n++;
+	}
+
+	/* Reserve a block, marked with the room index */
+	dun->room_map[block_y][block_x] = dun->cent_n;
+
+	/* Success. */
+	return (TRUE);
+    }
+
     /* Sometimes, little rooms like to have more space. */
     if ((blocks_wide == 2) && (randint0(3) == 0))
 	blocks_wide = 3;
@@ -848,6 +873,35 @@ extern bool generate_starburst_room(int y1, int x1, int y2, int x2, bool light,
  *   9 -- greater vaults
  *
  */
+
+/**
+ * Special player spot for directly below the staircase in Beleriand
+ */
+static bool build_type0(void)
+{
+    int y0, x0;
+
+    /* Find and reserve one grid in the dungeon.  Get center of room. */
+    if (!find_space(&y0, &x0, 1, 1))
+	return (FALSE);
+
+    /* Generate new room.  Quit immediately if out of bounds. */
+    if (!generate_room(y0 - 1, x0 - 1, y0 + 1, x0 + 1, FALSE))
+	return (FALSE);
+
+    /* Generate outer walls */
+    generate_draw(y0 - 1, x0 - 1, y0 + 1, x0 + 1, FEAT_WALL_OUTER);
+
+    /* Make a standard room. */
+    generate_fill(y0, x0, y0, x0, p_ptr->create_stair);
+
+    /* Make sure the player gets placed right */
+    p_ptr->py = y0;
+    p_ptr->px = x0;
+
+    /* Success */
+    return (TRUE);
+}
 
 
 /**
@@ -2412,7 +2466,8 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 		{
 		    if (p_ptr->themed_level)
 			cave_set_feat(y, x, FEAT_PERM_SOLID);
-		    else if (strncmp(region_info[chunk_list[p_ptr->stage].region].name, "Nan Dun", 7) == 0)
+		    /* Hack - Nan Dungortheb */
+		    else if (chunk_list[p_ptr->stage].region == 35)
 		    {
 			if (randint1(3) == 1)
 			    cave_set_feat(y, x, FEAT_FLOOR);
@@ -3166,6 +3221,10 @@ extern bool room_build(int room_type)
 	break;
     case 1:
 	if (!build_type1())
+	    return (FALSE);
+	break;
+    case 0:
+	if (!build_type0())
 	    return (FALSE);
 	break;
 
