@@ -1847,7 +1847,7 @@ static void dungeon(void)
 
     /* Autosave */
     is_autosave = TRUE;
-    save_game();
+    //save_game();
     is_autosave = FALSE;
     message_flush();
 

@@ -82,7 +82,8 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 
     /* New chunk */
     if (pstair == FEAT_LESS_SHAFT)
-	chunk_change(-2, 0, 0);
+	//chunk_change(-2, 0, 0);
+	chunk_change(-1, 0, 0);
     else
 	chunk_change(-1, 0, 0);
 }
@@ -140,7 +141,8 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 
     /* New chunk */
     if (pstair == FEAT_MORE_SHAFT)
-	chunk_change(2, 0, 0);
+	//chunk_change(2, 0, 0);
+	chunk_change(1, 0, 0);
     else
 	chunk_change(1, 0, 0);
 }
