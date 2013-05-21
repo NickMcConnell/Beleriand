@@ -1909,6 +1909,9 @@ int rd_chunks(void)
     /* Repair chunks */
     chunk_fix_all();
 
+    /* Set danger */
+    p_ptr->danger = chunk_list[p_ptr->stage].z_pos;
+
     return 0;
 }
 
