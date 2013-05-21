@@ -233,24 +233,8 @@ void generate_cave(void)
 	    /* Otherwise load up the chunks */
 	    else
 	    {
-		int centre;
-
-		/* Find the centre */
-		for (centre = 0; centre < MAX_CHUNKS; centre++)
-		{
-		    if (chunk_list[centre].age == chunk_list[p_ptr->stage].age)
-		    {
-			int j;
-
-			for (j = 0; j < 9; j++)
-			{
-			    if (chunk_list[centre].adjacent[j] == MAX_CHUNKS)
-				break;
-			}
-			if (j == 9) break;
-		    }
-		}
-		if (centre == MAX_CHUNKS) quit("No centre chunk");
+		int centre = chunk_get_centre();
+		assert(centre != MAX_CHUNKS);
 
 		for (y = 0; y < 3; y++)
 		{

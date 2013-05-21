@@ -1424,37 +1424,67 @@ void arena_realign(int y_offset, int x_offset)
 }
 
 /**
+ * Get the centre chunk from the playing arena
+ * This is necessary in dungeons because the player is not kept central
+ */
+int chunk_get_centre(void)
+{
+    int centre;
+
+    /* If we're on the surface, all good */
+    if (p_ptr->danger == 0)
+	return p_ptr->stage;
+
+    /* Find the centre */
+    for (centre = 0; centre < MAX_CHUNKS; centre++)
+    {
+	if (chunk_list[centre].age == chunk_list[p_ptr->stage].age)
+	{
+	    int j;
+
+	    for (j = 0; j < 9; j++)
+	    {
+		if (chunk_list[centre].adjacent[j] == MAX_CHUNKS)
+		    break;
+	    }
+	    if (j == 9) break;
+	}
+    }
+
+    return centre;
+}
+
+
+/**
  * Deal with moving the playing arena to a different z-level
  *
  * Used for stairs, teleport level, falling
  */
 void level_change(int z_offset)
 {
-    int x, y;
-    int new_idx;
+    int y, x, new_idx;
+    int centre = chunk_get_centre();
 
     /* Unload chunks no longer required */
     for (y = 0; y < 3; y++)
     {
 	for (x = 0; x < 3; x++)
 	{
-	    chunk_ref *ref = NULL;
-	    int chunk_idx;
+	    chunk_ref ref = chunk_list[centre];
 
-	    /* Access the chunk's placeholder in chunk_list.
-	     * Quit if it isn't valid */
-	    chunk_idx = chunk_get_idx(0, y, x);
-	    ref = &chunk_list[chunk_idx];
+	    /* Get the location data */
+	    chunk_adjacent_data(&ref, 0, y, x);
+	    ref.z_pos = p_ptr->danger;
 
 	    /* Store it */
-	    (void) chunk_store(y, x, ref->region, ref->z_pos, ref->y_pos,
-			       ref->x_pos, TRUE);
+	    (void) chunk_store(y, x, ref.region, ref.z_pos, ref.y_pos,
+			       ref.x_pos, TRUE);
 	}
     }
 
     forget_view();
 
-    /* Get the new centre chunk */
+    /* Get the new chunk */
     new_idx = chunk_offset_to_adjacent(z_offset, 0, 0);
 
     /* Set the chunk (possibly invalid) */

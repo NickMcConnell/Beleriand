@@ -289,6 +289,7 @@ void chunk_adjacent_data(chunk_ref *ref, int z_offset, int y_offset,
 			 int x_offset);
 void chunk_fix_all(void);
 void chunk_generate(chunk_ref ref, int y_offset, int x_offset);
+int chunk_get_centre(void);
 void chunk_change(int z_offset, int y_offset, int x_offset);
 
 extern bool no_vault(void);
