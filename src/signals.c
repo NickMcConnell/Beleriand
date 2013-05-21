@@ -219,10 +219,10 @@ static void handle_signal_abort(int sig)
 	signals_ignore_tstp();
 
 	/* Attempt to save */
-	if (savefile_save(savefile))
-		Term_putstr(45, 23, -1, TERM_RED, "Panic save succeeded!");
-	else
-		Term_putstr(45, 23, -1, TERM_RED, "Panic save failed!");
+	//if (savefile_save(savefile))
+	//	Term_putstr(45, 23, -1, TERM_RED, "Panic save succeeded!");
+	//else
+	//	Term_putstr(45, 23, -1, TERM_RED, "Panic save failed!");
 
 	/* Flush output */
 	Term_fresh();
