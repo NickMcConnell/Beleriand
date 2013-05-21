@@ -87,9 +87,6 @@ static void clear_cave(void)
 	}
     }
 
-    /* Mega-Hack -- no player in dungeon yet */
-    p_ptr->px = p_ptr->py = 0;
-
     /* Hack -- illegal panel */
     Term->offset_y = ARENA_HGT;
 }
@@ -148,7 +145,6 @@ void generate_cave(void)
 
 	/* Mega-Hack -- no player in dungeon yet */
 	cave_m_idx[p_ptr->py][p_ptr->px] = 0;
-	p_ptr->px = p_ptr->py = 0;
 
 	/* Reset the monster generation level */
 	monster_level = p_ptr->danger;
@@ -172,8 +168,8 @@ void generate_cave(void)
 	if (no_vault())
 	    wild_vaults = 0;
 
-	/* Surface... */
-	if (p_ptr->danger == 0)
+	/* First turn */
+	if (turn == 1)
 	{
 	    for (y = 0; y < 3; y++)
 	    {
@@ -193,7 +189,8 @@ void generate_cave(void)
 		}
 	    }
 	}
-	/* ...or cave */
+	/* Stuff already generated - BELE assumes surface above dungeon
+	 * exists */
 	else
 	{
 	    /* No existing level */
@@ -231,6 +228,7 @@ void generate_cave(void)
 			    p_ptr->stage = idx;
 		    }
 		}
+		chunk_list[p_ptr->last_stage].adjacent[DIR_DOWN] = p_ptr->stage;
 	    }
 	    /* Otherwise load up the chunks */
 	    else
@@ -276,7 +274,9 @@ void generate_cave(void)
 			    quit("Failed to find chunk!");
 		    }
 		}
+		player_place(p_ptr->py, p_ptr->px);
 	    }
+	    chunk_fix_all();
 	}
 
 	okay = TRUE;

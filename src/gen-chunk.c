@@ -643,14 +643,14 @@ void chunk_adjacent_to_offset(int adjacent, int *z_off, int *y_off, int *x_off)
     if (adjacent == DIR_UP)
     {
 	*z_off = -1;
-	*y_off = 0;
-	*x_off = 0;
+	*y_off = 1;
+	*x_off = 1;
     }
     else if (adjacent == DIR_DOWN)
     {
 	*z_off = 1;
-	*y_off = 0;
-	*x_off = 0;
+	*y_off = 1;
+	*x_off = 1;
     }
     else
     {

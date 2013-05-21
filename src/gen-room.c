@@ -328,12 +328,12 @@ static bool find_space(int *y, int *x, int height, int width)
     /* Deal with type 0 rooms */
     if (height * width == 1)
     {
-	while (block_y > p_ptr->py) block_y--;
-	while (block_x > p_ptr->px) block_x--;
+	block_y = (p_ptr->py + 1) / BLOCK_HGT;
+	block_x = (p_ptr->py + 1) / BLOCK_WID;
 
 	/* Acquire the location of the room */
-	(*y) = ((2 * block_y + 1) * BLOCK_HGT) / 2;
-	(*x) = ((2 * block_x + 1) * BLOCK_WID) / 2;
+	(*y) = p_ptr->py;
+	(*x) = p_ptr->px;
 
 	/* Save the room location */
 	if (dun->cent_n < CENT_MAX)
