@@ -1565,7 +1565,7 @@ static bool build_type4(void)
 
 	    /* Stairs (20%) */
 	    else {
-		place_random_stairs(y0, x0);
+		//place_random_stairs(y0, x0);
 	    }
 
 	    /* Traps */

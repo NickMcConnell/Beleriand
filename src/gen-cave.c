@@ -1912,17 +1912,17 @@ extern void cave_gen(void)
 	destroy_level(TRUE);
 
 
-    /* Place 3 or 4 down stairs near some walls */
-    alloc_stairs(FEAT_MORE, rand_range(3, 4), 3);
+    /* Place 2 or 3 down stairs near some walls */
+    alloc_stairs(FEAT_MORE, rand_range(2, 3), 3);
 
     /* Place 1 or 2 up stairs near some walls */
-    alloc_stairs(FEAT_LESS, rand_range(1, 2), 3);
+    //alloc_stairs(FEAT_LESS, rand_range(1, 2), 3);
 
     /* Place 2 or 3 down shafts near some walls */
-    alloc_stairs(FEAT_MORE_SHAFT, rand_range(2, 3), 3);
+    //alloc_stairs(FEAT_MORE_SHAFT, rand_range(2, 3), 3);
 
     /* Place 1 or 2 up stairs near some walls */
-    alloc_stairs(FEAT_LESS_SHAFT, rand_range(1, 2), 3);
+    //alloc_stairs(FEAT_LESS_SHAFT, rand_range(1, 2), 3);
 
     /* Determine the character location */
     new_player_spot();
