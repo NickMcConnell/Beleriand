@@ -548,7 +548,7 @@ void chunk_read(int idx, int y_offset, int x_offset)
 	    /* Monsters */
 	    if (chunk->cave_m_idx[y][x] > 0)
 	    {
-		monster_type *m_ptr = &chunk->m_list[cave_m_idx[y][x]];
+		monster_type *m_ptr = &chunk->m_list[chunk->cave_m_idx[y][x]];
 		monster_type *n_ptr = NULL;
 		int m_idx;
 

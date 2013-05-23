@@ -231,8 +231,17 @@ void generate_cave(void)
 		}
 
 
+		/* Set the RNG to give reproducible results */
+		Rand_quick = TRUE;
+		Rand_value = ((chunk_list[p_ptr->last_stage].y_pos & 0x1fff) << 19);
+		Rand_value |= ((p_ptr->danger & 0x3f) << 13);
+		Rand_value |= (chunk_list[p_ptr->last_stage].x_pos & 0x1fff);
+		Rand_value ^= seed_flavor;
+
 		/* Generate the level */
 		cave_gen();
+
+		Rand_quick = FALSE;
 
 		/* Chunk it */
 		y_offset = p_ptr->py / CHUNK_HGT;
