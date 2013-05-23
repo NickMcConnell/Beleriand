@@ -1861,8 +1861,8 @@ extern void cave_gen(void)
 	dun->cent[pick2].x = x1;
 
 	/* XXX XXX - swap around room index numbers. */
-	for (by = 0; by < 6; by++) {
-	    for (bx = 0; bx < 18; bx++) {
+	for (by = 0; by < dun->row_rooms; by++) {
+	    for (bx = 0; bx < dun->col_rooms; bx++) {
 		if (dun->room_map[by][bx] == pick2 + 1)
 		    dun->room_map[by][bx] = pick1 + 1;
 		else if (dun->room_map[by][bx] == pick1 + 1)
@@ -1931,6 +1931,8 @@ extern void cave_gen(void)
     /* Determine the character location */
     new_player_spot();
 
+    /* Use complex RNG */
+    Rand_quick = FALSE;
 
     /* Basic "amount" */
     k = (p_ptr->danger / 3);

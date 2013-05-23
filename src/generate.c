@@ -214,7 +214,7 @@ void generate_cave(void)
 		{
 		    for (x = 0; x < 3; x++)
 		    {
-			int z_pos, y_pos, x_pos;
+			chunk_ref ref = CHUNK_EMPTY;
 			int y0 = y - y_offset;
 			int x0 = x - x_offset;
 			int lower, upper;
@@ -223,24 +223,30 @@ void generate_cave(void)
 			edge_effect *current;
 
 			/* Get the location data */
-			z_pos = p_ptr->danger;
-			y_pos = chunk_list[p_ptr->last_stage].y_pos + y0;
-			x_pos = chunk_list[p_ptr->last_stage].x_pos + x0;
+			ref.region = chunk_list[p_ptr->last_stage].region;
+			ref.z_pos = p_ptr->danger;
+			ref.y_pos = chunk_list[p_ptr->last_stage].y_pos + y0;
+			ref.x_pos = chunk_list[p_ptr->last_stage].x_pos + x0;
 
 			/* See if we've been generated before */
-			reload = gen_loc_find(x_pos, y_pos, z_pos, &lower,
-					      &upper);
+			reload = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos,
+					      &lower, &upper);
 
 			/* New gen_loc */
 			if (!reload)
 			{
-			    gen_loc_make(x_pos, y_pos, z_pos, lower, upper);
+			    gen_loc_make(ref.x_pos, ref.y_pos, ref.z_pos,
+					 lower, upper);
 			    completely_new = TRUE;
 			}
 
+			/* Store the chunk reference */
+			(void) chunk_store(1, 1, ref.region, ref.z_pos,
+					  ref.y_pos, ref.x_pos, FALSE);
+
 			/* Get the edge effects from the level up */
-			reload = gen_loc_find(x_pos, y_pos, z_pos - 1, &lower,
-					      &upper);
+			reload = gen_loc_find(ref.x_pos, ref.y_pos,
+					      ref.z_pos - 1, &lower, &upper);
 			uplevel = &gen_loc_list[lower];
 			current = uplevel->effect;
 			while (current)
@@ -254,6 +260,13 @@ void generate_cave(void)
 			    downstair[downstair_n].x = current->x + CHUNK_WID * x;
 			    downstair[downstair_n++].terrain = FEAT_LESS;
 			    current = current->next;
+			}
+
+			/* Is this where the player is? */
+			if ((y0 == 0) && (x0 == 0))
+			{
+			    p_ptr->stage = chunk_find(ref);
+			    assert(p_ptr->stage != MAX_CHUNKS);
 			}
 		    }
 		}
@@ -279,7 +292,6 @@ void generate_cave(void)
 		    for (x = 0; x < 3; x++)
 		    {
 			chunk_ref ref = CHUNK_EMPTY;
-			int idx;
 			int y0 = y - y_offset;
 			int x0 = x - x_offset;
 			int lower, upper;
@@ -305,10 +317,6 @@ void generate_cave(void)
 			    location = &gen_loc_list[lower];
 			else
 			    quit("Location failure!");
-
-			/* Store the chunk reference */
-			idx = chunk_store(1, 1, ref.region, ref.z_pos,
-					  ref.y_pos, ref.x_pos, FALSE);
 
 			/* Do terrain changes */
 			for (change = location->change; change;
@@ -363,10 +371,6 @@ void generate_cave(void)
 			    if (current && (num_effects == 0))
 				current->next = NULL;
 			}
-
-			/* Is this where the player is? */
-			if ((y0 == 0) && (x0 == 0))
-			    p_ptr->stage = idx;
 		    }
 		}
 		chunk_list[p_ptr->last_stage].adjacent[DIR_DOWN] = p_ptr->stage;

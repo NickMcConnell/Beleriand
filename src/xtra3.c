@@ -927,6 +927,10 @@ static size_t prt_depth(int row, int col)
     s16b attr = TERM_L_BLUE;
     int region, level;
 
+    /* BELE stage may not be defined */
+    if ((p_ptr->stage < 0) || (p_ptr->stage >= MAX_CHUNKS))
+	return 0;
+
     region = chunk_list[p_ptr->stage].region;
 
     //level = chunk_list[p_ptr->stage].z_pos;  BELE vv Hack for now
