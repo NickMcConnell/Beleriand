@@ -196,9 +196,42 @@ void generate_cave(void)
 	    /* No existing level */
 	    if (p_ptr->stage == MAX_CHUNKS)
 	    {
-		int y_offset, x_offset;
+		int y_offset = p_ptr->py / CHUNK_HGT;
+		int x_offset = p_ptr->px / CHUNK_WID;
+		/* BELE while whole level generation is still happening */
+		bool completely_new = FALSE;
 
-		/* Generate a level */
+		/* Deal with location data */
+		for (y = 0; y < 3; y++)
+		{
+		    for (x = 0; x < 3; x++)
+		    {
+			int z_pos, y_pos, x_pos;
+			int y0 = y - y_offset;
+			int x0 = x - x_offset;
+			int lower, upper;
+			bool reload;
+
+			/* Get the location data */
+			z_pos = p_ptr->danger;
+			y_pos = chunk_list[p_ptr->last_stage].y_pos + y0;
+			x_pos = chunk_list[p_ptr->last_stage].x_pos + x0;
+
+			/* See if we've been generated before */
+			reload = gen_loc_find(x_pos, y_pos, z_pos, &lower,
+					      &upper);
+
+			/* New gen_loc */
+			if (!reload)
+			{
+			    gen_loc_make(x_pos, y_pos, z_pos, lower, upper);
+			    completely_new = TRUE;
+			}
+		    }
+		}
+
+
+		/* Generate the level */
 		cave_gen();
 
 		/* Chunk it */
@@ -212,6 +245,13 @@ void generate_cave(void)
 			int idx;
 			int y0 = y - y_offset;
 			int x0 = x - x_offset;
+			int lower, upper;
+			bool reload;
+			gen_loc *location;
+			terrain_change *change;
+			int num_effects = 0;
+			int grid_y, grid_x;
+			edge_effect *current = NULL;
 
 			/* Get the location data */
 			ref.region = chunk_list[p_ptr->last_stage].region;
@@ -219,9 +259,73 @@ void generate_cave(void)
 			ref.y_pos = chunk_list[p_ptr->last_stage].y_pos + y0;
 			ref.x_pos = chunk_list[p_ptr->last_stage].x_pos + x0;
 
+			/* Should have been generated before */
+			reload = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos,
+					      &lower, &upper);
+
+			/* Access the old place in the gen_loc_list */
+			if (reload)
+			    location = &gen_loc_list[lower];
+			else
+			    quit("Location failure!");
+
 			/* Store the chunk reference */
 			idx = chunk_store(1, 1, ref.region, ref.z_pos,
 					  ref.y_pos, ref.x_pos, FALSE);
+
+			/* Do terrain changes */
+			for (change = location->change; change;
+			     change = change->next)
+			{
+			    grid_y = y * CHUNK_HGT + change->y;
+			    grid_x = x * CHUNK_WID + change->x;
+
+			    cave_set_feat(grid_y, grid_x, change->terrain);
+			}
+
+			/* Write edge effects if this is the first generation */
+			if (completely_new)
+			{
+			    /* Count the non-zero edge effects needed */
+			    for (grid_y = 0; grid_y < CHUNK_HGT; grid_y++)
+			    {
+				for (grid_x = 0; grid_x < CHUNK_WID; grid_x++)
+				{
+				    byte feat = cave_feat[y * CHUNK_HGT + grid_y][x * CHUNK_WID + grid_x];
+				    if (tf_has(f_info[feat].flags, TF_DOWNSTAIR)
+					|| tf_has(f_info[feat].flags, TF_FALL))
+					num_effects++;
+				}
+			    }
+
+			    /* Now write them */
+			    gen_loc_list[upper].effect
+				= mem_zalloc(num_effects * sizeof(edge_effect));
+			    current = gen_loc_list[upper].effect;
+			    for (grid_x = 0; grid_x < CHUNK_WID; grid_x++)
+			    {
+				for (grid_y = 0; grid_y < CHUNK_HGT; grid_y++)
+				{
+				    byte feat = cave_feat[y * CHUNK_HGT + grid_y][x * CHUNK_WID + grid_x];
+				    if (tf_has(f_info[feat].flags, TF_DOWNSTAIR)
+					|| tf_has(f_info[feat].flags, TF_FALL))
+				    {
+					current->y = grid_y;
+					current->x = grid_x;
+					current->terrain = feat;
+					cave_copy(current->info, cave_info[y * CHUNK_HGT + grid_y][x * CHUNK_WID + grid_x]);
+					num_effects--;
+					if (num_effects != 0)
+					{
+					    current->next = current + 1;
+					    current = current->next;
+					}
+				    }
+				}
+			    }
+			    if (current && (num_effects == 0))
+				current->next = NULL;
+			}
 
 			/* Is this where the player is? */
 			if ((y0 == 0) && (x0 == 0))
