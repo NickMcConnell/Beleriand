@@ -1771,8 +1771,12 @@ extern void cave_gen(void)
     /* No rooms yet */
     dun->cent_n = 0;
 
-    /* Build the special staircase room */
+    /* Build the special staircase rooms */
     if (!room_build(0)) quit("Failed to place player");
+    for (i = 0; i < downstair_n; i++)
+    {
+	if (!room_build(0)) quit("Failed to place stairs");
+    }
 
     /* 
      * Build each type of room in turn until we cannot build any more.

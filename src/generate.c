@@ -54,6 +54,11 @@ bool moria_level;
  */
 int wild_vaults;
 
+/**
+ * Downstairs from the level above, used in cave_gen()
+ */
+int downstair_n;
+edge_effect downstair[STAIR_MAX];
 
 
 /**
@@ -201,6 +206,9 @@ void generate_cave(void)
 		/* BELE while whole level generation is still happening */
 		bool completely_new = FALSE;
 
+		/* No down stair effects yet */
+		downstair_n = 0;
+
 		/* Deal with location data */
 		for (y = 0; y < 3; y++)
 		{
@@ -211,6 +219,8 @@ void generate_cave(void)
 			int x0 = x - x_offset;
 			int lower, upper;
 			bool reload;
+			gen_loc *uplevel;
+			edge_effect *current;
 
 			/* Get the location data */
 			z_pos = p_ptr->danger;
@@ -226,6 +236,24 @@ void generate_cave(void)
 			{
 			    gen_loc_make(x_pos, y_pos, z_pos, lower, upper);
 			    completely_new = TRUE;
+			}
+
+			/* Get the edge effects from the level up */
+			reload = gen_loc_find(x_pos, y_pos, z_pos - 1, &lower,
+					      &upper);
+			uplevel = &gen_loc_list[lower];
+			current = uplevel->effect;
+			while (current)
+			{
+			    if (current->terrain != FEAT_MORE)
+			    {
+				current = current->next;
+				continue;
+			    }
+			    downstair[downstair_n].y = current->y + CHUNK_HGT * y;
+			    downstair[downstair_n].x = current->x + CHUNK_WID * x;
+			    downstair[downstair_n++].terrain = FEAT_LESS;
+			    current = current->next;
 			}
 		    }
 		}

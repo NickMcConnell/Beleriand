@@ -320,7 +320,6 @@ static bool find_space(int *y, int *x, int height, int width)
 
     bool filled;
 
-
     /* Find out how many blocks we need. */
     int blocks_high = 1 + ((height - 1) / BLOCK_HGT);
     int blocks_wide = 1 + ((width - 1) / BLOCK_WID);
@@ -328,12 +327,21 @@ static bool find_space(int *y, int *x, int height, int width)
     /* Deal with type 0 rooms */
     if (height * width == 1)
     {
-	block_y = (p_ptr->py + 1) / BLOCK_HGT;
-	block_x = (p_ptr->py + 1) / BLOCK_WID;
-
 	/* Acquire the location of the room */
-	(*y) = p_ptr->py;
-	(*x) = p_ptr->px;
+	if (dun->cent_n == 0)
+	{
+	    (*y) = p_ptr->py;
+	    (*x) = p_ptr->px;
+	}
+	else
+	{
+	    (*y) = downstair[dun->cent_n - 1].y;
+	    (*x) = downstair[dun->cent_n - 1].x;
+	}
+
+	/* Get the blocks */
+	block_y = (*y + 1) / BLOCK_HGT;
+	block_x = (*x + 1) / BLOCK_WID;
 
 	/* Save the room location */
 	if (dun->cent_n < CENT_MAX)
@@ -892,12 +900,18 @@ static bool build_type0(void)
     /* Generate outer walls */
     generate_draw(y0 - 1, x0 - 1, y0 + 1, x0 + 1, FEAT_WALL_OUTER);
 
-    /* Make a standard room. */
-    generate_fill(y0, x0, y0, x0, p_ptr->create_stair);
+    /* Place the correct stair */
+    if (dun->cent_n == 1)
+	generate_fill(y0, x0, y0, x0, p_ptr->create_stair);
+    else
+	generate_fill(y0, x0, y0, x0, downstair[dun->cent_n - 1].terrain);
 
     /* Make sure the player gets placed right */
-    p_ptr->py = y0;
-    p_ptr->px = x0;
+    if (dun->cent_n == 1)
+    {
+	p_ptr->py = y0;
+	p_ptr->px = x0;
+    }
 
     /* Success */
     return (TRUE);

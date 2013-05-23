@@ -238,6 +238,8 @@ struct dun_data {
 };
 
 extern dun_data *dun;
+extern int downstair_n;
+extern edge_effect downstair[STAIR_MAX];
 extern bool moria_level;
 extern int wild_vaults;
 extern char mon_symbol_at_depth[12][13];
