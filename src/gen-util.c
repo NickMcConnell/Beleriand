@@ -366,3 +366,152 @@ void alloc_object(int set, int typ, int num)
     }
 }
 
+/**
+ * Read terrain from a text file.  Allow for picking a smaller rectangle out of
+ * a large rectangle.
+ *
+ * Used for vaults and landmarks
+ */
+void get_terrain(int y_total, int x_total, int y_start, int x_start,
+		 int y_stop, int x_stop, int y_place, int x_place,
+		 const char *data, bool icky, bool light)
+{
+    int x, y;
+    const char *t;
+
+    for (t = data, y = y_place - y_start; y < y_total + y_place - y_start; y++)
+    {
+	for (x = x_place - x_start; x < x_total + x_place - x_start; x++, t++)
+	{
+	    /* Hack -- skip "non-grids" */
+	    if (*t == ' ')
+		continue;
+
+	    /* Restrict to from start to stop */
+	    if ((y < y_place) || (y > y_place + y_stop - y_start) ||
+		(x < x_place) || (x > x_place + x_stop - x_start))
+		    continue;
+
+	    /* Lay down a floor or grass */
+	    // BELE  vault floors all floor for now
+	    cave_set_feat(y, x, FEAT_FLOOR);
+
+	    /* Part of a vault.  Can be lit.  May be "icky". */
+	    if (icky)
+	    {
+		cave_on(cave_info[y][x], CAVE_ICKY);
+		cave_on(cave_info[y][x], CAVE_ROOM);
+	    }
+	    else //BELE if (stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
+		cave_on(cave_info[y][x], CAVE_ROOM);
+	    if (light)
+		cave_on(cave_info[y][x], CAVE_GLOW);
+
+	    /* Analyze the grid */
+	    switch (*t) {
+		/* Granite wall (outer) or outer edge of dungeon level or web. */
+	    case '%':
+		{
+		    if (p_ptr->themed_level)
+			cave_set_feat(y, x, FEAT_PERM_SOLID);
+		    /* Hack - Nan Dungortheb */
+		    else if (chunk_list[p_ptr->stage].region == 35)
+		    {
+			if (randint1(3) == 1)
+			    cave_set_feat(y, x, FEAT_FLOOR);
+			else if (randint1(2) == 1)
+			    cave_set_feat(y, x, FEAT_TREE);
+			else
+			    cave_set_feat(y, x, FEAT_TREE2);
+
+			place_trap(y, x, OBST_WEB, 0);
+		    }
+		    else
+			cave_set_feat(y, x, FEAT_WALL_OUTER);
+		    break;
+		}
+		/* Granite wall (inner) */
+	    case '#':
+		{
+		    cave_set_feat(y, x, FEAT_WALL_INNER);
+		    break;
+		}
+		/* Permanent wall (inner) */
+	    case 'X':
+		{
+		    cave_set_feat(y, x, FEAT_PERM_INNER);
+		    break;
+		}
+		/* Treasure seam, in either magma or quartz. */
+	    case '*':
+		{
+		    if (randint1(2) == 1)
+			cave_set_feat(y, x, FEAT_MAGMA_K);
+		    else
+			cave_set_feat(y, x, FEAT_QUARTZ_K);
+		    break;
+		}
+		/* Lava. */
+	    case '@':
+		{
+		    cave_set_feat(y, x, FEAT_LAVA);
+		    break;
+		}
+		/* Water. */
+	    case 'x':
+		{
+		    cave_set_feat(y, x, FEAT_WATER);
+		    break;
+		}
+		/* Tree. */
+	    case ';':
+		{
+		    if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
+			> HIGHLAND_TREE_CHANCE)
+			cave_set_feat(y, x, FEAT_TREE2);
+		    else
+			cave_set_feat(y, x, FEAT_TREE);
+		    break;
+		}
+		/* Rubble. */
+	    case ':':
+		{
+		    cave_set_feat(y, x, FEAT_RUBBLE);
+		    break;
+		}
+		/* Sand dune */
+	    case '/':
+		{
+		    cave_set_feat(y, x, FEAT_DUNE);
+		    break;
+		}
+		/* Secret doors */
+	    case '+':
+		{
+		    place_secret_door(y, x);
+		    break;
+		}
+		/* Up stairs.  */
+	    case '<':
+		{
+		    if (chunk_list[p_ptr->stage].z_pos > 0)
+			cave_set_feat(y, x, FEAT_LESS);
+
+		    break;
+		}
+		/* Down stairs. */
+	    case '>':
+		{
+		    /* No down stairs at bottom or on quests */
+		    if (is_quest(p_ptr->stage))
+//BELE need lowest level || (!stage_map[p_ptr->stage][DOWN]))
+			break;
+
+		    cave_set_feat(y, x, FEAT_MORE);
+		    break;
+		}
+	    }
+	}
+    }
+}
+

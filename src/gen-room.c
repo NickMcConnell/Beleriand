@@ -2400,10 +2400,8 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 			bool light, bool icky, byte vault_type)
 {
     int x, y;
-    int y1, x1, y2, x2, panic_y = 0, panic_x = 0;
+    int y1, x1, y2, x2;
     int temp, races = 0;
-
-    bool placed = FALSE;
 
     const char *t;
     char racial_symbol[30] = "";
@@ -2412,198 +2410,23 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
     if (no_vault())
 	return (FALSE);
 
-    /* Calculate the borders of the vault. */
-    if (p_ptr->themed_level) {
-	y1 = y0;
-	x1 = x0;
-	y2 = x0 + ymax - 1;
-	x2 = x0 + xmax - 1;
-    } else {
-	y1 = y0 - (ymax / 2);
-	x1 = x0 - (xmax / 2);
-	y2 = y1 + ymax - 1;
-	x2 = x1 + xmax - 1;
-    }
+    /* Calculate the borders of the vault, or extent of the landmark. */
+    y1 = y0 - (ymax / 2);
+    x1 = x0 - (xmax / 2);
+    y2 = y1 + ymax - 1;
+    x2 = x1 + xmax - 1;
 
     /* Make certain that the vault does not cross the dungeon edge. */
-    if ((!in_bounds(y1, x1)) || (!in_bounds(y2, x2)))
+    if (!in_bounds(y1, x1) || !in_bounds(y2, x2))
 	return (FALSE);
 
-
     /* No random monsters in vaults and interesting rooms. */
-    if (!p_ptr->themed_level)
-	generate_mark(y1, x1, y2, x2, CAVE_TEMP);
+    generate_mark(y1, x1, y2, x2, CAVE_TEMP);
 
+    /* Place terrain features (and webs) */
+    get_terrain(ymax, xmax, 0, 0, ymax, xmax, y1, x1, data, icky, light);
 
-    /* 
-     * Themed levels usually have monster restrictions that take effect 
-     * if no other restrictions are currently in force.  This can be ex-
-     * panded to vaults too - imagine a "sorcerer's castle"...
-     */
-    if (p_ptr->themed_level)
-	general_monster_restrictions();
-
-
-    /* Place dungeon features and objects */
-    for (t = data, y = y1; y <= y2; y++) {
-	for (x = x1; x <= x2; x++, t++) {
-	    /* Hack -- skip "non-grids" */
-	    if (*t == ' ') {
-		continue;
-	    }
-
-	    /* Lay down a floor or grass */
-	    // BELE  vault floors all floor for now
-	    //if (((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-	    //	 || (stage_map[p_ptr->stage][STAGE_TYPE] == DESERT)
-	    //	 || (stage_map[p_ptr->stage][STAGE_TYPE] == MOUNTAIN))
-	    //	&& (p_ptr->themed_level != THEME_SLAIN))
-		cave_set_feat(y, x, FEAT_FLOOR);
-		//else
-		//cave_set_feat(y, x, FEAT_GRASS);
-
-	    /* Part of a vault.  Can be lit.  May be "icky". */
-	    if (icky)
-	    {
-		cave_on(cave_info[y][x], CAVE_ICKY);
-		cave_on(cave_info[y][x], CAVE_ROOM);
-	    }
-	    else //BELE if (stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		cave_on(cave_info[y][x], CAVE_ROOM);
-	    if (light)
-		cave_on(cave_info[y][x], CAVE_GLOW);
-
-	    /* Analyze the grid */
-	    switch (*t) {
-		/* Granite wall (outer) or outer edge of dungeon level or web. */
-	    case '%':
-		{
-		    if (p_ptr->themed_level)
-			cave_set_feat(y, x, FEAT_PERM_SOLID);
-		    /* Hack - Nan Dungortheb */
-		    else if (chunk_list[p_ptr->stage].region == 35)
-		    {
-			if (randint1(3) == 1)
-			    cave_set_feat(y, x, FEAT_FLOOR);
-			else if (randint1(2) == 1)
-			    cave_set_feat(y, x, FEAT_TREE);
-			else
-			    cave_set_feat(y, x, FEAT_TREE2);
-
-			place_trap(y, x, OBST_WEB, 0);
-		    }
-		    else
-			cave_set_feat(y, x, FEAT_WALL_OUTER);
-		    break;
-		}
-		/* Granite wall (inner) */
-	    case '#':
-		{
-		    cave_set_feat(y, x, FEAT_WALL_INNER);
-		    break;
-		}
-		/* Permanent wall (inner) */
-	    case 'X':
-		{
-		    cave_set_feat(y, x, FEAT_PERM_INNER);
-		    break;
-		}
-		/* Treasure seam, in either magma or quartz. */
-	    case '*':
-		{
-		    if (randint1(2) == 1)
-			cave_set_feat(y, x, FEAT_MAGMA_K);
-		    else
-			cave_set_feat(y, x, FEAT_QUARTZ_K);
-		    break;
-		}
-		/* Lava. */
-	    case '@':
-		{
-		    cave_set_feat(y, x, FEAT_LAVA);
-		    break;
-		}
-		/* Water. */
-	    case 'x':
-		{
-		    cave_set_feat(y, x, FEAT_WATER);
-		    break;
-		}
-		/* Tree. */
-	    case ';':
-		{
-		    if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
-			> HIGHLAND_TREE_CHANCE)
-			cave_set_feat(y, x, FEAT_TREE2);
-		    else
-			cave_set_feat(y, x, FEAT_TREE);
-		    break;
-		}
-		/* Rubble. */
-	    case ':':
-		{
-		    cave_set_feat(y, x, FEAT_RUBBLE);
-		    break;
-		}
-		/* Sand dune */
-	    case '/':
-		{
-		    cave_set_feat(y, x, FEAT_DUNE);
-		    break;
-		}
-		/* Treasure/trap */
-	    case '&':
-		{
-		    if (randint0(100) < 50) {
-			place_object(y, x, FALSE, FALSE, FALSE, ORIGIN_VAULT);
-		    } else {
-			place_trap(y, x, -1, p_ptr->danger);
-		    }
-		    break;
-		}
-		/* Secret doors */
-	    case '+':
-		{
-		    place_secret_door(y, x);
-		    break;
-		}
-		/* Trap */
-	    case '^':
-		{
-		    place_trap(y, x, -1, p_ptr->danger);
-		    break;
-		}
-		/* Up stairs (and player location in themed level).  */
-	    case '<':
-		{
-		    if (chunk_list[p_ptr->stage].z_pos > 0)
-			cave_set_feat(y, x, FEAT_LESS);
-
-		    /* Place player only in themed level, and only once. */
-		    if ((p_ptr->themed_level) && (!placed)) {
-			player_place(y, x);
-			placed = TRUE;
-		    }
-
-		    break;
-		}
-		/* Down stairs. */
-	    case '>':
-		{
-		    /* No down stairs at bottom or on quests */
-		    if (is_quest(p_ptr->stage))
-			//BELE need lowest level || (!stage_map[p_ptr->stage][DOWN]))
-			break;
-
-		    cave_set_feat(y, x, FEAT_MORE);
-		    break;
-		}
-		//BELE case '\\': wilderness path themed levels only
-	    }
-	}
-    }
-    
-    /* Place dungeon monsters and objects */
+    /* Place dungeon monsters, traps and objects */
     for (t = data, y = y1; y <= y2; y++) {
 	for (x = x1; x <= x2; x++, t++) {
 	    /* Hack -- skip "non-grids" */
@@ -2744,6 +2567,22 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
 
 			required_tval = 0;
 
+			break;
+		    }
+		    /* Trap */
+		case '^':
+		    {
+			place_trap(y, x, -1, p_ptr->danger);
+			break;
+		    }
+		    /* Treasure/trap */
+		case '&':
+		    {
+			if (randint0(100) < 50) {
+			    place_object(y, x, FALSE, FALSE, FALSE, ORIGIN_VAULT);
+			} else {
+			    place_trap(y, x, -1, p_ptr->danger);
+			}
 			break;
 		    }
 		    /* Treasure. */
@@ -2928,14 +2767,6 @@ extern bool build_vault(int y0, int x0, int ymax, int xmax, const char *data,
     }
 
     get_vault_monsters(racial_symbol, vault_type, data, y1, y2, x1, x2);
-
-    /* Ensure that the player is always placed in a themed level. */
-    if ((p_ptr->themed_level) && (!placed)) {
-	if (chunk_list[p_ptr->stage].z_pos > 0)
-	    new_player_spot();
-	else
-	    player_place(panic_y, panic_x);
-    }
 
     /* Success. */
     return (TRUE);

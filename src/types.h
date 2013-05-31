@@ -599,11 +599,11 @@ typedef struct landmark {
     char *message;
     char *text;
 
-    u16b map_z;         /**< Map z coordinate of chunk */
-    u16b map_y;         /**< Map y coordinate of chunk */
-    u16b map_x;         /**< Map x coordinate of chunk */
-    byte chunk_y;       /**< Chunk y coordinate within landmark */
-    byte chunk_x;       /**< Chunk x coordinate within landmark */
+    u16b map_z;         /**< Map z coordinate of landmark */
+    u16b map_y;         /**< Map y coordinate of landmark */
+    u16b map_x;         /**< Map x coordinate of landmark */
+    byte height;        /**< Number of chunks high */
+    byte width;         /**< Number of chunks wide */
 } landmark_type;
 
 

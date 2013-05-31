@@ -2989,8 +2989,8 @@ static enum parser_error parse_l_i(struct parser *p) {
     l->map_z = 0;
     l->map_y = parser_getuint(p, "map_y");
     l->map_x = parser_getuint(p, "map_x");
-    l->chunk_y = parser_getuint(p, "chunk_y");
-    l->chunk_x = parser_getuint(p, "chunk_x");
+    l->height = parser_getuint(p, "height");
+    l->width = parser_getuint(p, "width");
 
     return PARSE_ERROR_NONE;
 }
@@ -3008,7 +3008,7 @@ struct parser *init_parse_l(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
     parser_reg(p, "N uint index str name", parse_l_n);
-    parser_reg(p, "I uint map_y uint map_x uint chunk_y uint chunk_x", parse_l_i);
+    parser_reg(p, "I uint map_y uint map_x uint height uint width", parse_l_i);
     parser_reg(p, "D str text", parse_l_d);
     return p;
 }

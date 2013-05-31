@@ -244,7 +244,8 @@ extern bool moria_level;
 extern int wild_vaults;
 extern char mon_symbol_at_depth[12][13];
 
-extern bool build_themed_level(void);
+extern bool build_landmark(int index, int map_y, int map_x, int y_offset,
+			   int x_offset);
 extern char *mon_restrict(char symbol, byte depth, bool * ordered,
 			  bool unique_ok);
 extern void get_chamber_monsters(int y1, int x1, int y2, int x2);
@@ -277,6 +278,9 @@ void place_secret_door(int y, int x);
 void place_random_door(int y, int x);
 void alloc_stairs(int feat, int num, int walls);
 void alloc_object(int set, int typ, int num);
+void get_terrain(int y_total, int x_total, int y_start, int x_start,
+		 int y_stop, int x_stop, int y_place, int x_place,
+		 const char *data, bool icky, bool light);
 
 void compact_chunks(void);
 void chunk_age_off(int idx);

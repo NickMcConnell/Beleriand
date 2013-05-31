@@ -1589,77 +1589,49 @@ void build_tunnel(int start_room, int end_room)
 
 
 /**
- * Creation of themed levels.  Use a set of flags to ensure that no level 
- * is built more than once.  Store the current themed level number for later 
- * reference.  -LM-
- *
- * Checking for appropriateness of a themed level to a given stage is now
- * (FAangband 0.4.0) handled by a separate function. -NRM-
- *
- * see "lib/edit/t_info.txt".  
+ * Load the appropriate bit of a landmark from the text file
  */
-bool themed_level_ok(byte choice)
+extern bool build_landmark(int index, int map_y, int map_x, int y_offset,
+			   int x_offset)
 {
-    /* Already appeared */
-    if (p_ptr->themed_level_appeared & (1L << (choice - 1)))
-	return (FALSE);
+    int y_start, x_start;
+    int y_place = y_offset * CHUNK_HGT;
+    int x_place = x_offset * CHUNK_WID;
+    landmark_type *l_ptr = &l_info[index];
 
-    //BELE this will have to be completely different
-
-    /* Must be OK */
-    return (TRUE);
-}
-
-
-//BELE use to include landmarks, record if we've been there
-extern bool build_themed_level(void)
-{
-    byte i, choice;
-
-    landmark_type *t_ptr;
+    /* Indicate that the player is on the selected landmark */
+    p_ptr->themed_level = index;
 
     /* 
-     * Down stairs aren't allowed on quest levels, and we must give
-     * a chance for the quest monsters to appear.
+     * Themed levels usually have monster restrictions that take effect
+     * if no other restrictions are currently in force.  This can be ex-
+     * panded to vaults too - imagine a "sorcerer's castle"...
      */
-    if (is_quest(p_ptr->stage) || no_vault())
-	return (FALSE);
+    //BELE ??
+//if (p_ptr->themed_level)
+//	general_monster_restrictions();
 
-    /* Pick a themed level at random.  Our patience gives out after 40 tries. */
-    for (i = 0; i < 40; i++) {
-	/* Select a random themed level record. */
-	choice = randint1(THEME_MAX);
+    /* Get the chunk within the landmark */
+    y_start = (map_y - l_ptr->map_y) * CHUNK_HGT;
+    x_start = (map_x - l_ptr->map_x) * CHUNK_WID;
 
-	/* Accept the first themed level, among those not already generated,
-	 * appropriate to be generated at this depth. */
-	if (themed_level_ok(choice))
-	    break;
-
-	/* Admit failure. */
-	if (i == 39)
-	    return (FALSE);
-    }
-
-    /* Access the chosen themed level */
-    t_ptr = &l_info[choice];
-
-
-    /* Give the player something to read. */
-    msg("Please wait.  This may take a little while.");
-
-    /* Indicate that the player is on the selected themed level. */
-    p_ptr->themed_level = choice;
-
-    /* Build the themed level. */
-    if (!build_vault(0, 0, 66, 198, t_ptr->text, FALSE, FALSE, 0)) {
-	/* Oops.  We're /not/ on a themed level. */
+    /* Check bounds */
+    if ((y_start < 0) || (y_start > l_ptr->height * CHUNK_HGT) ||
+	(x_start < 0) || (x_start > l_ptr->width * CHUNK_WID))
+    {
+	/* Oops.  We're /not/ on a landmark */
 	p_ptr->themed_level = 0;
 
 	return (FALSE);
     }
 
-    /* Indicate that this theme is built, and should not appear again. */
-    p_ptr->themed_level_appeared |= (1L << (choice - 1));
+    /* Place terrain features */
+    get_terrain(CHUNK_HGT, CHUNK_WID, y_start, x_start, y_start + CHUNK_HGT,
+		x_start + CHUNK_WID, y_place, x_place, l_ptr->text,
+		FALSE, FALSE);
+
+    /* Indicate that this landmark has been visited */
+    p_ptr->themed_level_appeared |= (1L << (index - 1));
 
     /* Update the level indicator */
     p_ptr->redraw |= (PR_DEPTH);
