@@ -2280,10 +2280,10 @@ void play_game(void)
 
 	/* Start in home town - or on the stairs to Angband */
 	p_ptr->stage = 0;
-	chunk_list[0].region = 20;
+	chunk_list[0].region = 30;
 	chunk_list[0].z_pos = 0;
-	chunk_list[0].y_pos = 3780;
-	chunk_list[0].x_pos = 3010;
+	chunk_list[0].y_pos = 1052;
+	chunk_list[0].x_pos = 3965;
 	p_ptr->danger = 0;
 
 	/* Read the default options */
