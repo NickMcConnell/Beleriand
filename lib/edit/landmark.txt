@@ -1,4 +1,4 @@
-# File: landmarks.txt
+# File: landmark.txt
 
 # This file holds wilderness landmarks for which terrain is fixed
 # N:region index:region name

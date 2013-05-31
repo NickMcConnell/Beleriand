@@ -175,7 +175,7 @@ extern int add_wakeup_chance;
 extern u32b total_wakeup_chance;
 extern region_type *region_info;
 extern vault_type *v_info;
-extern vault_type *t_info;
+extern landmark_type *l_info;
 extern feature_type *f_info;
 extern trap_kind *trap_info;
 extern object_kind *k_info;

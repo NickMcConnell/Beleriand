@@ -210,7 +210,7 @@ world_chunk *chunk_write(int y_offset, int x_offset)
     new->m_list 
 	= (monster_type *) mem_zalloc(z_info->m_max * sizeof(monster_type));
     new->trap_list 
-	= (trap_type *) mem_zalloc(z_info->l_max * sizeof(trap_type));
+	= (trap_type *) mem_zalloc(z_info->t_max * sizeof(trap_type));
     new->trap_max = 0;
     new->o_cnt = 0;
     new->m_cnt = 0;
@@ -585,7 +585,7 @@ void chunk_read(int idx, int y_offset, int x_offset)
 	size_t j;
 	
 	/* Scan the entire trap list */
-	for (j = 1; j < z_info->l_max; j++)
+	for (j = 1; j < z_info->t_max; j++)
 	{
 	    /* Point to this trap */
 	    trap_type *u_ptr = &trap_list[j];

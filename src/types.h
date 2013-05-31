@@ -128,7 +128,7 @@ typedef struct maxima {
     u16b region_max;	/**< Max size for "region_info[]" */
     u16b mp_max;        /**< Maximum number of monster pain message sets */
     u16b v_max;		/**< Max size for "v_info[]" */
-    u16b t_max;		/**< Max size for "t_info[]" */
+    u16b l_max;		/**< Max size for "l_info[]" */
     u16b p_max;		/**< Max size for "p_info[]" */
     u16b h_max;		/**< Max size for "h_info[]" */
     u16b b_max;		/**< Max size per element of "b_info[]" */
@@ -140,7 +140,7 @@ typedef struct maxima {
 
     u16b o_max;		/**< Max size for "o_list[]" */
     u16b m_max;		/**< Max size for "mon_list[]" */
-    u16b l_max;		/**< Max size for "trap_list[]" */
+    u16b t_max;		/**< Max size for "trap_list[]" */
 } maxima;
 
 
@@ -589,6 +589,22 @@ typedef struct vault {
     byte max_lev;	/**< Maximum allowable level, if specified. */
 } vault_type;
 
+/**
+ * Information about landmarks
+ */
+typedef struct landmark {
+    struct landmark *next;
+    unsigned int lidx;
+    char *name;
+    char *message;
+    char *text;
+
+    u16b map_z;         /**< Map z coordinate of chunk */
+    u16b map_y;         /**< Map y coordinate of chunk */
+    u16b map_x;         /**< Map x coordinate of chunk */
+    byte chunk_y;       /**< Chunk y coordinate within landmark */
+    byte chunk_x;       /**< Chunk x coordinate within landmark */
+} landmark_type;
 
 
 /**

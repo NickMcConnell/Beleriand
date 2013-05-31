@@ -1810,7 +1810,7 @@ int rd_chunks(void)
 	chunk->m_list 
 	    = (monster_type *) mem_zalloc(z_info->m_max * sizeof(monster_type));
 	chunk->trap_list 
-	    = (trap_type *) mem_zalloc(z_info->l_max * sizeof(trap_type));
+	    = (trap_type *) mem_zalloc(z_info->t_max * sizeof(trap_type));
 
 	/* Loop across bytes of cave_info */
 	for (n = 0; n < cave_size; n++)

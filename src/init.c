@@ -380,7 +380,7 @@ static enum parser_error parse_z(struct parser *p) {
     else if (streq(label, "V"))
 	z->v_max = value;
     else if (streq(label, "W"))
-	z->t_max = value;
+	z->l_max = value;
     else if (streq(label, "P"))
 	z->p_max = value;
     else if (streq(label, "C"))
@@ -400,7 +400,7 @@ static enum parser_error parse_z(struct parser *p) {
     else if (streq(label, "X"))
 	z->set_max = value;
     else if (streq(label, "N"))
-	z->l_max = value;
+	z->t_max = value;
     else
 	return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -2970,87 +2970,91 @@ struct file_parser region_parser = {
     cleanup_region
 };
 
-static enum parser_error parse_t_n(struct parser *p) {
-    struct vault *h = parser_priv(p);
-    struct vault *v = mem_zalloc(sizeof *v);
+static enum parser_error parse_l_n(struct parser *p) {
+    struct landmark *h = parser_priv(p);
+    struct landmark *l = mem_zalloc(sizeof *l);
 
-    v->vidx = parser_getuint(p, "index");
-    v->name = string_make(parser_getstr(p, "name"));
-    v->next = h;
-    parser_setpriv(p, v);
+    l->lidx = parser_getuint(p, "index");
+    l->name = string_make(parser_getstr(p, "name"));
+    l->next = h;
+    parser_setpriv(p, l);
     return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_t_m(struct parser *p) {
-    struct vault *v = parser_priv(p);
+static enum parser_error parse_l_i(struct parser *p) {
+    struct landmark *l = parser_priv(p);
 
-    if (!v)
+    if (!l)
 	return PARSE_ERROR_MISSING_RECORD_HEADER;
-    v->message = string_make(parser_getstr(p, "feel"));
+    l->map_z = 0;
+    l->map_y = parser_getuint(p, "map_y");
+    l->map_x = parser_getuint(p, "map_x");
+    l->chunk_y = parser_getuint(p, "chunk_y");
+    l->chunk_x = parser_getuint(p, "chunk_x");
+
     return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_t_d(struct parser *p) {
-    struct vault *v = parser_priv(p);
+static enum parser_error parse_l_d(struct parser *p) {
+    struct landmark *l = parser_priv(p);
 
-    if (!v)
+    if (!l)
 	return PARSE_ERROR_MISSING_RECORD_HEADER;
-    v->text = string_append(v->text, parser_getstr(p, "text"));
+    l->text = string_append(l->text, parser_getstr(p, "text"));
     return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_t(void) {
+struct parser *init_parse_l(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
-    parser_reg(p, "V sym version", ignored);
-    parser_reg(p, "N uint index str name", parse_t_n);
-    parser_reg(p, "M str feel", parse_t_m);
-    parser_reg(p, "D str text", parse_t_d);
+    parser_reg(p, "N uint index str name", parse_l_n);
+    parser_reg(p, "I uint map_y uint map_x uint chunk_y uint chunk_x", parse_l_i);
+    parser_reg(p, "D str text", parse_l_d);
     return p;
 }
 
-static errr run_parse_t(struct parser *p) {
-    return parse_file(p, "themed");
+static errr run_parse_l(struct parser *p) {
+    return parse_file(p, "landmark");
 }
 
-static errr finish_parse_t(struct parser *p) {
-    struct vault *v, *n;
+static errr finish_parse_l(struct parser *p) {
+    struct landmark *l, *n;
 
-    t_info = mem_zalloc(sizeof(*v) * z_info->t_max);
-    for (v = parser_priv(p); v; v = v->next) {
-	if (v->vidx >= z_info->t_max)
+    l_info = mem_zalloc(sizeof(*l) * z_info->l_max);
+    for (l = parser_priv(p); l; l = l->next) {
+	if (l->lidx >= z_info->l_max)
 	    continue;
-	memcpy(&t_info[v->vidx], v, sizeof(*v));
+	memcpy(&l_info[l->lidx], l, sizeof(*l));
     }
 
-    v = parser_priv(p);
-    while (v) {
-	n = v->next;
-	mem_free(v);
-	v = n;
+    l = parser_priv(p);
+    while (l) {
+	n = l->next;
+	mem_free(l);
+	l = n;
     }
 
     parser_destroy(p);
     return 0;
 }
 
-static void cleanup_t(void)
+static void cleanup_l(void)
 {
     int idx;
-    for (idx = 0; idx < z_info->t_max; idx++) {
-	mem_free(t_info[idx].name);
-	mem_free(t_info[idx].text);
-	mem_free(t_info[idx].message);
+    for (idx = 0; idx < z_info->l_max; idx++) {
+	mem_free(l_info[idx].name);
+	mem_free(l_info[idx].text);
+	mem_free(l_info[idx].message);
     }
-    mem_free(t_info);
+    mem_free(l_info);
 }
 
-struct file_parser t_parser = {
-    "themed",
-    init_parse_t,
-    run_parse_t,
-    finish_parse_t,
-    cleanup_t
+struct file_parser l_parser = {
+    "landmark",
+    init_parse_l,
+    run_parse_l,
+    finish_parse_l,
+    cleanup_l
 };
 
 static enum parser_error parse_h_n(struct parser *p) {
@@ -3536,7 +3540,7 @@ static errr init_other(void)
     m_list = C_ZNEW(z_info->m_max, monster_type);
 
     /* Traps */
-    trap_list = C_ZNEW(z_info->l_max, trap_type);
+    trap_list = C_ZNEW(z_info->t_max, trap_type);
 
 
     /*** Prepare lore array ***/
@@ -4012,8 +4016,8 @@ bool init_angband(void)
     if (run_parser(&v_parser)) quit("Cannot initialize vaults");
 
     /* Initialize themed level info */
-    event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (themed)");
-    if (run_parser(&t_parser)) quit("Cannot initialize themed levels");
+    event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (landmarks)");
+    if (run_parser(&l_parser)) quit("Cannot initialize landmarks");
 
     /* Initialize history info */
     event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (histories)");
@@ -4166,7 +4170,7 @@ void cleanup_angband(void)
     cleanup_parser(&region_parser);
     cleanup_parser(&v_parser);
     cleanup_parser(&h_parser);
-    cleanup_parser(&t_parser);
+    cleanup_parser(&l_parser);
     cleanup_parser(&flavor_parser);
     cleanup_parser(&s_parser);
     cleanup_parser(&hints_parser);

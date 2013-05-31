@@ -517,7 +517,7 @@ bool place_trap(int y, int x, int t_idx, int trap_level)
     /* Hack -- don't use up all the trap slots during dungeon generation */
     if (!character_dungeon)
     {
-	if (trap_max > z_info->l_max - 50) return (FALSE);
+	if (trap_max > z_info->t_max - 50) return (FALSE);
     }
 
     /* We've been called with an illegal index; choose a random trap */
@@ -531,7 +531,7 @@ bool place_trap(int y, int x, int t_idx, int trap_level)
 
 
     /* Scan the entire trap list */
-    for (i = 1; i < z_info->l_max; i++)
+    for (i = 1; i < z_info->t_max; i++)
     {
 	/* Point to this trap */
 	trap_type *t_ptr = &trap_list[i];

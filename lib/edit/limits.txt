@@ -37,7 +37,7 @@ M:G:66
 # Maximum number of vaults
 M:V:300
 
-# Maximum number of themed levels
+# Maximum number of landmarks
 M:W:32
 
 # Maximum number of player races - changes required if this exceeds 32

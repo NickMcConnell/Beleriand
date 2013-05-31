@@ -1611,12 +1611,12 @@ bool themed_level_ok(byte choice)
 }
 
 
-
+//BELE use to include landmarks, record if we've been there
 extern bool build_themed_level(void)
 {
     byte i, choice;
 
-    vault_type *t_ptr;
+    landmark_type *t_ptr;
 
     /* 
      * Down stairs aren't allowed on quest levels, and we must give
@@ -1641,7 +1641,7 @@ extern bool build_themed_level(void)
     }
 
     /* Access the chosen themed level */
-    t_ptr = &t_info[choice];
+    t_ptr = &l_info[choice];
 
 
     /* Give the player something to read. */

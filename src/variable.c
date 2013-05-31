@@ -545,7 +545,7 @@ int update_center_x;
 int cost_at_center = 0;
 
 /**
- * Array[z_info->l_max] of traps
+ * Array[z_info->t_max] of traps
  */
 trap_type *trap_list;
 
@@ -702,9 +702,9 @@ region_type *region_info;
 vault_type *v_info;
 
 /**
- * The themed level generation arrays. -LM-
+ * The landmark arrays
  */
-vault_type *t_info;
+landmark_type *l_info;
 
 /**
  * The terrain feature arrays
