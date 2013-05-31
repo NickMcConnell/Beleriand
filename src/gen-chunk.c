@@ -972,91 +972,113 @@ void chunk_generate(chunk_ref ref, int y_offset, int x_offset)
 	}
     }
 
-    /* Generate the chunk */
-    terrain = region_terrain[y_pos / 10][x_pos / 10];
+    /* Check for landmarks */
+    for (n = 0; n < z_info->l_max; n++)
+    {
+	landmark_type *l_ptr = &l_info[n];
 
-    /* Set the RNG to give reproducible results */
-    Rand_quick = TRUE;
-    Rand_value = ((y_pos & 0x1fff) << 19);
-    Rand_value |= ((z_pos & 0x3f) << 13);
-    Rand_value |= (x_pos & 0x1fff);
-    Rand_value ^= seed_flavor;
+	/* Must satisfy all the conditions */
+	if (l_ptr->map_z != z_pos) continue;
+	if (l_ptr->map_y > y_pos) continue;
+	if (l_ptr->map_y + l_ptr->height <= y_pos) continue;
+	if (l_ptr->map_x > x_pos) continue;
+	if (l_ptr->map_x + l_ptr->width <= x_pos) continue;
 
-    switch (terrain)
-    {
-    case '.':
-    {
-	plain_gen(ref, y_offset, x_offset, first);
 	break;
-    }
-    case '+':
-    {
-	forest_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case '-':
-    {
-	lake_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case '~':
-    {
-	ocean_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case ',':
-    {
-	moor_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case '^':
-    {
-	mtn_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case '_':
-    {
-	swamp_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case '|':
-    {
-	dark_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case 'X':
-    {
-	impass_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case '/':
-    {
-	desert_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case '*':
-    {
-	snow_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case '=':
-    {
-	town_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    case '&':
-    {
-	landmk_gen(ref, y_offset, x_offset, first);
-	break;
-    }
-    default:
-    {
-	ocean_gen(ref, y_offset, x_offset, first);
-	break;
-    }
     }
 
-    Rand_quick = FALSE;
+    /* Build the landmark... */
+    if (n < z_info->l_max)
+	build_landmark(n, y_pos, x_pos, y_offset, x_offset);
+
+    /* ...or generate the chunk */
+    else
+    {
+	terrain = region_terrain[y_pos / 10][x_pos / 10];
+
+	/* Set the RNG to give reproducible results */
+	Rand_quick = TRUE;
+	Rand_value = ((y_pos & 0x1fff) << 19);
+	Rand_value |= ((z_pos & 0x3f) << 13);
+	Rand_value |= (x_pos & 0x1fff);
+	Rand_value ^= seed_flavor;
+
+	switch (terrain)
+	{
+	case '.':
+	{
+	    plain_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '+':
+	{
+	    forest_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '-':
+	{
+	    lake_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '~':
+	{
+	    ocean_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case ',':
+	{
+	    moor_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '^':
+	{
+	    mtn_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '_':
+	{
+	    swamp_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '|':
+	{
+	    dark_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case 'X':
+	{
+	    impass_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '/':
+	{
+	    desert_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '*':
+	{
+	    snow_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '=':
+	{
+	    town_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	case '&':
+	{
+	    landmk_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	default:
+	{
+	    ocean_gen(ref, y_offset, x_offset, first);
+	    break;
+	}
+	}
+
+	Rand_quick = FALSE;
+    }
 
     /* Do terrain changes */
     if (reload)
