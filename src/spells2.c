@@ -2227,7 +2227,7 @@ void stair_creation(void)
     delete_object(py, px);
 
     /* Create a staircase */
-    if (is_quest(p_ptr->stage))//BELE || (!stage_map[p_ptr->stage]) 
+    if (is_quest(p_ptr->stage) || (chunk_list[p_ptr->stage].z_pos == 127)) 
     {
 	cave_set_feat(py, px, FEAT_LESS);
     } 

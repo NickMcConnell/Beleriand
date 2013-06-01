@@ -3472,15 +3472,14 @@ void disturb(int stop_search, int unused_flag)
  */
 bool is_quest(int stage)
 {
-    int i;
+    /* Is Morgoth dead? */
+    if (p_ptr->total_winner)
+	return (FALSE);
 
-    /* Check quests */
-    for (i = 0; i < MAX_Q_IDX; i++) {
-	/* Check for quest */
-	if (q_list[i].stage == stage)
-	    return (TRUE);
-    }
+    /* Is it level 100? */
+    if (chunk_list[stage].z_pos == 100)
+	return (TRUE);
 
-    /* Nope */
+    /* No, then */
     return (FALSE);
 }

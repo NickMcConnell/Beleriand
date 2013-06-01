@@ -216,12 +216,9 @@ void alloc_stairs(int feat, int num, int walls)
 {
     int y, x, i, j;
     feature_type *f_ptr;
-    bool no_down_shaft = //(!stage_map[stage_map[p_ptr->stage][DOWN]][DOWN]
-	//|| is_quest(stage_map[p_ptr->stage][DOWN]) BELE lowest level needed
-	(is_quest(p_ptr->stage));
+    bool no_down_shaft = (chunk_list[p_ptr->stage].z_pos >= 99);
     bool no_up_shaft = (chunk_list[p_ptr->stage].z_pos <= 1);
     bool morgy = is_quest(p_ptr->stage);
-    //BELE M is only quest? && stage_map[p_ptr->stage][DEPTH] == 100;
 
 
     /* Place "num" stairs */
@@ -507,8 +504,8 @@ void get_terrain(int y_total, int x_total, int y_start, int x_start,
 	    case '>':
 	    {
 		/* No down stairs at bottom or on quests */
-		if (is_quest(p_ptr->stage))
-//BELE need lowest level || (!stage_map[p_ptr->stage][DOWN]))
+		if (is_quest(p_ptr->stage) || 
+		    (chunk_list[p_ptr->stage].z_pos == 127))
 		    break;
 
 		cave_set_feat(y, x, FEAT_MORE);

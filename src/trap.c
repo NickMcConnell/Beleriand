@@ -442,10 +442,9 @@ static int pick_trap(int feat, int trap_level)
 		    trap_is_okay = FALSE;
 
 		/* Hack -- no trap doors at the bottom of dungeons */
-		//if ((stage_map[p_ptr->stage][STAGE_TYPE] == CAVE)
-		//  && (!stage_map[p_ptr->stage][DOWN]))
-		//  trap_is_okay = FALSE;  BELE max depth needed
-
+		if (chunk_list[p_ptr->stage].z_pos == 127)
+		    trap_is_okay = FALSE;
+		
 		/* Trap doors only in dungeons for now */
 		if (chunk_list[p_ptr->stage].z_pos == 0)
 		    trap_is_okay = FALSE;
