@@ -2282,7 +2282,7 @@ void play_game(void)
 	p_ptr->stage = 0;
 	chunk_list[0].region = 30;
 	chunk_list[0].z_pos = 0;
-	chunk_list[0].y_pos = 1052;
+	chunk_list[0].y_pos = 422;
 	chunk_list[0].x_pos = 3965;
 	p_ptr->danger = 0;
 

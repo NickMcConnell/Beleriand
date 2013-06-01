@@ -976,7 +976,7 @@ enum
 #define FEAT_LESS_WEST		0x66
 #define FEAT_MORE_WEST		0x67
 
-/* Special dungeon/wilderness features. -LM- Expanded for FAangband 0.3.4 */
+/* Special dungeon/wilderness features. */
 #define FEAT_MIN_SPECIAL        0x70
 #define FEAT_LAVA		0x70
 #define FEAT_WATER      	0x71
@@ -991,6 +991,7 @@ enum
 #define FEAT_MTN                0x7c
 #define FEAT_SNOW               0x7e
 #define FEAT_BTLMNT             0x7f
+#define FEAT_ICE                0x80
 
 /*** Trap Indexes (see "lib/edit/trap.txt") ***/
 

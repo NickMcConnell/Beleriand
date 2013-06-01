@@ -370,7 +370,8 @@ void alloc_object(int set, int typ, int num)
  * Read terrain from a text file.  Allow for picking a smaller rectangle out of
  * a large rectangle.
  *
- * Used for vaults and landmarks
+ * Used for vaults and landmarks.  Note that some vault codes are repurposed
+ * here to allow more terrain for landmarks
  */
 void get_terrain(int y_total, int x_total, int y_start, int x_start,
 		 int y_stop, int x_stop, int y_place, int x_place,
@@ -378,6 +379,7 @@ void get_terrain(int y_total, int x_total, int y_start, int x_start,
 {
     int x, y;
     const char *t;
+    bool landmark = (p_ptr->themed_level != 0);
 
     for (t = data, y = y_place - y_start; y < y_total + y_place - y_start; y++)
     {
@@ -388,9 +390,9 @@ void get_terrain(int y_total, int x_total, int y_start, int x_start,
 		continue;
 
 	    /* Restrict to from start to stop */
-	    if ((y < y_place) || (y > y_place + y_stop - y_start) ||
-		(x < x_place) || (x > x_place + x_stop - x_start))
-		    continue;
+	    if ((y < y_place) || (y >= y_place + y_stop - y_start) ||
+		(x < x_place) || (x >= x_place + x_stop - x_start))
+		continue;
 
 	    /* Lay down a floor or grass */
 	    // BELE  vault floors all floor for now
@@ -408,107 +410,171 @@ void get_terrain(int y_total, int x_total, int y_start, int x_start,
 		cave_on(cave_info[y][x], CAVE_GLOW);
 
 	    /* Analyze the grid */
-	    switch (*t) {
-		/* Granite wall (outer) or outer edge of dungeon level or web. */
+	    switch (*t) 
+	    {
+	    /* Granite wall (outer) or web. */
 	    case '%':
+	    {
+		/* Hack - Nan Dungortheb */
+		if (chunk_list[p_ptr->stage].region == 35)
 		{
-		    if (p_ptr->themed_level)
-			cave_set_feat(y, x, FEAT_PERM_SOLID);
-		    /* Hack - Nan Dungortheb */
-		    else if (chunk_list[p_ptr->stage].region == 35)
-		    {
-			if (randint1(3) == 1)
-			    cave_set_feat(y, x, FEAT_FLOOR);
-			else if (randint1(2) == 1)
-			    cave_set_feat(y, x, FEAT_TREE);
-			else
-			    cave_set_feat(y, x, FEAT_TREE2);
-
-			place_trap(y, x, OBST_WEB, 0);
-		    }
-		    else
-			cave_set_feat(y, x, FEAT_WALL_OUTER);
-		    break;
-		}
-		/* Granite wall (inner) */
-	    case '#':
-		{
-		    cave_set_feat(y, x, FEAT_WALL_INNER);
-		    break;
-		}
-		/* Permanent wall (inner) */
-	    case 'X':
-		{
-		    cave_set_feat(y, x, FEAT_PERM_INNER);
-		    break;
-		}
-		/* Treasure seam, in either magma or quartz. */
-	    case '*':
-		{
-		    if (randint1(2) == 1)
-			cave_set_feat(y, x, FEAT_MAGMA_K);
-		    else
-			cave_set_feat(y, x, FEAT_QUARTZ_K);
-		    break;
-		}
-		/* Lava. */
-	    case '@':
-		{
-		    cave_set_feat(y, x, FEAT_LAVA);
-		    break;
-		}
-		/* Water. */
-	    case 'x':
-		{
-		    cave_set_feat(y, x, FEAT_WATER);
-		    break;
-		}
-		/* Tree. */
-	    case ';':
-		{
-		    if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
-			> HIGHLAND_TREE_CHANCE)
-			cave_set_feat(y, x, FEAT_TREE2);
-		    else
+		    if (randint1(3) == 1)
+			cave_set_feat(y, x, FEAT_FLOOR);
+		    else if (randint1(2) == 1)
 			cave_set_feat(y, x, FEAT_TREE);
-		    break;
+		    else
+			cave_set_feat(y, x, FEAT_TREE2);
+
+		    place_trap(y, x, OBST_WEB, 0);
 		}
-		/* Rubble. */
+		else
+		    cave_set_feat(y, x, FEAT_WALL_OUTER);
+		break;
+	    }
+	    /* Granite wall (inner) */
+	    case '#':
+	    {
+		cave_set_feat(y, x, FEAT_WALL_INNER);
+		break;
+	    }
+	    /* Permanent wall (inner) */
+	    case 'X':
+	    {
+		cave_set_feat(y, x, FEAT_PERM_INNER);
+		break;
+	    }
+	    /* Treasure seam, in either magma or quartz. */
+	    case '*':
+	    {
+		if (randint1(2) == 1)
+		    cave_set_feat(y, x, FEAT_MAGMA_K);
+		else
+		    cave_set_feat(y, x, FEAT_QUARTZ_K);
+		break;
+	    }
+	    /* Lava. */
+	    case '@':
+	    {
+		cave_set_feat(y, x, FEAT_LAVA);
+		break;
+	    }
+	    /* Water. */
+	    case 'x':
+	    {
+		cave_set_feat(y, x, FEAT_WATER);
+		break;
+	    }
+	    /* Tree. */
+	    case ';':
+	    {
+		if (randint1(p_ptr->danger + HIGHLAND_TREE_CHANCE)
+		    > HIGHLAND_TREE_CHANCE)
+		    cave_set_feat(y, x, FEAT_TREE2);
+		else
+		    cave_set_feat(y, x, FEAT_TREE);
+		break;
+	    }
+	    /* Rubble. */
 	    case ':':
-		{
-		    cave_set_feat(y, x, FEAT_RUBBLE);
-		    break;
-		}
-		/* Sand dune */
+	    {
+		cave_set_feat(y, x, FEAT_RUBBLE);
+		break;
+	    }
+	    /* Sand dune */
 	    case '/':
-		{
-		    cave_set_feat(y, x, FEAT_DUNE);
-		    break;
-		}
-		/* Secret doors */
+	    {
+		cave_set_feat(y, x, FEAT_DUNE);
+		break;
+	    }
+	    /* Doors */
 	    case '+':
-		{
+	    {
+		if (landmark)
+		    place_unlocked_door(y, x);
+		else
 		    place_secret_door(y, x);
-		    break;
-		}
-		/* Up stairs.  */
+		break;
+	    }
+	    /* Up stairs.  */
 	    case '<':
-		{
-		    if (chunk_list[p_ptr->stage].z_pos > 0)
-			cave_set_feat(y, x, FEAT_LESS);
+	    {
+		if (chunk_list[p_ptr->stage].z_pos > 0)
+		    cave_set_feat(y, x, FEAT_LESS);
 
+		break;
+	    }
+	    /* Down stairs. */
+	    case '>':
+	    {
+		/* No down stairs at bottom or on quests */
+		if (is_quest(p_ptr->stage))
+//BELE need lowest level || (!stage_map[p_ptr->stage][DOWN]))
+		    break;
+
+		cave_set_feat(y, x, FEAT_MORE);
+		break;
+	    }
+	    }
+
+	    /* Analyze again for landmark-specific terrain */
+	    if (landmark)
+	    {
+		switch (*t) 
+		{
+		    /* Grass */
+		case '1':
+		{
+		    cave_set_feat(y, x, FEAT_GRASS);
 		    break;
 		}
-		/* Down stairs. */
-	    case '>':
+		/* Road */
+		case '2':
 		{
-		    /* No down stairs at bottom or on quests */
-		    if (is_quest(p_ptr->stage))
-//BELE need lowest level || (!stage_map[p_ptr->stage][DOWN]))
-			break;
-
-		    cave_set_feat(y, x, FEAT_MORE);
+		    cave_set_feat(y, x, FEAT_ROAD);
 		    break;
+		}
+		/* Void */
+		case '3':
+		{
+		    cave_set_feat(y, x, FEAT_VOID);
+		    break;
+		}
+		/* Pit */
+		case '4':
+		{
+		    cave_set_feat(y, x, FEAT_PIT);
+		    break;
+		}
+		/* Reed */
+		case '5':
+		{
+		    cave_set_feat(y, x, FEAT_REED);
+		    break;
+		}
+		/* Mountain */
+		case '6':
+		{
+		    cave_set_feat(y, x, FEAT_MTN);
+		    break;
+		}
+		/* Snow */
+		case '7':
+		{
+		    cave_set_feat(y, x, FEAT_SNOW);
+		    break;
+		}
+		/* Battlement */
+		case '8':
+		{
+		    cave_set_feat(y, x, FEAT_BTLMNT);
+		    break;
+		}
+		/* Ice */
+		case '9':
+		{
+		    cave_set_feat(y, x, FEAT_ICE);
+		    break;
+		}
 		}
 	    }
 	}

@@ -1594,10 +1594,16 @@ void build_tunnel(int start_room, int end_room)
 extern bool build_landmark(int index, int map_y, int map_x, int y_offset,
 			   int x_offset)
 {
-    int y_start, x_start;
+    /* Where in the arena the chunk is going */
     int y_place = y_offset * CHUNK_HGT;
     int x_place = x_offset * CHUNK_WID;
+
+    /* Set all the chunk reading data */
     landmark_type *l_ptr = &l_info[index];
+    int y_start = (map_y - l_ptr->map_y) * CHUNK_HGT;
+    int x_start = (map_x - l_ptr->map_x) * CHUNK_WID;
+    int y_total = l_ptr->height * CHUNK_HGT;
+    int x_total = l_ptr->width * CHUNK_WID;
 
     /* Indicate that the player is on the selected landmark */
     p_ptr->themed_level = index;
@@ -1611,13 +1617,9 @@ extern bool build_landmark(int index, int map_y, int map_x, int y_offset,
 //if (p_ptr->themed_level)
 //	general_monster_restrictions();
 
-    /* Get the chunk within the landmark */
-    y_start = (map_y - l_ptr->map_y) * CHUNK_HGT;
-    x_start = (map_x - l_ptr->map_x) * CHUNK_WID;
-
     /* Check bounds */
-    if ((y_start < 0) || (y_start > l_ptr->height * CHUNK_HGT) ||
-	(x_start < 0) || (x_start > l_ptr->width * CHUNK_WID))
+    if ((y_start < 0) || (y_start > y_total) ||
+	(x_start < 0) || (x_start > x_total))
     {
 	/* Oops.  We're /not/ on a landmark */
 	p_ptr->themed_level = 0;
@@ -1626,9 +1628,9 @@ extern bool build_landmark(int index, int map_y, int map_x, int y_offset,
     }
 
     /* Place terrain features */
-    get_terrain(CHUNK_HGT, CHUNK_WID, y_start, x_start, y_start + CHUNK_HGT,
-		x_start + CHUNK_WID, y_place, x_place, l_ptr->text,
-		FALSE, FALSE);
+    get_terrain(y_total, x_total, y_start, x_start,
+		y_start + CHUNK_HGT, x_start + CHUNK_WID, y_place, x_place,
+		l_ptr->text, FALSE, FALSE);
 
     /* Indicate that this landmark has been visited */
     p_ptr->themed_level_appeared |= (1L << (index - 1));
