@@ -180,9 +180,8 @@ bool x_file_putf(ang_file *f, const char *fmt, ...);
 /** Byte-based IO */
 
 /**
- * Seek to position `pos` in the file represented by `f`.
- *
- * Returns TRUE if successful, FALSE otherwise.
+ * Skip 'bytes' bytes.
+ * \returns TRUE if successful, FALSE otherwise.
  */
 bool file_seek(ang_file *f, u32b pos);
 

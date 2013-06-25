@@ -74,6 +74,24 @@ static const byte savefile_magic[4] = { 83, 97, 118, 101 };
 static const byte savefile_name[4] = SAVEFILE_NAME;
 
 
+/* Some useful types */
+
+typedef int (*loader_t)(void);
+
+
+struct blockheader {
+  char name[16];
+  u32b version;
+  u32b size;
+};
+
+
+struct blockinfo {
+  char name[16];
+  loader_t loader;
+  u32b version;
+};
+
 /**
  * Savefile saving functions 
  */
@@ -357,6 +375,25 @@ static bool try_save(ang_file *file)
 	return TRUE;
 }
 
+/*
+ * Set the savefile name.
+ */
+void savefile_set_name(const char *fname)
+{
+	char path[128];
+
+#if defined(SETGID)
+	/* Rename the savefile, using the player_uid and base_name */
+	strnfmt(path, sizeof(path), "%d.%s", player_uid, fname);
+#else
+	/* Rename the savefile, using the base name */
+	strnfmt(path, sizeof(path), "%s", fname);
+#endif
+
+	/* Save the path */
+	path_build(savefile, sizeof(savefile), ANGBAND_DIR_SAVE, path);
+}
+
 
 /*
  * Attempt to save the player in a savefile
@@ -439,6 +476,86 @@ bool savefile_save(const char *path)
 
 /*** Savefiel loading functions ***/
 
+/* Check the savefile header file clearly inicates that it's a savefile */
+static bool check_header(ang_file *f) {
+	byte head[8];
+
+	if (file_read(f, (char *) &head, 8) == 8 &&
+			memcmp(&head[0], savefile_magic, 4) == 0 &&
+			memcmp(&head[4], savefile_name, 4) == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
+/* Get the next block header from the savefile */
+static errr next_blockheader(ang_file *f, struct blockheader *b) {
+	byte savefile_head[SAVEFILE_HEAD_SIZE];
+	size_t len;
+
+	len = file_read(f, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+	if (len == 0) /* no more blocks */
+		return 1;
+
+	if (len != SAVEFILE_HEAD_SIZE || savefile_head[15] != 0) {
+		return -1;
+	}
+
+#define RECONSTRUCT_U32B(from) \
+	((u32b) savefile_head[from]) | \
+	((u32b) savefile_head[from+1] << 8) | \
+	((u32b) savefile_head[from+2] << 16) | \
+	((u32b) savefile_head[from+3] << 24);
+
+	my_strcpy(b->name, (char *)&savefile_head, sizeof b->name);
+	b->version = RECONSTRUCT_U32B(16);
+	b->size = RECONSTRUCT_U32B(20);
+
+	/* pad to 4 bytes */
+	if (b->size % 4)
+		b->size += 4 - (b->size % 4);
+
+	return 0;
+}
+
+/* Find the right loader for this block, return it */
+static loader_t find_loader(struct blockheader *b, const struct blockinfo *loaders) {
+	size_t i = 0;
+
+	/* Find the right loader */
+	for (i = 0; loaders[i].name[0]; i++) {
+		if (!streq(b->name, loaders[i].name)) continue;
+		if (b->version != loaders[i].version) continue;
+
+		return loaders[i].loader;
+	} 
+
+	return NULL;
+}
+
+/* Load a given block with the given loader */
+static bool load_block(ang_file *f, struct blockheader *b, loader_t loader) {
+	/* Allocate space for the buffer */
+	buffer = mem_alloc(b->size);
+	buffer_pos = 0;
+	buffer_check = 0;
+
+	buffer_size = file_read(f, (char *) buffer, b->size);
+	if (buffer_size != b->size ||
+			loader() != 0) {
+		mem_free(buffer);
+		return FALSE;
+	}
+
+	mem_free(buffer);
+	return TRUE;
+}
+
+/* Skip a block */
+static void skip_block(ang_file *f, struct blockheader *b) {
+	//file_skip(f, b->size);
+}
+
 static bool try_load(ang_file *f)
 {
         byte savefile_head[SAVEFILE_HEAD_SIZE];
@@ -518,6 +635,45 @@ static bool try_load(ang_file *f)
         }
 
         return TRUE;
+}
+
+
+/* XXX this isn't nice but it'll have to do */
+static char savefile_desc[120];
+
+static int get_desc(void) {
+	rd_string(savefile_desc, sizeof savefile_desc);
+	return 0;
+}
+
+/**
+ * Try to get the 'description' block from a savefile.  Fail gracefully.
+ */
+const char *savefile_get_description(const char *path) {
+	errr err;
+	struct blockheader b;
+
+	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
+	if (!f) return NULL;
+
+	/* Blank the description */
+	savefile_desc[0] = 0;
+
+	if (!check_header(f)) {
+		my_strcpy(savefile_desc, "Invalid savefile", sizeof savefile_desc);
+	} else {
+		while ((err = next_blockheader(f, &b)) == 0) {
+			if (!streq(b.name, "description")) {
+				skip_block(f, &b);
+				continue;
+			}
+			load_block(f, &b, get_desc);
+			break;
+		}
+	}
+
+	file_close(f);
+	return savefile_desc;
 }
 
 
