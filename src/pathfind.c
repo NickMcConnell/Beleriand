@@ -915,7 +915,7 @@ static bool run_test(void)
 		
 	/* HACK: Ugh. Sometimes we come up with illegal bounds. This will
 	 * treat the symptom but not the disease. */
-	if (row >= DUNGEON_HGT || col >= DUNGEON_WID) continue;
+	if (row >= ARENA_HGT || col >= ARENA_WID) continue;
 	if (row < 0 || col < 0) continue;
 
 	    /* Visible monsters abort running */

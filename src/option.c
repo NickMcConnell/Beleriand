@@ -61,7 +61,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	  OPT_animate_flicker,
 	  OPT_solid_walls,
 	  OPT_hybrid_walls,
-	  OPT_NONE,
+	  OPT_show_target,
 	  OPT_NONE
       },
     
@@ -243,8 +243,8 @@ static option_entry options[OPT_MAX] =
      FALSE /* 50 */},
     {"hybrid_walls",            "Show walls with shaded background",
      FALSE /* 51 */},
-    {NULL,                     NULL,
-     FALSE /* 52 */},
+    {"show_target",             "Highlight target with cursor",
+     TRUE /* 52 */},
     {NULL,                     NULL,
      FALSE /* 53 */},
     {NULL,                     NULL,
