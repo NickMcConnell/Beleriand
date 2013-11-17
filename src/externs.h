@@ -2,6 +2,7 @@
 #define INCLUDED_EXTERNS_H
 
 #include "spells.h"
+#include "z-type.h"
 
 /** \file externs.h 
     \brief Variable and function definitions.
@@ -338,9 +339,6 @@ extern void predict_score(void);
 /* util.c */
 extern void text_to_ascii(char *buf, size_t len, const char *str);
 extern void ascii_to_text(char *buf, size_t len, const char *str);
-extern char *find_roman_suffix_start(const char *buf);
-extern int roman_to_int(const char *roman);
-extern int int_to_roman(int n, char *roman, size_t bufsize);
 extern void flush(void);
 extern void anykey(void);
 extern struct keypress inkey(void);
