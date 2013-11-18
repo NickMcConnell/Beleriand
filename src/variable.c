@@ -27,18 +27,18 @@
  * Hack -- Link a copyright message into the executable
  */
 const char *copyright =
-  "Copyright (c) 1987-2009 Angband contributors.\n"
-  "\n"
-  "This work is free software; you can redistribute it and/or modify it\n"
-  "under the terms of either:\n"
-  "\n"
-  "a) the GNU General Public License as published by the Free Software\n"
-  "   Foundation, version 2, or\n"
-  "\n"
-  "b) the Angband licence:\n"
-  "   This software may be copied and distributed for educational, research,\n"
-  "   and not for profit purposes provided that this copyright and statement\n"
-  "   are included in all such copies.  Other copyrights may also apply.\n";
+	"Copyright (c) 1987-2009 Angband contributors.\n"
+	"\n"
+	"This work is free software; you can redistribute it and/or modify it\n"
+	"under the terms of either:\n"
+	"\n"
+	"a) the GNU General Public License as published by the Free Software\n"
+	"   Foundation, version 2, or\n"
+	"\n"
+	"b) the Angband licence:\n"
+	"   This software may be copied and distributed for educational, research,\n"
+	"   and not for profit purposes provided that this copyright and statement\n"
+	"   are included in all such copies.  Other copyrights may also apply.\n";
 
 
 /*
@@ -53,82 +53,82 @@ byte version_extra = VERSION_EXTRA;
  * Savefile version 
  */
 byte sf_major;		/**< Savefile's "version_major" */
-byte sf_minor;		/* Savefile's "version_minor" */
-byte sf_patch;		/* Savefile's "version_patch" */
-byte sf_extra;		/* Savefile's "version_extra". Used for enryption */
+byte sf_minor;					/* Savefile's "version_minor" */
+byte sf_patch;					/* Savefile's "version_patch" */
+byte sf_extra;					/* Savefile's "version_extra". Used for enryption */
 
 
 /*
  * Run-time arguments
  */
-bool arg_wizard;		/* Command arg -- Request wizard mode */
+bool arg_wizard;				/* Command arg -- Request wizard mode */
 bool arg_rebalance;
-int arg_graphics;		/* Command arg -- Request graphics mode */
-bool arg_graphics_nice;	        /* Command arg -- Request nice graphics mode */
+int arg_graphics;				/* Command arg -- Request graphics mode */
+bool arg_graphics_nice;			/* Command arg -- Request nice graphics mode */
 
 /*
  * Various things
  */
 
-bool game_start;                /* Restart after death? */
-bool character_generated;	/* The character exists */
-bool character_dungeon;		/* The character has a dungeon */
-bool character_loaded;		/* The character was loaded from a savefile */
-bool character_saved;		/* The character was just saved to a savefile */
+bool game_start;				/* Restart after death? */
+bool character_generated;		/* The character exists */
+bool character_dungeon;			/* The character has a dungeon */
+bool character_loaded;			/* The character was loaded from a savefile */
+bool character_saved;			/* The character was just saved to a savefile */
 
-s16b character_icky;		/* Depth of the game in special mode */
-s16b character_xtra;		/* Depth of the game in startup mode */
+s16b character_icky;			/* Depth of the game in special mode */
+s16b character_xtra;			/* Depth of the game in startup mode */
 
-u32b seed_flavor;		/* Hack -- consistent object colors */
+u32b seed_flavor;				/* Hack -- consistent object colors */
 
-s16b num_repro;			/* Current reproducer count */
-s16b object_level;		/* Current object creation level */
-s16b monster_level;		/* Current monster creation level */
+s16b num_repro;					/* Current reproducer count */
+s16b object_level;				/* Current object creation level */
+s16b monster_level;				/* Current monster creation level */
 
 wchar_t summon_kin_type;		/* Hack -- See summon_specific() */
 
-s32b turn;			/* Current game turn */
+s32b turn;						/* Current game turn */
 
-int use_graphics;		/* "graphics" mode */
-bool use_graphics_nice;	        /* The 'nice' "graphics" mode is enabled */
-bool use_transparency = FALSE;  /* Use transparent tiles */
-char notes_start[80];           /* Opening line of notes */
+int use_graphics;				/* "graphics" mode */
+bool use_graphics_nice;			/* The 'nice' "graphics" mode is enabled */
+bool use_transparency = FALSE;	/* Use transparent tiles */
+char notes_start[80];			/* Opening line of notes */
 
-s16b signal_count;		/* Hack -- Count interupts */
+s16b signal_count;				/* Hack -- Count interupts */
 
-bool msg_flag;			/* Player has pending message */
+bool msg_flag;					/* Player has pending message */
 
-bool inkey_base;		/* See the "inkey()" function */
-bool inkey_xtra;		/* See the "inkey()" function */
-u32b inkey_scan;		/* See the "inkey()" function */
-bool inkey_flag;		/* See the "inkey()" function */
+bool inkey_base;				/* See the "inkey()" function */
+bool inkey_xtra;				/* See the "inkey()" function */
+u32b inkey_scan;				/* See the "inkey()" function */
+bool inkey_flag;				/* See the "inkey()" function */
 
-s16b coin_type;			/* Hack -- force coin type */
-bool magic_throw;               /* Hack -- for magical throw spell */
-bool opening_chest;		/* Hack -- prevent chest generation */
-u16b j_level;                   /* Hack -- object level for jewellery */
+s16b coin_type;					/* Hack -- force coin type */
+bool magic_throw;				/* Hack -- for magical throw spell */
+bool opening_chest;				/* Hack -- prevent chest generation */
+u16b j_level;					/* Hack -- object level for jewellery */
 
-bool shimmer_monsters;	/* Hack -- optimize multi-hued monsters */
-bool shimmer_objects;	/* Hack -- optimize multi-hued objects */
+bool shimmer_monsters;			/* Hack -- optimize multi-hued monsters */
+bool shimmer_objects;			/* Hack -- optimize multi-hued objects */
 
-bool repair_mflag_show;	/* Hack -- repair monster flags (show) */
-bool repair_mflag_mark;	/* Hack -- repair monster flags (mark) */
+bool repair_mflag_show;			/* Hack -- repair monster flags (show) */
+bool repair_mflag_mark;			/* Hack -- repair monster flags (mark) */
 
-s16b o_max = 1;			/* Number of allocated objects */
-s16b o_cnt = 0;			/* Number of live objects */
+s16b o_max = 1;					/* Number of allocated objects */
+s16b o_cnt = 0;					/* Number of live objects */
 
-s16b m_max = 1;			/* Number of allocated monsters */
-s16b m_cnt = 0;			/* Number of live monsters */
+s16b m_max = 1;					/* Number of allocated monsters */
+s16b m_cnt = 0;					/* Number of live monsters */
 
-s16b trap_max = 1;		/* Number of allocated traps */
+s16b trap_max = 1;				/* Number of allocated traps */
 
-u16b chunk_max = 1;		/* Number of allocated chunks */
-u16b chunk_cnt = 0;		/* Number of live chunks */
+u16b chunk_max = 1;				/* Number of allocated chunks */
+u16b chunk_cnt = 0;				/* Number of live chunks */
 
-u32b gen_loc_max = GEN_LOC_INCR;/* Number of allocated generated locations */
-u32b gen_loc_cnt = 0;		/* Number of actual generated locations */
+u32b gen_loc_max = GEN_LOC_INCR;	/* Number of allocated generated locations */
+u32b gen_loc_cnt = 0;			/* Number of actual generated locations */
 
-u16b group_id = 1;              /* Number of group IDs allocated */    
+u16b group_id = 1;				/* Number of group IDs allocated */
 
 /*
  * Player info
@@ -153,16 +153,15 @@ term *angband_term[TERM_WIN_MAX];
 /**
  * The array[TERM_WIN_MAX] of window names (modifiable?)
  */
-char angband_term_name[TERM_WIN_MAX][16] =
-{
-  "Beleriand",
-  "Term-1",
-  "Term-2",
-  "Term-3",
-  "Term-4",
-  "Term-5",
-  "Term-6",
-  "Term-7"
+char angband_term_name[TERM_WIN_MAX][16] = {
+	"Beleriand",
+	"Term-1",
+	"Term-2",
+	"Term-3",
+	"Term-4",
+	"Term-5",
+	"Term-6",
+	"Term-7"
 };
 
 
@@ -171,159 +170,158 @@ char angband_term_name[TERM_WIN_MAX][16] =
 /**
  * Standard sound names (modifiable?)
  */
-const const char *angband_sound_name[SOUND_MAX] =
-{
-  "",
-  "hit",
-  "miss",
-  "flee",
-  "drop",
-  "kill",
-  "level",
-  "death",
-  "study",
-  "teleport",
-  "shoot",
-  "quaff",
-  "zap_rod",
-  "walk",
-  "tpother",
-  "hitwall",
-  "eat",
-  "store1",
-  "store2",
-  "store3",
-  "store4",
-  "dig",
-  "opendoor",
-  "shutdoor",
-  "tplevel",
-  "bell",
-  "nothing_to_open",
-  "lockpick_fail",
-  "stairs_down", 
-  "hitpoint_warn",
-  "act_artifact", 
-  "use_staff", 
-  "destroy", 
-  "mon_hit", 
-  "mon_touch", 
-  "mon_punch", 
-  "mon_kick", 
-  "mon_claw", 
-  "mon_bite", 
-  "mon_sting", 
-  "mon_butt", 
-  "mon_crush", 
-  "mon_engulf", 
-  "mon_crawl", 
-  "mon_drool", 
-  "mon_spit", 
-  "mon_gaze", 
-  "mon_wail", 
-  "mon_spore", 
-  "mon_beg", 
-  "mon_insult", 
-  "mon_moan", 
-  "recover", 
-  "blind", 
-  "confused", 
-  "poisoned", 
-  "afraid", 
-  "paralyzed", 
-  "drugged", 
-  "speed", 
-  "slow", 
-  "shield", 
-  "blessed", 
-  "hero", 
-  "berserk", 
-  "bold", 
-  "prot_evil", 
-  "invuln", 
-  "see_invis", 
-  "infrared", 
-  "res_acid", 
-  "res_elec", 
-  "res_fire", 
-  "res_cold", 
-  "res_pois", 
-  "stun", 
-  "cut", 
-  "stairs_up", 
-  "store_enter", 
-  "store_leave", 
-  "store_home", 
-  "money1", 
-  "money2", 
-  "money3", 
-  "shoot_hit", 
-  "store5", 
-  "lockpick", 
-  "disarm", 
-  "identify_bad", 
-  "identify_ego", 
-  "identify_art", 
-  "breathe_elements", 
-  "breathe_frost", 
-  "breathe_elec", 
-  "breathe_acid", 
-  "breathe_gas", 
-  "breathe_fire", 
-  "breathe_confu", 
-  "breathe_disen", 
-  "breathe_chaos", 
-  "breathe_shards", 
-  "breathe_sound", 
-  "breathe_light", 
-  "breathe_dark", 
-  "breathe_nether", 
-  "breathe_nexus", 
-  "breathe_time", 
-  "breathe_inertia", 
-  "breathe_gravity", 
-  "breathe_plasma", 
-  "breathe_force", 
-  "summon_monster", 
-  "summon_angel", 
-  "summon_undead", 
-  "summon_animal", 
-  "summon_spider", 
-  "summon_hound", 
-  "summon_hydra", 
-  "summon_demon", 
-  "summon_dragon", 
-  "summon_gr_undead", 
-  "summon_gr_dragon", 
-  "summon_gr_demon", 
-  "summon_wraith", 
-  "summon_unique", 
-  "wield", 
-  "cursed", 
-  "pseudo_id", 
-  "hungry", 
-  "notice", 
-  "ambient_day", 
-  "ambient_nite", 
-  "ambient_dng1", 
-  "ambient_dng2", 
-  "ambient_dng3", 
-  "ambient_dng4", 
-  "ambient_dng5", 
-  "mon_create_trap", 
-  "mon_shriek", 
-  "mon_cast_fear", 
-  "hit_good", 
-  "hit_great", 
-  "hit_superb", 
-  "hit_hi_great", 
-  "hit_hi_superb", 
-  "cast_spell", 
-  "pray_prayer",
-  "kill_unique",
-  "kill_king",
-  "drain_stat",
-  "multiply"
+const const char *angband_sound_name[SOUND_MAX] = {
+	"",
+	"hit",
+	"miss",
+	"flee",
+	"drop",
+	"kill",
+	"level",
+	"death",
+	"study",
+	"teleport",
+	"shoot",
+	"quaff",
+	"zap_rod",
+	"walk",
+	"tpother",
+	"hitwall",
+	"eat",
+	"store1",
+	"store2",
+	"store3",
+	"store4",
+	"dig",
+	"opendoor",
+	"shutdoor",
+	"tplevel",
+	"bell",
+	"nothing_to_open",
+	"lockpick_fail",
+	"stairs_down",
+	"hitpoint_warn",
+	"act_artifact",
+	"use_staff",
+	"destroy",
+	"mon_hit",
+	"mon_touch",
+	"mon_punch",
+	"mon_kick",
+	"mon_claw",
+	"mon_bite",
+	"mon_sting",
+	"mon_butt",
+	"mon_crush",
+	"mon_engulf",
+	"mon_crawl",
+	"mon_drool",
+	"mon_spit",
+	"mon_gaze",
+	"mon_wail",
+	"mon_spore",
+	"mon_beg",
+	"mon_insult",
+	"mon_moan",
+	"recover",
+	"blind",
+	"confused",
+	"poisoned",
+	"afraid",
+	"paralyzed",
+	"drugged",
+	"speed",
+	"slow",
+	"shield",
+	"blessed",
+	"hero",
+	"berserk",
+	"bold",
+	"prot_evil",
+	"invuln",
+	"see_invis",
+	"infrared",
+	"res_acid",
+	"res_elec",
+	"res_fire",
+	"res_cold",
+	"res_pois",
+	"stun",
+	"cut",
+	"stairs_up",
+	"store_enter",
+	"store_leave",
+	"store_home",
+	"money1",
+	"money2",
+	"money3",
+	"shoot_hit",
+	"store5",
+	"lockpick",
+	"disarm",
+	"identify_bad",
+	"identify_ego",
+	"identify_art",
+	"breathe_elements",
+	"breathe_frost",
+	"breathe_elec",
+	"breathe_acid",
+	"breathe_gas",
+	"breathe_fire",
+	"breathe_confu",
+	"breathe_disen",
+	"breathe_chaos",
+	"breathe_shards",
+	"breathe_sound",
+	"breathe_light",
+	"breathe_dark",
+	"breathe_nether",
+	"breathe_nexus",
+	"breathe_time",
+	"breathe_inertia",
+	"breathe_gravity",
+	"breathe_plasma",
+	"breathe_force",
+	"summon_monster",
+	"summon_angel",
+	"summon_undead",
+	"summon_animal",
+	"summon_spider",
+	"summon_hound",
+	"summon_hydra",
+	"summon_demon",
+	"summon_dragon",
+	"summon_gr_undead",
+	"summon_gr_dragon",
+	"summon_gr_demon",
+	"summon_wraith",
+	"summon_unique",
+	"wield",
+	"cursed",
+	"pseudo_id",
+	"hungry",
+	"notice",
+	"ambient_day",
+	"ambient_nite",
+	"ambient_dng1",
+	"ambient_dng2",
+	"ambient_dng3",
+	"ambient_dng4",
+	"ambient_dng5",
+	"mon_create_trap",
+	"mon_shriek",
+	"mon_cast_fear",
+	"hit_good",
+	"hit_great",
+	"hit_superb",
+	"hit_hi_great",
+	"hit_hi_superb",
+	"cast_spell",
+	"pray_prayer",
+	"kill_unique",
+	"kill_king",
+	"drain_stat",
+	"multiply"
 };
 
 
@@ -346,12 +344,12 @@ byte *dummy;
 /**
  * Array[ARENA_HGT][ARENA_WID] of cave grid info flags
  */
-bitflag (*cave_info)[ARENA_WID][CAVE_SIZE];
+bitflag(*cave_info)[ARENA_WID][CAVE_SIZE];
 
 /**
  * Array[ARENA_HGT][ARENA_WID] of cave grid feature codes
  */
-byte (*cave_feat)[ARENA_WID];
+byte(*cave_feat)[ARENA_WID];
 
 
 /**
@@ -365,7 +363,7 @@ byte (*cave_feat)[ARENA_WID];
  * any object is in a grid, and relatively fast determination of which objects
  * are in a grid.
  */
-s16b (*cave_o_idx)[ARENA_WID];
+s16b(*cave_o_idx)[ARENA_WID];
 
 /**
  * Array[ARENA_HGT][ARENA_WID] of cave grid monster indexes
@@ -377,19 +375,19 @@ s16b (*cave_o_idx)[ARENA_WID];
  * the player structure, but provides extremely fast determination of which,
  * if any, monster or player is in any given grid.
  */
-s16b (*cave_m_idx)[ARENA_WID];
+s16b(*cave_m_idx)[ARENA_WID];
 
 /**
  * Array[ARENA_HGT][ARENA_WID] of cave grid flow "cost" values
  * Used to simulate character noise.
  */
-byte (*cave_cost)[ARENA_WID];
+byte(*cave_cost)[ARENA_WID];
 
 /**
  * Array[ARENA_HGT][ARENA_WID] of cave grid flow "when" stamps.
  * Used to store character scent trails.
  */
-byte (*cave_when)[ARENA_WID];
+byte(*cave_when)[ARENA_WID];
 
 /**
  * Current scent age marker.  Counts down from 250 to 0 and then loops.
@@ -448,7 +446,7 @@ chunk_ref *chunk_list;
 /**
  * Array[RANDNAME_NUM_TYPES][num_names] of random names
  */
-const char *** name_sections;
+const char ***name_sections;
 
 /**
  * The size of "alloc_kind_table" (at most z_info->k_max * 4)
@@ -651,7 +649,7 @@ struct hint *hints;
  * Array of pit types
  */
 struct pit_profile *pit_info;
- 
+
 /**
  * Hack -- The special Angband "System Suffix"
  * This variable is used to choose an appropriate "pref-xxx" file
@@ -770,30 +768,30 @@ byte item_tester_tval;
  * Here is a "hook" used during calls to "get_item()" and
  * "show_inven()" and "show_equip()", and the choice window routines.
  */
-bool (*item_tester_hook)(const object_type*);
+bool(*item_tester_hook) (const object_type *);
 
 
 
 /**
  * Current "comp" function for ang_sort()
  */
-bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
+bool(*ang_sort_comp) (const void *u, const void *v, int a, int b);
 
 /**
  * Current "swap" function for ang_sort()
  */
-void (*ang_sort_swap)(void *u, void *v, int a, int b);
+void (*ang_sort_swap) (void *u, void *v, int a, int b);
 
 
 /**
  * Hack -- function hook to restrict "get_mon_num_prep()" function
  */
-bool (*get_mon_num_hook)(int r_idx);
+bool(*get_mon_num_hook) (int r_idx);
 
 /**
  * Hack -- function hook to restrict "get_obj_num_prep()" function
  */
-bool (*get_obj_num_hook)(int k_idx);
+bool(*get_obj_num_hook) (int k_idx);
 
 /**
  * Hack - the destination row for dump_line_screen.
@@ -813,7 +811,7 @@ char_attr *dump_ptr = NULL;
 /**
  * Hack -- function hook for new line dump functions.
  */
-void (*dump_line_hook)(char_attr *this_line);
+void (*dump_line_hook) (char_attr * this_line);
 
 /** 
  * Array for character screen/dump
@@ -872,8 +870,8 @@ bool ghost_has_spoken = FALSE;
  * Autosave-related global variables adopted from Zangband. -LM- 
  */
 bool is_autosave = FALSE;		/* Is the save an autosave */
-bool autosave;				/* Timed autosave */
-s16b autosave_freq;			/* Autosave frequency */
+bool autosave;					/* Timed autosave */
+s16b autosave_freq;				/* Autosave frequency */
 
 
 /*
@@ -900,7 +898,7 @@ bool angband_keymap_flag = TRUE;
 /**
  * Sound hook (for playing FX).
  */
-void (*sound_hook)(int sound);
+void (*sound_hook) (int sound);
 
 
 /*
@@ -912,5 +910,3 @@ u16b inscriptions_count = 0;
 /* Delay in centiseconds before moving to allow another keypress */
 /* Zero means normal instant movement. */
 u16b lazymove_delay = 0;
-
-

@@ -48,37 +48,35 @@
 #include "ui-menu.h"
 
 
-typedef struct
-{
-    int enum_val;
-    const char *name;
+typedef struct {
+	int enum_val;
+	const char *name;
 } quality_name_struct;
 
 /**
  * Names of categories.
  * Mapping of tval -> type 
  */
-static quality_name_struct quality_choices[TYPE_MAX] = 
-{
-    { TV_SWORD, "Swords" }, 
-    { TV_POLEARM,"Polearms"  },
-    { TV_HAFTED,"Blunt weapons"  },
-    { TV_BOW, "Missile weapons" },
-    { TV_SHOT, "Sling ammunition" },
-    { TV_ARROW,"Bow ammunition"  },
-    { TV_BOLT,"Crossbow ammunition"  },
-    { TV_SOFT_ARMOR, "Soft armor" },
-    { TV_HARD_ARMOR,"Hard armor"  },
-    { TV_DRAG_ARMOR, "Dragon Scale Mail" },
-    { TV_CLOAK,"Cloaks"  },
-    { TV_SHIELD, "Shields" },
-    { TV_HELM, "Helms" },
-    { TV_CROWN, "Crowns" },
-    { TV_GLOVES, "Gloves" },
-    { TV_BOOTS,"Boots"  },
-    { TV_DIGGING,"Diggers"  },
-    { TV_RING, "Rings" },
-    { TV_AMULET, "Amulets" },
+static quality_name_struct quality_choices[TYPE_MAX] = {
+	{TV_SWORD, "Swords"},
+	{TV_POLEARM, "Polearms"},
+	{TV_HAFTED, "Blunt weapons"},
+	{TV_BOW, "Missile weapons"},
+	{TV_SHOT, "Sling ammunition"},
+	{TV_ARROW, "Bow ammunition"},
+	{TV_BOLT, "Crossbow ammunition"},
+	{TV_SOFT_ARMOR, "Soft armor"},
+	{TV_HARD_ARMOR, "Hard armor"},
+	{TV_DRAG_ARMOR, "Dragon Scale Mail"},
+	{TV_CLOAK, "Cloaks"},
+	{TV_SHIELD, "Shields"},
+	{TV_HELM, "Helms"},
+	{TV_CROWN, "Crowns"},
+	{TV_GLOVES, "Gloves"},
+	{TV_BOOTS, "Boots"},
+	{TV_DIGGING, "Diggers"},
+	{TV_RING, "Rings"},
+	{TV_AMULET, "Amulets"},
 };
 
 byte squelch_level[TYPE_MAX];
@@ -87,24 +85,23 @@ byte squelch_level[TYPE_MAX];
 /**
  * Categories for sval-dependent squelch. 
  */
-static tval_desc sval_dependent[] =
-{
-  { TV_STAFF,		"Staffs" },
-  { TV_WAND,		"Wands" },
-  { TV_ROD,		"Rods" },
-  { TV_SCROLL,		"Scrolls" },
-  { TV_POTION,		"Potions" },
-  { TV_FOOD,		"Food" },
-  { TV_MAGIC_BOOK,	"Magic books" },
-  { TV_PRAYER_BOOK,	"Prayer books" },
-  { TV_DRUID_BOOK,	"Stones of Lore" },
-  { TV_NECRO_BOOK,	"Necromantic tomes" },
-  { TV_SPIKE,		"Spikes" },
-  { TV_LIGHT,		"Lights" },
-  { TV_FLASK,           "Oil" },
-  { TV_SKELETON,        "Skeletons" },
-  { TV_BOTTLE,          "Bottles" },
-  { TV_JUNK,            "Junk" }
+static tval_desc sval_dependent[] = {
+	{TV_STAFF, "Staffs"},
+	{TV_WAND, "Wands"},
+	{TV_ROD, "Rods"},
+	{TV_SCROLL, "Scrolls"},
+	{TV_POTION, "Potions"},
+	{TV_FOOD, "Food"},
+	{TV_MAGIC_BOOK, "Magic books"},
+	{TV_PRAYER_BOOK, "Prayer books"},
+	{TV_DRUID_BOOK, "Stones of Lore"},
+	{TV_NECRO_BOOK, "Necromantic tomes"},
+	{TV_SPIKE, "Spikes"},
+	{TV_LIGHT, "Lights"},
+	{TV_FLASK, "Oil"},
+	{TV_SKELETON, "Skeletons"},
+	{TV_BOTTLE, "Bottles"},
+	{TV_JUNK, "Junk"}
 };
 
 
@@ -119,10 +116,10 @@ void squelch_birth_init(void)
 	for (i = 0; i < z_info->k_max; i++)
 		k_info[i].squelch = FALSE;
 
- /* Reset ego squelch */
-  for (i = 0; i < z_info->e_max; i++)
-    e_info[i].squelch = FALSE;
-  
+	/* Reset ego squelch */
+	for (i = 0; i < z_info->e_max; i++)
+		e_info[i].squelch = FALSE;
+
 	/* Clear the squelch bytes */
 	for (i = 0; i < TYPE_MAX; i++)
 		squelch_level[i] = 0;
@@ -135,15 +132,14 @@ void squelch_birth_init(void)
  */
 int get_autoinscription_index(s16b k_idx)
 {
-  int i;
-  
-  for (i = 0; i < inscriptions_count; i++)
-    {
-      if (k_idx == inscriptions[i].kind_idx)
-	return i;
-    }
-  
-  return -1;
+	int i;
+
+	for (i = 0; i < inscriptions_count; i++) {
+		if (k_idx == inscriptions[i].kind_idx)
+			return i;
+	}
+
+	return -1;
 }
 
 /**
@@ -151,133 +147,131 @@ int get_autoinscription_index(s16b k_idx)
  */
 const char *get_autoinscription(s16b kind_idx)
 {
-  int i;
-  
-  for (i = 0; i < inscriptions_count; i++)
-    {
-      if (kind_idx == inscriptions[i].kind_idx)
-	return quark_str(inscriptions[i].inscription_idx);
-    }
-  
-  return 0;
+	int i;
+
+	for (i = 0; i < inscriptions_count; i++) {
+		if (kind_idx == inscriptions[i].kind_idx)
+			return quark_str(inscriptions[i].inscription_idx);
+	}
+
+	return 0;
 }
 
 /**
  * Put the autoinscription on an object 
  */
-int apply_autoinscription(object_type *o_ptr)
+int apply_autoinscription(object_type * o_ptr)
 {
-  char o_name[80];
-  const char *note = get_autoinscription(o_ptr->k_idx);
-  const char *existing_inscription = quark_str(o_ptr->note);
-  
-  /* Don't inscribe unaware objects */
-  if (!note || !object_aware_p(o_ptr))
-    return 0;
-  
-  /* Don't re-inscribe if it's already correctly inscribed */
-  if (existing_inscription && streq(note, existing_inscription))
-    return 0;
-  
-  /* Get an object description */
-  object_desc(o_name, sizeof(o_name), o_ptr,
-	      ODESC_PREFIX | ODESC_FULL);
-  
-  if (note[0] != 0)
-    o_ptr->note = quark_add(note);
-  else
-    o_ptr->note = 0;
-  
-  msg("You autoinscribe %s.", o_name);
-  
-  return 1;
+	char o_name[80];
+	const char *note = get_autoinscription(o_ptr->k_idx);
+	const char *existing_inscription = quark_str(o_ptr->note);
+
+	/* Don't inscribe unaware objects */
+	if (!note || !object_aware_p(o_ptr))
+		return 0;
+
+	/* Don't re-inscribe if it's already correctly inscribed */
+	if (existing_inscription && streq(note, existing_inscription))
+		return 0;
+
+	/* Get an object description */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	if (note[0] != 0)
+		o_ptr->note = quark_add(note);
+	else
+		o_ptr->note = 0;
+
+	msg("You autoinscribe %s.", o_name);
+
+	return 1;
 }
 
 
 int remove_autoinscription(s16b kind)
 {
-  int i = get_autoinscription_index(kind);
-  
-  /* It's not here. */
-  if (i == -1) return 0;
-  
-  while (i < inscriptions_count - 1)
-    {
-      inscriptions[i] = inscriptions[i+1];
-      i++;
-    }
-  
-  inscriptions_count--;
-  
-  return 1;
+	int i = get_autoinscription_index(kind);
+
+	/* It's not here. */
+	if (i == -1)
+		return 0;
+
+	while (i < inscriptions_count - 1) {
+		inscriptions[i] = inscriptions[i + 1];
+		i++;
+	}
+
+	inscriptions_count--;
+
+	return 1;
 }
 
 
 int add_autoinscription(s16b kind, const char *inscription)
 {
-  int index;
-  
-  /* Paranoia */
-  if (kind == 0) return 0;
-  
-  /* If there's no inscription, remove it */
-  if (!inscription || (inscription[0] == 0))
-    return remove_autoinscription(kind);
-  
-  index = get_autoinscription_index(kind);
-  
-  if (index == -1)
-    index = inscriptions_count;
-  
-  if (index >= AUTOINSCRIPTIONS_MAX)
-    {
-      msg("This inscription (%s) cannot be added because the inscription array is full!", inscription);
-      return 0;
-    }
-  
-  inscriptions[index].kind_idx = kind;
-  inscriptions[index].inscription_idx = quark_add(inscription);
-  
-  /* Only increment count if inscription added to end of array */
-  if (index == inscriptions_count)
-    inscriptions_count++;
-  
-  return 1;
+	int index;
+
+	/* Paranoia */
+	if (kind == 0)
+		return 0;
+
+	/* If there's no inscription, remove it */
+	if (!inscription || (inscription[0] == 0))
+		return remove_autoinscription(kind);
+
+	index = get_autoinscription_index(kind);
+
+	if (index == -1)
+		index = inscriptions_count;
+
+	if (index >= AUTOINSCRIPTIONS_MAX) {
+		msg("This inscription (%s) cannot be added because the inscription array is full!", inscription);
+		return 0;
+	}
+
+	inscriptions[index].kind_idx = kind;
+	inscriptions[index].inscription_idx = quark_add(inscription);
+
+	/* Only increment count if inscription added to end of array */
+	if (index == inscriptions_count)
+		inscriptions_count++;
+
+	return 1;
 }
 
 
 void autoinscribe_ground(void)
 {
-  int py = p_ptr->py;
-  int px = p_ptr->px;
-  s16b this_o_idx, next_o_idx = 0;
-  
-  /* Scan the pile of objects */
-  for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
-    {
-      /* Get the next object */
-      next_o_idx = o_list[this_o_idx].next_o_idx;
-      
-      /* Apply an autoinscription */
-      apply_autoinscription(&o_list[this_o_idx]);
-    }
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+	s16b this_o_idx, next_o_idx = 0;
+
+	/* Scan the pile of objects */
+	for (this_o_idx = cave_o_idx[py][px]; this_o_idx;
+		 this_o_idx = next_o_idx) {
+		/* Get the next object */
+		next_o_idx = o_list[this_o_idx].next_o_idx;
+
+		/* Apply an autoinscription */
+		apply_autoinscription(&o_list[this_o_idx]);
+	}
 }
 
 void autoinscribe_pack(void)
 {
-  int i;
-  
-  /* Cycle through the inventory */
-  for (i = INVEN_PACK; i > 0; i--)
-    {
-      /* Skip empty items */
-      if (!p_ptr->inventory[i].k_idx) continue;
-      
-      /* Apply the inscription */
-      apply_autoinscription(&p_ptr->inventory[i]);
-    }
-  
-  return;
+	int i;
+
+	/* Cycle through the inventory */
+	for (i = INVEN_PACK; i > 0; i--) {
+		/* Skip empty items */
+		if (!p_ptr->inventory[i].k_idx)
+			continue;
+
+		/* Apply the inscription */
+		apply_autoinscription(&p_ptr->inventory[i]);
+	}
+
+	return;
 }
 
 
@@ -288,168 +282,157 @@ void autoinscribe_pack(void)
  */
 bool squelch_tval(int tval)
 {
-  size_t i;
-  
-  /* Only squelch if the tval's allowed */
-  for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
-    {
-      if (tval == sval_dependent[i].tval)
-	return TRUE;
-    }
-  
-  return FALSE;
+	size_t i;
+
+	/* Only squelch if the tval's allowed */
+	for (i = 0; i < N_ELEMENTS(sval_dependent); i++) {
+		if (tval == sval_dependent[i].tval)
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 
 /**
  * Determines if an object is eligable for squelching.
  */
-extern bool squelch_item_ok(const object_type *o_ptr)
+extern bool squelch_item_ok(const object_type * o_ptr)
 {
-  size_t i;
-  int num = -1;
-  
-  object_kind *k_ptr = &k_info[o_ptr->k_idx];
-  bool fullid = object_known_p(o_ptr);
-  bool sensed = (o_ptr->ident & IDENT_SENSE) || fullid;
-  byte feel   = fullid ? value_check_aux1((object_type *)o_ptr) : o_ptr->feel;
-  
-  
-  /* Don't squelch artifacts */
-  if (artifact_p(o_ptr)) return FALSE;
-  
-  /* Don't squelch stuff inscribed not to be destroyed (!k) */
-  if (check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
-    {
-      return FALSE;
-    }
-  
-  /* Auto-squelch dead chests */
-  if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
-    return TRUE;
-  
-  /* Do squelching by sval, if we 'know' the flavour. */
-  if (k_ptr->squelch && (k_ptr->flavor == 0 || k_ptr->aware))
-    {
-      if (squelch_tval(k_info[o_ptr->k_idx].tval))
-	return TRUE;
-    }
-  
-  /* Squelch some ego items if known */
-  if (has_ego_properties(o_ptr) && (e_info[o_ptr->name2].squelch))
-    {
-      return TRUE;
-    }
+	size_t i;
+	int num = -1;
 
-  
-  /* Don't check pseudo-ID for nonsensed things */
-  if (!sensed) return FALSE;
-  
-  
-  
-  /* Find the appropriate squelch group */
-  for (i = 0; i < N_ELEMENTS(quality_choices); i++)
-    {
-      if (quality_choices[i].enum_val == o_ptr->tval)
-	{
-	  num = i;
-	  break;
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	bool fullid = object_known_p(o_ptr);
+	bool sensed = (o_ptr->ident & IDENT_SENSE) || fullid;
+	byte feel =
+		fullid ? value_check_aux1((object_type *) o_ptr) : o_ptr->feel;
+
+
+	/* Don't squelch artifacts */
+	if (artifact_p(o_ptr))
+		return FALSE;
+
+	/* Don't squelch stuff inscribed not to be destroyed (!k) */
+	if (check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*")) {
+		return FALSE;
 	}
-    }
-  
-  /* Never squelched */
-  if (num == -1)
-    return FALSE;
-  
-  
-  /* Get result based on the feeling and the squelch_level */
-  switch (squelch_level[num])
-    {
-    case SQUELCH_CURSED:
-      {
-	if (o_ptr->ident & IDENT_CURSED)
-	  {
-	    return TRUE;
-	  }
-	
-	break;
-      }
-      
-    case SQUELCH_DUBIOUS:
-      {
-	if ((feel == FEEL_DUBIOUS_WEAK) || (feel == FEEL_PERILOUS) ||
-	    (feel == FEEL_DUBIOUS_STRONG))
-	  {
-	    return TRUE;
-	  }
-	
-	break;
-      }
-      
-    case SQUELCH_DUBIOUS_NON:
-      {
-	if (feel == FEEL_DUBIOUS_STRONG)
-	  {
-	    return TRUE;
-	  }
-	
-	break;
-      }
-      
-    case SQUELCH_NON_EGO:
-      {
-	if ((feel == FEEL_DUBIOUS_STRONG) || (feel == FEEL_AVERAGE) || 
-	    (feel == FEEL_GOOD_STRONG))
-	  {
-	    return TRUE;
-	  }
-	
-	break;
-      }
-      
-    case SQUELCH_AVERAGE:
-      {
-	if ((feel == FEEL_DUBIOUS_WEAK) || (feel == FEEL_PERILOUS) ||
-	    (feel == FEEL_DUBIOUS_STRONG) || (feel == FEEL_AVERAGE))
-	  {
-	    return TRUE;
-	  }
-	
-	break;
-      }
-      
-    case SQUELCH_GOOD_STRONG:
-      {
-	if ((feel == FEEL_PERILOUS) || (feel == FEEL_DUBIOUS_STRONG) || 
-	    (feel == FEEL_AVERAGE) || (feel == FEEL_GOOD_STRONG))
-	  {
-	    return TRUE;
-	  }
-	
-	break;
-      }
-      
-    case SQUELCH_GOOD_WEAK:
-      {
-	if ((feel == FEEL_PERILOUS) || (feel == FEEL_DUBIOUS_STRONG) || 
-	    (feel == FEEL_AVERAGE) || (feel == FEEL_GOOD_WEAK) ||
-	    (feel == FEEL_GOOD_STRONG))
-	  {
-	    return TRUE;
-	  }
-	
-	break;
-      }
-      
-    case SQUELCH_ALL:
-      {
-	return TRUE;
-	break;
-      }
-    }
-  
-  /* Failure */
-  return FALSE;
+
+	/* Auto-squelch dead chests */
+	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
+		return TRUE;
+
+	/* Do squelching by sval, if we 'know' the flavour. */
+	if (k_ptr->squelch && (k_ptr->flavor == 0 || k_ptr->aware)) {
+		if (squelch_tval(k_info[o_ptr->k_idx].tval))
+			return TRUE;
+	}
+
+	/* Squelch some ego items if known */
+	if (has_ego_properties(o_ptr) && (e_info[o_ptr->name2].squelch)) {
+		return TRUE;
+	}
+
+
+	/* Don't check pseudo-ID for nonsensed things */
+	if (!sensed)
+		return FALSE;
+
+
+
+	/* Find the appropriate squelch group */
+	for (i = 0; i < N_ELEMENTS(quality_choices); i++) {
+		if (quality_choices[i].enum_val == o_ptr->tval) {
+			num = i;
+			break;
+		}
+	}
+
+	/* Never squelched */
+	if (num == -1)
+		return FALSE;
+
+
+	/* Get result based on the feeling and the squelch_level */
+	switch (squelch_level[num]) {
+	case SQUELCH_CURSED:
+		{
+			if (o_ptr->ident & IDENT_CURSED) {
+				return TRUE;
+			}
+
+			break;
+		}
+
+	case SQUELCH_DUBIOUS:
+		{
+			if ((feel == FEEL_DUBIOUS_WEAK) || (feel == FEEL_PERILOUS) ||
+				(feel == FEEL_DUBIOUS_STRONG)) {
+				return TRUE;
+			}
+
+			break;
+		}
+
+	case SQUELCH_DUBIOUS_NON:
+		{
+			if (feel == FEEL_DUBIOUS_STRONG) {
+				return TRUE;
+			}
+
+			break;
+		}
+
+	case SQUELCH_NON_EGO:
+		{
+			if ((feel == FEEL_DUBIOUS_STRONG) || (feel == FEEL_AVERAGE) ||
+				(feel == FEEL_GOOD_STRONG)) {
+				return TRUE;
+			}
+
+			break;
+		}
+
+	case SQUELCH_AVERAGE:
+		{
+			if ((feel == FEEL_DUBIOUS_WEAK) || (feel == FEEL_PERILOUS) ||
+				(feel == FEEL_DUBIOUS_STRONG) || (feel == FEEL_AVERAGE)) {
+				return TRUE;
+			}
+
+			break;
+		}
+
+	case SQUELCH_GOOD_STRONG:
+		{
+			if ((feel == FEEL_PERILOUS) || (feel == FEEL_DUBIOUS_STRONG) ||
+				(feel == FEEL_AVERAGE) || (feel == FEEL_GOOD_STRONG)) {
+				return TRUE;
+			}
+
+			break;
+		}
+
+	case SQUELCH_GOOD_WEAK:
+		{
+			if ((feel == FEEL_PERILOUS) || (feel == FEEL_DUBIOUS_STRONG) ||
+				(feel == FEEL_AVERAGE) || (feel == FEEL_GOOD_WEAK) ||
+				(feel == FEEL_GOOD_STRONG)) {
+				return TRUE;
+			}
+
+			break;
+		}
+
+	case SQUELCH_ALL:
+		{
+			return TRUE;
+			break;
+		}
+	}
+
+	/* Failure */
+	return FALSE;
 }
 
 
@@ -457,9 +440,9 @@ extern bool squelch_item_ok(const object_type *o_ptr)
  * Returns TRUE if an item should be hidden due to the player's
  * current settings.
  */
-bool squelch_hide_item(object_type *o_ptr)
+bool squelch_hide_item(object_type * o_ptr)
 {
-  return (OPT(hide_squelchable) ? squelch_item_ok(o_ptr) : FALSE);
+	return (OPT(hide_squelchable) ? squelch_item_ok(o_ptr) : FALSE);
 }
 
 
@@ -470,65 +453,62 @@ bool squelch_hide_item(object_type *o_ptr)
  */
 void squelch_items(void)
 {
-  int floor_list[MAX_FLOOR_STACK];
-  int floor_num, n;
-  int count = 0;
-  
-  object_type *o_ptr;
-  
-  /* Set the hook and scan the floor */
-  item_tester_hook = squelch_item_ok;
-  floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, 
-			 p_ptr->px, 0x01);
-  
-  if (floor_num)
-    {
-      for (n = 0; n < floor_num; n++)
-	{
-	  o_ptr = &o_list[floor_list[n]];
-	  
-	  /* Avoid artifacts */
-	  if (artifact_p(o_ptr)) continue;
-	  
-	  if (item_tester_okay(o_ptr))
-	    {
-	      /* Destroy item */
-	      floor_item_increase(floor_list[n], -o_ptr->number);
-	      floor_item_optimize(floor_list[n]);
-	      count++;
-	    }
+	int floor_list[MAX_FLOOR_STACK];
+	int floor_num, n;
+	int count = 0;
+
+	object_type *o_ptr;
+
+	/* Set the hook and scan the floor */
+	item_tester_hook = squelch_item_ok;
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py,
+						   p_ptr->px, 0x01);
+
+	if (floor_num) {
+		for (n = 0; n < floor_num; n++) {
+			o_ptr = &o_list[floor_list[n]];
+
+			/* Avoid artifacts */
+			if (artifact_p(o_ptr))
+				continue;
+
+			if (item_tester_okay(o_ptr)) {
+				/* Destroy item */
+				floor_item_increase(floor_list[n], -o_ptr->number);
+				floor_item_optimize(floor_list[n]);
+				count++;
+			}
+		}
 	}
-    }
-  
-  /* Scan through the slots backwards */
-  for (n = INVEN_PACK - 1; n >= 0; n--)
-    {
-      o_ptr = &p_ptr->inventory[n];
-      
-      /* Skip non-objects and artifacts */
-      if (!o_ptr->k_idx) continue;
-      if (artifact_p(o_ptr)) continue;
-      
-      if (item_tester_okay(o_ptr))
-	{
-	  /* Destroy item */
-	  inven_item_increase(n, -o_ptr->number);
-	  inven_item_optimize(n);
-	  count++;
+
+	/* Scan through the slots backwards */
+	for (n = INVEN_PACK - 1; n >= 0; n--) {
+		o_ptr = &p_ptr->inventory[n];
+
+		/* Skip non-objects and artifacts */
+		if (!o_ptr->k_idx)
+			continue;
+		if (artifact_p(o_ptr))
+			continue;
+
+		if (item_tester_okay(o_ptr)) {
+			/* Destroy item */
+			inven_item_increase(n, -o_ptr->number);
+			inven_item_optimize(n);
+			count++;
+		}
 	}
-    }
-  
-  item_tester_hook = NULL;
-  
-  /* Mention casualties */
-  if (count > 0)
-    {
-      msgt(MSG_GENERIC, "%d item%s squelched.",
-		     count, ((count > 1) ? "s" : ""));
-      
-      /* Combine/reorder the pack */
-      p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
-    }
+
+	item_tester_hook = NULL;
+
+	/* Mention casualties */
+	if (count > 0) {
+		msgt(MSG_GENERIC, "%d item%s squelched.",
+			 count, ((count > 1) ? "s" : ""));
+
+		/* Combine/reorder the pack */
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+	}
 }
 
 
@@ -537,31 +517,30 @@ void squelch_items(void)
  */
 extern void squelch_drop(void)
 {
-  int n;
-  
-  /* Scan through the slots backwards */
-  for (n = INVEN_PACK - 1; n >= 0; n--)
-    {
-      object_type *o_ptr = &p_ptr->inventory[n];
-      
-      /* Skip non-objects and unsquelchable objects */
-      if (!o_ptr->k_idx) continue;
-      if (!squelch_item_ok(o_ptr)) continue;
+	int n;
 
-      /* Check for curses */
-      if (cf_has(o_ptr->flags_curse, CF_STICKY_CARRY)) continue;
-      
-      /* Check for !d (no drop) inscription */
-      if (!check_for_inscrip(o_ptr, "!d") && !check_for_inscrip(o_ptr, "!*"))
-	{
-	  /* We're allowed to drop it. */
-	  inven_drop(n, o_ptr->number);
+	/* Scan through the slots backwards */
+	for (n = INVEN_PACK - 1; n >= 0; n--) {
+		object_type *o_ptr = &p_ptr->inventory[n];
+
+		/* Skip non-objects and unsquelchable objects */
+		if (!o_ptr->k_idx)
+			continue;
+		if (!squelch_item_ok(o_ptr))
+			continue;
+
+		/* Check for curses */
+		if (cf_has(o_ptr->flags_curse, CF_STICKY_CARRY))
+			continue;
+
+		/* Check for !d (no drop) inscription */
+		if (!check_for_inscrip(o_ptr, "!d")
+			&& !check_for_inscrip(o_ptr, "!*")) {
+			/* We're allowed to drop it. */
+			inven_drop(n, o_ptr->number);
+		}
 	}
-    }
-  
-  /* Combine/reorder the pack */
-  p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+
+	/* Combine/reorder the pack */
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 }
-
-
-
