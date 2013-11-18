@@ -83,8 +83,8 @@ depgen:
  list-mon-flags.h list-mon-spells.h z-term.h ui-event.h z-file.h \
  z-bitflag.h z-quark.h z-msg.h config.h game-cmd.h types.h option.h \
  cmds.h object.h z-textblock.h parser.h player.h ui.h z-type.h externs.h \
- spells.h list-gf-types.h cave.h files.h history.h monster.h squelch.h \
- trap.h
+ spells.h list-gf-types.h cave.h files.h generate.h history.h monster.h \
+ squelch.h trap.h
 ./cmd3.o: cmd3.c angband.h h-basic.h z-util.h z-virt.h z-form.h z-rand.h \
  defines.h tvalsval.h list-cave-flags.h list-object-flags.h \
  list-curse-flags.h list-kind-flags.h list-identify-flags.h \
@@ -236,7 +236,7 @@ depgen:
  list-mon-flags.h list-mon-spells.h z-term.h ui-event.h z-file.h \
  z-bitflag.h z-quark.h z-msg.h config.h game-cmd.h types.h option.h \
  cmds.h object.h z-textblock.h parser.h player.h ui.h z-type.h externs.h \
- spells.h list-gf-types.h history.h
+ spells.h list-gf-types.h generate.h history.h
 ./identify.o: identify.c angband.h h-basic.h z-util.h z-virt.h z-form.h \
  z-rand.h defines.h tvalsval.h list-cave-flags.h list-object-flags.h \
  list-curse-flags.h list-kind-flags.h list-identify-flags.h \
@@ -278,7 +278,8 @@ depgen:
  list-mon-flags.h list-mon-spells.h z-term.h ui-event.h z-file.h \
  z-bitflag.h z-quark.h z-msg.h config.h game-cmd.h types.h option.h \
  cmds.h object.h z-textblock.h parser.h player.h ui.h z-type.h externs.h \
- spells.h list-gf-types.h cave.h history.h monster.h savefile.h squelch.h
+ spells.h list-gf-types.h cave.h generate.h history.h monster.h \
+ savefile.h squelch.h
 ./monattk.o: monattk.c angband.h h-basic.h z-util.h z-virt.h z-form.h \
  z-rand.h defines.h tvalsval.h list-cave-flags.h list-object-flags.h \
  list-curse-flags.h list-kind-flags.h list-identify-flags.h \
@@ -327,7 +328,7 @@ depgen:
  list-mon-flags.h list-mon-spells.h z-term.h ui-event.h z-file.h \
  z-bitflag.h z-quark.h z-msg.h config.h game-cmd.h types.h option.h \
  cmds.h object.h z-textblock.h parser.h player.h ui.h z-type.h externs.h \
- spells.h list-gf-types.h effects.h list-effects.h
+ spells.h list-gf-types.h effects.h list-effects.h generate.h
 ./obj-make.o: obj-make.c angband.h h-basic.h z-util.h z-virt.h z-form.h \
  z-rand.h defines.h tvalsval.h list-cave-flags.h list-object-flags.h \
  list-curse-flags.h list-kind-flags.h list-identify-flags.h \
@@ -343,7 +344,7 @@ depgen:
  list-mon-flags.h list-mon-spells.h z-term.h ui-event.h z-file.h \
  z-bitflag.h z-quark.h z-msg.h config.h game-cmd.h types.h option.h \
  cmds.h object.h z-textblock.h parser.h player.h ui.h z-type.h externs.h \
- spells.h list-gf-types.h button.h cave.h target.h ui-menu.h
+ spells.h list-gf-types.h button.h cave.h keymap.h target.h ui-menu.h
 ./obj-util.o: obj-util.c angband.h h-basic.h z-util.h z-virt.h z-form.h \
  z-rand.h defines.h tvalsval.h list-cave-flags.h list-object-flags.h \
  list-curse-flags.h list-kind-flags.h list-identify-flags.h \
@@ -439,7 +440,8 @@ depgen:
  list-mon-flags.h list-mon-spells.h z-term.h ui-event.h z-file.h \
  z-bitflag.h z-quark.h z-msg.h config.h game-cmd.h types.h option.h \
  cmds.h object.h z-textblock.h parser.h player.h ui.h z-type.h externs.h \
- spells.h list-gf-types.h squelch.h history.h monster.h savefile.h
+ spells.h list-gf-types.h squelch.h generate.h history.h monster.h \
+ savefile.h
 ./savefile.o: savefile.c angband.h h-basic.h z-util.h z-virt.h z-form.h \
  z-rand.h defines.h tvalsval.h list-cave-flags.h list-object-flags.h \
  list-curse-flags.h list-kind-flags.h list-identify-flags.h \
@@ -667,6 +669,11 @@ depgen:
  list-kind-flags.h list-identify-flags.h list-player-flags.h \
  list-terrain-flags.h list-trap-flags.h list-mon-flags.h \
  list-mon-spells.h
+./z-set.o: z-set.c z-set.h h-basic.h z-rand.h defines.h tvalsval.h \
+ list-cave-flags.h list-object-flags.h list-curse-flags.h \
+ list-kind-flags.h list-identify-flags.h list-player-flags.h \
+ list-terrain-flags.h list-trap-flags.h list-mon-flags.h \
+ list-mon-spells.h z-virt.h
 ./z-term.o: z-term.c angband.h h-basic.h z-util.h z-virt.h z-form.h \
  z-rand.h defines.h tvalsval.h list-cave-flags.h list-object-flags.h \
  list-curse-flags.h list-kind-flags.h list-identify-flags.h \
