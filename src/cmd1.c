@@ -924,6 +924,9 @@ void move_player(int dir)
 				/* Will take serious fire damage. */
 				fire_dam(temp, "burnt to a cinder in molten lava");
 			}
+			else
+				/* Player refuse to go. */
+				can_move = FALSE;
 		}
 
 		if (tf_has(f_ptr->flags, TF_FALL)) {
