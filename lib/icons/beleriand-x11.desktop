@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Beleriand (X11)
+Type=Application
+Comment=A roguelike exploration game based on the books of J.R.R.Tolkien
+Exec=beleriand -mx11
+TryExec=beleriand
+Icon=/usr/share/beleriand/xtra/icon/att-32.png
+Categories=Game;RolePlaying;

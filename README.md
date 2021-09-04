@@ -1,5 +1,7 @@
-# NarSil 1.4.0
+# [Beleriand](https://github.com/NickMcConnell/Beleriand) 0.1.0alpha
 
-NarSil 1.4.0 is an almost-faithful rewrite of Sil 1.3.0 using modern Angband code, with changes to identifying of objects and the way the dungeon is perceived.
+Beleriand is a variant of [FAangband](http://nickmcconnell.github.io/FAangband/) [Angband](http://angband.github.io/angband/).
 
-An attempt at remaining faithful to Sil 1.3.0 is maintained on the [NarSil 1.3 branch](https://github.com/NickMcConnell/NarSil/tree/1.3).
+For descriptions, see the main [Beleriand web page](http://nickmcconnell.github.io/Beleriand/).
+
+For other Angband-related things, see the live site (http://angband.live/).

@@ -5655,7 +5655,7 @@ static void init_sdl_local(void)
 	sdl_FontCreate(&SystemFont, &default_term_font, AppWin);
 
 	/* Get the icon for display in the About box */
-	path_build(path, sizeof(path), ANGBAND_DIR_ICONS, "luthien-128.png");
+	path_build(path, sizeof(path), ANGBAND_DIR_ICONS, "att-128.png");
 	if (file_exists(path))
 		mratt = IMG_Load(path);
 }

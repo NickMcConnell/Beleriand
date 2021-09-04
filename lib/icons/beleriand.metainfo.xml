@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
-  <id>narsil</id>
-  <launchable type="desktop-id">narsil.desktop</launchable>
-  <name>Narsil</name>
+  <id>beleriand</id>
+  <launchable type="desktop-id">beleriand.desktop</launchable>
+  <name>Beleriand</name>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-2.0</project_license>
-  <summary>NarSil is a free, single-player dungeon exploration game.</summary>
+  <summary>Beleriand is a free, single-player exploration game.</summary>
   <description>
     <p>
       A roguelike game where you explore a very deep 
@@ -14,7 +14,7 @@
       face Morgoth - "The Dark Enemy".
     </p>
   </description>
-  <url type="help">https://narsil.readthedocs.io/en/latest/</url>
+  <url type="help">https://beleriand.readthedocs.io/en/latest/</url>
   <categories>
     <category>Game</category>
     <category>RolePlaying</category>

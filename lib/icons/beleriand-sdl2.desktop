@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=NarSil (SDL)
+Name=Beleriand (SDL2)
 Type=Application
 Comment=A roguelike dungeon exploration game based on the books of J.R.R.Tolkien
-Exec=narsil -msdl
-TryExec=narsil
-Icon=narsil
+Exec=beleriand -msdl2
+TryExec=beleriand
+Icon=beleriand
 Categories=Game;RolePlaying;
