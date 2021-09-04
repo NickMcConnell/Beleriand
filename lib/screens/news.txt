@@ -1,12 +1,22 @@
+                                                                               
+             ****************************************************
+             **   {deep light blue}Beleriand 0.1.0alpha{/}    ****     {deep light blue}Beleriand{/}   **
+             ** {light yellow}      Beleriand under the reign of Morgoth{/}     **
+             ****************************************************
 
-{light blue}                The world was young, the mountains green,{/}
-{light blue}                   No stain yet on the moon was seen...{/}
+     Based on Moria, Umoria, Angband and Oangband,
+     with ideas and features from NPPangband and Unangband
 
+     Contributors include Robert Alan Koeneke, James E. Wilson, Alex Cutler,
+     Andy Astrand, Sean Marsh, Geoff Hill, Charles Teague, Charles Swiger,
+     Ben Harrison, Robert Ruehlmann, Leon Marrick, Bahman Rabii, Jeff Greene,
+     Diego Gonzalez, Andrew Doull, Andi Sidwell, Pete Mack, Si Griffin.
 
-              Welcome to Sil, a game of adventure set
-                in the First Age of Middle-earth,
-                  when the world still rang with elven song
-                    and gleamed with dwarven mail.
-              Walk the dark halls of Angband.
-                Slay creatures black and fell.
-                  Wrest a shining Silmaril from Morgoth's iron crown.
+     {deep light blue}FAangband 0.1.0-2.0.0{/}  by Nick McConnell
+     {deep light blue}FAangband 0.3.6{/}          by Si Griffin
+
+     Send comments, bug reports, and patches to {light yellow}nckmccnnll@gmail.com{/}
+     The Beleriand home page is {light yellow}http://nickmcconnell.github.io/Beleriand/{/}
+     Latest code is at {light yellow}https://github.com/NickMcConnell/Beleriand{/}
+     Visit the Angband ladder page at {light yellow}http://angband.oook.cz{/}
+                        '{light yellow}?{/}' for brief in-game help.

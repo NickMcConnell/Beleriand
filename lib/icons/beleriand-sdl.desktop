@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Beleriand (SDL)
+Type=Application
+Comment=A roguelike exploration game based on the books of J.R.R.Tolkien
+Exec=beleriand -msdl
+TryExec=beleriand
+Icon=/usr/share/beleriand/xtra/icon/att-32.png
+Categories=Game;RolePlaying;

@@ -12,7 +12,7 @@ check: tests
 tests:
 	$(MAKE) -C src tests
 
-TAG = narsil-`cd scripts && ./version.sh`
+TAG = beleriand-`cd scripts && ./version.sh`
 OUT = $(TAG).tar.gz
 
 all: manual-optional

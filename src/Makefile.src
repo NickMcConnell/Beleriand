@@ -5,10 +5,10 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-NAME = NarSil
-VERSION = 1.4.0
+NAME = Beleriand
+VERSION = 0.1.0alpha
 COPYRIGHT = (c) 1995-2024 Angband contributors
-PROGNAME = narsil
+PROGNAME = beleriand
 
 HEADERS = \
 	angband.h \

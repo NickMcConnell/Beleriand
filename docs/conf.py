@@ -18,9 +18,9 @@ import os
 
 # -- Project information -----------------------------------------------------
 
-project = "NarSil"
-copyright = "2023, Angband developers past and present"
-author = "Angband developers past and present"
+project = "Beleriand"
+copyright = "2024, Beleriand developers past and present"
+author = "Beleriand developers past and present"
 
 # The full version, including alpha/beta/rc tags
 # There's extra clutter here (and for the HTML theme) to allow conf.py to
@@ -83,7 +83,7 @@ if (html_theme == "".join(["@", "DOC_HTML_THEME", "@"]) or html_theme == ""):
             "headtextcolor": "rgb(253, 229, 164)",
         }
 
-html_title = "<img> The NarSil Manual"
+html_title = "<img> The Beleriand Manual"
 html_short_title = "Home"
 html_sidebars = {
     "**": ["localtoc.html", "searchbox.html"],

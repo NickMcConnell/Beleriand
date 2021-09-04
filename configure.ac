@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(NarSil, 1.4.0, nckmccnnll@gmail.com)
+AC_INIT(Beleriand, 0.1.0alpha, nckmccnnll@gmail.com)
 AC_CONFIG_SRCDIR(src)
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -11,7 +11,7 @@ done
 
 BUILDSYS_INIT
 
-AC_SUBST(PACKAGE, narsil)
+AC_SUBST(PACKAGE, beleriand)
 
 AC_CONFIG_HEADERS(src/autoconf.h)
 
@@ -20,7 +20,7 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 AC_ARG_WITH(setgid,
-	[AS_HELP_STRING([--with-setgid=NAME], [install angband as group NAME])],
+	[AS_HELP_STRING([--with-setgid=NAME], [install beleriand as group NAME])],
 	[wsetgid=yes])
 AC_ARG_WITH(private_dirs,
 	[AS_HELP_STRING([--with-private-dirs], [use private scorefiles/savefiles])])
@@ -597,14 +597,13 @@ else
 fi
 if test "x$wsetgid" = "xyes"; then
 	echo "  (as group ${SETEGID})"
-elif test "x$with_private_dirs" = "xyes" && test ! "x$enable_win" = "xyes"; then
-	echo "  (with private save and score files in ~/.angband/Angband/)"
+elif test "x$with_private_dirs" = "xyes"; then
+	echo "  (with private save and score files in ~/.angband/Beleriand/)"
 fi
 if test "x$with_sphinx" = "xyes"; then
 	echo "  documentation:                          Yes"
 else
 	echo "  documentation:                          No"
-fi
 
 echo
 echo "-- Frontends --"

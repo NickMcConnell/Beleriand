@@ -17,7 +17,7 @@
 #include "math.h"
 
 #define NDS_BTN_SEQ_LEN 20
-#define NDS_BTN_FILE "/angband/nds/button-mappings.txt"
+#define NDS_BTN_FILE "/beleriand/nds/button-mappings.txt"
 #define NDS_BTN_FILE_MAX_LINE 512
 
 #define NDS_CPAD_MAX 154

@@ -2,14 +2,14 @@
 # Test runner
 # Assumption is that this is run in the top-level directory
 # If an executable is not specified via the -x option, it defaults to be
-# src/angband.
+# src/beleriand.
 
 usage() {
 	echo "Usage: $0 [-x executable] <test>"
 }
 
 run() {
-	rm -rf ~/.angband/Test
+	rm -rf ~/.angband/Beleriand/Test
 
 	test="$1"
         exe="$2"
@@ -29,7 +29,7 @@ run() {
 	return $result
 }
 
-argexe=src/angband
+argexe=src/beleriand
 if test $# -gt 0 ; then
 	if test x"$1" = x-x ; then
 		shift

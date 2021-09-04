@@ -1053,19 +1053,19 @@
     <Image Include="src\win\narsil.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="lib\icons\luthien-16.png">
+    <Image Include="lib\icons\att-16.png">
       <Filter>Resource Files\icons</Filter>
     </Image>
-    <Image Include="lib\icons\luthien-32.png">
+    <Image Include="lib\icons\att-32.png">
       <Filter>Resource Files\icons</Filter>
     </Image>
-    <Image Include="lib\icons\luthien-128.png">
+    <Image Include="lib\icons\att-128.png">
       <Filter>Resource Files\icons</Filter>
     </Image>
-    <Image Include="lib\icons\luthien-256.png">
+    <Image Include="lib\icons\att-256.png">
       <Filter>Resource Files\icons</Filter>
     </Image>
-    <Image Include="lib\icons\luthien-512.png">
+    <Image Include="lib\icons\att-512.png">
       <Filter>Resource Files\icons</Filter>
     </Image>
     <Image Include="lib\tiles\adam-bolt\16x16.png">
