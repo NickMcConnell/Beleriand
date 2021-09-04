@@ -22,7 +22,7 @@ CFLAGS += -I. -fPIC -std=c99 -O0
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
-CLEAN = faangband.o $(OBJECTS) win/angband.res
+CLEAN = beleriand.o $(OBJECTS) win/angband.res
 DISTCLEAN = autoconf.h tests/.deps
 
 export CFLAGS CPPFLAGS LDFLAGS LIBS

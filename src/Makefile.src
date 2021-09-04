@@ -5,10 +5,10 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-NAME = FAangband
-VERSION = 2.0
+NAME = Beleriand
+VERSION = 0.1.0alpha
 COPYRIGHT = (c) 1995-2021 Angband contributors
-PROGNAME = faangband
+PROGNAME = beleriand
 
 HEADERS = \
 	angband.h \

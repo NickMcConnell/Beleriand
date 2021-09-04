@@ -1,7 +1,7 @@
-# [FAangband](https://github.com/NickMcConnell/FAangband) 2.0.0
+# [Beleriand](https://github.com/NickMcConnell/Beleriand) 0.1.0alpha
 
-First Age Angband is a variant of [Angband](http://angband.github.io/angband/).
+Beleriand is a variant of [FAangband](http://nickmcconnell.github.io/FAangband/) [Angband](http://angband.github.io/angband/).
 
-For descriptions, see the main [FAangband web page](http://nickmcconnell.github.io/FAangband/).
+For descriptions, see the main [Beleriand web page](http://nickmcconnell.github.io/Beleriand/).
 
 For other Angband-related things, see the ladder site (http://angband.oook.cz/).

@@ -23,7 +23,7 @@ run : build
 %.o : %.c
 	@$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
 
-bin/% : %.o ../faangband.o test-utils.o unit-test.o
+bin/% : %.o ../beleriand.o test-utils.o unit-test.o
 	@mkdir -p $(shell echo "$$(dirname $@)")
 	@$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^ $(LDFLAGS) $(LDADD) $(LIBS)
 	@echo "  CC $@"

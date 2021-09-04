@@ -1,7 +1,7 @@
                                                                                
              ****************************************************
-             **   {deep light blue}FAangband 2.0.0{/}   ****   {deep light blue}First Age Angband{/}   **
-             ** {light yellow}Beleriand in the days of the War of the Jewels{/} **
+             **   {deep light blue}Beleriand 0.1.0alpha{/}    ****     {deep light blue}Beleriand{/}   **
+             ** {light yellow}      Beleriand under the reign of Morgoth{/}     **
              ****************************************************
 
      Based on Moria, Umoria, Angband and Oangband,
@@ -16,7 +16,7 @@
      {deep light blue}FAangband 0.3.6{/}          by Si Griffin
 
      Send comments, bug reports, and patches to {light yellow}nckmccnnll@gmail.com{/}
-     The FAangband home page is {light yellow}http://nickmcconnell.github.io/FAangband/{/}
-     Latest code is at {light yellow}https://github.com/NickMcConnell/FAangband{/}
+     The Beleriand home page is {light yellow}http://nickmcconnell.github.io/Beleriand/{/}
+     Latest code is at {light yellow}https://github.com/NickMcConnell/Beleriand{/}
      Visit the Angband ladder page at {light yellow}http://angband.oook.cz{/}
                         '{light yellow}?{/}' for brief in-game help.

@@ -20,10 +20,10 @@
 .vs/
 /*.vcxproj*
 aclocal.m4
-faangband
-faangband.3dsx
-faangband.nds
-faangband.smdh
+beleriand
+beleriand.3dsx
+beleriand.nds
+beleriand.smdh
 autom4te.cache/
 cmake-build-debug/
 config.log

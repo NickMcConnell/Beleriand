@@ -18,7 +18,7 @@
 
 #define NDS_SCRKEY_LABEL_LEN 16
 #define NDS_SCRKEY_SEQ_LEN 20
-#define NDS_SCRKEY_FILE "/faangband/nds/screen-keys.txt"
+#define NDS_SCRKEY_FILE "/beleriand/nds/screen-keys.txt"
 #define NDS_SCRKEY_FILE_MAX_LINE 512
 
 #define CLIP(val, min, max) MAX(MIN(val, max), min)
