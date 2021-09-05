@@ -218,6 +218,26 @@ struct chunk {
 	char *vault_name;
 };
 
+/**
+ * A change to terrain made after generation
+ */
+struct terrain_change {
+	struct loc grid;
+    int feat;
+    struct terrain_change *next;
+};
+
+/**
+ * Generation data for a generated location
+ */
+struct gen_loc {
+    int x_pos;
+    int y_pos;
+    int z_pos;
+    struct terrain_change *change;
+    struct connector *join;
+};
+
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/
 enum {
 	#define FEAT(x) FEAT_##x,

@@ -28,6 +28,12 @@ enum {
 	HEALTH_WOUNDED,
 	HEALTH_SOMEWHAT_WOUNDED,
 	HEALTH_UNHURT
+
+/**
+ * Size increment of the generated locations array
+ */
+#define GEN_LOC_INCR 128
+
 };
 
 struct level {
@@ -46,9 +52,16 @@ extern uint32_t seed_flavor;
 extern int32_t turn;
 extern bool character_generated;
 extern bool character_dungeon;
-extern const uint8_t extract_energy[8];
-extern struct level *world;
 
+extern const byte extract_energy[8];
+extern struct level *maps;
+extern struct level *world;
+extern struct gen_loc *gen_loc_list;
+extern u32b gen_loc_max;
+extern u32b gen_loc_cnt;
+
+bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
+void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx);
 struct level *level_by_name(const char *name);
 struct level *level_by_depth(int depth);
 bool is_daytime(void);

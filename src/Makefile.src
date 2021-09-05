@@ -123,6 +123,7 @@ ANGFILES0 = \
 	game-world.o \
 	generate.o \
 	gen-cave.o \
+	gen-chunk.o \
 	gen-room.o \
 	gen-util.o \
 	grafmode.o \

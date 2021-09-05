@@ -1463,6 +1463,126 @@ int rd_traps(void)
 	return 0;
 }
 
+/**
+ * Read the chunk list
+ */
+int rd_chunks(void)
+{
+	int j;
+	u16b chunk_max;
+
+	if (player->is_dead)
+		return 0;
+
+	rd_u16b(&chunk_max);
+	for (j = 0; j < chunk_max; j++) {
+		struct chunk *c;
+
+		/* Read the dungeon */
+		if (rd_dungeon_aux(&c))
+			return -1;
+
+		/* Read the objects */
+		if (rd_objects_aux(c))
+			return -1;
+
+		/* Read the monsters */
+		if (rd_monsters_aux(c))
+			return -1;
+
+		/* Read traps */
+		if (rd_traps_aux(c))
+			return -1;
+
+
+		/* Read other chunk info */
+		/* To add later */
+
+		//chunk_list_add(c);
+	}
+
+	return 0;
+}
+
+int rd_locations(void)
+{
+
+	size_t i, j;
+	//u16b square_size;
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
+	rd_byte(&square_size);
+	rd_u32b(&gen_loc_cnt);
+
+	for (i = 0; i < gen_loc_cnt; i++) {
+		byte tmp8u;
+		u16b tmp16u;
+		struct gen_loc *location = NULL;
+		u16b num_changes = 0, num_joins = 0;
+		struct terrain_change *change = NULL;
+		struct connector *join = NULL;
+
+		/* Increase the array size if necessary */
+		if (((i % GEN_LOC_INCR) == 0) && (i > 0)) {
+			gen_loc_max += GEN_LOC_INCR;
+			gen_loc_list =
+				mem_realloc(gen_loc_list, gen_loc_max * sizeof(struct gen_loc));
+		}
+		location = &gen_loc_list[i];
+
+		rd_u16b(&tmp16u);
+		location->x_pos = tmp16u;
+		rd_u16b(&tmp16u);
+		location->y_pos = tmp16u;
+		rd_u16b(&tmp16u);
+		location->z_pos = tmp16u;
+
+		/* Read the terrain changes */
+		rd_u16b(&num_changes);
+		if (num_changes)
+			change = mem_zalloc(num_changes * sizeof(struct terrain_change));
+		location->change = change;
+		for (j = 0; j < num_changes; j++) {
+			rd_byte(&tmp8u);
+			change[j].grid.y = tmp8u;
+			rd_byte(&tmp8u);
+			change[j].grid.x = tmp8u;
+			rd_byte(&tmp8u);
+			change[j].feat = tmp8u;
+			if (j + 1 < num_changes)
+				change[j].next = &change[j + 1];
+			else
+				change[j].next = NULL;
+		}
+
+		/* Read the joins */
+		rd_u16b(&num_joins);
+		if (num_joins)
+			join = mem_zalloc(num_joins * sizeof(struct connector));
+		location->join = join;
+		for (j = 0; j < num_joins; j++) {
+			int k;
+
+			rd_byte(&tmp8u);
+			join[j].grid.y = tmp8u;
+			rd_byte(&tmp8u);
+			join[j].grid.x = tmp8u;
+			rd_byte(&tmp8u);
+			join[j].feat = tmp8u;
+			for (k = 0; k < square_size; k++)
+				rd_byte(&join[j].info[k]);
+			if (j + 1 < num_joins)
+				join[j].next = &join[j + 1];
+			else
+				join[j].next = NULL;
+		}
+	}
+	return 0;
+}
+
 int rd_history(void)
 {
 	uint32_t tmp32u;
