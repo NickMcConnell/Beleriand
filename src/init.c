@@ -711,6 +711,175 @@ struct file_parser world_parser = {
 	cleanup_world
 };
 
+/**
+ * ------------------------------------------------------------------------
+ * Intialize region maps
+ * ------------------------------------------------------------------------ */
+static enum parser_error parse_region_name(struct parser *p)
+{
+	struct world_region *h = parser_priv(p);
+	struct world_region *reg = mem_zalloc(sizeof *reg);
+
+	reg->name = string_make(parser_getstr(p, "name"));
+	reg->next = h;
+	parser_setpriv(p, reg);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_region_danger(struct parser *p)
+{
+	struct world_region *region = parser_priv(p);
+
+	if (!region)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	region->danger = parser_getuint(p, "danger");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_region_height(struct parser *p)
+{
+	struct world_region *region = parser_priv(p);
+
+	if (!region)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	region->height = parser_getuint(p, "height");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_region_width(struct parser *p)
+{
+	struct world_region *region = parser_priv(p);
+
+	if (!region)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	region->width = parser_getuint(p, "width");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_region_y_offset(struct parser *p)
+{
+	struct world_region *region = parser_priv(p);
+
+	if (!region)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	region->y_offset = parser_getuint(p, "y-offset");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_region_x_offset(struct parser *p)
+{
+	struct world_region *region = parser_priv(p);
+
+	if (!region)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	region->x_offset = parser_getuint(p, "x-offset");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_region_desc(struct parser *p)
+{
+	struct world_region *region = parser_priv(p);
+
+	if (!region)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	region->text = string_append(region->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_region(void)
+{
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_region_name);
+	parser_reg(p, "danger uint danger", parse_region_danger);
+	parser_reg(p, "height uint height", parse_region_height);
+	parser_reg(p, "width uint width", parse_region_width);
+	parser_reg(p, "y-offset uint y-offset", parse_region_y_offset);
+	parser_reg(p, "x-offset uint x-offset", parse_region_x_offset);
+	parser_reg(p, "D str text", parse_region_desc);
+	return p;
+}
+
+static errr run_parse_region(struct parser *p)
+{
+	return parse_file(p, "region");
+}
+
+static errr finish_parse_region(struct parser *p)
+{
+	struct world_region *region, *n;
+	int y, x, i;
+
+	/* Scan the list for the max id */
+	z_info->region_max = 0;
+	region = parser_priv(p);
+	while (region) {
+		z_info->region_max++;
+		region = region->next;
+	}
+
+	/* Copy to the array */
+	region_info = mem_zalloc(sizeof(*region) * z_info->region_max);
+	for (region = parser_priv(p), i = 0; region; region = region->next, i++) {
+		region->index = i;
+		memcpy(&region_info[region->index], region, sizeof(*region));
+	}
+
+	region = parser_priv(p);
+	while (region) {
+		n = region->next;
+		mem_free(region);
+		region = n;
+	}
+
+	/* Write region terrain array */
+	region_terrain = mem_zalloc(MAX_Y_REGION * sizeof(char *));
+	for (y = 0; y < MAX_Y_REGION; y++) {
+		region_terrain[y] = mem_zalloc(MAX_X_REGION * sizeof(char));
+		for (x = 0; x < MAX_X_REGION; x++) {
+			region_terrain[y][x] = 'W';
+		}
+	}
+
+	for (i = 0; i < z_info->region_max; i++) {
+		struct world_region *r = &region_info[i];
+		int y_start = r->y_offset;
+		int x_start = r->x_offset;
+
+		for (y = 0; y < r->height; y++) {
+			for (x = 0; x < r->width; x++) {
+				char terrain = r->text[y * r->width + x];
+
+				/* Space means terrain that's part of another region */
+				if (terrain != ' ') {
+					region_terrain[y + y_start][x + x_start] = terrain;
+				}
+			}
+		}
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_region(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->region_max; idx++) {
+		mem_free(region_info[idx].name);
+		mem_free(region_info[idx].text);
+	}
+	mem_free(region_info);
+	mem_free(region_terrain);
+}
+
+static struct file_parser region_parser = {
+	"region",
+	init_parse_region,
+	run_parse_region,
+	finish_parse_region,
+	cleanup_region
+};
 
 /**
  * ------------------------------------------------------------------------
@@ -1933,6 +2102,7 @@ static struct {
 	struct file_parser *parser;
 } pl[] = {
 	{ "world", &world_parser },
+	{ "regions", &region_parser },
 	{ "projections", &projection_parser },
 	{ "features", &feat_parser },
 	{ "slays", &slay_parser },
