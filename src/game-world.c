@@ -51,6 +51,8 @@ bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
 struct level *maps;
 struct level *world;
+struct world_region *region_info;
+char **region_terrain;
 struct gen_loc *gen_loc_list;	/* List of generated locations */
 u32b gen_loc_max = GEN_LOC_INCR;/* Maximum number of generated locations */
 u32b gen_loc_cnt;				/* Current number of generated locations */
