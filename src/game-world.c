@@ -46,6 +46,9 @@ bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
 struct level_map *maps;
 struct level_map *world;
+struct gen_loc *gen_loc_list;	/* List of generated locations */
+u32b gen_loc_max = GEN_LOC_INCR;/* Maximum number of generated locations */
+u32b gen_loc_cnt;				/* Current number of generated locations */
 
 /**
  * This table allows quick conversion from "speed" to "energy"
@@ -93,6 +96,119 @@ const byte extract_energy[200] =
  * ------------------------------------------------------------------------
  * Map-related functions
  * ------------------------------------------------------------------------ */
+/**
+ * Find a given generation location in the list, or failing that the one
+ * after it
+ */
+bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
+{
+	int idx = gen_loc_cnt / 2;
+
+	/* Special case for before the array is populated */
+	if (gen_loc_cnt <= 1) {
+		*upper = *lower = 0;
+		return false;
+	}
+
+	*upper = MAX(1, gen_loc_cnt - 1);
+	*lower = 0;
+
+	while ((gen_loc_list[idx].x_pos != x_pos) ||
+		   (gen_loc_list[idx].y_pos != y_pos) ||
+		   (gen_loc_list[idx].z_pos != z_pos)) {
+		if (*lower + 1 == *upper)
+			break;
+
+		if (gen_loc_list[idx].x_pos > x_pos) {
+			*upper = idx;
+			idx = (*upper + *lower) / 2;
+			continue;
+		} else if (gen_loc_list[idx].x_pos < x_pos) {
+			*lower = idx;
+			idx = (*upper + *lower) / 2;
+			continue;
+		} else if (gen_loc_list[idx].y_pos > y_pos) {
+			*upper = idx;
+			idx = (*upper + *lower) / 2;
+			continue;
+		} else if (gen_loc_list[idx].y_pos < y_pos) {
+			*lower = idx;
+			idx = (*upper + *lower) / 2;
+			continue;
+		} else if (gen_loc_list[idx].z_pos > z_pos) {
+			*upper = idx;
+			idx = (*upper + *lower) / 2;
+			continue;
+		} else if (gen_loc_list[idx].z_pos < z_pos) {
+			*lower = idx;
+			idx = (*upper + *lower) / 2;
+			continue;
+		}
+	}
+
+	/* Found without having to break */
+	if (*lower + 1 != *upper) {
+		*lower = idx;
+		*upper = idx;
+		return true;
+	}
+
+	/* Check lower */
+	if ((gen_loc_list[*lower].x_pos == x_pos) &&
+		(gen_loc_list[*lower].y_pos == y_pos) &&
+		(gen_loc_list[*lower].z_pos == z_pos)) {
+		*upper = *lower;
+		return true;
+	}
+
+	/* Needs to go after the last element */
+	if ((gen_loc_list[*upper].x_pos <= x_pos) &&
+		(gen_loc_list[*upper].y_pos <= y_pos) &&
+		(gen_loc_list[*upper].z_pos <= z_pos)) {
+		*upper = gen_loc_cnt;
+		return false;
+	}
+
+	/* Needs to go before the first element */
+	if ((gen_loc_list[*lower].x_pos >= x_pos) &&
+		(gen_loc_list[*lower].y_pos >= y_pos) &&
+		(gen_loc_list[*lower].z_pos >= z_pos)) {
+		*upper = 0;
+		return false;
+	}
+
+	/* Needs to go between upper and lower */
+	return false;
+
+}
+
+/**
+ * Enter a given generation location in the list at the given spot
+ */
+void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
+{
+	int i;
+
+	/* Increase the count, extend the array if necessary */
+	gen_loc_cnt++;
+	if ((gen_loc_cnt % GEN_LOC_INCR) == 0) {
+		gen_loc_max += GEN_LOC_INCR;
+		gen_loc_list = mem_realloc(gen_loc_list,
+								   gen_loc_max * sizeof(struct gen_loc));
+	}
+
+	/* Move everything along one to make space */
+	for (i = gen_loc_cnt; i > idx; i--)
+		memcpy(&gen_loc_list[i], &gen_loc_list[i - 1], sizeof(struct gen_loc));
+
+	/* Copy the new data in */
+	gen_loc_list[idx].x_pos = x_pos;
+	gen_loc_list[idx].y_pos = y_pos;
+	gen_loc_list[idx].z_pos = z_pos;
+	gen_loc_list[idx].change = NULL;
+	gen_loc_list[idx].join = NULL;
+}
+
 /**
  * Specific levels on which there should never be a vault
  */

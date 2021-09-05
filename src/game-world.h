@@ -21,6 +21,11 @@
 
 #include "cave.h"
 
+/**
+ * Size increment of the generated locations array
+ */
+#define GEN_LOC_INCR 128
+
 enum locality {
 	#define LOC(x, b)	LOC_##x,
 	#include "list-localities.h"
@@ -75,7 +80,12 @@ extern bool character_dungeon;
 extern const byte extract_energy[200];
 extern struct level_map *maps;
 extern struct level_map *world;
+extern struct gen_loc *gen_loc_list;
+extern u32b gen_loc_max;
+extern u32b gen_loc_cnt;
 
+bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
+void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx);
 bool no_vault(int place);
 const char *locality_name(enum locality locality);
 char *level_name(struct level *lev);
