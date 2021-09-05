@@ -472,6 +472,10 @@ struct player {
 	int16_t max_depth;	/* Max depth */
 	int16_t depth;		/* Cur depth */
 
+	int16_t home;		/* Home */
+	int16_t place;		/* Cur place */
+	int16_t last_place;	/* Previous place */
+
 	int32_t new_exp;	/* New experience */
 	int32_t exp;		/* Current experience */
 	int32_t turn;		/* Player turn */

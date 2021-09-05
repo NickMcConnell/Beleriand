@@ -2084,7 +2084,29 @@ bool init_angband(void)
  */
 void cleanup_angband(void)
 {
-	int i;
+	size_t i;
+
+	/* Free the chunk list */
+	for (i = 0; i < chunk_list_max; i++) {
+		wipe_mon_list(chunk_list[i], player);
+		cave_free(chunk_list[i]);
+	}
+	mem_free(chunk_list);
+	chunk_list = NULL;
+
+	/* Free the locations list */
+	for (i = 0; i < gen_loc_cnt; i++) {
+		if (gen_loc_list[i].change) {
+			struct terrain_change *change = gen_loc_list[i].change;
+			while (change) {
+				change = change->next;
+				mem_free(change);
+			}
+		}
+		//cave_connectors_free(gen_loc_list[i].join);
+	}
+	mem_free(gen_loc_list);
+	gen_loc_list = NULL;
 
 	for (i = 0; modules[i]; i++)
 		if (modules[i]->cleanup)

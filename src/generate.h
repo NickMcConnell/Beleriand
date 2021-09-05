@@ -195,6 +195,22 @@ struct chunk *cave_gen(struct player *p);
 struct chunk *throne_gen(struct player *p);
 struct chunk *gates_gen(struct player *p);
 
+/* gen-chunk.c */
+struct chunk *chunk_write(struct chunk *c);
+void chunk_list_add(struct chunk *c);
+bool chunk_list_remove(const char *name);
+struct chunk *chunk_find_name(const char *name);
+bool chunk_find(struct chunk *c);
+void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
+	int rotate, bool reflect);
+void get_random_symmetry_transform(int height, int width, int flags,
+	int transpose_weight, int *rotate, bool *reflect,
+	int *theight, int *twidth);
+int calc_default_transpose_weight(int height, int width);
+bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
+	 int y0, int x0, int rotate, bool reflect);
+
+
 /* gen-room.c */
 struct vault *random_vault(int depth, const char *typ, bool forge);
 void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,

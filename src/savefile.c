@@ -118,6 +118,8 @@ static const struct {
 	{ "objects", wr_objects, 1 },
 	{ "monsters", wr_monsters, 1 },
 	{ "traps", wr_traps, 1 },
+	{ "chunks", wr_chunks, 1 },
+	{ "locations", wr_locations, 1 },
 	{ "history", wr_history, 1 },
 	{ "monster groups", wr_monster_groups, 1 },
 };
@@ -141,6 +143,8 @@ static const struct blockinfo loaders[] = {
 	{ "objects", rd_objects, 1 },	
 	{ "monsters", rd_monsters, 1 },
 	{ "traps", rd_traps, 1 },
+	{ "chunks", rd_chunks, 1 },
+	{ "locations", rd_locations, 1 },
 	{ "history", rd_history, 1 },
 	{ "monster groups", rd_monster_groups, 1 },
 };

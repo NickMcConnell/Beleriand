@@ -334,6 +334,18 @@ depgen:
  list-mon-spells.h list-room-flags.h init.h mon-group.h mon-make.h \
  mon-spell.h mon-util.h mon-msg.h list-mon-message.h player-util.h \
  cmd-core.h trap.h list-trap-flags.h z-queue.h
+./gen-chunk.o: gen-chunk.c angband.h h-basic.h z-bitflag.h z-form.h \
+ z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
+ z-type.h message.h list-message.h player.h guid.h obj-properties.h \
+ z-file.h list-tvals.h list-object-flags.h list-kind-flags.h list-stats.h \
+ list-skills.h list-object-modifiers.h object.h z-quark.h z-dice.h \
+ z-expression.h list-elements.h list-origins.h option.h list-options.h \
+ list-player-flags.h cave.h list-square-flags.h list-terrain-flags.h \
+ list-terrain.h game-world.h generate.h monster.h target.h \
+ mon-predicate.h mon-timed.h list-mon-timed.h mon-blows.h \
+ list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h \
+ list-room-flags.h init.h datafile.h parser.h list-parser-errors.h \
+ mon-group.h mon-make.h obj-util.h trap.h list-trap-flags.h
 ./gen-room.o: gen-room.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \

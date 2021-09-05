@@ -940,6 +940,89 @@ void wr_traps(void)
 	wr_traps_aux(player->cave);
 }
 
+/*
+ * Write the chunk list
+ */
+void wr_chunks(void)
+{
+	int j;
+
+	if (player->is_dead)
+		return;
+
+	wr_u16b(chunk_list_max);
+
+	/* Now write each chunk */
+	for (j = 0; j < chunk_list_max; j++) {
+		struct chunk *c = chunk_list[j];
+
+		/* Write the terrain and info */
+		wr_dungeon_aux(c);
+
+		/* Write the objects */
+		wr_objects_aux(c);
+
+		/* Write the monsters */
+		wr_monsters_aux(c);
+
+		/* Write the traps */
+		wr_traps_aux(c);
+
+		/* Write other chunk info */
+		/* Later */
+	}
+}
+
+void wr_locations(void)
+{
+	size_t i, j;
+
+	if (player->is_dead)
+		return;
+
+	wr_byte(SQUARE_SIZE);
+	wr_u32b(gen_loc_cnt);
+
+	for (i = 0; i < gen_loc_cnt; i++) {
+		struct gen_loc *location = &gen_loc_list[i];
+		int num_changes = 0, num_joins = 0;
+		struct terrain_change *change;
+		struct connector *join;
+
+		wr_u16b(location->x_pos);
+		wr_u16b(location->y_pos);
+		wr_u16b(location->z_pos);
+
+		/* Count the terrain changes */
+		for (change = location->change; change; change = change->next) {
+			num_changes++;
+		}
+
+		/* Write the terrain changes */
+		wr_u16b(num_changes);
+		for (change = location->change; change; change = change->next) {
+			wr_byte(change->grid.y);
+			wr_byte(change->grid.x);
+			wr_byte(change->feat);
+		}
+
+		/* Count the joins */
+		for (join = location->join; join; join = join->next) {
+			num_joins++;
+		}
+
+		/* Write the edge effects */
+		wr_u16b(num_joins);
+		for (join = location->join; join; join = join->next) {
+			wr_byte(join->grid.y);
+			wr_byte(join->grid.x);
+			wr_byte(join->feat);
+			for (j = 0; j < SQUARE_SIZE; j++)
+				wr_byte(join->info[j]);
+		}
+	}
+}
+
 void wr_history(void)
 {
 	size_t i, j;

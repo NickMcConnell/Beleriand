@@ -891,6 +891,11 @@ void do_cmd_accept_character(struct command *cmd)
 
 	ignore_birth_init();
 
+	player->place = player->home;
+
+	/* No locations generated yet */
+	gen_loc_cnt = 0;
+
 	/* Clear old messages, add new starting message */
 	history_clear(player);
 	history_add(player, "Began the quest to recover a Silmaril.", HIST_PLAYER_BIRTH);

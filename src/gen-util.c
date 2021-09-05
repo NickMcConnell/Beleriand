@@ -827,31 +827,6 @@ void uncreate_greater_vaults(struct chunk *c, struct player *p)
 	}
 }
 
-/**
- * Validate that the chunk contains no NULL objects.
- * Only checks for nonzero tval.
- * \param c is the chunk to validate.
- */
-
-void chunk_validate_objects(struct chunk *c) {
-	int x, y;
-	struct object *obj;
-
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			struct loc grid = loc(x, y);
-			for (obj = square_object(c, grid); obj; obj = obj->next)
-				assert(obj->tval != 0);
-			if (square(c, grid)->mon > 0) {
-				struct monster *mon = square_monster(c, grid);
-				if (mon->held_obj)
-					for (obj = mon->held_obj; obj; obj = obj->next)
-						assert(obj->tval != 0);
-			}
-		}
-	}
-}
-
 	
 
 /**
