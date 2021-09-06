@@ -53,6 +53,7 @@ struct level *maps;
 struct level *world;
 struct world_region *region_info;
 char **region_terrain;
+struct landmark *landmark_info;
 struct gen_loc *gen_loc_list;	/* List of generated locations */
 u32b gen_loc_max = GEN_LOC_INCR;/* Maximum number of generated locations */
 u32b gen_loc_cnt;				/* Current number of generated locations */
