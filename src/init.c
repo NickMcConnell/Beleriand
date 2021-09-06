@@ -1263,6 +1263,138 @@ static struct file_parser region_parser = {
 	finish_parse_region,
 	cleanup_region
 };
+/**
+ * ------------------------------------------------------------------------
+ * Intialize landmarks
+ * ------------------------------------------------------------------------ */
+static enum parser_error parse_landmark_name(struct parser *p)
+{
+	struct landmark *h = parser_priv(p);
+	struct landmark *l = mem_zalloc(sizeof *l);
+
+	l->name = string_make(parser_getstr(p, "name"));
+	l->map_z = 0;
+	l->next = h;
+	parser_setpriv(p, l);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_landmark_map_y(struct parser *p)
+{
+	struct landmark *l = parser_priv(p);
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	l->map_y = parser_getuint(p, "map-y");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_landmark_map_x(struct parser *p)
+{
+	struct landmark *l = parser_priv(p);
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	l->map_x = parser_getuint(p, "map-x");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_landmark_height(struct parser *p)
+{
+	struct landmark *l = parser_priv(p);
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	l->height = parser_getuint(p, "height");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_landmark_width(struct parser *p)
+{
+	struct landmark *l = parser_priv(p);
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	l->width = parser_getuint(p, "width");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_landmark_desc(struct parser *p)
+{
+	struct landmark *l = parser_priv(p);
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	l->text = string_append(l->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_landmark(void)
+{
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_landmark_name);
+	parser_reg(p, "map-y uint map-y", parse_landmark_map_y);
+	parser_reg(p, "map-x uint map-x", parse_landmark_map_x);
+	parser_reg(p, "height uint height", parse_landmark_height);
+	parser_reg(p, "width uint width", parse_landmark_width);
+	parser_reg(p, "D str text", parse_landmark_desc);
+	return p;
+}
+
+static errr run_parse_landmark(struct parser *p)
+{
+	return parse_file(p, "landmark");
+}
+
+static errr finish_parse_landmark(struct parser *p)
+{
+	struct landmark *l, *n;
+	int i;
+
+	/* Scan the list for the max id */
+	z_info->landmark_max = 0;
+	l = parser_priv(p);
+	while (l) {
+		z_info->landmark_max++;
+		l = l->next;
+	}
+
+	landmark_info = mem_zalloc(sizeof(*l) * z_info->landmark_max);
+	for (l = parser_priv(p), i = 0; l; l = l->next, i++) {
+		l->lidx = i;
+		memcpy(&landmark_info[l->lidx], l, sizeof(*l));
+	}
+
+	l = parser_priv(p);
+	while (l) {
+		n = l->next;
+		mem_free(l);
+		l = n;
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_landmark(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->landmark_max; idx++) {
+		mem_free(landmark_info[idx].name);
+		mem_free(landmark_info[idx].text);
+		mem_free(landmark_info[idx].message);
+	}
+	mem_free(landmark_info);
+}
+
+struct file_parser landmark_parser = {
+	"landmark",
+	init_parse_landmark,
+	run_parse_landmark,
+	finish_parse_landmark,
+	cleanup_landmark
+};
 
 /**
  * ------------------------------------------------------------------------
@@ -4342,6 +4474,7 @@ static struct {
 } pl[] = {
 	{ "world", &world_parser },
 	{ "regions", &region_parser },
+	{ "landmarks", &landmark_parser },
 	{ "projections", &projection_parser },
 	{ "ui renderers", &ui_entry_renderer_parser },
 	{ "ui entries", &ui_entry_parser },

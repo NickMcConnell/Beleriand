@@ -78,21 +78,37 @@ struct level_map {
 };
 
 /**
+ * Information about landmarks
+ */
+struct landmark {
+	struct landmark *next;
+	unsigned int lidx;
+	char *name;
+	char *message;
+	char *text;
+
+	int map_z;         /**< Map z coordinate of landmark */
+	int map_y;         /**< Map y coordinate of landmark */
+	int map_x;         /**< Map x coordinate of landmark */
+	int height;        /**< Number of chunks high */
+	int width;         /**< Number of chunks wide */
+};
+
+/**
  * Information about regions
  */
 struct world_region {
-    struct world_region *next;
-    unsigned int index;
-    char *name;
-    char *message;
-    char *text;
+	struct world_region *next;
+	unsigned int index;
+	char *name;
+	char *message;
+	char *text;
 
-    byte danger;       	           /**< Region danger */
-    u16b height;       	           /**< Region height */
-    u16b width;       	           /**< Region width */
-    u16b y_offset;                 /**< Region y location */
-    u16b x_offset;                 /**< Region x location */
-
+	byte danger;       	           /**< Region danger */
+	u16b height;       	           /**< Region height */
+	u16b width;       	           /**< Region width */
+	u16b y_offset;                 /**< Region y location */
+	u16b x_offset;                 /**< Region x location */
 };
 
 extern u16b daycount;
@@ -106,6 +122,7 @@ extern struct level_map *maps;
 extern struct level_map *world;
 extern struct world_region *region_info;
 extern char **region_terrain;
+extern struct landmark *landmark_info;
 extern struct gen_loc *gen_loc_list;
 extern u32b gen_loc_max;
 extern u32b gen_loc_cnt;

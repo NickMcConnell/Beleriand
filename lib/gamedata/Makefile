@@ -4,7 +4,7 @@ include $(MKPATH)buildsys.mk
 CONFIG = a_cursed.txt a_normal.txt activation.txt artifact.txt body.txt \
  blow_methods.txt blow_effects.txt brand.txt bravado.txt chest_trap.txt \
  class.txt constants.txt curse.txt dungeon_profile.txt ego_item.txt flavor.txt \
- ghost.txt hints.txt history.txt monster.txt monster_base.txt \
+ ghost.txt hints.txt history.txt landmark.txt monster.txt monster_base.txt \
  monster_spell.txt names.txt object.txt object_base.txt object_property.txt \
  p_race.txt pain.txt pit.txt player_property.txt player_timed.txt \
  player_unarmed.txt projection.txt quest.txt race_relations.txt realm.txt \

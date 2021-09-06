@@ -55,6 +55,7 @@ struct angband_constants
 	u16b store_max;		/**< Maximum number of store types */
 	u16b themed_max;		/**< Maximum number of themed levels */
     u16b region_max;	/**< Maximum number of world regions */
+    u16b landmark_max;	/**< Maximum number of landmarks */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
