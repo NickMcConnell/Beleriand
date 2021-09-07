@@ -546,7 +546,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
  */
 void cave_illuminate(struct chunk *c, bool daytime)
 {
-	int y, x, i;
+	int y, x;
 
 	/* Apply light or darkness */
 	for (y = 0; y < c->height; y++) {
@@ -577,22 +577,6 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			}
 		}
 	}
-			
-			
-	/* Light shop doorways */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			struct loc grid = loc(x, y);
-			if (!square_isshop(c, grid))
-				continue;
-			for (i = 0; i < 8; i++) {
-				struct loc a_grid = loc_sum(grid, ddgrid_ddd[i]);
-				sqinfo_on(square(c, a_grid)->info, SQUARE_GLOW);
-				square_memorize(c, a_grid);
-			}
-		}
-	}
-
 
 	/* Fully update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);

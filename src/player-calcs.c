@@ -1028,17 +1028,15 @@ static const int blows_table[12][12] =
  *
  * \return whether to replace the original object with the new one
  */
-bool earlier_object(struct object *orig, struct object *new, bool store)
+static bool earlier_object(struct object *orig, struct object *new)
 {
 	/* Check we have actual objects */
 	if (!new) return false;
 	if (!orig) return true;
 
-	if (!store) {
-		/* Readable books always come first */
-		if (obj_can_browse(orig) && !obj_can_browse(new)) return false;
-		if (!obj_can_browse(orig) && obj_can_browse(new)) return true;
-	}
+	/* Readable books always come first */
+	if (obj_can_browse(orig) && !obj_can_browse(new)) return false;
+	if (!obj_can_browse(orig) && obj_can_browse(new)) return true;
 
 	/* Usable ammo is before other ammo */
 	if (tval_is_ammo(orig) && tval_is_ammo(new)) {
@@ -1055,26 +1053,22 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 	if (orig->tval > new->tval) return false;
 	if (orig->tval < new->tval) return true;
 
-	if (!store) {
-		/* Non-aware (flavored) items always come last (default to orig) */
-		if (!object_flavor_is_aware(new)) return false;
-		if (!object_flavor_is_aware(orig)) return true;
-	}
+	/* Non-aware (flavored) items always come last (default to orig) */
+	if (!object_flavor_is_aware(new)) return false;
+	if (!object_flavor_is_aware(orig)) return true;
 
 	/* Objects sort by increasing sval */
 	if (orig->sval < new->sval) return false;
 	if (orig->sval > new->sval) return true;
 
-	if (!store) {
-		/* Unaware objects always come last (default to orig) */
-		if (new->kind->flavor && !object_flavor_is_aware(new)) return false;
-		if (orig->kind->flavor && !object_flavor_is_aware(orig)) return true;
+	/* Unaware objects always come last (default to orig) */
+	if (new->kind->flavor && !object_flavor_is_aware(new)) return false;
+	if (orig->kind->flavor && !object_flavor_is_aware(orig)) return true;
 
-		/* Lights sort by decreasing fuel */
-		if (tval_is_light(orig)) {
-			if (orig->pval > new->pval) return false;
-			if (orig->pval < new->pval) return true;
-		}
+	/* Lights sort by decreasing fuel */
+	if (tval_is_light(orig)) {
+		if (orig->pval > new->pval) return false;
+		if (orig->pval < new->pval) return true;
 	}
 
 	/* Objects sort by decreasing value, except ammo */
@@ -1239,7 +1233,7 @@ void calc_inventory(struct player *p)
 					&& n_stack_split
 					<= n_pack_remaining))) {
 				/* Choose the first in order. */
-				if (earlier_object(first, current, false)) {
+				if (earlier_object(first, current)) {
 					first = current;
 					jfirst = j;
 				}
@@ -1302,7 +1296,7 @@ void calc_inventory(struct player *p)
 			/* Consider it if it hasn't already been handled. */
 			if (!assigned[j]) {
 				/* Choose the first in order. */
-				if (earlier_object(first, current, false)) {
+				if (earlier_object(first, current)) {
 					first = current;
 					jfirst = j;
 				}

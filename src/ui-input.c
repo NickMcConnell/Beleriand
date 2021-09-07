@@ -45,7 +45,6 @@
 #include "ui-recall.h"
 #include "ui-signals.h"
 #include "ui-spell.h"
-#include "ui-store.h"
 #include "ui-target.h"
 
 static bool inkey_xtra;

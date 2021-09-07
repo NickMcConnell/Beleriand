@@ -63,8 +63,6 @@ struct town {
 	int index;
 	char *code;
 	char *ego;
-	struct store *stores;
-	int num_stores;
 };
 
 struct level_map {
@@ -111,7 +109,6 @@ struct world_region {
 	u16b x_offset;                 /**< Region x location */
 };
 
-extern u16b daycount;
 extern u32b seed_randart;
 extern u32b seed_flavor;
 extern s32b turn;

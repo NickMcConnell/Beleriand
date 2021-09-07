@@ -104,7 +104,6 @@ extern const int adj_dex_safe[STAT_RANGE];
 extern const int adj_con_fix[STAT_RANGE];
 extern const int adj_str_hold[STAT_RANGE];
 
-bool earlier_object(struct object *orig, struct object *new, bool store);
 int equipped_item_slot(struct player_body body, struct object *obj);
 void calc_inventory(struct player *p);
 void calc_bonuses(struct player *p, struct player_state *state, bool known_only,

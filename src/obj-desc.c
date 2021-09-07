@@ -84,8 +84,6 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 {
 	bool show_flavor = !terse && (obj->kind->flavor || tval_is_jewelry(obj));
 
-	if (mode & ODESC_STORE)
-		show_flavor = false;
 	if (aware && p && !OPT(p, show_flavors)) show_flavor = false;
 
 	/* Artifacts are special */
@@ -303,11 +301,10 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		const struct object *obj, bool prefix, int mode, bool terse,
 		const struct player *p)
 {
-	bool store = mode & ODESC_STORE ? true : false;
 	bool spoil = mode & ODESC_SPOIL ? true : false;
 	
-	/* Actual name for flavoured objects if aware, or in store, or spoiled */
-	bool aware = object_flavor_is_aware(obj) || store || spoil;
+	/* Actual name for flavoured objects if aware or spoiled */
+	bool aware = object_flavor_is_aware(obj) || spoil;
 	/* Pluralize if (not forced singular) and
 	 * (not a known/visible artifact) and
 	 * (not one in stack or forced plural) */
@@ -331,7 +328,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	/* Append extra names of various kinds */
 	if (object_is_known_artifact(obj))
 		strnfcat(buf, max, &end, " %s", obj->artifact->name);
-	else if ((obj->known->ego && !(mode & ODESC_NOEGO)) || (obj->ego && store))
+	else if ((obj->known->ego && !(mode & ODESC_NOEGO)) || obj->ego)
 		strnfcat(buf, max, &end, " %s", obj->ego->name);
 	else if (aware && !obj->artifact &&
 			 (obj->kind->flavor || obj->kind->tval == TV_SCROLL)) {
@@ -493,7 +490,7 @@ static size_t obj_desc_mods(const struct object *obj, char *buf, size_t max,
 static size_t obj_desc_charges(const struct object *obj, char *buf, size_t max,
 							   size_t end, int mode)
 {
-	bool aware = object_flavor_is_aware(obj) || (mode & ODESC_STORE);
+	bool aware = object_flavor_is_aware(obj);
 
 	/* Wands and staffs have charges, others may be charging */
 	if (aware && tval_can_have_charges(obj)) {
@@ -561,25 +558,6 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 
 
 /**
- * Add "unseen" to the end of unaware items in stores,
- * and "??" to not fully known unflavored items 
- */
-static size_t obj_desc_aware(const struct object *obj, char *buf, size_t max,
-							 size_t end)
-{
-	if (!object_flavor_is_aware(obj)) {
-		strnfcat(buf, max, &end, " {unseen}");
-	} else if (!object_runes_known(obj)) {
-		strnfcat(buf, max, &end, " {??}");
-	} else if (obj->known->curses) {
-		strnfcat(buf, max, &end, " {cursed}");
-	}
-
-	return end;
-}
-
-
-/**
  * Describes item `obj` into buffer `buf` of size `max`.
  *
  * \param buf is the buffer for the description.  Must have space for at least
@@ -592,7 +570,6 @@ static size_t obj_desc_aware(const struct object *obj, char *buf, size_t max,
  * ODESC_COMBAT will add to-hit, to-dam and AC info.
  * ODESC_EXTRA will add pval/charge/inscription/ignore info.
  * ODESC_PLURAL will pluralise regardless of the number in the stack.
- * ODESC_STORE turns off ignore markers, for in-store display.
  * ODESC_SPOIL treats the object as fully identified.
  * \param p is the player whose knowledge is factored into the description.
  * If p is NULL, the description is for an omniscient observer.
@@ -652,10 +629,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode,
 
 		end = obj_desc_charges(obj, buf, max, end, mode);
 
-		if (mode & ODESC_STORE)
-			end = obj_desc_aware(obj, buf, max, end);
-		else
-			end = obj_desc_inscrip(obj, buf, max, end, p);
+		end = obj_desc_inscrip(obj, buf, max, end, p);
 	}
 
 	return end;

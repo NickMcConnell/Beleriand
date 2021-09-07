@@ -39,7 +39,6 @@
 #include "project.h"
 #include "stats/db.h"
 #include "stats/structs.h"
-#include "store.h"
 #include <stddef.h>
 #include <time.h>
 
@@ -247,7 +246,6 @@ static void initialize_character(void)
 
 	world = maps;
 	init_race_probs();
-	store_reset();
 	flavor_init();
 	player->upkeep->playing = true;
 	player->upkeep->autosave = false;

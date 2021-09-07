@@ -43,7 +43,7 @@ Original Keyset Command Summary
   [    Display visible monster list    ^M   (special - return)
   ]    Display visible object list     ^N   -
   -    -                               ^O   Show previous message
-  _    Enter store                     ^P   Show previous messages
+  _    -                               ^P   Show previous messages
   +    Alter grid                      ^Q   -
   =    Set options                     ^R   Redraw the screen
   ;    Walk (with pickup)              ^S   Save and don't quit
@@ -104,7 +104,7 @@ Roguelike Keyset Command Summary
   [    Display visible monster list    ^M   (special - return)
   ]    Display visible object list     ^N   (alter - south east)
   -    Walk into a trap                ^O   Show previous message
-  _    Enter store                     ^P   Show previous messages
+  _    -                               ^P   Show previous messages
   +    Alter grid (steal for rogues)   ^Q   -
   =    Set options                     ^R   Redraw the screen
   ;    Walk (with pickup)              ^S   Save and don't quit

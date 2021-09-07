@@ -81,13 +81,12 @@ static int test_flags0(void *state) {
 }
 
 static int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:9:2");
+	enum parser_error r = parser_parse(state, "info:2");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
-	eq(f->shopnum, 9);
 	eq(f->dig, 2);
 	ok;
 }

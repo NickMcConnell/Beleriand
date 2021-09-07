@@ -154,23 +154,6 @@ carry-cap:floor-size:23
 
 
 #---------------------------------------------------------------------
-# Store Parameters
-#---------------------------------------------------------------------
-
-# Maximum number of discrete objects in store inventory
-store:inven-max:24
-
-# Number of turns between turnovers
-store:turns:1000
-
-# 1/Chance (per day) of an owner changing
-store:shuffle:25
-
-# Dungeon level to apply magic to objects for normal stores
-store:magic-level:5
-
-
-#---------------------------------------------------------------------
 # Object generation
 #---------------------------------------------------------------------
 

@@ -62,7 +62,6 @@ bool player_knows_ego(struct player *p, struct ego_item *ego,
 	const struct object *obj);
 bool object_effect_is_known(const struct object *obj);
 bool object_is_known_artifact(const struct object *obj);
-bool object_is_in_store(const struct object *obj);
 bool object_has_standard_to_h(const struct object *obj);
 bool object_has_standard_ac(const struct object *obj);
 bool object_has_standard_dice(const struct object *obj);

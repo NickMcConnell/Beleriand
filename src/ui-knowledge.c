@@ -42,7 +42,6 @@
 #include "player-history.h"
 #include "player-util.h"
 #include "project.h"
-#include "store.h"
 #include "target.h"
 #include "trap.h"
 #include "ui-context.h"
@@ -58,7 +57,6 @@
 #include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-score.h"
-#include "ui-store.h"
 #include "ui-target.h"
 #include "wizard.h"
 
@@ -1475,18 +1473,6 @@ static struct object *find_artifact(struct artifact *artifact)
 		while (obj) {
 			if (obj->artifact == artifact) return obj;
 			obj = obj->next;
-		}
-	}
-
-	/* Store objects */
-	for (i = 0; i < world->num_towns; i++) {
-		struct town *town = &world->towns[i];
-		struct store *s = town->stores;
-		while (s) {
-			for (obj = s->stock; obj; obj = obj->next) {
-				if (obj->artifact == artifact) return obj;
-			}
-			s = s->next;
 		}
 	}
 
@@ -3201,11 +3187,6 @@ static void do_cmd_knowledge_shapechange(const char *name, int row)
  * Main knowledge menus
  * ------------------------------------------------------------------------ */
 
-static void do_cmd_knowledge_home(const char *name, int row)
-{
-	textui_store_knowledge(store_home(player));
-}
-
 static void do_cmd_knowledge_scores(const char *name, int row)
 {
 	show_scores();
@@ -3234,7 +3215,6 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display feature knowledge",  	   do_cmd_knowledge_features  },
 { 0, 0, "Display trap knowledge",          do_cmd_knowledge_traps  },
 { 0, 0, "Display shapechange effects",     do_cmd_knowledge_shapechange },
-{ 0, 0, "Display contents of home",        do_cmd_knowledge_home },
 { 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
 { 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
 { 0, 0, "Display equippable comparison",   do_cmd_knowledge_equip_cmp },

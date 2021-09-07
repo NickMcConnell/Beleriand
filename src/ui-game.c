@@ -56,7 +56,6 @@
 #include "ui-score.h"
 #include "ui-signals.h"
 #include "ui-spoil.h"
-#include "ui-store.h"
 #include "ui-target.h"
 #include "ui-wizard.h"
 

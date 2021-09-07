@@ -39,7 +39,6 @@
 #include "player-util.h"
 #include "project.h"
 #include "score.h"
-#include "store.h"
 #include "target.h"
 #include "trap.h"
 #include "ui-input.h"
@@ -243,11 +242,6 @@ void player_change_place(struct player *p, int place)
 	/* We've been here now */
 	lev->visited = true;
 
-	/* If we're returning to town, update the store contents
-	   according to how long we've been away */
-	if (!p->depth && daycount)
-		store_update();
-
 	/* Leaving, make new level */
 	p->upkeep->generate_level = true;
 
@@ -355,7 +349,6 @@ void take_hit(struct player *p, int dam, const char *kb_str)
  */
 void death_knowledge(struct player *p)
 {
-	struct store *home = store_home(p);
 	struct object *obj;
 	time_t death_time = (time_t)0;
 
@@ -370,12 +363,6 @@ void death_knowledge(struct player *p)
 
 	player_learn_all_runes(p);
 	for (obj = p->gear; obj; obj = obj->next) {
-		object_flavor_aware(p, obj);
-		obj->known->effect = obj->effect;
-		obj->known->activation = obj->activation;
-	}
-
-	for (obj = home->stock; obj; obj = obj->next) {
 		object_flavor_aware(p, obj);
 		obj->known->effect = obj->effect;
 		obj->known->activation = obj->activation;

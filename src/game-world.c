@@ -38,7 +38,6 @@
 #include "target.h"
 #include "trap.h"
 
-u16b daycount = 0;
 u32b seed_randart;		/* Hack -- consistent random artifacts */
 u32b seed_flavor;		/* Hack -- consistent object colors */
 s32b turn;				/* Current game turn */
@@ -724,7 +723,7 @@ void process_world(struct chunk *c)
 	if (!(turn % ((10L * z_info->day_length) / 4)))
 		play_ambient_sound();
 
-	/* Handle stores and sunshine */
+	/* Handle sunshine */
 	if (outside()) {
 		/* Daybreak/Nightfall in town */
 		if (!(turn % ((10L * z_info->day_length) / 2))) {
@@ -744,10 +743,6 @@ void process_world(struct chunk *c)
 			cave_illuminate(c, dawn);
 		}
 	}
-
-	/* Update the stores once a day.  The changes are not actually made until
-	 * return to town, to avoid giving details away in the knowledge menu. */
-	if (player->depth && !(turn % (10L * z_info->store_turns))) daycount++;
 
 	/* Check for light change */
 	if (player_has(player, PF_UNLIGHT)) {

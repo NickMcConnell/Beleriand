@@ -32,7 +32,6 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "store.h"
 #include "target.h"
 
 errr (*cmd_get_hook)(cmd_context c);
@@ -106,11 +105,6 @@ static const struct command_info game_cmds[] =
 	{ CMD_STUDY, "study", do_cmd_study, false, 0 },
 	{ CMD_CAST, "cast", do_cmd_cast, false, 0 },
 	{ CMD_RESHAPE, "change shape", do_cmd_reshape, false, 0 },
-	{ CMD_MOVE, "move house", do_cmd_move_house, false, 0 },
-	{ CMD_SELL, "sell", do_cmd_sell, false, 0 },
-	{ CMD_STASH, "stash", do_cmd_stash, false, 0 },
-	{ CMD_BUY, "buy", do_cmd_buy, false, 0 },
-	{ CMD_RETRIEVE, "retrieve", do_cmd_retrieve, false, 0 },
 	{ CMD_USE, "use", do_cmd_use, false, 0 },
 	{ CMD_SUICIDE, "kill character", do_cmd_suicide, false, 0 },
 	{ CMD_HELP, "help", NULL, false, 0 },
@@ -516,7 +510,6 @@ static int cmd_get_arg(struct command *cmd, const char *arg,
  * XXX This type is a hack. The only places that use this are:
  * - resting
  * - birth choices
- * - store items
  * - spells
  * - selecting an effect for an item that activates for an EF_SELECT effect
  *   (dragon's breath wands or potions, dragon armor that has multiple breath

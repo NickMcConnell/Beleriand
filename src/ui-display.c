@@ -24,7 +24,6 @@
 #include "game-event.h"
 #include "game-world.h"
 #include "grafmode.h"
-#include "hint.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-predicate.h"
@@ -54,7 +53,6 @@
 #include "ui-output.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
-#include "ui-store.h"
 #include "ui-term.h"
 #include "ui-visuals.h"
 #include "wizard.h"
@@ -2754,9 +2752,6 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	/* Take note of what's on the floor */
 	event_add_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
 
-	/* Enter a store */
-	event_add_handler(EVENT_ENTER_STORE, enter_store, NULL);
-
 	/* Display an explosion */
 	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);
 
@@ -2851,12 +2846,6 @@ static void ui_leave_world(game_event_type type, game_event_data *data,
 
 	/* Allow the player to cheat death, if appropriate */
 	event_remove_handler(EVENT_CHEAT_DEATH, cheat_death, NULL);
-
-	/* Prepare to interact with a store */
-	event_add_handler(EVENT_USE_STORE, use_store, NULL);
-
-	/* If we've gone into a store, we need to know how to leave */
-	event_add_handler(EVENT_LEAVE_STORE, leave_store, NULL);
 
 	/* Hack -- Increase "icky" depth */
 	screen_save_depth++;

@@ -47,75 +47,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
-#include "store.h"
 #include "trap.h"
-
-/**
- * Move house to the current town
- */
-void do_cmd_move_house(struct command *cmd)
-{
-	int i;
-	const char *town = locality_name(world->levels[player->place].locality);
-	char *prompt = format("Do you really want to move to %s?", town);
-
-	if (!player->depth) {
-		/* Already home */
-		if (player->place == player->home) {
-			msg("You already live here!");
-			return;
-		}
-
-		/* Check */
-		if (!get_check(prompt)) return;
-
-		/* Thralls have no stuff to shift */
-		if (player->home) {
-			/* Get the current home */
-			struct level *hometown = &world->levels[player->home];
-			struct town *old_home = NULL, *new_home = NULL;
-			struct store *temp;
-			for (i = 0; i < world->num_towns; i++) {
-				old_home = &world->towns[i];
-				if (old_home->index == hometown->index) {
-					/* Found it */
-					assert(store_is_home(old_home->stores));
-					break;
-				}
-			}
-			assert(i < world->num_towns);
-
-			/* Get the new home */
-			for (i = 0; i < world->num_towns; i++) {
-				new_home = &world->towns[i];
-				if (new_home->index == player->place) {
-					/* Found it */
-					assert(!store_is_home(new_home->stores));
-					break;
-				}
-			}
-			assert(i < world->num_towns);
-
-			/* Move */
-			temp = old_home->stores;
-			old_home->stores = old_home->stores->next;
-			temp->next = new_home->stores;
-			new_home->stores = temp;
-		}
-
-		/* Set the new town */
-		player->home = player->place;
-		msg("Your home will be here when you return.");
-
-		/* Write message */
-		history_add(player, format("Moved house to %s.", town),
-					HIST_PLAYER_MOVE);
-	} else {
-		msg("You can only move to another town!");
-	}
-
-	return;
-}
 
 /**
  * Get the direction a path is heading
@@ -1353,24 +1285,9 @@ void move_player(int dir, bool disarm)
 		/* Move player */
 		monster_swap(player->grid, grid);
 
-		/* Handle store doors, or notice objects */
-		if (square_isshop(cave, grid)) {
-			if (player_is_shapechanged(player) &&
-				!index_is_home(square_shopnum(cave, grid))) {
-				msg("There is a scream and the door slams shut!");
-				return;
-			}
-			disturb(player);
-			event_signal(EVENT_ENTER_STORE);
-			event_remove_handler_type(EVENT_ENTER_STORE);
-			event_signal(EVENT_USE_STORE);
-			event_remove_handler_type(EVENT_USE_STORE);
-			event_signal(EVENT_LEAVE_STORE);
-			event_remove_handler_type(EVENT_LEAVE_STORE);
-		} else {
-			square_know_pile(cave, grid);
-			cmdq_push(CMD_AUTOPICKUP);
-		}
+		/* Notice objects */
+		square_know_pile(cave, grid);
+		cmdq_push(CMD_AUTOPICKUP);
 
 		/* Some terrain types need special treatment */
 		if (square_istree(cave, grid)) {
@@ -1614,7 +1531,7 @@ void do_cmd_pathfind(struct command *cmd)
 
 
 /**
- * Stay still.  Search.  Enter stores.
+ * Stay still.  Search.
  * Pick up treasure if "pickup" is true.
  */
 void do_cmd_hold(struct command *cmd)
@@ -1625,36 +1542,17 @@ void do_cmd_hold(struct command *cmd)
 	/* Searching (probably not necessary - NRM)*/
 	search(player);
 
-	/* Enter a store if we are on one, otherwise look at the floor */
-	if (square_isshop(cave, player->grid)) {
-		if (player_is_shapechanged(player) &&
-			!index_is_home(square_shopnum(cave, player->grid))) {
-			msg("There is a scream and the door slams shut!");
-			return;
-		}
-		disturb(player);
-		event_signal(EVENT_ENTER_STORE);
-		event_remove_handler_type(EVENT_ENTER_STORE);
-		event_signal(EVENT_USE_STORE);
-		event_remove_handler_type(EVENT_USE_STORE);
-		event_signal(EVENT_LEAVE_STORE);
-		event_remove_handler_type(EVENT_LEAVE_STORE);
-
-		/* Turn will be taken exiting the shop */
-		player->upkeep->energy_use = 0;
+	/* Look at the floor */
+	if (OPT(player, pickup_always)) {
+		/* Pick things up, not using extra energy */
+		cmdq_push(CMD_PICKUP);
+		if (player->upkeep->energy_use > z_info->move_energy)
+			player->upkeep->energy_use = z_info->move_energy;
 	} else {
-		if (OPT(player, pickup_always)) {
-			/* Pick things up, not using extra energy */
-			cmdq_push(CMD_PICKUP);
-			if (player->upkeep->energy_use > z_info->move_energy)
-				player->upkeep->energy_use = z_info->move_energy;
-		} else {
-			event_signal(EVENT_SEEFLOOR);
-			square_know_pile(cave, player->grid);
-		}
+		event_signal(EVENT_SEEFLOOR);
+		square_know_pile(cave, player->grid);
 	}
 }
-
 
 /**
  * Rest (restores hit points and mana and such)

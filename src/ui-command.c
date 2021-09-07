@@ -31,7 +31,6 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "store.h"
 #include "target.h"
 #include "ui-command.h"
 #include "ui-display.h"

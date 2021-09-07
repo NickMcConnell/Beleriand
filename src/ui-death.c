@@ -24,7 +24,6 @@
 #include "obj-desc.h"
 #include "obj-info.h"
 #include "savefile.h"
-#include "store.h"
 #include "ui-death.h"
 #include "ui-history.h"
 #include "ui-input.h"
@@ -425,8 +424,6 @@ static void death_file(const char *title, int row)
  */
 static void death_info(const char *title, int row)
 {
-	struct store *home = store_home(player);
-
 	screen_save();
 
 	/* Display player */
@@ -463,48 +460,6 @@ static void death_info(const char *title, int row)
 		show_quiver(OLIST_WEIGHT | OLIST_DEATH, NULL);
 		prt("Your quiver holds: -more-", 0, 0);
 		(void)anykey();
-	}
-
-	/* Home -- if anything there */
-	if (home->stock) {
-		int page;
-		struct object *obj = home->stock;
-
-		/* Display contents of the home */
-		for (page = 1; obj; page++) {
-			int line;
-
-			/* Clear screen */
-			Term_clear();
-
-			/* Show 12 items */
-			for (line = 0; obj && line < 12; obj = obj->next, line++) {
-				byte attr;
-
-				char o_name[80];
-				char tmp_val[80];
-
-				/* Print header, clear line */
-				strnfmt(tmp_val, sizeof(tmp_val), "%c) ", I2A(line));
-				prt(tmp_val, line + 2, 4);
-
-				/* Get the object description */
-				object_desc(o_name, sizeof(o_name), obj,
-					ODESC_PREFIX | ODESC_FULL, player);
-
-				/* Get the inventory color */
-				attr = obj->kind->base->attr;
-
-				/* Display the object */
-				c_put_str(attr, o_name, line + 2, 7);
-			}
-
-			/* Caption */
-			prt(format("Your home contains (page %d): -more-", page), 0, 0);
-
-			/* Wait for it */
-			(void)anykey();
-		}
 	}
 
 	screen_load();

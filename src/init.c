@@ -33,7 +33,6 @@
 #include "game-event.h"
 #include "game-world.h"
 #include "generate.h"
-#include "hint.h"
 #include "init.h"
 #include "mon-init.h"
 #include "mon-list.h"
@@ -63,7 +62,6 @@
 #include "player-timed.h"
 #include "project.h"
 #include "randname.h"
-#include "store.h"
 #include "trap.h"
 #include "ui-entry.h"
 #include "ui-entry-init.h"
@@ -644,32 +642,6 @@ static enum parser_error parse_constants_carry_cap(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_constants_store(struct parser *p) {
-	struct angband_constants *z;
-	const char *label;
-	int value;
-
-	z = parser_priv(p);
-	label = parser_getsym(p, "label");
-	value = parser_getint(p, "value");
-
-	if (value < 0)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	if (streq(label, "inven-max"))
-		z->store_inven_max = value;
-	else if (streq(label, "turns"))
-		z->store_turns = value;
-	else if (streq(label, "shuffle"))
-		z->store_shuffle = value;
-	else if (streq(label, "magic-level"))
-		z->store_magic_level = value;
-	else
-		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
-
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_constants_obj_make(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
@@ -737,7 +709,6 @@ struct parser *init_parse_constants(void) {
 	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
 	parser_reg(p, "world sym label int value", parse_constants_world);
 	parser_reg(p, "carry-cap sym label int value", parse_constants_carry_cap);
-	parser_reg(p, "store sym label int value", parse_constants_store);
 	parser_reg(p, "obj-make sym label int value", parse_constants_obj_make);
 	parser_reg(p, "player sym label int value", parse_constants_player);
 	return p;
@@ -859,8 +830,6 @@ static enum parser_error parse_world_level(struct parser *p) {
 		map->towns[map->num_towns - 1].index = map->num_levels - 1;
 		map->towns[map->num_towns - 1].code = string_make(l_name);
 		map->towns[map->num_towns - 1].ego = NULL;
-		map->towns[map->num_towns - 1].stores = NULL;
-		map->towns[map->num_towns - 1].num_stores = 0;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -1068,14 +1037,6 @@ static void cleanup_world(void)
 			string_free(level->down);
 		}
 		for (i = 0; i < map->num_towns; i++) {
-			struct town *town = &map->towns[i];
-			struct store *store = town->stores, *next;
-			while (store) {
-				next = store->next;
-				string_free((char *)store->name);
-				free_store(store);
-				store = next;
-			}
 			string_free(map->towns[i].code);
 		}
 		mem_free(map->towns);
@@ -2289,7 +2250,6 @@ static enum parser_error parse_feat_info(struct parser *p) {
 
 	if (!f)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	f->shopnum = parser_getint(p, "shopnum");
 	f->dig = parser_getint(p, "dig");
 	return PARSE_ERROR_NONE;
 }
@@ -2385,7 +2345,7 @@ struct parser *init_parse_feat(void) {
 	parser_reg(p, "mimic str feat", parse_feat_mimic);
 	parser_reg(p, "priority uint priority", parse_feat_priority);
 	parser_reg(p, "flags ?str flags", parse_feat_flags);
-	parser_reg(p, "info int shopnum int dig", parse_feat_info);
+	parser_reg(p, "info int dig", parse_feat_info);
     parser_reg(p, "desc str text", parse_feat_desc);
     parser_reg(p, "walk-msg str text", parse_feat_walk_msg);
     parser_reg(p, "run-msg str text", parse_feat_run_msg);
@@ -4408,59 +4368,6 @@ struct file_parser flavor_parser = {
 
 /**
  * ------------------------------------------------------------------------
- * Initialize hints
- * ------------------------------------------------------------------------ */
-
-static enum parser_error parse_hint(struct parser *p) {
-	struct hint *h = parser_priv(p);
-	struct hint *new = mem_zalloc(sizeof *new);
-
-	new->hint = string_make(parser_getstr(p, "text"));
-	new->next = h;
-
-	parser_setpriv(p, new);
-	return PARSE_ERROR_NONE;
-}
-
-struct parser *init_parse_hints(void) {
-	struct parser *p = parser_new();
-	parser_reg(p, "H str text", parse_hint);
-	return p;
-}
-
-static errr run_parse_hints(struct parser *p) {
-	return parse_file_quit_not_found(p, "hints");
-}
-
-static errr finish_parse_hints(struct parser *p) {
-	hints = parser_priv(p);
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_hints(void)
-{
-	struct hint *h, *next;
-
-	h = hints;
-	while(h) {
-		next = h->next;
-		string_free(h->hint);
-		mem_free(h);
-		h = next;
-	}
-}
-
-static struct file_parser hints_parser = {
-	"hints",
-	init_parse_hints,
-	run_parse_hints,
-	finish_parse_hints,
-	cleanup_hints
-};
-
-/**
- * ------------------------------------------------------------------------
  * Game data initialization
  * ------------------------------------------------------------------------ */
 
@@ -4513,7 +4420,6 @@ static struct {
 	{ "chest_traps", &chest_trap_parser },
 	{ "quests", &quests_parser },
 	{ "flavours", &flavor_parser },
-	{ "hints", &hints_parser },
 	{ "random names", &names_parser }
 };
 
@@ -4564,7 +4470,6 @@ extern struct init_module obj_make_module;
 extern struct init_module ignore_module;
 extern struct init_module mon_make_module;
 extern struct init_module player_module;
-extern struct init_module store_module;
 extern struct init_module messages_module;
 extern struct init_module options_module;
 extern struct init_module ui_player_module;
@@ -4581,7 +4486,6 @@ static struct init_module *modules[] = {
 	&obj_make_module,
 	&ignore_module,
 	&mon_make_module,
-	&store_module,
 	&options_module,
 	&ui_player_module,
 	&ui_equip_cmp_module,

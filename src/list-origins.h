@@ -18,7 +18,6 @@ ORIGIN(DROP_PIT,	2,	"Dropped by %s %s") /* from monsters in pits/nests */
 ORIGIN(DROP_VAULT,	2,	"Dropped by %s %s") /* from monsters in vaults */
 ORIGIN(STATS,		-1,	"")  /* ^ only the above are considered by main-stats */
 ORIGIN(ACQUIRE,		1,	"Conjured forth by magic %s")
-ORIGIN(STORE,		0,	"Bought from a store")
 ORIGIN(STOLEN,		-1,	"")
 ORIGIN(BIRTH,		0,	"An inheritance from your family")
 ORIGIN(CHEAT,		0,	"Created by debug option")

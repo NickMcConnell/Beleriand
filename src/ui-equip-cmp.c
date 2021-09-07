@@ -27,7 +27,6 @@
 #include "obj-info.h"
 #include "obj-tval.h"
 #include "player.h"
-#include "store.h"
 #include "ui-entry.h"
 #include "ui-entry-renderers.h"
 #include "ui-equip-cmp.h"
@@ -2539,7 +2538,6 @@ static int initialize_summary(struct player *p,
 	}
 	visitor.selfunc = select_wearable;
 	visitor.selfunc_closure = NULL;
-	apply_visitor_to_pile(store_home(p)->stock, &visitor);
 
 	/* Allocate storage and add the available items. */
 	if (count > (*s)->nalloc) {
@@ -2573,7 +2571,6 @@ static int initialize_summary(struct player *p,
 	add_obj_data.src = EQUIP_SOURCE_HOME;
 	visitor.selfunc = select_wearable;
 	visitor.selfunc_closure = NULL;
-	apply_visitor_to_pile(store_home(p)->stock, &visitor);
 
 	compute_player_and_equipment_values(p, *s);
 

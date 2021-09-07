@@ -654,13 +654,11 @@ void ignore_drop(struct player *p)
 				}
 			}
 
-			/* We're allowed to drop it. */
-			if (!square_isshop(cave, p->grid)) {
-				p->upkeep->dropping = true;
-				cmdq_push(CMD_DROP);
-				cmd_set_arg_item(cmdq_peek(), "item", obj);
-				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
-			}
+			/* Drop it. */
+			p->upkeep->dropping = true;
+			cmdq_push(CMD_DROP);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+			cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
 		}
 	}
 

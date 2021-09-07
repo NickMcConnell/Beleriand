@@ -30,7 +30,6 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "store.h"
 #include "ui-display.h"
 #include "ui-entry.h"
 #include "ui-entry-renderers.h"
@@ -1024,9 +1023,6 @@ void write_character_dump(ang_file *fff)
 	int a;
 	wchar_t c;
 
-	struct store *home = store_home(player);
-	struct object **home_list = mem_zalloc(sizeof(struct object *) *
-										   z_info->store_inven_max);
 	char o_name[80];
 
 	int n;
@@ -1207,27 +1203,6 @@ void write_character_dump(ang_file *fff)
 	}
 	file_putf(fff, "\n\n");
 
-	/* Dump the Home -- if anything there */
-	store_stock_list(home, home_list, z_info->store_inven_max);
-	if (home->stock_num) {
-		/* Header */
-		file_putf(fff, "  [Home Inventory]\n\n");
-
-		/* Dump all available items */
-		for (i = 0; i < z_info->store_inven_max; i++) {
-			struct object *obj = home_list[i];
-			if (!obj) break;
-			object_desc(o_name, sizeof(o_name), obj,
-				ODESC_PREFIX | ODESC_FULL, player);
-			file_putf(fff, "%c) %s\n", I2A(i), o_name);
-
-			object_info_chardump(fff, obj, 5, 72);
-		}
-
-		/* Add an empty line */
-		file_putf(fff, "\n\n");
-	}
-
 	/* Dump character history */
 	dump_history(fff);
 	file_putf(fff, "\n\n");
@@ -1259,7 +1234,6 @@ void write_character_dump(ang_file *fff)
 		file_putf(fff, "\n");
 	}
 
-	mem_free(home_list);
 	mem_free(buf);
 }
 

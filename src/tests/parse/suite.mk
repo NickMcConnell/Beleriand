@@ -11,6 +11,5 @@ TESTPROGS += parse/a-info \
 	parse/p-info \
 	parse/parse \
 	parse/r-info \
-	parse/readstore \
 	parse/v-info \
 	parse/z-info

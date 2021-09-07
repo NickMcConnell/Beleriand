@@ -39,7 +39,6 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "store.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -196,18 +195,6 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 
 	/* Extra fields */
 	ex_offset_ctr = ex_offset;
-
-	/* Price */
-	if (mode & OLIST_PRICE) {
-		struct store *store = store_at(cave, player->grid);
-		if (store) {
-			int price = price_item(store, obj, true, obj->number);
-
-			strnfmt(buf, sizeof(buf), "%6d au", price);
-			put_str(buf, row + obj_num, col + ex_offset_ctr);
-			ex_offset_ctr += 9;
-		}
-	}
 
 	/* Failure chance for magic devices and activations */
 	if (mode & OLIST_FAIL && obj_can_fail(obj)) {

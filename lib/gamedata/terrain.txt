@@ -30,7 +30,7 @@
 # mimic : feature to mimic
 # priority : display priority on mini-map
 # flags : terrain flags
-# info : shop number : digging
+# info : digging
 # walk-msg: warning message - walking
 # run-msg: warning message - running
 # hurt-msg: damage message
@@ -112,7 +112,7 @@ name:closed door
 graphics:+:U
 priority:17
 flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
-info:0:5
+info:5
 confused-msg:bangs into a door
 desc:Doors may be locked; getting through them may not be easy.  Your
 desc: disarming skill makes all the difference to your ability to handle locks,
@@ -149,93 +149,6 @@ flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR
 flags:EASY | TORCH
 desc:A staircase down to a deeper part of the dungeon.
 
-name:General Store
-graphics:1:U
-priority:20
-flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:1:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:The General Store sells food, ammunition and lighting supplies.
-
-name:Armoury
-graphics:2:s
-priority:20
-flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:2:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:The armour sold here will give you some protection against the blows of
-desc: your enemies.
-
-name:Weapon Smiths
-graphics:3:w
-priority:20
-flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:3:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:Weapons for hitting and shooting your enemies are forged in the hot, acrid
-desc: backroom of this enticing shop.
-
-name:Bookseller
-graphics:4:g
-priority:20
-flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:4:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:A quiet, reflective place of refuge, lined with shelves of
-desc: mystical tomes.
-
-name:Alchemy Shop
-graphics:5:b
-priority:20
-flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:5:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:A dim, scented room where potions and scrolls are traded.
-
-name:Magic Shop
-graphics:6:r
-priority:20
-flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:6:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:A shop for devices and adornments with magic trapped within.
-
-name:Black Market
-graphics:7:D
-priority:20
-flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:7:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:Watch your back and hold onto your purse as you enter this disreputable
-desc: haunt - and do not expect friendly service or good bargains.
-
-name:Home
-graphics:8:y
-priority:20
-flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:8:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:Your safe piece of Middle Earth, and the only place you can store goods
-desc: apart from on your person.
-
-name:Travelling Merchant
-graphics:9:u
-priority:20
-flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:9:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:This merchant travels around, buying anything of value and selling
-desc:a range of basic commodities, weapons and armor.
-
 name:secret door
 graphics:#:w
 priority:10
@@ -248,7 +161,7 @@ name:pile of rubble
 graphics:::W
 priority:13
 flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
-info:0:1
+info:1
 confused-msg:bumps into some rocks
 desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled
 desc: to normal floor.
@@ -257,7 +170,7 @@ name:magma vein
 graphics:%:D
 priority:12
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA | TORCH
-info:0:2
+info:2
 confused-msg:bashes into a wall
 desc:A seam of soft rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
@@ -267,7 +180,7 @@ name:quartz vein
 graphics:%:s
 priority:11
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ | TORCH
-info:0:3
+info:3
 confused-msg:bashes into a wall
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
@@ -277,7 +190,7 @@ name:magma vein with treasure
 graphics:*:o
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA
-info:0:2
+info:2
 confused-msg:bashes into a wall
 desc:A seam of soft rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
@@ -287,7 +200,7 @@ name:quartz vein with treasure
 graphics:*:y
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
-info:0:3
+info:3
 confused-msg:bashes into a wall
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
@@ -297,7 +210,7 @@ name:granite wall
 graphics:#:W
 priority:10
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
-info:0:4
+info:4
 confused-msg:bashes into a wall
 desc:A seam of hard rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
@@ -383,7 +296,7 @@ name:pile of passable rubble
 graphics:::u
 priority:13
 flags:ROCK | PASSABLE | INTERESTING | TORCH | PROTECT
-info:0:1
+info:1
 desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball
 desc: spells.  May dissolve or be tunnelled to normal floor, and can be walked
 desc: through by the player and monsters.

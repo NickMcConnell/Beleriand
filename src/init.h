@@ -52,7 +52,6 @@ struct angband_constants
 	u16b ordinary_kind_max;	/**< Maximum number of objects in object.txt */
 	u16b shape_max;		/**< Maximum number of player shapes */
 	u16b p_race_max;	/**< Maximum number of player races */
-	u16b store_max;		/**< Maximum number of store types */
 	u16b themed_max;		/**< Maximum number of themed levels */
     u16b region_max;	/**< Maximum number of world regions */
     u16b landmark_max;	/**< Maximum number of landmarks */
@@ -108,12 +107,6 @@ struct angband_constants
 	u16b quiver_slot_size;	/**< Maximum number of missiles per quiver slot */
 	u16b thrown_quiver_mult;/**< Size multiplier for non-ammo in quiver */
 	u16b floor_size;	/**< Maximum number of items per floor grid */
-
-	/* Store parameters, read from constants.txt */
-	u16b store_inven_max;	/**< Maximum number of objects in store inventory */
-	u16b store_turns;		/**< Number of turns between turnovers */
-	u16b store_shuffle;		/**< 1/per-day-chance of owner changing */
-	u16b store_magic_level;	/**< Level for apply_magic() in normal stores */
 
 	/* Object creation constants, read from constants.txt */
 	u16b max_obj_depth;	/* Maximum depth used in object allocation */
@@ -176,7 +169,6 @@ extern struct parser *init_parse_vault(void);
 extern struct parser *init_parse_constants(void);
 extern struct parser *init_parse_flavor(void);
 extern struct parser *init_parse_names(void);
-extern struct parser *init_parse_hints(void);
 extern struct parser *init_parse_trap(void);
 extern struct parser *init_parse_chest_trap(void);
 extern struct parser *init_parse_quest(void);

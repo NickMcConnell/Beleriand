@@ -144,14 +144,6 @@ bool feat_is_monster_walkable(int feat)
 }
 
 /**
- * True if the feature is a shop entrance.
- */
-bool feat_is_shop(int feat)
-{
-	return tf_has(f_info[feat].flags, TF_SHOP);
-}
-
-/**
  * True if the feature is passable by the player.
  */
 bool feat_is_passable(int feat)
@@ -505,14 +497,6 @@ bool square_isdownstairs(struct chunk *c, struct loc grid)
 bool square_ispath(struct chunk *c, struct loc grid)
 {
 	return feat_is_path(square(c, grid)->feat);
-}
-
-/**
- * True if the square is a shop entrance.
- */
-bool square_isshop(struct chunk *c, struct loc grid)
-{
-	return feat_is_shop(square(c, grid)->feat);
 }
 
 /**
@@ -1676,13 +1660,6 @@ void square_destroy_rubble(struct chunk *c, struct loc grid) {
 
 void square_force_floor(struct chunk *c, struct loc grid) {
 	square_set_feat(c, grid, FEAT_FLOOR);
-}
-
-/* Note that this returns the STORE_ index, which is one less than shopnum */
-int square_shopnum(struct chunk *c, struct loc grid) {
-	if (square_isshop(c, grid))
-		return f_info[square(c, grid)->feat].shopnum - 1;
-	return -1;
 }
 
 int square_digging(struct chunk *c, struct loc grid) {

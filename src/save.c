@@ -37,7 +37,6 @@
 #include "player-quest.h"
 #include "player.h"
 #include "savefile.h"
-#include "store.h"
 #include "obj-util.h"
 #include "player-history.h"
 #include "player-timed.h"
@@ -807,38 +806,6 @@ void wr_gear(void)
 }
 
 
-void wr_stores(void)
-{
-	int i;
-
-	wr_u16b(z_info->store_max);
-	for (i = 0; i < world->num_towns; i++) {
-		struct town *town = &world->towns[i];
-		struct store *store = town->stores;
-		while (store) {
-			struct object *obj;
-
-			/* Save the current owner */
-			if (store_is_home(store))
-				wr_byte(-1);
-			else
-				wr_byte(store->owner->oidx);
-
-			/* Save the stock size */
-			wr_byte(store->stock_num);
-
-			/* Save the stock */
-			for (obj = store->stock; obj; obj = obj->next) {
-				wr_item(obj->known);
-				wr_item(obj);
-			}
-			store = store->next;
-		}
-	}
-}
-
-
-
 /**
  * Write the current dungeon terrain features and info flags
  *
@@ -1036,7 +1003,6 @@ void wr_dungeon(void)
 {
 	/* Dungeon specific info follows */
 	wr_u16b(player->depth);
-	wr_u16b(daycount);
 	wr_u16b(player->grid.y);
 	wr_u16b(player->grid.x);
 	wr_byte(SQUARE_SIZE);

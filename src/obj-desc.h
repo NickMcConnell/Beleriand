@@ -30,7 +30,6 @@ enum {
 	ODESC_FULL   = ODESC_COMBAT | ODESC_EXTRA,
 	                       /*!< Show entire description */
 
-	ODESC_STORE  = 0x04,   /*!< This is an in-store description */
 	ODESC_PLURAL = 0x08,   /*!< Always pluralise */
 	ODESC_SINGULAR    = 0x10,    /*!< Always singular */
 	ODESC_SPOIL  = 0x20,    /*!< Display regardless of player knowledge */

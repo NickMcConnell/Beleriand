@@ -47,7 +47,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "savefile.h"
-#include "store.h"
 #include "trap.h"
 #include "ui-term.h"
 
@@ -1325,73 +1324,6 @@ int rd_gear(void)
 
 
 /**
- * Read store contents
- */
-static int rd_stores_aux(rd_item_t rd_item_version)
-{
-	int i;
-	u16b tmp16u;
-
-	/* Read the stores */
-	rd_u16b(&tmp16u);
-	for (i = 0; i < world->num_towns; i++) {
-		struct town *town = &world->towns[i];
-		struct store *store = town->stores;
-		/* Place the home in the hometown */
-		if (town->index == player->home) {
-			place_home(town);
-		}
-		store = town->stores;
-
-		while (store) {
-			byte own, num;
-
-			/* Read the basic info */
-			rd_byte(&own);
-			rd_byte(&num);
-
-			/* XXX: refactor into store.c */
-			store->owner = store_ownerbyidx(store, own);
-
-			/* Read the items */
-			for (; num; num--) {
-				/* Read the known item */
-				struct object *obj, *known_obj = (*rd_item_version)();
-				if (!known_obj) {
-					note("Error reading known item");
-					return (-1);
-				}
-
-				/* Read the item */
-				obj = (*rd_item_version)();
-				if (!obj) {
-					note("Error reading item");
-					return (-1);
-				}
-				obj->known = known_obj;
-
-				/* Accept any valid items */
-				if (store->stock_num < z_info->store_inven_max && obj->kind) {
-					if (store_is_home(store))
-						home_carry(obj);
-					else
-						store_carry(store, obj);
-				}
-			}
-			store = store->next;
-		}
-	}
-
-	return 0;
-}
-
-/**
- * Read the stores - wrapper functions
- */
-int rd_stores(void) { return rd_stores_aux(rd_item); }
-
-
-/**
  * Read the dungeon
  *
  * The monsters/objects must be loaded in the same order
@@ -1645,7 +1577,6 @@ int rd_dungeon(void)
 
 	/* Header info */
 	rd_u16b(&depth);
-	rd_u16b(&daycount);
 	rd_u16b(&py);
 	rd_u16b(&px);
 	rd_byte(&square_size);

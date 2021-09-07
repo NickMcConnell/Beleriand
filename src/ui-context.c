@@ -34,7 +34,6 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "store.h"
 #include "target.h"
 #include "ui-context.h"
 #include "ui-game.h"
@@ -46,7 +45,6 @@
 #include "ui-object.h"
 #include "ui-player.h"
 #include "ui-spell.h"
-#include "ui-store.h"
 #include "ui-target.h"
 #include "wizard.h"
 
@@ -724,26 +722,13 @@ int context_menu_object(struct object *obj)
 	}
 
 	if (object_is_carried(player, obj)) {
-		if (!square_isshop(cave, player->grid)) {
-			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
+		ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
-			if (obj->number > 1) {
-				/* 'D' is used for ignore in rogue keymap, so swap letters. */
-				cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'D' : 'k';
-				menu_dynamic_add_label(m, "Drop All", cmdkey,
-									   MENU_VALUE_DROP_ALL, labels);
-			}
-		} else if (store_at(cave, player->grid) == store_home(player)) {
-			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
-
-			if (obj->number > 1) {
-				/* 'D' is used for ignore in rogue keymap, so swap letters. */
-				cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'D' : 'k';
-				menu_dynamic_add_label(m, "Drop All", cmdkey,
-									   MENU_VALUE_DROP_ALL, labels);
-			}
-		} else if (store_will_buy_tester(obj)) {
-			ADD_LABEL("Sell", CMD_DROP, MN_ROW_VALID);
+		if (obj->number > 1) {
+			/* 'D' is used for ignore in rogue keymap, so swap letters. */
+			cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'D' : 'k';
+			menu_dynamic_add_label(m, "Drop All", cmdkey, MENU_VALUE_DROP_ALL,
+								   labels);
 		}
 	} else {
 		menu_row_validity_t valid = (inven_carry_okay(obj)) ?
@@ -812,10 +797,7 @@ int context_menu_object(struct object *obj)
 
 		case MENU_VALUE_DROP_ALL:
 			/* Drop entire stack without confirmation. */
-			if (square_isshop(cave, player->grid))
-				cmdq_push(CMD_STASH);
-			else
-				cmdq_push(CMD_DROP);
+			cmdq_push(CMD_DROP);
 			cmd_set_arg_item(cmdq_peek(), "item", obj);
 			cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
 			return 1;
@@ -874,16 +856,6 @@ int context_menu_object(struct object *obj)
 	} else {
 		cmdq_push(selected);
 		cmd_set_arg_item(cmdq_peek(), "item", obj);
-
-		/* If we're in a store, change the "drop" command to "stash". */
-		if (selected == CMD_DROP &&
-			square_isshop(cave, player->grid)) {
-			struct command *gc = cmdq_peek();
-			if (store_at(cave, player->grid) == store_home(player))
-				gc->code = CMD_STASH;
-			else
-				gc->code = CMD_SELL;
-		}
 	}
 
 	return 1;

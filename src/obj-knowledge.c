@@ -35,7 +35,6 @@
 #include "player-history.h"
 #include "player-util.h"
 #include "project.h"
-#include "store.h"
 
 /**
  * Overview
@@ -54,7 +53,6 @@
  *   player learns them
  * - whenever the player learns a rune, that knowledge is applied to the known
  *   version of every object that the player has picked up or walked over
- *   or seen in a shop
  */
 
 /**
@@ -561,35 +559,6 @@ bool object_is_known_artifact(const struct object *obj)
 {
 	if (!obj->known) return false;
 	return obj->known->artifact ? true : false;
-}
-
-/**
- * Checks whether the object is in a store (not the home)
- *
- * \param obj is the object
- */
-bool object_is_in_store(const struct object *obj)
-{
-	int i;
-	struct object *obj1;
-
-	/* Check all the store objects */
-	for (i = 0; i < world->num_towns; i++) {
-		struct town *town = &world->towns[i];
-		struct store *s = town->stores;
-		while (s) {
-			if (store_is_home(s)) {
-				s = s->next;
-				continue;
-			}
-			for (obj1 = s->stock; obj1; obj1 = obj1->next) {
-				if (obj1 == obj) return true;
-			}
-			s = s->next;
-		}
-	}
-
-	return false;
 }
 
 /**
@@ -1247,18 +1216,6 @@ void update_player_object_knowledge(struct player *p)
 	/* Player objects */
 	for (obj = p->gear; obj; obj = obj->next)
 		player_know_object(p, obj);
-
-	/* Store objects */
-	for (i = 0; i < world->num_towns; i++) {
-		struct town *town = &world->towns[i];
-		struct store *s = town->stores;
-		while (s) {
-			for (obj = s->stock; obj; obj = obj->next) {
-				player_know_object(p, obj);
-			}
-			s = s->next;
-		}
-	}
 
 	/* Curse objects */
 	for (i = 1; i < z_info->curse_max; i++) {
@@ -2313,7 +2270,7 @@ bool object_flavor_was_tried(const struct object *obj)
  */
 void object_flavor_aware(struct player *p, struct object *obj)
 {
-	int y, x, i;
+	int y, x;
 	struct object *obj1;
 
 	assert(obj->known);
@@ -2329,18 +2286,6 @@ void object_flavor_aware(struct player *p, struct object *obj)
 	/* Update player objects */
 	for (obj1 = p->gear; obj1; obj1 = obj1->next)
 		object_set_base_known(p, obj1);
-
-	/* Store objects */
-	for (i = 0; i < world->num_towns; i++) {
-		struct town *town = &world->towns[i];
-		struct store *s = town->stores;
-		while (s) {
-			for (obj1 = s->stock; obj1; obj1 = obj1->next) {
-				object_set_base_known(p, obj1);
-			}
-			s = s->next;
-		}
-	}
 
 	/* Quit if no dungeon yet */
 	if (!cave) return;

@@ -136,33 +136,6 @@ feat:down staircase:los:0x80:0x9B
 feat:down staircase:lit:0x80:0x99
 feat:down staircase:dark:0x80:0x9A
 
-# General Store
-feat:General Store:*:0x82:0x87
-
-# Armoury
-feat:Armoury:*:0x82:0x88
-
-# Weapon Smiths
-feat:Weapon Smiths:*:0x82:0x89
-
-# Bookseller
-feat:Bookseller:*:0x82:0x8F
-
-# Alchemy Shop
-feat:Alchemy Shop:*:0x82:0x8B
-
-# Magic Shop
-feat:Magic Shop:*:0x82:0x8C
-
-# Black Market
-feat:Black Market:*:0x82:0x8D
-
-# Home
-feat:Home:*:0x82:0x8E
-
-# Travelling Merchant
-feat:Travelling Merchant:*:0x82:0x87
-
 # rubble
 feat:pile of rubble:torch:0x82:0x96
 feat:pile of rubble:los:0x82:0x96

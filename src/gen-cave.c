@@ -74,7 +74,6 @@
 #include "mon-util.h"
 #include "player-quest.h"
 #include "player-util.h"
-#include "store.h"
 #include "trap.h"
 #include "z-queue.h"
 #include "z-type.h"
@@ -441,7 +440,7 @@ static struct loc find_normal_to_wall(struct chunk *c, struct loc grid,
  * Help build_tunnel():  test if a wall-piercing location can have a door.
  * Don't want a door that's only adjacent to terrain that is either
  * 1) not passable and not rubble
- * 2) a door (treat a shop like a door)
+ * 2) a door
  * on either the side facing outside the room or the side facing the room.
  * \param c Is the chunk to use.
  * \param grid Is the location of the wall piercing.
@@ -458,8 +457,7 @@ static bool allows_wall_piercing_door(struct chunk *c, struct loc grid)
 					!square_in_bounds(c, chk)) continue;
 			if ((square_ispassable(c, chk) ||
 					square_isrubble(c, chk)) &&
-					!square_isdoor(c, chk) &&
-					!square_isshop(c, chk)) {
+					!square_isdoor(c, chk)) {
 				if (square_isroom(c, chk)) {
 					++n_inside_good;
 				} else {
@@ -2252,8 +2250,8 @@ static bool lot_is_clear(struct chunk *c, struct loc xroads, struct loc lot,
 	return true;
 }
 
-static bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
-		int lot_wid, int lot_hgt) {
+static bool lot_has_building(struct chunk *c, struct loc xroads, struct loc lot,
+							 int lot_wid, int lot_hgt) {
 	struct loc nw_corner, se_corner, probe;
 
 	get_lot_bounds(c, xroads, lot, lot_wid, lot_hgt, &nw_corner.x, &nw_corner.y,
@@ -2261,7 +2259,7 @@ static bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
 
 	for (probe.x = nw_corner.x; probe.x <= se_corner.x; probe.x++) {
 		for (probe.y = nw_corner.y; probe.y <= se_corner.y; probe.y++) {
-			if (feat_is_shop(square(c, probe)->feat)) {
+			if (feat_is_permanent(square(c, probe)->feat)) {
 				return true;
 			}
 		}
@@ -2271,16 +2269,16 @@ static bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
 }
 
 /**
- * Builds a store at a given pseudo-location
+ * Builds a building at a given pseudo-location
  * \param c is the current chunk
- * \param n is which shop it is
  * \param xroads is the location of the town crossroads
- * \param lot the location of this store in the town layout
+ * \param lot the location of this building in the town layout
+ * \param lot_wid the lot width
+ * \param lot_hgt the lot height
  */
-static void build_store(struct chunk *c, struct store *s, struct loc xroads,
-						struct loc lot, int lot_wid, int lot_hgt)
+static void build_building(struct chunk *c, struct loc xroads, struct loc lot,
+						   int lot_wid, int lot_hgt)
 {
-	int feat;
 	struct loc door;
 
 	int lot_w, lot_n, lot_e, lot_s;
@@ -2409,11 +2407,6 @@ static void build_store(struct chunk *c, struct store *s, struct loc xroads,
 
 	/* Build an invulnerable rectangular building */
 	fill_rectangle(c, build_n, build_w, build_s, build_e, FEAT_PERM, SQUARE_NONE);
-
-	/* Clear previous contents, add a store door */
-	for (feat = 0; feat < z_info->f_max; feat++)
-		if (feat_is_shop(feat) && (f_info[feat].shopnum == s->sidx + 1))
-			square_set_feat(c, door, feat);
 }
 
 /**
@@ -2586,7 +2579,6 @@ static void town_gen_layout(struct chunk *c, struct player *p, struct town *t)
 
 	/* divide the town into lots */
 	u16b lot_hgt = 4, lot_wid = 6;
-	struct store *s;
 
 	/* Create walls */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
@@ -2626,10 +2618,8 @@ static void town_gen_layout(struct chunk *c, struct player *p, struct town *t)
 			}
 		}
 
-		xroads.x = c->width / 4
-			+ randint0(c->width / 2);
-		xroads.y = c->height / 4
-			+ randint0(c->height / 2);
+		xroads.x = c->width / 4 + randint0(c->width / 2);
+		xroads.y = c->height / 4 + randint0(c->height / 2);
 
 
 		int lot_min_x = -1 * xroads.x / lot_wid;
@@ -2639,7 +2629,7 @@ static void town_gen_layout(struct chunk *c, struct player *p, struct town *t)
 
 		/* place stores along the streets */
 		num_attempts = 0;
-		for (s = t->stores; s; s = s->next) {
+		for (n = 0; n < 8; n++) {
 			struct loc store_lot;
 			bool found_spot = false;
 			while (!found_spot && num_attempts < max_attempts) {
@@ -2664,7 +2654,7 @@ static void town_gen_layout(struct chunk *c, struct player *p, struct town *t)
 			min_store_x = MIN(min_store_x, xroads.x + lot_wid * store_lot.x);
 			max_store_x = MAX(max_store_x, xroads.x + lot_wid * store_lot.x);
 
-			build_store(c, s, xroads, store_lot, lot_wid, lot_hgt);
+			build_building(c, xroads, store_lot, lot_wid, lot_hgt);
 		}
 		if (num_attempts >= max_attempts) continue;
 
@@ -2675,7 +2665,7 @@ static void town_gen_layout(struct chunk *c, struct player *p, struct town *t)
 				if (y == 0) continue;
 				if (randint0(100) > ruins_percent) continue;
 				if (one_in_(2) &&
-					!lot_has_shop(c, xroads, loc(x, y), lot_wid, lot_hgt)) {
+					!lot_has_building(c, xroads, loc(x, y), lot_wid, lot_hgt)) {
 					build_ruin(c, xroads, loc(x, y), lot_wid, lot_hgt);
 				}
 			}
@@ -2709,77 +2699,6 @@ static void town_gen_layout(struct chunk *c, struct player *p, struct town *t)
 }
 
 /**
- * Find a home entrance prior to demolition
- */
-static bool find_home(struct chunk *c, struct loc *home)
-{
-	struct loc grid;
-	for (grid.y = 0; grid.y < c->height - 1; grid.y++) {
-		for (grid.x = 0; grid.x < c->width - 1; grid.x++) {
-			if (index_is_home(square_shopnum(c, grid))) break;
-		}
-		if (index_is_home((size_t) square_shopnum(c, grid))) break;
-	}
-	*home = grid;
-	return (grid.y < c->height - 1) && (grid.x < c->width - 1);
-}
-
-/**
- * Remove a home building (after moving)
- */
-static void demolish_house(struct chunk *c, struct loc entrance)
-{
-	struct loc top_left, bottom_right, grid;
-	top_left = entrance;
-	while (square_ispermanent(c, top_left)) {
-		top_left.x--;
-	}
-	top_left.x++;
-	while (square_ispermanent(c, top_left)) {
-		top_left.y--;
-	}
-	top_left.y++;
-	bottom_right = entrance;
-	while (square_ispermanent(c, bottom_right)) {
-		bottom_right.x++;
-	}
-	bottom_right.x--;
-	while (square_ispermanent(c, bottom_right)) {
-		bottom_right.y++;
-	}
-	bottom_right.y--;
-	for (grid.y = top_left.y; grid.y <= bottom_right.y; grid.y++) {
-		for (grid.x = top_left.x; grid.x <= bottom_right.x; grid.x++) {
-			square_set_feat(c, grid, FEAT_FLOOR);
-		}
-	}
-}
-
-static void build_new_house(struct chunk *c)
-{
-	struct loc centre, grid;
-	int count = 8;
-	bool door_done = false;
-	if (!cave_find(c, &centre, square_isinemptysquare)) assert(0);
-	for (grid.y = centre.y - 1; grid.y <= centre.y + 1; grid.y++) {
-		for (grid.x = centre.x - 1; grid.x <= centre.x + 1; grid.x++) {
-			if (loc_eq(grid, centre)) {
-				square_set_feat(c, grid, FEAT_PERM);
-			} else {
-				if (!door_done && one_in_(count)) {
-					square_set_feat(c, grid, lookup_feat("Home"));
-					door_done = true;
-				} else {
-					square_set_feat(c, grid, FEAT_PERM);
-				}
-				count--;
-			}
-		}
-	}
-}
-
-
-/**
  * Town logic flow for generation of new town.
  * \param p is the player
  * \return a pointer to the generated chunk
@@ -2806,8 +2725,7 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
 	assert (i < world->num_towns);
 
 	/* Make a new chunk */
-	c_new = cave_new(z_info->town_hgt, town->num_stores > 4 ?
-					 z_info->town_wid : z_info->town_wid / 2);
+	c_new = cave_new(z_info->town_hgt, z_info->town_wid);
 
 	/* First time */
 	if (!c_old) {
@@ -2826,22 +2744,6 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
 			quit_fmt("chunk_copy() level bounds failed!");
 		chunk_list_remove(name);
 		cave_free(c_old);
-
-		/* Build a new house if needed */
-		if (p->place == p->home) {
-			struct loc door;
-			if (!find_home(c_new, &door)) {
-				build_new_house(c_new);
-			}
-		}
-
-		/* Demolish an old house if needed */
-		if (p->place != p->home) {
-			struct loc door;
-			if (find_home(c_new, &door)) {
-				demolish_house(c_new, door);
-			}
-		}
 
 		/* Get the correct path for wilderness */
 		if (strstr(world->name, "Wilderness")) {

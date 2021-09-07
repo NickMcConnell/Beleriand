@@ -171,7 +171,6 @@ ANGFILES = \
 	save-charoutput.o \
 	sound-core.o \
 	source.o \
-	store.o \
 	target.o \
 	trap.o \
 	ui-birth.o \
@@ -208,7 +207,6 @@ ANGFILES = \
 	ui-signals.o \
 	ui-spell.o \
 	ui-spoil.o \
-	ui-store.o \
 	ui-target.o \
 	ui-term.o \
 	ui-visuals.o \

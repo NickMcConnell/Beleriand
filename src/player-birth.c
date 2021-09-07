@@ -45,7 +45,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "savefile.h"
-#include "store.h"
 
 /**
  * Overview
@@ -1366,7 +1365,6 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Initialise the stores, dungeon */
 	init_race_probs();
-	store_reset();
 	chunk_list_max = 0;
 
 	/* Player learns innate runes */

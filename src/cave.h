@@ -116,7 +116,6 @@ struct feature {
 	char *mimic;	/**< Name of feature to mimic */
 	byte priority;	/**< Display priority */
 
-	byte shopnum;	/**< Which shop does it take you to? */
 	byte dig;      /**< How hard is it to dig through? */
 
 	bitflag flags[TF_SIZE];	/**< Terrain flags */
@@ -343,7 +342,6 @@ bool feat_is_run2(int feat);
 bool feat_is_trap_holding(int feat);
 bool feat_is_object_holding(int feat);
 bool feat_is_monster_walkable(int feat);
-bool feat_is_shop(int feat);
 bool feat_is_passable(int feat);
 bool feat_is_projectable(int feat);
 bool feat_is_torch(int feat);
@@ -387,7 +385,6 @@ bool square_isstairs(struct chunk *c, struct loc grid);
 bool square_isupstairs(struct chunk *c, struct loc grid);
 bool square_isdownstairs(struct chunk *c, struct loc grid);
 bool square_ispath(struct chunk *c, struct loc grid);
-bool square_isshop(struct chunk *c, struct loc grid);
 bool square_isplayer(struct chunk *c, struct loc grid);
 bool square_isoccupied(struct chunk *c, struct loc grid);
 bool square_isknown(struct chunk *c, struct loc grid);
@@ -512,7 +509,6 @@ void square_destroy_rubble(struct chunk *c, struct loc grid);
 void square_force_floor(struct chunk *c, struct loc grid);
 
 
-int square_shopnum(struct chunk *c, struct loc grid);
 int square_digging(struct chunk *c, struct loc grid);
 const char *square_apparent_name(struct chunk *c, struct player *p, struct loc grid);
 const char *square_apparent_look_prefix(struct chunk *c, struct player *p, struct loc grid);
