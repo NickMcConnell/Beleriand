@@ -729,10 +729,8 @@ object:scroll:Mass Banishment:0x83:0x9C
 object:scroll:Remove Hunger:0x83:0x9C
 object:scroll:Identify Rune:0x83:0x9C
 object:scroll:Light:0x83:0x9C
-object:scroll:Word of Recall:0x83:0x9C
 object:scroll:Recharging:0x83:0x9C
 object:scroll:Door Destruction:0x83:0x9C
-object:scroll:Deep Descent:0x83:0x9C
 
 
 ### "Holy" spells ###

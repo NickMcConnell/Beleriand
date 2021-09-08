@@ -727,20 +727,6 @@ power:15
 effect:TELEPORT_LEVEL
 desc:teleports you one level up or down
 
-name:RECALL
-aim:0
-power:15
-msg:{name} pulses a soft white.
-effect:RECALL
-desc:returns you from the dungeon or takes you to the dungeon after
-desc: a short delay
-
-name:DEEP_DESCENT
-aim:0
-power:19
-effect:DEEP_DESCENT
-desc:teleports you five levels down
-
 ## Line-of-sight or adjacent monster effects
 
 name:LOSSLOW
@@ -1804,15 +1790,6 @@ expr:B:MAX_SIGHT:* 3
 time:75
 desc:teleport away (distance: 45-60+)
 
-name:AVAVIR
-aim:0
-type:artifact
-power:0
-effect:RECALL
-time:200
-desc:returns you to a recall point or takes you to a recall point after a short
-desc: delay
-
 name:TOTILA
 aim:1
 type:artifact
@@ -2574,14 +2551,6 @@ effect:TELEPORT
 dice:M60
 desc:teleports you randomly about 60 per cent of the largest distance you
 desc: could go
-
-name:RAND_RECALL
-aim:0
-power:10
-effect:RECALL
-time:350
-desc:returns you to a recall point or takes you to a recall point after a short
-desc: delay
 
 name:RAND_REGAIN
 aim:0

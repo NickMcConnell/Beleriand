@@ -1129,8 +1129,6 @@ values:DEX[3] | SPEED[3] | LIGHT[1]
 values:RES_FIRE[50] | RES_COLD[50] | RES_LIGHT[40]
 brand:FIRE_3
 brand:COLD_3
-act:AVAVIR
-time:200
 msg:Your scythe glows soft white...
 desc:Binding elemental powers whose struggles turn this weapon red and purest
 desc: white, this shining reaper bears within it a power of going forth and

@@ -112,9 +112,6 @@ world:town-hgt:22
 # Max number of grids in each town level (horizontally)
 world:town-wid:66
 
-# Number of levels for each stair - currently does nothing
-world:stair-skip:1
-
 # Energy needed by player or monsters to move
 world:move-energy:100
 

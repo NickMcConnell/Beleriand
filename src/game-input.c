@@ -35,7 +35,6 @@ int (*get_spell_hook)(struct player *p, const char *verb,
 bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
 					  cmd_code cmd, item_tester tester, int mode);
 bool (*get_curse_hook)(int *choice, struct object *obj, char *dice_string);
-int (*get_recall_point_hook)(bool inward, int num_points, int num_poss);
 int (*get_effect_from_list_hook)(const char* prompt,
 	struct effect *effect, int count, bool allow_random);
 bool (*confirm_debug_hook)(void);
@@ -207,18 +206,6 @@ bool get_curse(int *choice, struct object *obj, char *dice_string)
 		return get_curse_hook(choice, obj, dice_string);
 	else
 		return false;
-}
-
-/**
- * Get a recall point
- */
-int get_recall_point(bool inward, int num_points, int num_poss)
-{
-	/* Ask the UI for it */
-	if (get_recall_point_hook)
-		return get_recall_point_hook(inward, num_points, num_poss);
-	else
-		return -1;
 }
 
 /**

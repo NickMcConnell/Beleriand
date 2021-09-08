@@ -907,34 +907,6 @@ struct state_info
 };
 
 /**
- * Print recall status.
- */
-static size_t prt_recall(int row, int col)
-{
-	if (player->word_recall) {
-		c_put_str(COLOUR_WHITE, "Recall", row, col);
-		return sizeof "Recall";
-	}
-
-	return 0;
-}
-
-
-/**
- * Print deep descent status.
- */
-static size_t prt_descent(int row, int col)
-{
-	if (player->deep_descent) {
-		c_put_str(COLOUR_WHITE, "Descent", row, col);
-		return sizeof "Descent";
-	}
-
-	return 0;
-}
-
-
-/**
  * Prints Resting, or 'count' status
  * Display is always exactly 10 characters wide (see below)
  *
@@ -1190,8 +1162,8 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_depth, prt_light, prt_moves, prt_unignore, prt_recall, prt_descent,
-  prt_state, prt_study, prt_spec, prt_tmd, prt_dtrap, prt_terrain };
+{ prt_depth, prt_light, prt_moves, prt_unignore, prt_state, prt_study,
+  prt_spec, prt_tmd, prt_dtrap, prt_terrain };
 
 
 static void update_statusline_aux(int row, int col)

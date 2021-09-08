@@ -573,8 +573,6 @@ struct player {
     s16b home;		/* Home town */
 	s16b depth;		/* Cur depth */
 
-    s16b recall[4];	/* Recall points */
-    s16b recall_pt;	/* Which recall point is active */
     s16b place;		/* Current place */
     s16b last_place;/* Previous place */
 
@@ -598,9 +596,6 @@ struct player {
 	s16b stat_map[STAT_MAX];	/* Tracks remapped stats from temp stat swap */
 
 	s16b *timed;				/* Timed effects */
-
-	s16b word_recall;			/* Word of recall counter */
-	s16b deep_descent;			/* Deep Descent counter */
 
 	s16b energy;				/* Current energy */
 	u32b total_energy;			/* Total energy used (including resting) */

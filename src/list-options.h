@@ -73,8 +73,6 @@ OP(birth_connect_stairs,  "Generate connected stairs",
 BIRTH, true)
 OP(birth_force_descend,   "Force player descent (currently does nothing)",
 BIRTH, false)
-OP(birth_no_recall,       "Word of Recall has no effect",
-BIRTH, false)
 OP(birth_no_artifacts,    "Restrict creation of artifacts",
 BIRTH, false)
 OP(birth_stacking,        "Stack objects on the floor",

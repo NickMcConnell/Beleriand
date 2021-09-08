@@ -1121,8 +1121,6 @@ static struct player TEST_DATA test_player = {
 	.au = 500,
 	.max_depth = 10,
 	.depth = 6,
-	.recall = { 0, 0, 0, 0 },
-	.recall_pt = 0,
 	.place = 0,
 	.last_place = 0,
 	.max_lev = 3,
@@ -1148,7 +1146,6 @@ static struct player TEST_DATA test_player = {
 		[STAT_INT] = 8,
 	},
 	.timed = test_timed,
-	.word_recall = 0,
 	.energy = 100,
 	.player_hp = {
 		  5,  10,  15,  20,  25,  30,  35,  40,  45,  50,

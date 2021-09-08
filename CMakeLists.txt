@@ -127,7 +127,6 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/score.c
         src/sound-core.c
         src/source.c
-        src/store.c
         src/target.c
         src/trap.c
         src/ui-birth.c
@@ -159,12 +158,10 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/ui-output.c
         src/ui-player.c
         src/ui-prefs.c
-        src/ui-recall.c
         src/ui-score.c
         src/ui-signals.c
         src/ui-spell.c
         src/ui-spoil.c
-        src/ui-store.c
         src/ui-target.c
         src/ui-term.c
         src/ui-visuals.c

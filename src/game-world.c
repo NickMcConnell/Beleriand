@@ -949,65 +949,6 @@ void process_world(struct chunk *c)
 			}
 		}
 	}
-
-
-	/*** Involuntary Movement ***/
-
-	/* Delayed Word-of-Recall */
-	if (player->word_recall) {
-		/* Count down towards recall */
-		player->word_recall--;
-
-		/* Activate the recall */
-		if (!player->word_recall) {
-			/* Disturbing! */
-			disturb(player);
-
-			/* Determine the level */
-			if (player->place != player->home) {
-				int new_last_place = (player->upkeep->arena_level) ? player->last_place : 0;
-				msgt(MSG_TPLEVEL, "You feel yourself yanked homewards!");
-				player_change_place(player, player->home);
-				player->last_place = new_last_place;
-			} else {
-				msgt(MSG_TPLEVEL, "You feel yourself yanked away!");
-				player_change_place(player, player->recall_pt);
-				player->last_place = 0;
-			}
-		}
-	}
-
-	/* Delayed Deep Descent */
-	if (player->deep_descent) {
-		/* Count down towards descent */
-		player->deep_descent--;
-
-		/* Activate the descent */
-		if (player->deep_descent == 0) {
-			int increment;
-			int target_place = player->max_depth;
-			struct level *lev;
-
-			/* Calculate target depth */
-			//increment = (4 / z_info->stair_skip) + 1;
-			increment = 5;
-			target_place = player_get_next_place(player->place, "down",
-												 increment);
-			lev = &world->levels[target_place];
-
-			disturb(player);
-
-			/* Determine the level */
-			if (lev->depth > player->depth) {
-				msgt(MSG_TPLEVEL, "The floor opens beneath you!");
-				player_change_place(player, target_place);
-			} else {
-				/* Otherwise do something disastrous */
-				msgt(MSG_TPLEVEL, "You are thrown back in an explosion!");
-				effect_simple(EF_DESTRUCTION, source_none(), "0", 0, 5, 0, 0, 0, NULL);
-			}
-		}
-	}
 }
 
 

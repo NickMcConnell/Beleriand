@@ -2470,16 +2470,6 @@ effect:LIGHT_AREA
 effect:SPOT:LIGHT_WEAK:2
 dice:2d8
 
-name:Word of Recall
-type:scroll
-graphics:?:w
-level:5
-weight:5
-cost:125
-alloc:50:5 to 100
-pile:35:2d3
-effect:RECALL
-
 name:Recharging
 type:scroll
 graphics:?:w
@@ -2500,16 +2490,6 @@ cost:50
 alloc:40:10 to 60
 pile:25:2d3
 effect:TOUCH:KILL_DOOR
-
-name:Deep Descent
-type:scroll
-graphics:?:w
-level:10
-weight:5
-cost:250
-alloc:20:1 to 100
-pile:20:2
-effect:DEEP_DESCENT
 
 
 ### "Holy" spells ###
@@ -4490,19 +4470,6 @@ effect:LIGHT_AREA
 effect:SPOT:LIGHT_WEAK:2
 dice:2d8
 time:30
-
-name:Recall
-type:rod
-graphics:-:d
-level:30
-weight:15
-cost:4000
-alloc:10:30 to 100
-attack:1d1:0:0
-armor:0:0
-flags:IGNORE_ELEC
-effect:RECALL
-time:60
 
 name:Speed
 type:rod

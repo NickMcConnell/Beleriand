@@ -136,7 +136,6 @@ equip:potion:Berserk Strength:1:1:none
 equip:sword:Broad Sword:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
 equip:shield:Wicker Shield:1:1:none
-equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:BRAVERY_30 | NO_MANA | SHIELD_BASH | XTRA_SPECIALTY
 player-flags:BOW_SPEED_GOOD | XBOW_SPEED_GOOD
 specialties:ARMOR_MAST | ARMSMAN | ATHLETICS | MIGHTY_THROW | FAST_ATTACK
@@ -174,7 +173,6 @@ strength-multiplier:2
 equip:food:Ration of Food:1:3:none
 equip:light:Wooden Torch:1:3:none
 equip:hafted:Magestaff:1:1:none
-equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:BEAM | CHOOSE_SPELLS | DEVICE_EXPERT | STRONG_MAGIC
 specialties:ARMOR_PROFICIENCY | BEGUILE | CLARITY | ENHANCE_MAGIC
 specialties:MEDITATION | POWER_SIPHON | MAGIC_RESIST | PHASEWALK
@@ -451,7 +449,6 @@ min-weight:35
 strength-multiplier:3
 equip:food:Ration of Food:1:3:none
 equip:light:Wooden Torch:1:3:none
-equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:CHOOSE_SPELLS | CHARM
 player-flags:UNARMED_COMBAT | WOODSMAN | STRONG_MAGIC
 specialties:ARMOR_PROFICIENCY | BEGUILE | CLARITY | MEDITATION
@@ -694,7 +691,6 @@ equip:food:Ration of Food:1:3:none
 equip:light:Wooden Torch:1:3:none
 equip:hafted:Mace:1:1:none
 equip:potion:Cure Serious Wounds:2:2:none
-equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:BLESS_WEAPON | STRONG_MAGIC | HOLY
 specialties:CLARITY | ENHANCE_MAGIC | MEDITATION | ARMSMAN
 specialties:PHASEWALK | HOLY_LIGHT | HARMONY | FURY | HEIGHTEN_MAGIC
@@ -829,16 +825,6 @@ spell:Remembrance:20:30:90:50
 effect:RESTORE_EXP
 desc:Restores experience points to maximum if it is currently below maximum.
 
-spell:Word of Recall:25:30:75:10
-effect:RECALL
-desc:Teleports you from the dungeon to the town or from the town to the
-desc: deepest level you have visited in the dungeon.
-desc:  The recall effect is not immediate; it is delayed by 14+1d20 turns.
-desc:  During that delay, the prayer can be canceled by invoking the prayer
-desc: of recall again.
-desc:  This prayer has no effect when the option to restrict the use of
-desc: stairs and recall is set, unless Morgoth is dead.
-
 spell:Healing:30:50:80:100
 effect:HEAL_HP
 dice:2000
@@ -963,7 +949,6 @@ min-weight:35
 strength-multiplier:3
 equip:food:Ration of Food:1:3:none
 equip:hafted:Whip:1:1:none
-equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:CHOOSE_SPELLS | UNLIGHT | EVIL | STRONG_MAGIC
 specialties:ARMOR_PROFICIENCY | BEGUILE | CLARITY | ENHANCE_MAGIC
 specialties:MEDITATION | MAGIC_RESIST | SOUL_SIPHON | HEIGHTEN_MAGIC
@@ -1226,7 +1211,6 @@ equip:light:Wooden Torch:1:3:none
 equip:sword:Long Sword:1:1:none
 equip:shield:Wicker Shield:1:1:none
 equip:scroll:Protection from Evil:1:1:none
-equip:scroll:Word of Recall:1:1:birth_no_recall
 equip:prayer book:[Novice's Handbook]:1:1:none
 player-flags:BLESS_WEAPON | SHIELD_BASH | HOLY
 specialties:ARMOR_MAST | ARMSMAN | ATHLETICS | FAST_ATTACK | FURY
@@ -1316,16 +1300,6 @@ expr:S:PLAYER_LEVEL:+ 0
 desc:Attempts to remove a curse from an item, more effective at higher
 desc: character levels.
 
-spell:Word of Recall:25:30:75:10
-effect:RECALL
-desc:Teleports you from the dungeon to the town or from the town to the
-desc: deepest level you have visited in the dungeon.
-desc:  The recall effect is not immediate; it is delayed by 14+1d20 turns.
-desc:  During that delay, the prayer can be canceled by invoking the prayer
-desc: of recall again.
-desc:  This prayer has no effect when the option to restrict the use of
-desc: stairs and recall is set, unless Morgoth is dead.
-
 spell:Healing:30:50:80:100
 effect:HEAL_HP
 dice:2000
@@ -1390,7 +1364,6 @@ equip:food:Ration of Food:1:3:none
 equip:light:Wooden Torch:1:3:none
 equip:sword:Dagger:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
-equip:scroll:Word of Recall:1:1:birth_no_recall
 equip:magic book:[First Spells]:1:1:none
 player-flags:CHOOSE_SPELLS | STEAL
 player-flags:BACKSTAB | TRAP | SLING_SPEED_GREAT
@@ -1499,7 +1472,6 @@ equip:light:Wooden Torch:1:3:none
 equip:polearm:Thrusting Spear:1:1:none
 equip:bow:Short Bow:1:1:none
 equip:arrow:Arrow:15:20:none
-equip:scroll:Word of Recall:1:1:birth_no_recall
 equip:nature book:[Lesser Charms]:1:1:none
 player-flags:CHOOSE_SPELLS | WOODSMAN
 player-flags:BOW_SPEED_GREAT | SLING_SPEED_GOOD | XBOW_SPEED_GOOD
@@ -1613,7 +1585,6 @@ equip:food:Ration of Food:1:3:none
 equip:light:Wooden Torch:1:3:none
 equip:polearm:Battle Axe:1:1:none
 equip:shield:Leather Shield:1:1:none
-equip:scroll:Word of Recall:1:1:birth_no_recall
 equip:potion:Cure Light Wounds:1:1:none
 obj-flags:IMPAIR_HP
 player-flags:CHOOSE_SPELLS | SHIELD_BASH

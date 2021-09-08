@@ -157,42 +157,6 @@ int player_get_next_place(int place, const char *direction, int multiple)
 }
 
 /**
- * Give the player the choice of persistent level to recall to.  Note that if
- * a level greater than the player's maximum depth is chosen, we silently go
- * to the maximum depth.
- */
-bool player_get_recall_point(struct player *p)
-{
-	bool level_ok = false;
-	int new = 0;
-
-	while (!level_ok) {
-		const char *prompt =
-			"Which level do you wish to return to (0 to cancel)? ";
-		int i;
-
-		/* Choose the level */
-		new = get_quantity(prompt, p->max_depth);
-		if (new == 0) {
-			return false;
-		}
-
-		/* Is that level valid? */
-		for (i = 0; i < chunk_list_max; i++) {
-			if (chunk_list[i]->depth == new) {
-				level_ok = true;
-				break;
-			}
-		}
-		if (!level_ok) {
-			msg("You must choose a level you have previously visited.");
-		}
-	}
-	p->recall_pt = new;
-	return true;
-}
-
-/**
  * Move the player to a new place in the world map.
  */
 void player_change_place(struct player *p, int place)
@@ -1549,8 +1513,7 @@ void player_resting_complete_special(struct player *p)
 			!p->timed[TMD_POISONED] && !p->timed[TMD_AFRAID] &&
 			!p->timed[TMD_TERROR] && !p->timed[TMD_STUN] &&
 			!p->timed[TMD_CUT] && !p->timed[TMD_SLOW] &&
-			!p->timed[TMD_PARALYZED] && !p->timed[TMD_IMAGE] &&
-			!p->word_recall && !p->deep_descent)
+			!p->timed[TMD_PARALYZED] && !p->timed[TMD_IMAGE])
 			/* Stop resting */
 			disturb(p);
 	} else if (p->upkeep->resting == REST_SOME_POINTS) {

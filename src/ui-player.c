@@ -925,7 +925,6 @@ static const struct {
 void display_player_xtra_info(int mode)
 {
 	size_t i;
-	char points[65];
 	size_t free_space = Term->hgt - 24;
 	for (i = 0; i < N_ELEMENTS(panels); i++) {
 		struct panel *p = panels[i].panel();
@@ -935,30 +934,6 @@ void display_player_xtra_info(int mode)
 
 	/* Indent output by 1 character, and wrap at column 72 */
 	text_out_wrap = 72;
-	text_out_indent = 1;
-
-	/* Recall points */
-	if (player->recall[0]) {
-		int j;
-
-		my_strcpy(points, level_name(&world->levels[player->recall[0]]),
-				  sizeof(points));
-		for (j = 1; j < 4; j++) {
-			if (player->recall[j]) {
-				my_strcat(points, ", ", sizeof(points));
-				my_strcat(points, level_name(&world->levels[player->recall[j]]),
-						  sizeof(points));
-			} else {
-				break;
-			}
-		}
-	} else {
-		my_strcpy(points, "None", sizeof(points));
-	}
-	Term_gotoxy(text_out_indent, free_space ? 18 : 17);
-	text_out_to_screen(COLOUR_WHITE, "Recall pts: ");
-	text_out_indent = 13;
-	text_out_to_screen(COLOUR_L_BLUE, points);
 	text_out_indent = 1;
 
 	/* History */

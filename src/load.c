@@ -889,20 +889,14 @@ int rd_player(void)
 				  sizeof(player->died_from));
 
 	/* Location info */
-	for (i = 0; i < 4; i++) {
-		rd_s16b(&player->recall[i]);
-	}
-	rd_s16b(&player->recall_pt);
 	rd_s16b(&player->place);
 	rd_s16b(&player->last_place);
 
 	/* More info */
 	rd_byte(&player->unignoring);
-	rd_s16b(&player->deep_descent);
 
 	/* Read the flags */
 	rd_s16b(&player->energy);
-	rd_s16b(&player->word_recall);
 
 	/* Find the number of timed effects */
 	rd_byte(&num);
