@@ -497,12 +497,6 @@ bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 	for (i = 0; i < z_info->f_max + 1; i++)
 		dest->feat_count[i] += source->feat_count[i];
 
-	dest->obj_rating += source->obj_rating;
-	dest->mon_rating += source->mon_rating;
-
-	if (source->good_item)
-		dest->good_item = true;
-
 	return true;
 }
 

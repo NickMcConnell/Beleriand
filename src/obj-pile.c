@@ -494,22 +494,20 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 {
 	int total = obj1->number + obj2->number;
 
-	/* Check against stacking limit - except in stores which absorb anyway */
-	if (!(mode & OSTACK_STORE)) {
-		if (total > obj1->kind->base->max_stack) {
-			return false;
-		}
-		/* The quiver can impose stricter limits. */
-		if (mode & OSTACK_QUIVER) {
-			if (tval_is_ammo(obj1)) {
-				if (total > z_info->quiver_slot_size) {
-					return false;
-				}
-			} else {
-				if (total > z_info->quiver_slot_size /
-						z_info->thrown_quiver_mult) {
-					return false;
-				}
+	/* Check against stacking limit */
+	if (total > obj1->kind->base->max_stack) {
+		return false;
+	}
+	/* The quiver can impose stricter limits. */
+	if (mode & OSTACK_QUIVER) {
+		if (tval_is_ammo(obj1)) {
+			if (total > z_info->quiver_slot_size) {
+				return false;
+			}
+		} else {
+			if (total > z_info->quiver_slot_size /
+				z_info->thrown_quiver_mult) {
+				return false;
 			}
 		}
 	}
@@ -608,11 +606,9 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
  * when the function returns.
  * \param obj2 Is the second of the stacks to combine.
  * \param mode1 Describes the behavior, most notably the upper limit on size,
- * for the first stack. Can not include OSTACK_STORE, which typically has no
- * limit on the stack size.
+ * for the first stack.
  * \param mode2 Describes the behavior, most notable the upper limit on size,
- * for the second stack.  Can not include OSTACK_STORE, which typically has
- * no limit on the stack size.
+ * for the second stack.
  */
 void object_absorb_partial(struct object *obj1, struct object *obj2,
 	object_stack_t mode1, object_stack_t mode2)
@@ -620,8 +616,6 @@ void object_absorb_partial(struct object *obj1, struct object *obj2,
 	int smallest = MIN(obj1->number, obj2->number);
 	int largest = MAX(obj1->number, obj2->number);
 	int newsz1, newsz2;
-
-	assert(!(mode1 & OSTACK_STORE) && !(mode2 & OSTACK_STORE));
 
 	/* The quiver can have stricter limits. */
 	if (mode1 & OSTACK_QUIVER) {

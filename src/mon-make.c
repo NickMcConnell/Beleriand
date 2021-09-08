@@ -866,9 +866,6 @@ bool prepare_ghost(struct chunk *c, int r_idx, struct monster *mon,
 		race->spell_power += 3 * (c->depth - 75) / 2;
 	}
 
-	/* Increase the level feeling */
-	c->mon_rating += 10;
-
 	/* Player ghosts are "seen" whenever generated. */
 	lore->sights = 1;
 
@@ -1467,8 +1464,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 		} else {
 			/* Choose by set tval */
 			assert(drop->tval);
-			obj = make_object(c, level, good, great, extra_roll, NULL,
-							  drop->tval);
+			obj = make_object(c, level, good, great, extra_roll, drop->tval);
 		}
 
 		/* Skip if the object couldn't be created. */
@@ -1496,7 +1492,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
 			obj = make_gold(level, "any");
 		} else {
-			obj = make_object(c, level, good, great, extra_roll, NULL, 0);
+			obj = make_object(c, level, good, great, extra_roll, 0);
 			if (!obj) continue;
 		}
 
@@ -1810,9 +1806,6 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	if (rf_has(race->flags, RF_FORCE_DEPTH) && c->depth < race->level)
 		return false;
 
-	/* Add to level feeling, note uniques for cheaters */
-	c->mon_rating += race->level * race->level;
-
 	/* Check out-of-depth-ness */
 	if (race->level > c->depth) {
 		if (rf_has(race->flags, RF_UNIQUE)) { /* OOD unique */
@@ -1822,8 +1815,6 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 			if (OPT(player, cheat_hear))
 				msg("Deep monster (%s).", race->name);
 		}
-		/* Boost rating by power per 10 levels OOD */
-		c->mon_rating += (race->level - c->depth) * race->level * race->level;
 	} else if (rf_has(race->flags, RF_UNIQUE) && OPT(player, cheat_hear)) {
 		msg("Unique (%s).", race->name);
 	}

@@ -1209,10 +1209,6 @@ void on_new_level(void)
 		return;
 	}
 
-	/* Announce (or repeat) the feeling */
-	if (player->depth)
-		display_feeling(false);
-
 	/* Announce a player ghost challenge. -LM- */
 	if (cave->ghost->bones_selector) {
 		assert(cave->ghost && cave->ghost->race);

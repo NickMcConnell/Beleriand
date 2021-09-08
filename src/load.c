@@ -1411,12 +1411,9 @@ static int rd_dungeon_aux(struct chunk **c)
 		}
 	}
 
-
-	/* Read "feeling" */
-	rd_byte(&tmp8u);
-	c1->feeling = tmp8u;
+	/* Read number of runes */
 	rd_u16b(&tmp16u);
-	c1->feeling_squares = tmp16u;
+	c1->runes = tmp16u;
 	rd_s32b(&c1->turn);
 
 	/* Read bones selector */
@@ -1727,16 +1724,11 @@ int rd_chunks(void)
 			rd_s32b(&c->turn);
 			rd_u16b(&tmp16u);
 			c->depth = tmp16u;
-			rd_byte(&c->feeling);
-			rd_u32b(&c->obj_rating);
-			rd_u32b(&c->mon_rating);
-			rd_byte(&tmp8u);
-			c->good_item  = tmp8u ? true : false;
 			rd_u16b(&tmp16u);
 			c->height = tmp16u;
 			rd_u16b(&tmp16u);
 			c->width = tmp16u;
-			rd_u16b(&c->feeling_squares);
+			rd_u16b(&c->runes);
 			for (i = 0; i < z_info->f_max + 1; i++) {
 				rd_u16b(&tmp16u);
 				c->feat_count[i] = tmp16u;

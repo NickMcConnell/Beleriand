@@ -28,7 +28,6 @@
 typedef enum
 {
 	OSTACK_NONE    = 0x00, /* No options (this does NOT mean no stacking) */
-	OSTACK_STORE   = 0x01, /* Store stacking */
 	OSTACK_PACK    = 0x02, /* Inventory and home */
 	OSTACK_LIST    = 0x04, /* Object list */
 	OSTACK_MONSTER = 0x08, /* Monster carrying objects */

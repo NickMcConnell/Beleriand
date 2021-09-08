@@ -81,8 +81,6 @@ OP(birth_stacking,        "Stack objects on the floor",
 BIRTH, true)
 OP(birth_lose_arts,       "Lose artifacts when leaving level",
 BIRTH, false)
-OP(birth_feelings,        "Show level feelings",
-BIRTH, true)
 OP(birth_no_selling,      "Increase gold drops but disable selling",
 BIRTH, true)
 OP(birth_start_kit,       "Start with a kit of useful gear",

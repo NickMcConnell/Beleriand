@@ -94,8 +94,6 @@ struct angband_constants
 	u16b dungeon_wid;	/**< Maximum number of horizontical grids on a level */
 	u16b town_hgt;	/**< Maximum number of vertical grids in the town */
 	u16b town_wid;	/**< Maximum number of horizontical grids in the town */
-	u16b feeling_total;	/* Total number of feeling squares per level */
-	u16b feeling_need;	/* Squares needed to see to get first feeling */
     u16b stair_skip;    /* Number of levels to skip for each down stair */
 	u16b move_energy;	/* Energy the player or monster needs to move */
 	u16b themed_dun;	/* !/Chance of a themed level in the dungeon */

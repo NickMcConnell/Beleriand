@@ -42,8 +42,6 @@
 #include <stddef.h>
 #include <time.h>
 
-#define OBJ_FEEL_MAX	 11
-#define MON_FEEL_MAX 	 10
 #define LEVEL_MAX 		101
 #define TOP_DICE		 21 /* highest catalogued values for wearables */
 #define TOP_SIDES		 11
@@ -90,8 +88,6 @@ static struct level_data {
 	u32b *monsters;
 /*  u32b *vaults;  Add these later - requires passing into generate.c
 	u32b *pits; */
-	u32b obj_feelings[OBJ_FEEL_MAX];
-	u32b mon_feelings[MON_FEEL_MAX];
 	long long gold[ORIGIN_STATS];
 	u32b *artifacts[ORIGIN_STATS];
 	u32b *consumables[ORIGIN_STATS];
@@ -388,7 +384,6 @@ static void log_all_objects(int level)
 static void descend_dungeon(void)
 {
 	int level;
-	u16b obj_f, mon_f;
 
 	clock_t last = 0;
 
@@ -408,12 +403,6 @@ static void descend_dungeon(void)
 
 		player_change_place(player, level);
 		prepare_next_level(player);
-
-		/* Store level feelings */
-		obj_f = cave->feeling / 10;
-		mon_f = cave->feeling - (10 * obj_f);
-		level_data[level].obj_feelings[MIN(obj_f, OBJ_FEEL_MAX - 1)]++;
-		level_data[level].mon_feelings[MIN(mon_f, MON_FEEL_MAX - 1)]++;
 
 		log_all_objects(level);
 		/* Besides killing, also gathers counts. */
@@ -951,7 +940,7 @@ static int stats_dump_info(void)
  * Open the database connection and create the database tables.
  * All count tables will contain a level column (INTEGER) and a
  * count column (INTEGER). Some tables will include other INTEGER columns
- * for object origin, feeling, attributes, indices, or object flags.
+ * for object origin, attributes, indices, or object flags.
  * Note that random_value types are stored as either A+BdC+Md or A.
  * Tables:
  *     metadata -- key-value pairs describing the stats run
@@ -979,8 +968,6 @@ static int stats_dump_info(void)
  *     origin_flags_list -- dump of origin enum
  * Count tables:
  *     monsters
- *     obj_feelings
- *     mon_feelings
  *     gold
  *     artifacts
  *     consumables
@@ -1078,12 +1065,6 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE monsters(level INT, count INT, k_idx INT, UNIQUE (level, k_idx) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE obj_feelings(level INT, count INT, feeling INT, UNIQUE (level, feeling) ON CONFLICT REPLACE);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE mon_feelings(level INT, count INT, feeling INT, UNIQUE (level, feeling) ON CONFLICT REPLACE);");
-	if (err) return false;
-
 	err = stats_db_exec("CREATE TABLE gold(level INT, count INT, origin INT, UNIQUE (level, origin) ON CONFLICT REPLACE);");
 	if (err) return false;
 
@@ -1130,10 +1111,6 @@ static int stats_level_data_offsetof(const char *member)
 {
 	if (streq(member, "monsters"))
 		return offsetof(struct level_data, monsters);
-	else if (streq(member, "obj_feelings"))
-		return offsetof(struct level_data, obj_feelings);
-	else if (streq(member, "mon_feelings"))
-		return offsetof(struct level_data, mon_feelings);
 	else if (streq(member, "gold"))
 		return offsetof(struct level_data, gold);
 	else if (streq(member, "artifacts"))
@@ -1408,12 +1385,6 @@ static int stats_write_db(u32b run)
 	if (err) return err;
 
 	err = stats_write_db_level_data("monsters", z_info->r_max);
-	if (err) return err;
-
-	err = stats_write_db_level_data("obj_feelings", OBJ_FEEL_MAX);
-	if (err) return err;
-
-	err = stats_write_db_level_data("mon_feelings", MON_FEEL_MAX);
 	if (err) return err;
 
 	err = stats_write_db_level_data("gold", ORIGIN_STATS);

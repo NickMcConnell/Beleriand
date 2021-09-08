@@ -854,17 +854,6 @@ static void update_one(struct chunk *c, struct loc grid, struct player *p)
 
 	/* Square went from unseen -> seen */
 	if (square_isseen(c, grid) && !square_wasseen(c, grid)) {
-		if (square_isfeel(c, grid)) {
-			c->feeling_squares++;
-			sqinfo_off(square(c, grid)->info, SQUARE_FEEL);
-			/* Don't display feeling if it will display for the new level */
-			if (((c->feeling_squares & 0xff) == z_info->feeling_need) &&
-				!p->upkeep->only_partial) {
-				display_feeling(true);
-				p->upkeep->redraw |= PR_FEELING;
-			}
-		}
-
 		square_note_spot(c, grid);
 		square_light_spot(c, grid);
 	}

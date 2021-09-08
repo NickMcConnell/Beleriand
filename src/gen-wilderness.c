@@ -637,9 +637,6 @@ static int make_formation(struct chunk *c, struct player *p, struct loc grid,
 					return 0;
 				}
 
-				/* Boost the rating */
-				c->mon_rating += v->rat;
-
 				/* Message */
 				if (OPT(p, cheat_room))
 					msg("%s. ", v->name);
@@ -910,9 +907,6 @@ static bool place_web(struct chunk *c, struct player *p, const char *type)
 			}
 		}
 	}
-
-	/* Boost the rating */
-	c->mon_rating += v->rat;
 
 	return true;
 }

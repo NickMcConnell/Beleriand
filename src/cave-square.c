@@ -663,14 +663,6 @@ bool square_wasseen(struct chunk *c, struct loc grid) {
 }
 
 /**
- * True if cave square is a feeling trigger square 
- */
-bool square_isfeel(struct chunk *c, struct loc grid) {
-	assert(square_in_bounds(c, grid));
-	return sqinfo_has(square(c, grid)->info, SQUARE_FEEL);
-}
-
-/**
  * True if the square has a known trap
  */
 bool square_istrap(struct chunk *c, struct loc grid) {
@@ -1457,7 +1449,7 @@ void square_add_glyph(struct chunk *c, struct loc grid, int type)
 	switch (type) {
 		case GLYPH_WARDING: {
 			glyph = lookup_trap("glyph of warding");
-			c->feeling_squares += (1 << 8);
+			c->runes += 1;
 			break;
 		}
 		case GLYPH_DECOY: {

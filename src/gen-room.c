@@ -1842,9 +1842,6 @@ static bool build_vault_type(struct chunk *c, struct loc centre,
 
 	ROOM_LOG("%s (%s)", typ1, v->name);
 
-	/* Boost the rating */
-	c->mon_rating += v->rat;
-
 	return true;
 }
 
@@ -2827,9 +2824,6 @@ bool build_nest(struct chunk *c, struct loc centre, int rating)
 	/* Describe */
 	ROOM_LOG("Monster nest (%s)", dun->pit_type->name);
 
-	/* Increase the level rating */
-	c->mon_rating += (size_vary + dun->pit_type->ave / 20);
-
 	/* Place some monsters */
 	for (grid.y = y1; grid.y <= y2; grid.y++) {
 		for (grid.x = x1; grid.x <= x2; grid.x++) {
@@ -2975,9 +2969,6 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 	/* Select every other entry */
 	for (i = 0; i < 8; i++)
 		what[i] = what[i * 2];
-
-	/* Increase the level rating */
-	c->mon_rating += (3 + dun->pit_type->ave / 20);
 
 	/* Get a group ID */
 	group_index = monster_group_index_new(c);
@@ -3619,9 +3610,6 @@ bool build_room_of_chambers(struct chunk *c, struct loc centre, int rating)
 
 	/*** Now we get to place the monsters. ***/
 	get_chamber_monsters(c, y1, x1, y2, x2, name, height * width);
-
-	/* Increase the level rating */
-	c->mon_rating += 10;
 
 	/* Describe */
 	ROOM_LOG("Room of chambers (%s)", strlen(name) ? name : "empty");

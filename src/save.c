@@ -882,9 +882,8 @@ static void wr_dungeon_aux(struct chunk *c)
 		wr_byte((byte)prev_char);
 	}
 
-	/* Write feeling */
-	wr_byte(c->feeling);
-	wr_u16b(c->feeling_squares);
+	/* Write runes, turn */
+	wr_u16b(c->runes);
 	wr_s32b(c->turn);
 
 	/* Write bones selector */
@@ -1072,13 +1071,9 @@ void wr_chunks(void)
 			wr_string(c->name);
 			wr_s32b(c->turn);
 			wr_u16b(c->depth);
-			wr_byte(c->feeling);
-			wr_u32b(c->obj_rating);
-			wr_u32b(c->mon_rating);
-			wr_byte(c->good_item ? 1 : 0);
 			wr_u16b(c->height);
 			wr_u16b(c->width);
-			wr_u16b(c->feeling_squares);
+			wr_u16b(c->runes);
 			for (i = 0; i < z_info->f_max + 1; i++) {
 				wr_u16b(c->feat_count[i]);
 			}

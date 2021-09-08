@@ -475,7 +475,6 @@ void place_random_stairs(struct chunk *c, struct loc grid)
 void place_object(struct chunk *c, struct loc grid, int level, bool good,
 	bool great, byte origin, int tval)
 {
-	s32b rating = 0;
 	struct object *new_obj;
 	bool dummy = true;
 
@@ -483,7 +482,7 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
 	if (!square_canputitem(c, grid)) return;
 
 	/* Make an appropriate object */
-	new_obj = make_object(c, level, good, great, false, &rating, tval);
+	new_obj = make_object(c, level, good, great, false, tval);
 	if (!new_obj) return;
 	new_obj->origin = origin;
 	new_obj->origin_depth = c->depth;
@@ -498,14 +497,6 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
 		return;
 	} else {
 		list_object(c, new_obj);
-		if (new_obj->artifact) {
-			c->good_item = true;
-		}
-		/* Avoid overflows */
-		if (rating > 2500000) {
-			rating = 2500000;
-		}
-		c->obj_rating += (rating / 100) * (rating / 100);
 	}
 }
 

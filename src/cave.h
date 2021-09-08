@@ -194,15 +194,10 @@ struct chunk {
 	int depth;
 	int place;
 
-	byte feeling;
-	u32b obj_rating;
-	u32b mon_rating;
-	bool good_item;
-
 	int height;
 	int width;
 
-	u16b feeling_squares; /* How many feeling squares the player has visited */
+	u16b runes;
 	int *feat_count;
 
 	struct square **squares;

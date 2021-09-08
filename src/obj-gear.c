@@ -1017,39 +1017,36 @@ static bool inven_can_stack_partial(const struct object *obj1,
 									const struct object *obj2,
 									object_stack_t mode)
 {
-	if (!(mode & OSTACK_STORE)) {
-		int total = obj1->number + obj2->number;
+	int total = obj1->number + obj2->number;
 
-		/* The quiver may have stricter limits. */
-		if (mode & OSTACK_QUIVER) {
-			int limit = z_info->quiver_slot_size /
-				(tval_is_ammo(obj1) ?
-				1 : z_info->thrown_quiver_mult);
+	/* The quiver may have stricter limits. */
+	if (mode & OSTACK_QUIVER) {
+		int limit = z_info->quiver_slot_size /
+			(tval_is_ammo(obj1) ?
+			 1 : z_info->thrown_quiver_mult);
 
-			if (mode & ~OSTACK_QUIVER) {
-				/*
-				 * May be combining between stacks with
-				 * different limits.
-				 */
-				int remainder =
-					total - obj1->kind->base->max_stack;
-
-				if (remainder > limit) {
-					return false;
-				}
-			} else {
-				int remainder = total - limit;
-
-				if (remainder > limit) {
-					return false;
-				}
-			}
-		} else {
+		if (mode & ~OSTACK_QUIVER) {
+			/*
+			 * May be combining between stacks with
+			 * different limits.
+			 */
 			int remainder = total - obj1->kind->base->max_stack;
 
-			if (remainder > obj1->kind->base->max_stack)
+			if (remainder > limit) {
 				return false;
+			}
+		} else {
+			int remainder = total - limit;
+
+			if (remainder > limit) {
+				return false;
+			}
 		}
+	} else {
+		int remainder = total - obj1->kind->base->max_stack;
+
+		if (remainder > obj1->kind->base->max_stack)
+			return false;
 	}
 
 	return object_stackable(obj1, obj2, mode);

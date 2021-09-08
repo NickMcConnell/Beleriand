@@ -596,10 +596,6 @@ static enum parser_error parse_constants_world(struct parser *p) {
 		z->town_hgt = value;
 	else if (streq(label, "town-wid"))
 		z->town_wid = value;
-	else if (streq(label, "feeling-total"))
-		z->feeling_total = value;
-	else if (streq(label, "feeling-need"))
-		z->feeling_need = value;
 	else if (streq(label, "stair-skip"))
 		z->stair_skip = value;
 	else if (streq(label, "move-energy"))

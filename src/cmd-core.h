@@ -100,12 +100,6 @@ typedef enum cmd_code {
 	CMD_RESHAPE,
 	CMD_MOVE,
 
-	/* Store commands */
-	CMD_SELL,
-	CMD_BUY,
-	CMD_STASH,
-	CMD_RETRIEVE,
-
 	/* Spoiler commands */
 	CMD_SPOIL_ARTIFACT,
 	CMD_SPOIL_MON,
@@ -173,7 +167,6 @@ typedef enum cmd_context {
 	CTX_INIT,
 	CTX_BIRTH,
 	CTX_GAME,
-	CTX_STORE,
 	CTX_DEATH
 } cmd_context;
 

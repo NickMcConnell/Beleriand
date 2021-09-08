@@ -1261,15 +1261,10 @@ static struct chunk TEST_DATA test_cave = {
 	.turn = 1,
 	.depth = 1,
 
-	.feeling = 0,
-	.obj_rating = 0,
-	.mon_rating = 0,
-	.good_item = false,
-
 	.height = 2,
 	.width = 2,
 
-	.feeling_squares = 0,
+	.runes = 0,
 	.feat_count = NULL,
 
 	.squares = NULL,

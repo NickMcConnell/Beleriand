@@ -769,100 +769,6 @@ static void cleanup_template_parser(void)
 
 /**
  * ------------------------------------------------------------------------
- * Level feeling routines
- * ------------------------------------------------------------------------ */
-/**
- * Place hidden squares that will be used to generate feeling
- * \param c is the cave struct the feeling squares are being placed in
- */
-static void place_feeling(struct chunk *c)
-{
-	int i, j;
-	int tries = 500;
-	
-	for (i = 0; i < z_info->feeling_total; i++) {
-		for (j = 0; j < tries; j++) {
-			/* Pick a random dungeon coordinate */
-			struct loc grid = loc(randint0(c->width), randint0(c->height));
-
-			/* Check to see if it is not a wall */
-			if (square_iswall(c, grid))
-				continue;
-
-			/* Check to see if it is already marked */
-			if (square_isfeel(c, grid))
-				continue;
-
-			/* Set the cave square appropriately */
-			sqinfo_on(square(c, grid)->info, SQUARE_FEEL);
-			
-			break;
-		}
-	}
-
-	/* Reset number of feeling squares */
-	c->feeling_squares = 0;
-}
-
-
-/**
- * Calculate the level feeling for objects.
- * \param c is the cave where the feeling is being measured
- */
-static int calc_obj_feeling(struct chunk *c, struct player *p)
-{
-	u32b x;
-
-	/* Town gets no feeling */
-	if (c->depth == 0) return 0;
-
-	/* Artifacts trigger a special feeling when they can be easily lost */
-	if (c->good_item && OPT(p, birth_lose_arts)) return 10;
-
-	/* Check the loot adjusted for depth */
-	x = c->obj_rating / c->depth;
-
-	/* Apply a minimum feeling if there's an artifact on the level */
-	if (c->good_item && x < 641) return 60;
-
-	if (x > 160000) return 20;
-	if (x > 40000) return 30;
-	if (x > 10000) return 40;
-	if (x > 2500) return 50;
-	if (x > 640) return 60;
-	if (x > 160) return 70;
-	if (x > 40) return 80;
-	if (x > 10) return 90;
-	return 100;
-}
-
-/**
- * Calculate the level feeling for monsters.
- * \param c is the cave where the feeling is being measured
- */
-static int calc_mon_feeling(struct chunk *c)
-{
-	u32b x;
-
-	/* Town gets no feeling */
-	if (c->depth == 0) return 0;
-
-	/* Check the monster power adjusted for depth */
-	x = c->mon_rating / c->depth;
-
-	if (x > 7000) return 1;
-	if (x > 4500) return 2;
-	if (x > 2500) return 3;
-	if (x > 1500) return 4;
-	if (x > 800) return 5;
-	if (x > 400) return 6;
-	if (x > 150) return 7;
-	if (x > 50) return 8;
-	return 9;
-}
-
-/**
- * ------------------------------------------------------------------------
  * Level profile routines
  * ------------------------------------------------------------------------ */
 /**
@@ -1638,13 +1544,6 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	}
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
-
-	/* Place dungeon squares to trigger feeling (not in town) */
-	if (p->depth) {
-		place_feeling(chunk);
-	}
-
-	chunk->feeling = calc_obj_feeling(chunk, p) + calc_mon_feeling(chunk);
 
 	/* Validate the dungeon (we could use more checks here) */
 	chunk_validate_objects(chunk);

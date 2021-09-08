@@ -186,7 +186,7 @@ bool square_remove_all_traps(struct chunk *c, struct loc grid)
 		struct trap *next_trap = trap->next;
 		/* Keep count of glyphs of warding */
 		if (trap->kind == rune) {
-			c->feeling_squares -= (1 << 8);
+			c->runes -= 1;
 		}
 		mem_free(trap);
 		trap = next_trap;

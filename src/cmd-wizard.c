@@ -2182,7 +2182,6 @@ void do_cmd_wiz_query_square_flag(struct command *cmd)
 			case 'v': flag = SQUARE_VIEW; break;
 			case 'w': flag = SQUARE_WASSEEN; break;
 			case 'd': flag = SQUARE_DTRAP; break;
-			case 'f': flag = SQUARE_FEEL; break;
 			case 't': flag = SQUARE_TRAP; break;
 			case 'n': flag = SQUARE_INVIS; break;
 			case 'i': flag = SQUARE_WALL_INNER; break;
@@ -2557,7 +2556,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		}
 
 		/* Create an object. */
-		test_obj = make_object(cave, level, good, great, false, NULL, 0);
+		test_obj = make_object(cave, level, good, great, false, 0);
 
 		/*
 		 * Allow multiple artifacts, because breaking the game is OK

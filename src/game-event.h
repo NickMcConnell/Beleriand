@@ -43,7 +43,6 @@ typedef enum game_event_type
 	EVENT_STUDYSTATUS,	/* "Study" availability */
 	EVENT_STATUS,		/* Status */
 	EVENT_DETECTIONSTATUS,  /* Trap detection status */
-	EVENT_FEELING,		/* Object level feeling */
 	EVENT_LIGHT,		/* Light level */
 	EVENT_STATE,		/* The two 'R's: Resting and Repeating */
 
@@ -63,8 +62,6 @@ typedef enum game_event_type
 	EVENT_MESSAGE,
 	EVENT_SOUND,
 	EVENT_BELL,
-	EVENT_USE_STORE,
-	EVENT_STORECHANGED,	/* Triggered on a successful buy/retrieve or sell/drop */
 
 	EVENT_INPUT_FLUSH,
 	EVENT_MESSAGE_FLUSH,
@@ -87,8 +84,6 @@ typedef enum game_event_type
 	EVENT_LEAVE_GAME,
 	EVENT_ENTER_WORLD,
 	EVENT_LEAVE_WORLD,
-	EVENT_ENTER_STORE,
-	EVENT_LEAVE_STORE,
 	EVENT_ENTER_DEATH,
 	EVENT_LEAVE_DEATH,
 

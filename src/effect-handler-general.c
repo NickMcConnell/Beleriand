@@ -647,7 +647,6 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 bool effect_handler_GLYPH(effect_handler_context_t *context)
 {
 	struct loc decoy = cave_find_decoy(cave);
-	int num_runes = cave->feeling_squares >> 8;
 
 	/* Always notice */
 	context->ident = true;
@@ -659,7 +658,7 @@ bool effect_handler_GLYPH(effect_handler_context_t *context)
 	}
 
 	/* No more than four glyphs at a time */
-	if ((num_runes >= 4) && (context->subtype == GLYPH_WARDING)) {
+	if ((cave->runes >= 4) && (context->subtype == GLYPH_WARDING)) {
 		msg("You can only lay four glyphs at a time.");
 		return false;
 	}
@@ -3326,8 +3325,7 @@ bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 	object_delete(&staff);
 
 	/* Make some arrows */
-	arrows = make_object(cave, eff_level(player), good, great, false, NULL,
-						 TV_ARROW);
+	arrows = make_object(cave, eff_level(player), good, great, false, TV_ARROW);
 	drop_near(cave, &arrows, 0, player->grid, true, true);
 
 	return true;

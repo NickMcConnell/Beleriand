@@ -1396,13 +1396,12 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
  * \param good is whether the object is to be good
  * \param great is whether the object is to be great
  * \param extra_roll is whether we get an extra roll in apply_magic()
- * \param value is the value to be returned to the calling function
  * \param tval is the desired tval, or 0 if we allow any tval
  *
  * \return a pointer to the newly allocated object, or NULL on failure.
  */
 struct object *make_object(struct chunk *c, int lev, bool good, bool great,
-						   bool extra_roll, s32b *value, int tval)
+						   bool extra_roll, int tval)
 {
 	int base, tries = 3;
 	struct object_kind *kind = NULL;
@@ -1412,7 +1411,6 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	if (one_in_(good ? 10 : 1000)) {
 		new_obj = make_artifact_special(lev, tval);
 		if (new_obj) {
-			if (value) *value = object_value_real(new_obj, 1);
 			return new_obj;
 		}
 
@@ -1450,15 +1448,6 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	if (new_obj->number > new_obj->kind->base->max_stack)
 		new_obj->number = new_obj->kind->base->max_stack;
 
-	/* Get the value */
-	if (value)
-		*value = object_value_real(new_obj, new_obj->number);
-
-	/* Boost of 20% per level OOD for uncursed objects */
-	if ((!new_obj->curses) && (kind->alloc_min > c->depth)) {
-		if (value) *value += (kind->alloc_min - c->depth) * (*value / 5);
-	}
-
 	return new_obj;
 }
 
@@ -1473,7 +1462,7 @@ void acquirement(struct loc grid, int level, int num, bool great)
 	/* Acquirement */
 	while (num--) {
 		/* Make a good (or great) object (if possible) */
-		nice_obj = make_object(cave, level, true, great, true, NULL, 0);
+		nice_obj = make_object(cave, level, true, great, true, 0);
 		if (!nice_obj) continue;
 
 		nice_obj->origin = ORIGIN_ACQUIRE;

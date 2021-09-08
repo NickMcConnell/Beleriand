@@ -112,12 +112,6 @@ world:town-hgt:22
 # Max number of grids in each town level (horizontally)
 world:town-wid:66
 
-# Total number of feeling squares per level
-world:feeling-total:100
-
-# Squares needed to see to get first feeling
-world:feeling-need:10
-
 # Number of levels for each stair - currently does nothing
 world:stair-skip:1
 
