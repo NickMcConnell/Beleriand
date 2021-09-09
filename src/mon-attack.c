@@ -200,11 +200,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 		rsf_off(f2, RSF_SPIT);
 	}
 
-	/* Player ghosts know everything */
-	if (rf_has(mon->race->flags, RF_PLAYER_GHOST)) {
-		unset_spells(f2, player->state.flags, player->state.pflags,
-					 player->state.el_info, mon);
-	} else if (OPT(player, birth_ai_learn) && (mon->target.midx == -1)) {
+	if (OPT(player, birth_ai_learn) && (mon->target.midx == -1)) {
 		/* Update acquired knowledge */
 		size_t i;
 

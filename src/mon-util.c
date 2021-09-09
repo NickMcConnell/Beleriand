@@ -1154,17 +1154,6 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 		history_add(p, buf, HIST_SLAY_UNIQUE);
 	}
 
-	/* When the player kills a player ghost, the bones file that it used
-	 * is (often) deleted. */
-	if (rf_has(mon->race->flags, RF_PLAYER_GHOST)) {
-		if (!one_in_(3)) {
-			char path[1024];
-			strnfmt(path, sizeof(path), "%s/bone.%03d", ANGBAND_DIR_BONE,
-					cave->ghost->bones_selector);
-			if (file_exists(path)) file_delete(path);
-		}
-	}
-
 	/* Gain experience */
 	player_exp_gain(p, new_exp);
 

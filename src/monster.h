@@ -299,37 +299,6 @@ struct param_pair {
 };
 
 /**
- * Modifications to a player ghost template at a given danger level
- */
-struct ghost_level {
-	struct ghost_level *next;
-	int level;
-	struct param_pair spell_power;
-	int hearing;
-	struct param_pair avg_hp;
-	struct param_pair ac;
-	struct param_pair blow_sides;
-	struct param_pair speed;
-	char *blow_effect1;
-	char *blow_effect2;
-	bitflag flags[RF_SIZE];
-	bitflag flags_off[RF_SIZE];
-	bitflag spell_flags[RSF_SIZE];
-	bitflag spell_flags_off[RSF_SIZE];
-};
-
-/**
- * Modifications to a player ghost template according to race or class
- */
-struct ghost {
-	struct ghost *next;
-	char *name;
-	int freq_if_zero;
-	int freq_if_positive;
-	struct ghost_level *level;
-};
-
-/**
  * Monster "race" information, including racial memories
  *
  * Note that "d_attr" and "d_char" are used for MORE than "visual" stuff.
@@ -449,7 +418,6 @@ struct monster {
 
 extern struct monster_pain *pain_messages;
 extern struct monster_spell *monster_spells;
-extern struct ghost *ghosts;
 extern struct monster_base *rb_info;
 extern struct monster_race *r_info;
 extern const struct monster_race *ref_race;

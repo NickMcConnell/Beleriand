@@ -1725,20 +1725,6 @@ static void monster_turn(struct monster *mon)
 		if (!get_rnd_line("bravado.txt", bravado)) {
 			msg("%s %s", m_name, bravado);
 		}
-	} else if (rf_has(mon->race->flags, RF_PLAYER_GHOST)) {
-		assert(cave->ghost);
-		if (square_isview(cave, mon->grid) && (cave->ghost->string_type == 1)
-			&& !cave->ghost->has_spoken && one_in_(3)) {
-			/* Player ghosts may have a unique message they can say. */
-			char ghost_name[80];
-
-			/* Acquire the monster name/poss.  The player ghost will 
-			 * always be identified, to heighten the effect.*/
-			monster_desc(ghost_name, sizeof(ghost_name), mon, MDESC_SHOW);
-
-			msg("%s says: '%s'", ghost_name, cave->ghost->string);
-			cave->ghost->has_spoken = true;
-		}
 	}
 
 	/* Attempt a ranged attack */

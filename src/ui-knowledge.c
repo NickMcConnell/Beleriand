@@ -1165,12 +1165,7 @@ static void display_monster(int col, int row, bool cursor, int oid)
 		a = COLOUR_VIOLET;
 
 	/* Display the name */
-	if (rf_has(race->flags, RF_PLAYER_GHOST)) {
-		c_prt(attr, format("%s, the %s", cave->ghost->name, race->name),
-			  row, col);
-	} else {
-		c_prt(attr, race->name, row, col);
-	}
+	c_prt(attr, race->name, row, col);
 
 	/* Display symbol */
 	big_pad(66, row, a, c);

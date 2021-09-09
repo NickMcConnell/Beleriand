@@ -1410,10 +1410,6 @@ static int rd_dungeon_aux(struct chunk **c)
 	c1->runes = tmp16u;
 	rd_s32b(&c1->turn);
 
-	/* Read bones selector */
-	rd_byte(&tmp8u);
-	c1->ghost->bones_selector = tmp8u;
-
 	/* Read connector info */
 	if (OPT(player, birth_levels_persist)) {
 		rd_byte(&tmp8u);
@@ -1509,11 +1505,6 @@ static int rd_monsters_aux(struct chunk *c)
 		if (!rd_monster(c, mon)) {
 			note(format("Cannot read monster %d", i));
 			return (-1);
-		}
-
-		/* If a player ghost, some special features need to be added. */
-		if (rf_has(mon->race->flags, RF_PLAYER_GHOST)) {
-			prepare_ghost(c, mon->race->ridx, mon, true);
 		}
 
 		/* Place monster in dungeon */
@@ -1709,7 +1700,6 @@ int rd_chunks(void)
 		if (OPT(player, birth_levels_persist)) {
 			char buf[80];
 			int i;
-			byte tmp8u;
 			u16b tmp16u;
 
 			rd_string(buf, sizeof(buf));
@@ -1727,8 +1717,6 @@ int rd_chunks(void)
 				rd_u16b(&tmp16u);
 				c->feat_count[i] = tmp16u;
 			}
-			rd_byte(&tmp8u);
-			c->ghost->bones_selector = tmp8u;
 		} else if (c->name) {
 			struct level *lev = level_by_name(world, c->name);
 
