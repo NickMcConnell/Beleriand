@@ -1472,8 +1472,8 @@ static struct object *find_artifact(struct artifact *artifact)
 	}
 
 	/* Stored chunk objects */
-	for (i = 0; i < chunk_list_max; i++) {
-		struct chunk *c = chunk_list[i];
+	for (i = 0; i < old_chunk_list_max; i++) {
+		struct chunk *c = old_chunk_list[i];
 		int j;
 		if (strstr(c->name, "known")) continue;
 

@@ -1734,18 +1734,18 @@ int rd_chunks(void)
 			}
 		}
 
-		chunk_list_add(c);
+		old_chunk_list_add(c);
 	}
 
 #if OBJ_RECOVER
 	for (j = 0; j < chunk_max; j++) {
-		if (j == 0 && streq(chunk_list[j].name, "Town")) continue;
-		chunk_list[j] = 0;
+		if (j == 0 && streq(old_chunk_list[j].name, "Town")) continue;
+		old_chunk_list[j] = 0;
 	}
-	if (streq(chunk_list[0].name, "Town")) {
-		chunk_list_max = 1;
+	if (streq(old_chunk_list[0].name, "Town")) {
+		old_chunk_list_max = 1;
 	} else {
-		chunk_list_max = 0;
+		old_chunk_list_max = 0;
 	}
 #endif
 

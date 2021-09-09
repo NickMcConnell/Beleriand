@@ -346,11 +346,12 @@ struct chunk *river_gen(struct player *p, int height, int width);
 struct chunk *valley_gen(struct player *p, int height, int width);
 
 /* gen-chunk.c */
-struct chunk *chunk_write(struct chunk *c);
-void chunk_list_add(struct chunk *c);
-bool chunk_list_remove(const char *name);
+struct world_chunk *chunk_new(int height, int width);
+void chunk_wipe(struct world_chunk *c);
+struct chunk *old_chunk_write(struct chunk *c);
+void old_chunk_list_add(struct chunk *c);
+bool old_chunk_list_remove(const char *name);
 struct chunk *chunk_find_name(const char *name);
-bool chunk_find(struct chunk *c);
 struct chunk *chunk_find_adjacent(int place, const char *direction);
 void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
 	int rotate, bool reflect);

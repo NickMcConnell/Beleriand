@@ -280,6 +280,30 @@ bool feat_is_expose(int feat)
 }
 
 /**
+ * True if the feature is a stair.
+ */
+bool feat_is_stair(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_STAIR);
+}
+
+/**
+ * True if the feature is a downstair.
+ */
+bool feat_is_downstair(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_DOWNSTAIR);
+}
+
+/**
+ * True if the feature is a upstair.
+ */
+bool feat_is_upstair(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_UPSTAIR);
+}
+
+/**
  * SQUARE FEATURE PREDICATES
  *
  * These functions are used to figure out what kind of square something is,
@@ -469,8 +493,7 @@ bool square_isdoor(struct chunk *c, struct loc grid)
  */
 bool square_isstairs(struct chunk *c, struct loc grid)
 {
-	int feat = square(c, grid)->feat;
-	return tf_has(f_info[feat].flags, TF_STAIR);
+	return feat_is_stair(square(c, grid)->feat);
 }
 
 /**
@@ -478,8 +501,7 @@ bool square_isstairs(struct chunk *c, struct loc grid)
  */
 bool square_isupstairs(struct chunk*c, struct loc grid)
 {
-	int feat = square(c, grid)->feat;
-	return tf_has(f_info[feat].flags, TF_UPSTAIR);
+	return feat_is_upstair(square(c, grid)->feat);
 }
 
 /**
@@ -487,8 +509,7 @@ bool square_isupstairs(struct chunk*c, struct loc grid)
  */
 bool square_isdownstairs(struct chunk *c, struct loc grid)
 {
-	int feat = square(c, grid)->feat;
-	return tf_has(f_info[feat].flags, TF_DOWNSTAIR);
+	return feat_is_downstair(square(c, grid)->feat);
 }
 
 /**

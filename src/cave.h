@@ -41,6 +41,7 @@ extern const byte side_dirs[20][8];
 
 enum {
 	DIR_UNKNOWN = 0,
+	DIR_UP = 0,
 	DIR_NW = 7,
 	DIR_N = 8,
 	DIR_NE = 9,
@@ -51,6 +52,8 @@ enum {
 	DIR_SW = 1,
 	DIR_S = 2,
 	DIR_SE = 3,
+	DIR_DOWN = 10,
+	DIR_MAX = 11
 };
 
 /**
@@ -211,6 +214,45 @@ struct chunk {
 };
 
 /**
+ * A chunk of the world
+ */
+struct world_chunk {
+	int height;
+	int width;
+	int *feat_count;
+
+	struct square **squares;
+	struct heatmap noise;
+	struct heatmap scent;
+
+	struct object **objects;
+	u16b obj_max;
+
+	struct monster *monsters;
+	u16b mon_max;
+	u16b mon_cnt;
+	int mon_current;
+	int num_repro;
+
+	struct monster_group **monster_groups;
+};
+
+/**
+ * Location data for a world_chunk
+ */
+struct chunk_ref {
+	u16b place;			/**< Index of this chunk */
+	s32b turn;			/**< Turn this chunk was created */
+	u16b region;		/**< Region the chunk is from */
+	u16b z_pos;			/**< Depth of the chunk below ground */
+	u16b y_pos;			/**< y position of the chunk */
+	u16b x_pos;			/**< x position of the chunk */
+	struct world_chunk *chunk;	/**< The actual chunk */
+	u32b gen_loc_idx;	/**< The chunk index in the generated locations list */
+	int adjacent[11];	/**< Adjacent chunks */
+};
+
+/**
  * A change to terrain made after generation
  */
 struct terrain_change {
@@ -284,8 +326,13 @@ extern int FEAT_DUNE;
 /* Current level */
 extern struct chunk *cave;
 /* Stored levels */
-extern struct chunk **chunk_list;
-extern u16b chunk_list_max;
+extern struct chunk **old_chunk_list;
+extern u16b old_chunk_list_max;
+extern u16b chunk_max;
+extern u16b chunk_cnt;
+extern u32b gen_loc_max;
+extern u32b gen_loc_cnt;
+extern struct chunk_ref *chunk_list;
 
 /* cave-view.c */
 int distance(struct loc grid1, struct loc grid2);
@@ -344,6 +391,9 @@ bool feat_is_watery(int feat);
 bool feat_is_icy(int feat);
 bool feat_is_protect(int feat);
 bool feat_is_expose(int feat);
+bool feat_is_stair(int feat);
+bool feat_is_downstair(int feat);
+bool feat_is_upstair(int feat);
 
 /* SQUARE FEATURE PREDICATES */
 bool square_isfloor(struct chunk *c, struct loc grid);

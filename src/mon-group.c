@@ -51,8 +51,7 @@ void monster_group_free(struct chunk *c, struct monster_group *group)
 /**
  * Break a monster group into race-based pieces
  */
-static void monster_group_split(struct chunk *c, struct monster_group *group,
-								struct monster *leader)
+static void monster_group_split(struct chunk *c, struct monster_group *group)
 {
 	struct mon_group_list_entry *entry;
 
@@ -93,8 +92,8 @@ static void monster_group_split(struct chunk *c, struct monster_group *group,
 /**
  * Handle the leader of a group being removed
  */
-static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
-										struct monster_group *group)
+void monster_group_remove_leader(struct chunk *c, struct monster *leader,
+								 struct monster_group *group)
 {
 	struct mon_group_list_entry *list_entry = group->member_list;
 	int poss_leader = 0;
@@ -123,7 +122,7 @@ static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 
 	/* If no new leader, group fractures and old group is removed */
 	if (!poss_leader) {
-		monster_group_split(c, group, leader);
+		monster_group_split(c, group);
 		c->monster_groups[group->index] = NULL;
 		monster_group_free(c, group);
 	} else {

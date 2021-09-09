@@ -1365,7 +1365,7 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Initialise the stores, dungeon */
 	init_race_probs();
-	chunk_list_max = 0;
+	old_chunk_list_max = 0;
 
 	/* Player learns innate runes */
 	player_learn_innate(player);

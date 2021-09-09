@@ -2742,7 +2742,7 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
 		c_new->place = p->place;
 		if (!chunk_copy(c_new, p, c_old, 0, 0, 0, 0))
 			quit_fmt("chunk_copy() level bounds failed!");
-		chunk_list_remove(name);
+		old_chunk_list_remove(name);
 		cave_free(c_old);
 
 		/* Get the correct path for wilderness */

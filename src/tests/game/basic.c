@@ -54,7 +54,7 @@ static void reset_before_load(void) {
 	play_again = true;
 	wipe_mon_list(cave, player);
 	cleanup_angband();
-	chunk_list_max = 0;
+	old_chunk_list_max = 0;
 	init_angband();
 	play_again = false;
 }

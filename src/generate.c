@@ -1262,7 +1262,7 @@ static void cave_store(struct chunk *c, char *name, bool known, bool keep_all)
 	if (keep_all) {
 		stored = c;
 	} else {
-		stored = chunk_write(c);
+		stored = old_chunk_write(c);
 	}
 	if (stored->name) {
 		string_free(stored->name);
@@ -1272,7 +1272,7 @@ static void cave_store(struct chunk *c, char *name, bool known, bool keep_all)
 		stored->name = string_append(stored->name, " known");
 	}
 	stored->turn = turn;
-	chunk_list_add(stored);
+	old_chunk_list_add(stored);
 }
 
 
@@ -1678,8 +1678,8 @@ void prepare_next_level(struct player *p)
 			}
 
 			/* Remove from the list */
-			chunk_list_remove(new_name);
-			chunk_list_remove(known_name);
+			old_chunk_list_remove(new_name);
+			old_chunk_list_remove(known_name);
 		} else if (p->upkeep->arena_level) {
 			/* We're creating a new arena level */
 			cave = cave_generate(p, 6, 6);

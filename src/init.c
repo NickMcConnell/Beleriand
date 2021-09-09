@@ -4531,12 +4531,12 @@ void cleanup_angband(void)
 	size_t i;
 
 	/* Free the chunk list */
-	for (i = 0; i < chunk_list_max; i++) {
-		wipe_mon_list(chunk_list[i], player);
-		cave_free(chunk_list[i]);
+	for (i = 0; i < old_chunk_list_max; i++) {
+		wipe_mon_list(old_chunk_list[i], player);
+		cave_free(old_chunk_list[i]);
 	}
-	mem_free(chunk_list);
-	chunk_list = NULL;
+	mem_free(old_chunk_list);
+	old_chunk_list = NULL;
 
 	/* Free the locations list */
 	for (i = 0; i < gen_loc_cnt; i++) {
