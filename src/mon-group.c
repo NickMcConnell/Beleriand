@@ -58,8 +58,8 @@ void monster_group_free(struct chunk *c, struct monster_group *group)
  *
  * In Sil, we just grab the next monster in the list
  */
-static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
-										struct monster_group *group)
+void monster_group_remove_leader(struct chunk *c, struct monster *leader,
+								 struct monster_group *group)
 {
 	struct mon_group_list_entry *list_entry = group->member_list;
 
