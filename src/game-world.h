@@ -44,6 +44,10 @@ enum {
 struct level {
 	int depth;
 	char *name;
+	char *north;
+	char *east;
+	char *south;
+	char *west;
 	char *up;
 	char *down;
 	struct level *next;

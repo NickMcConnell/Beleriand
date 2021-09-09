@@ -950,11 +950,11 @@ void wr_chunks(void)
 	if (player->is_dead)
 		return;
 
-	wr_u16b(chunk_list_max);
+	wr_u16b(old_chunk_list_max);
 
 	/* Now write each chunk */
-	for (j = 0; j < chunk_list_max; j++) {
-		struct chunk *c = chunk_list[j];
+	for (j = 0; j < old_chunk_list_max; j++) {
+		struct chunk *c = old_chunk_list[j];
 
 		/* Write the terrain and info */
 		wr_dungeon_aux(c);

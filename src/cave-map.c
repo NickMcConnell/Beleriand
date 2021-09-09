@@ -457,3 +457,49 @@ void wiz_dark(struct chunk *c, struct player *p)
 	/* Redraw whole map, monster list */
 	p->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
+
+/**
+ * Light or Darken the town
+ */
+void cave_illuminate(struct chunk *c, bool daytime)
+{
+	int y, x;
+
+	/* Apply light or darkness */
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			int d;
+			bool light = false;
+			struct loc grid = loc(x, y);
+			
+			/* Skip grids with no surrounding floors or stairs */
+			for (d = 0; d < 9; d++) {
+				/* Extract adjacent (legal) location */
+				struct loc a_grid = loc_sum(grid, ddgrid_ddd[d]);
+
+				/* Paranoia */
+				if (!square_in_bounds_fully(c, a_grid)) continue;
+
+				/* Test */
+				if (square_isfloor(c, a_grid) || square_isstairs(c, a_grid))
+					light = true;
+			}
+
+			/* Only interesting grids at night */
+			//if (is_daylight()) {
+			//	sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+			//	if (light && square_isview(c, grid)) square_memorize(c, grid);
+			//} else if (!square_isbright(c, grid)) {
+			//	sqinfo_off(square(c, grid)->info, SQUARE_GLOW);
+			//}
+		}
+	}
+			
+			
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw map, monster list */
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+}
+

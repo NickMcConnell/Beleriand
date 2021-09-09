@@ -1469,13 +1469,13 @@ int rd_traps(void)
 int rd_chunks(void)
 {
 	int j;
-	u16b chunk_max;
+	u16b old_chunk_max;
 
 	if (player->is_dead)
 		return 0;
 
-	rd_u16b(&chunk_max);
-	for (j = 0; j < chunk_max; j++) {
+	rd_u16b(&old_chunk_max);
+	for (j = 0; j < old_chunk_max; j++) {
 		struct chunk *c;
 
 		/* Read the dungeon */
@@ -1497,8 +1497,6 @@ int rd_chunks(void)
 
 		/* Read other chunk info */
 		/* To add later */
-
-		//chunk_list_add(c);
 	}
 
 	return 0;

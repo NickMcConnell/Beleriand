@@ -37,6 +37,8 @@ struct monster_group {
 };
 
 void monster_group_free(struct chunk *c, struct monster_group *group);
+void monster_group_remove_leader(struct chunk *c, struct monster *leader,
+								 struct monster_group *group);
 void monster_remove_from_group(struct chunk *c, struct monster *mon);
 int monster_group_index_new(struct chunk *c);
 void monster_add_to_group(struct chunk *c, struct monster *mon,
