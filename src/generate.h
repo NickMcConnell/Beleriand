@@ -308,6 +308,10 @@ struct room_template {
 #define SYMTR_FLAG_FORCE_REF (4)
 #define SYMTR_MAX_WEIGHT (32768)
 
+#define CHUNK_SIDE 22
+#define ARENA_SIDE 66
+#define MAX_CHUNKS 256
+
 extern struct dun_data *dun;
 extern struct vault *vaults;
 extern struct vault *themed_levels;
@@ -322,7 +326,7 @@ int get_level_profile_index_from_name(const char *name);
 const char *get_level_profile_name_from_index(int i);
 
 /* gen-cave.c */
-struct chunk *town_gen(struct player *p, int min_height, int min_width);
+struct chunk *old_town_gen(struct player *p, int min_height, int min_width);
 struct chunk *classic_gen(struct player *p, int min_height, int min_width);
 struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width);
 void ensure_connectedness(struct chunk *c, bool allow_vault_disconnect);
@@ -336,14 +340,40 @@ struct chunk *arena_gen(struct player *p, int min_height, int min_width);
 struct chunk *themed_gen(struct player *p, int min_height, int min_width);
 
 /* gen-wilderness.c */
-struct chunk *plain_gen(struct player *p, int height, int width);
-struct chunk *mtn_gen(struct player *p, int height, int width);
-struct chunk *mtntop_gen(struct player *p, int height, int width);
-struct chunk *forest_gen(struct player *p, int height, int width);
-struct chunk *swamp_gen(struct player *p, int height, int width);
-struct chunk *desert_gen(struct player *p, int height, int width);
-struct chunk *river_gen(struct player *p, int height, int width);
-struct chunk *valley_gen(struct player *p, int height, int width);
+struct chunk *old_plain_gen(struct player *p, int height, int width);
+struct chunk *old_mtn_gen(struct player *p, int height, int width);
+struct chunk *old_mtntop_gen(struct player *p, int height, int width);
+struct chunk *old_forest_gen(struct player *p, int height, int width);
+struct chunk *old_swamp_gen(struct player *p, int height, int width);
+struct chunk *old_desert_gen(struct player *p, int height, int width);
+struct chunk *old_river_gen(struct player *p, int height, int width);
+struct chunk *old_valley_gen(struct player *p, int height, int width);
+void plain_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		      struct connector *first);
+void forest_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		       struct connector *first);
+void ocean_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		      struct connector *first);
+void lake_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		     struct connector *first);
+void moor_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		     struct connector *first);
+void mtn_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		    struct connector *first);
+void swamp_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		      struct connector *first);
+void dark_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		     struct connector *first);
+void impass_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		       struct connector *first);
+void desert_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		       struct connector *first);
+void snow_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		     struct connector *first);
+void town_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		     struct connector *first);
+void landmk_gen(struct chunk_ref ref, int y_offset, int x_offset,
+		       struct connector *first);
 
 /* gen-chunk.c */
 struct world_chunk *chunk_new(int height, int width);

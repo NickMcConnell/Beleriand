@@ -70,6 +70,11 @@ int FEAT_GRASS;
 int FEAT_ROAD;
 int FEAT_VOID;
 int FEAT_DUNE;
+int FEAT_REED;
+int FEAT_MTN;
+int FEAT_SNOW;
+int FEAT_BTLMNT;
+int FEAT_ICE;
 
 /**
  * Global array for looping through the "keypad directions".
@@ -374,6 +379,11 @@ void set_terrain(void)
 	FEAT_ROAD = lookup_feat("road");
 	FEAT_VOID = lookup_feat("empty space");
 	FEAT_DUNE = lookup_feat("sand dune");
+	FEAT_REED = lookup_feat("reeds");
+	FEAT_MTN = lookup_feat("mountain");
+	FEAT_SNOW = lookup_feat("snow");
+	FEAT_BTLMNT = lookup_feat("battlement");
+	FEAT_ICE = lookup_feat("ice");
 }
 
 u16b **heatmap_new(struct chunk *c)

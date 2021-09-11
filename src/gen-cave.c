@@ -2706,7 +2706,7 @@ static void town_gen_layout(struct chunk *c, struct player *p, struct town *t)
  * anything about the owners of the stores, nor the contents thereof. It only
  * handles the physical layout.
  */
-struct chunk *town_gen(struct player *p, int min_height, int min_width)
+struct chunk *old_town_gen(struct player *p, int min_height, int min_width)
 {
 	int i;
 	struct loc grid;

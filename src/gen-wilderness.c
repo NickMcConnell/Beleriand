@@ -915,13 +915,319 @@ static bool place_web(struct chunk *c, struct player *p, const char *type)
  * ------------------------------------------------------------------------
  * Wilderness level generation
  * ------------------------------------------------------------------------ */
+void plain_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					  struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_GRASS);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void forest_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					   struct connector *first)
+{
+	int x, y, plats, j;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+	int form_grids = 0;
+	struct loc grid;
+
+	int form_feats[] = { FEAT_GRASS, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
+						 FEAT_GRASS, FEAT_QUARTZ, FEAT_NONE	};
+	int ponds[] = { FEAT_WATER, FEAT_NONE };
+
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			if (randint1(player->depth + HIGHLAND_TREE_CHANCE)
+				> HIGHLAND_TREE_CHANCE) {
+				square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_TREE2);
+			} else {
+				square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_TREE);
+			}
+		}
+	}
+
+	/* Set the number of wilderness vaults */
+	set_num_vaults(cave);
+
+	/* Make a few clearings */
+	plats = rand_range(1, 2);
+
+	/* Try fairly hard */
+	for (j = 0; j < 50; j++) {
+		int a, b;
+		bool made_plat;
+
+		/* Try for a clearing */
+		a = randint0(5) + 2;
+		b = randint0(5) + 2;
+		y = randint0(CHUNK_SIDE - 1) + 1;
+		x = randint0(CHUNK_SIDE - 1) + 1;
+		made_plat =
+		generate_starburst_room(cave, y0 + y - b, x0 + x - a, y0 + y + b,
+									x0 + x + a, false, FEAT_GRASS, true);
+
+		/* Success ? */
+		if (made_plat)
+			plats--;
+
+		/* Done ? */
+		if (!plats)
+			break;
+	}
+
+	/* Place some formations */
+	while (form_grids < randint0(20)) {
+		/* Choose a place */
+		grid.y = randint1(CHUNK_SIDE - 2) + y0;
+		grid.x = randint1(CHUNK_SIDE - 2) + y0;
+		form_grids += make_formation(cave, player, grid, FEAT_TREE, FEAT_TREE2,
+									 form_feats, "Forest", cave->depth + 1);
+	}
+
+	/* And some water */
+	form_grids = 0;
+	while (form_grids < 300) {
+		grid.y = randint1(CHUNK_SIDE - 2) + y0;
+		grid.x = randint1(CHUNK_SIDE - 2) + x0;
+		form_grids += make_formation(cave, player, grid, FEAT_TREE, FEAT_TREE2,
+									 ponds, "Forest", 10);
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void ocean_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					  struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_WATER);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void lake_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					 struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_WATER);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void moor_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					 struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_GRASS);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void mtn_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_MTN);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void swamp_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					  struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_REED);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void dark_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					 struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_TREE);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void impass_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					   struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_MTN);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void desert_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					   struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_DUNE);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void snow_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					 struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_SNOW);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void town_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					 struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_ROAD);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+void landmk_gen(struct chunk_ref ref, int y_offset, int x_offset,
+					   struct connector *first)
+{
+	int x, y;
+	int y0 = y_offset * CHUNK_SIDE;
+	int x0 = x_offset * CHUNK_SIDE;
+
+	/* Write the location stuff */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			/* Terrain */
+			square_set_feat(cave, loc(x0 + x, y0 + y), FEAT_ROAD);
+		}
+	}
+
+	if (!character_dungeon)
+		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
 /**
  * Generate a new plain level. Place stairs, 
  * and random monsters, objects, and traps.  Place any quest monsters.
  *
  * Grids are marked during generation to ensure correct path placement.
  */
-struct chunk *plain_gen(struct player *p, int height, int width)
+struct chunk *old_plain_gen(struct player *p, int height, int width)
 {
 	struct loc grid;
 	int place = p->place;
@@ -997,7 +1303,7 @@ struct chunk *plain_gen(struct player *p, int height, int width)
  *
  * Grids are marked during generation to ensure correct path placement.
  */
-struct chunk *mtn_gen(struct player *p, int height, int width)
+struct chunk *old_mtn_gen(struct player *p, int height, int width)
 {
 	struct loc grid;
 	int i, j;
@@ -1200,7 +1506,7 @@ struct chunk *mtn_gen(struct player *p, int height, int width)
  *
  * Grids are marked during generation to ensure correct feature placement.
  */
-struct chunk *mtntop_gen(struct player *p, int height, int width)
+struct chunk *old_mtntop_gen(struct player *p, int height, int width)
 {
 	struct loc grid, top;
 	int i, j, k;
@@ -1405,7 +1711,7 @@ struct chunk *mtntop_gen(struct player *p, int height, int width)
  *
  * Grids are marked during generation to ensure correct path placement.
  */
-struct chunk *forest_gen(struct player *p, int height, int width)
+struct chunk *old_forest_gen(struct player *p, int height, int width)
 {
 	bool made_plat;
 
@@ -1543,7 +1849,7 @@ struct chunk *forest_gen(struct player *p, int height, int width)
  *
  * Grids are marked during generation to ensure correct path placement.
  */
-struct chunk *swamp_gen(struct player *p, int height, int width)
+struct chunk *old_swamp_gen(struct player *p, int height, int width)
 {
 	struct loc grid;
 	int place = p->place;
@@ -1621,7 +1927,7 @@ struct chunk *swamp_gen(struct player *p, int height, int width)
  *
  * Grids are marked during generation to ensure correct path placement.
  */
-struct chunk *desert_gen(struct player *p, int height, int width)
+struct chunk *old_desert_gen(struct player *p, int height, int width)
 {
 	bool made_plat;
 
@@ -1772,7 +2078,7 @@ struct chunk *desert_gen(struct player *p, int height, int width)
  *
  * Grids are marked during generation to ensure correct path placement.
  */
-struct chunk *river_gen(struct player *p, int height, int width)
+struct chunk *old_river_gen(struct player *p, int height, int width)
 {
 	struct loc grid, centre;
 	int i, y1;
@@ -1939,7 +2245,7 @@ struct chunk *river_gen(struct player *p, int height, int width)
  * Generate a new valley level. Place down slides, 
  * and random monsters, objects, and traps.  Place any quest monsters.
  */
-struct chunk *valley_gen(struct player *p, int height, int width)
+struct chunk *old_valley_gen(struct player *p, int height, int width)
 {
 	bool made_plat;
 

@@ -913,15 +913,15 @@ static const struct cave_profile *choose_profile(struct player *p)
 
 	/* Make the profile choice */
 	switch (world->levels[p->place].topography) {
-		case TOP_TOWN: profile = find_cave_profile("town"); break;
-		case TOP_PLAIN: profile = find_cave_profile("plain"); break;
-		case TOP_FOREST: profile = find_cave_profile("forest"); break;
-		case TOP_MOUNTAIN: profile = find_cave_profile("mtn"); break;
-		case TOP_SWAMP: profile = find_cave_profile("swamp"); break;
-		case TOP_RIVER: profile = find_cave_profile("river"); break;
-		case TOP_DESERT: profile = find_cave_profile("desert"); break;
-		case TOP_VALLEY: profile = find_cave_profile("valley"); break;
-		case TOP_MOUNTAINTOP: profile = find_cave_profile("mtntop"); break;
+		case TOP_TOWN: profile = find_cave_profile("old_town"); break;
+		case TOP_PLAIN: profile = find_cave_profile("old_plain"); break;
+		case TOP_FOREST: profile = find_cave_profile("old_forest"); break;
+		case TOP_MOUNTAIN: profile = find_cave_profile("old_mtn"); break;
+		case TOP_SWAMP: profile = find_cave_profile("old_swamp"); break;
+		case TOP_RIVER: profile = find_cave_profile("old_river"); break;
+		case TOP_DESERT: profile = find_cave_profile("old_desert"); break;
+		case TOP_VALLEY: profile = find_cave_profile("old_valley"); break;
+		case TOP_MOUNTAINTOP: profile = find_cave_profile("old_mtntop"); break;
 		case TOP_CAVE: {
 			if (find_quest(p->place) && !OPT(p, birth_levels_persist)) {
 				/* Quest levels must be normal levels */

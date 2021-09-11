@@ -321,7 +321,11 @@ extern int FEAT_GRASS;
 extern int FEAT_ROAD;
 extern int FEAT_VOID;
 extern int FEAT_DUNE;
-
+extern int FEAT_REED;
+extern int FEAT_MTN;
+extern int FEAT_SNOW;
+extern int FEAT_BTLMNT;
+extern int FEAT_ICE;
 
 /* Current level */
 extern struct chunk *cave;

@@ -35,8 +35,6 @@
 #include "trap.h"
 
 #define CHUNK_LIST_INCR 10
-#define CHUNK_SIDE 22
-#define MAX_CHUNKS 256
 struct chunk **old_chunk_list;     /**< list of pointers to saved chunks */
 u16b old_chunk_list_max = 0;      /**< current max actual chunk index */
 u16b chunk_max = 1;				/* Number of allocated chunks */
@@ -1168,12 +1166,130 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
 /**
  * Generate a chunk
  */
-void chunk_generate(struct chunk_ref ref, int y_offset, int x_offset)
+void chunk_generate(struct chunk_ref ref, int y_offset, int x_offset,
+					struct connector *first)
+{
+	int n, z_pos = ref.z_pos, y_pos = ref.y_pos, x_pos = ref.x_pos;
+	char terrain;
+
+	/* Check for landmarks */
+	for (n = 0; n < z_info->landmark_max; n++) {
+		struct landmark *landmark = &landmark_info[n];
+
+		/* Must satisfy all the conditions */
+		if (landmark->map_z != z_pos)
+			continue;
+		if (landmark->map_y > y_pos)
+			continue;
+		if (landmark->map_y + landmark->height <= y_pos)
+			continue;
+		if (landmark->map_x > x_pos)
+			continue;
+		if (landmark->map_x + landmark->width <= x_pos)
+			continue;
+
+		break;
+	}
+
+	/* Build the landmark... */
+	if (n < z_info->landmark_max) {
+#if 0
+		build_landmark(n, y_pos, x_pos, y_offset, x_offset);
+#endif
+	} else {
+		/* ...or generate the chunk */
+		terrain = region_terrain[y_pos / 10][x_pos / 10];
+
+		/* Set the RNG to give reproducible results */
+		Rand_quick = true;
+		Rand_value = ((y_pos & 0x1fff) << 19);
+		Rand_value |= ((z_pos & 0x3f) << 13);
+		Rand_value |= (x_pos & 0x1fff);
+		Rand_value ^= seed_flavor;
+		switch (terrain) {
+		case '.':
+			{
+				plain_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '+':
+			{
+				forest_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '-':
+			{
+				lake_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '~':
+			{
+				ocean_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case ',':
+			{
+				moor_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '^':
+			{
+				mtn_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '_':
+			{
+				swamp_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '|':
+			{
+				dark_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case 'X':
+			{
+				impass_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '/':
+			{
+				desert_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '*':
+			{
+				snow_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '=':
+			{
+				town_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		case '&':
+			{
+				landmk_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		default:
+			{
+				ocean_gen(ref, y_offset, x_offset, first);
+				break;
+			}
+		}
+		Rand_quick = false;
+	}
+}
+
+/**
+ * Generate a chunk
+ */
+void chunk_fill(struct chunk_ref ref, int y_offset, int x_offset)
 {
 	int n, z_off, y_off, x_off, idx;
 	int z_pos = ref.z_pos, y_pos = ref.y_pos, x_pos = ref.x_pos;
 	int lower, upper;
-	char terrain;
 	bool reload;
 	struct gen_loc *location;
 	struct connector east[CHUNK_SIDE] = {{{0}}};
@@ -1316,116 +1432,8 @@ void chunk_generate(struct chunk_ref ref, int y_offset, int x_offset)
 		}
 	}
 
-	/* Check for landmarks */
-	for (n = 0; n < z_info->landmark_max; n++) {
-		struct landmark *landmark = &landmark_info[n];
-
-		/* Must satisfy all the conditions */
-		if (landmark->map_z != z_pos)
-			continue;
-		if (landmark->map_y > y_pos)
-			continue;
-		if (landmark->map_y + landmark->height <= y_pos)
-			continue;
-		if (landmark->map_x > x_pos)
-			continue;
-		if (landmark->map_x + landmark->width <= x_pos)
-			continue;
-
-		break;
-	}
-
-	/* Build the landmark... */
-	if (n < z_info->landmark_max) {
-#if 0
-		build_landmark(n, y_pos, x_pos, y_offset, x_offset);
-#endif
-	} else {
-		/* ...or generate the chunk */
-		terrain = region_terrain[y_pos / 10][x_pos / 10];
-
-		/* Set the RNG to give reproducible results */
-		Rand_quick = true;
-		Rand_value = ((y_pos & 0x1fff) << 19);
-		Rand_value |= ((z_pos & 0x3f) << 13);
-		Rand_value |= (x_pos & 0x1fff);
-		Rand_value ^= seed_flavor;
-#if 0
-		switch (terrain) {
-		case '.':
-			{
-				plain_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '+':
-			{
-				forest_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '-':
-			{
-				lake_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '~':
-			{
-				ocean_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case ',':
-			{
-				moor_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '^':
-			{
-				mtn_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '_':
-			{
-				swamp_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '|':
-			{
-				dark_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case 'X':
-			{
-				impass_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '/':
-			{
-				desert_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '*':
-			{
-				snow_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '=':
-			{
-				town_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		case '&':
-			{
-				landmk_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		default:
-			{
-				ocean_gen(ref, y_offset, x_offset, first);
-				break;
-			}
-		}
-#endif
-		Rand_quick = false;
-	}
+	/* Place chunk */
+	chunk_generate(ref, y_offset, x_offset, first);
 
 	/* Do terrain changes */
 	if (reload) {
@@ -1655,7 +1663,7 @@ void arena_realign(int y_offset, int x_offset)
 				chunk_read(chunk_idx, y, x);
 			} else {
 				/* Otherwise generate a new one */
-				chunk_generate(ref, y, x);
+				chunk_fill(ref, y, x);
 			}
 		}
 	}

@@ -371,6 +371,42 @@ name:sand dune
 graphics:.:y
 priority:13
 flags:PASSABLE | OBJECT | EASY
-desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
-desc:spells.  
+desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball
+desc: spells.
 
+name:reeds
+graphics:;:g
+priority:13
+flags:PASSABLE | OBJECT | EASY
+desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball
+desc: spells.
+
+name:mountain
+graphics:#:D
+priority:13
+flags:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
+desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball
+desc: spells.
+
+name:snow
+graphics:*:w
+priority:13
+flags:PASSABLE | OBJECT | PROTECT | HIDE_OBJ | ICY
+desc:Greatly slows down any creature that cannot bore or pass through rock.
+desc:  Ends LOS, stops missiles, bolts, and beams, and reduces the radius of
+desc: ball spells.  Grants the character and monsters within it some protection
+desc: from melee, ranged, or magical attacks.  Snow may dissolve to normal
+desc: floor.
+
+name:battlement
+graphics:#:u
+priority:13
+flags:LOS | PROJECT | WALL | ROCK | NO_SCENT | NO_FLOW
+desc:Allows LOS, missiles, bolts, and beams, but cannot be passed.
+
+name:ice
+graphics:*:w
+priority:13
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | RUN2 | ICY
+desc:An exposed sheet of ice.  Can be walked across by anything, and can
+desc: hold items.  Does not break line of sight.

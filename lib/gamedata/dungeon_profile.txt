@@ -66,7 +66,7 @@
 # frequently.
 
 ## Town
-name:town
+name:old_town
 streamer:1:1:0:0:0:0
 params:1:0:200:0
 alloc:-1
@@ -236,42 +236,42 @@ alloc:1
 ########### Wilderness profiles
 
 ## Plain
-name:plain
+name:old_plain
 streamer:5:2:3:90:2:40
 alloc:-1
 
 ## Mountain
-name:mtn
+name:old_mtn
 streamer:5:2:3:90:2:40
 alloc:-1
 
 ## Mountain top
-name:mtntop
+name:old_mtntop
 streamer:5:2:3:90:2:40
 alloc:-1
 
 ## Forest
-name:forest
+name:old_forest
 streamer:5:2:3:90:2:40
 alloc:-1
 
 ## Swamp
-name:swamp
+name:old_swamp
 streamer:5:2:3:90:2:40
 alloc:-1
 
 ## Desert
-name:desert
+name:old_desert
 streamer:5:2:3:90:2:40
 alloc:-1
 
 ## River
-name:river
+name:old_river
 streamer:5:2:3:90:2:40
 alloc:-1
 
 ## Valley
-name:valley
+name:old_valley
 streamer:5:2:3:90:2:40
 alloc:-1
 
