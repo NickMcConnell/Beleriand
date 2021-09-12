@@ -338,6 +338,8 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width);
 struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width);
 struct chunk *arena_gen(struct player *p, int min_height, int min_width);
 struct chunk *themed_gen(struct player *p, int min_height, int min_width);
+bool build_landmark(int index, int map_y, int map_x, int y_offset,
+					int x_offset);
 
 /* gen-wilderness.c */
 struct chunk *old_plain_gen(struct player *p, int height, int width);
@@ -409,7 +411,7 @@ void set_marked_granite(struct chunk *c, struct loc grid, int flag);
 extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2, 
 									int x2, bool light, int feat, 
 									bool special_ok);
-
+void append_entrance(struct loc grid);
 struct vault *random_vault(int depth, const char *typ1, const char *typ2);
 bool build_vault(struct chunk *c, struct loc centre, struct vault *v);
 
@@ -471,6 +473,10 @@ void vault_traps(struct chunk *c, struct loc grid, int yd, int xd, int num);
 void vault_monsters(struct chunk *c, struct loc grid, int depth, int num);
 void alloc_objects(struct chunk *c, int set, int typ, int num, int depth, byte origin);
 bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin);
+void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
+				 struct loc place, int height, int width, int rotate,
+				 bool reflect, bitflag *flags, bool floor, const char *data,
+				 bool landmark);
 void dump_level_simple(const char *basefilename, const char *title,
 	struct chunk *c);
 void dump_level(ang_file *fo, const char *title, struct chunk *c, int **dist);

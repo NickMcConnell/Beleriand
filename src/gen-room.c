@@ -107,7 +107,7 @@ struct vault *random_vault(int depth, const char *typ1, const char *typ2)
  * \param grid Is the location for the entrance
  * Only call after the centre has been set and cent_n incremented.
  */
-static void append_entrance(struct loc grid)
+void append_entrance(struct loc grid)
 {
 	int ridx;
 
@@ -1390,12 +1390,14 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 	int x, y, races_local = 0;
 	const char *t;
 	char racial_symbol[30] = "";
-	bool icky;
-	bool placed = false;
 	struct level *lev = &world->levels[c->place];
-	struct loc panic = loc(0, 0);
 	int rotate, thgt, twid;
 	bool reflect;
+	bool floor = (((lev->topography == TOP_CAVE) ||
+				   (lev->topography == TOP_DESERT) ||
+				   (lev->topography == TOP_MOUNTAIN)) &&
+				  (player->themed_level !=
+				   themed_level_index("Haudh-en-Ndengin")));
 
 	assert(c);
 
@@ -1446,175 +1448,8 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 	}
 
 	/* Place dungeon features and objects */
-	for (t = data, y = 0; y < v->hgt && *t; y++) {
-		for (x = 0; x < v->wid && *t; x++, t++) {
-			struct loc grid = loc(x, y);
-
-			symmetry_transform(&grid, centre.y, centre.x, v->hgt,
-				v->wid, rotate, reflect);
-			assert(grid.x >= x1 && grid.x <= x2 &&
-				grid.y >= y1 && grid.y <= y2);
-
-			/* Skip non-grids */
-			if (*t == ' ') continue;
-
-			/* Lay floor or grass */
-			if (((lev->topography == TOP_CAVE) ||
-				 (lev->topography == TOP_DESERT) ||
-				 (lev->topography == TOP_MOUNTAIN)) &&
-				(player->themed_level !=
-				 themed_level_index("Haudh-en-Ndengin"))) {
-				square_set_feat(c, grid, FEAT_FLOOR);
-			} else {
-				square_set_feat(c, grid, FEAT_GRASS);
-			}
-
-			/* Debugging assertion */
-			//assert(square_isempty(c, grid));
-
-			/* By default vault squares are marked icky */
-			icky = true;
-
-			/* Analyze the grid */
-			switch (*t) {
-			case '%': {
-				/* In this case, the square isn't really part
-				 * of the vault, but rather is part of the
-				 * "door step" to the vault. We don't mark it
-				 * icky so that the tunneling code knows it's
-				 * allowed to remove this wall. */
-				if (player->themed_level) {
-					set_marked_granite(c, grid, SQUARE_WALL_SOLID);
-				} else {
-					set_marked_granite(c, grid, SQUARE_WALL_OUTER);
-				}
-				if (roomf_has(v->flags, ROOMF_FEW_ENTRANCES)) {
-					append_entrance(grid);
-				}
-				icky = false;
-				break;
-			}
-				/* Inner or non-tunnelable outside granite wall */
-			case '#': set_marked_granite(c, grid, SQUARE_WALL_SOLID); break;
-				/* Permanent wall */
-			case '@': square_set_feat(c, grid, FEAT_PERM); break;
-				/* Gold seam */
-			case '*': {
-				square_set_feat(c, grid, one_in_(2) ? FEAT_MAGMA_K :
-								FEAT_QUARTZ_K);
-				break;
-			}
-				/* Rubble */
-			case ':': {
-				square_set_feat(c, grid, one_in_(2) ? FEAT_PASS_RUBBLE :
-								FEAT_RUBBLE);
-				break;
-			}
-				/* Secret door */
-			case '+': place_secret_door(c, grid); break;
-				/* Trap */
-			case '^': if (one_in_(4)) place_trap(c, grid, -1, c->depth); break;
-				/* Treasure or a trap */
-			case '&': {
-				if (randint0(100) < 75) {
-					place_object(c, grid, c->depth, false, false, ORIGIN_VAULT,
-								 0);
-				} else if (one_in_(4)) {
-					place_trap(c, grid, -1, c->depth);
-				}
-				break;
-			}
-				/* Stairs */
-			case '<': {
-				if (dun->persist) break;
-				if (lev->up) {
-					place_stairs(c, grid, FEAT_LESS);
-				}
-				/* Place player only in themed level, and only once. */
-				if ((player->themed_level) && (!placed)) {
-					player_place(c, player, grid);
-					placed = true;
-				}
-				break;
-			}
-			case '>': {
-				if (dun->persist) break;
-				if (lev->down) {
-					place_stairs(c, grid, FEAT_MORE);
-				}
-				break;
-			}
-				/* Wilderness paths. */
-			case '\\': {
-				struct level *adj = NULL;
-
-				/* Work out which direction */
-				if ((grid.y == 1) && lev->north) {
-					adj = level_by_name(world, lev->north);
-					if (adj->depth > c->depth) {
-						square_set_feat(c, grid, FEAT_MORE_NORTH);
-					} else {
-						square_set_feat(c, grid, FEAT_LESS_NORTH);
-					}
-				} else if ((grid.x == 1) && lev->west) {
-					adj = level_by_name(world, lev->west);
-					if (adj->depth > c->depth) {
-						square_set_feat(c, grid, FEAT_MORE_WEST);
-					} else {
-						square_set_feat(c, grid, FEAT_LESS_WEST);
-					}
-				} else if ((grid.y == c->height - 2) && lev->south) {
-					adj = level_by_name(world, lev->south);
-					if (adj->depth > c->depth) {
-						square_set_feat(c, grid, FEAT_MORE_SOUTH);
-					} else {
-						square_set_feat(c, grid, FEAT_LESS_SOUTH);
-					}
-				} else if ((grid.x == c->width - 2) && lev->east) {
-					adj = level_by_name(world, lev->east);
-					if (adj->depth > c->depth) {
-						square_set_feat(c, grid, FEAT_MORE_EAST);
-					} else {
-						square_set_feat(c, grid, FEAT_LESS_EAST);
-					}
-				} else {
-					break;
-				}
-
-				/* Place the player? */
-				if ((adj == &world->levels[player->last_place]) &&
-					 (player->themed_level)	&& (!placed)) {
-						player_place(c, player, grid);
-						placed = true;
-					} else {
-						panic = grid;
-					}
-					break;
-				}
-				/* Lava */
-			case '`': square_set_feat(c, grid, FEAT_LAVA); break;
-				/* Water */
-			case '/': square_set_feat(c, grid, FEAT_WATER); break;
-				/* Trees */
-			case ';': {
-				if (one_in_(2))
-					square_set_feat(c, grid, FEAT_TREE);
-				else
-					square_set_feat(c, grid, FEAT_TREE2);
-				break;
-			}
-				/* Dune */
-			case '(': square_set_feat(c, grid, FEAT_DUNE); break;
-			}
-		
-
-			/* Part of a vault */
-			if (!player->themed_level)
-				sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
-			if (icky) sqinfo_on(square(c, grid)->info, SQUARE_VAULT);
-		}
-	}
-
+	get_terrain(c, loc(0, 0), loc(v->wid, v->hgt), centre, v->hgt, v->wid,
+				rotate, reflect, v->flags, floor, data, false);
 
 	/* Place regular dungeon monsters and objects, convert inner walls */
 	for (t = data, y = 0; y < v->hgt && *t; y++) {
@@ -1806,15 +1641,6 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 
 	/* Place specified monsters */
 	get_vault_monsters(c, racial_symbol, v->typ, data, y1, y2, x1, x2);
-
-	/* Ensure that the player is always placed in a themed level. */
-	if (player->themed_level && !placed) {
-		if (lev->topography == TOP_CAVE) {
-			if (!new_player_spot(c, player)) return false;
-		} else {
-			player_place(c, player, panic);
-		}
-	}
 
 	return true;
 }

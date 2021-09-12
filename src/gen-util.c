@@ -870,6 +870,130 @@ void vault_monsters(struct chunk *c, struct loc grid, int depth, int num)
 
 
 /**
+ * Read terrain from a text file.  Allow for picking a smaller rectangle out of
+ * a large rectangle.
+ *
+ * Used for vaults and landmarks.  Note that some vault codes are repurposed
+ * here to allow more terrain for landmarks
+ */
+void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
+				 struct loc place, int height, int width, int rotate,
+				 bool reflect, bitflag *flags, bool floor, const char *data,
+				 bool landmark)
+{
+	int x, y;
+	const char *t;
+
+	/* Place dungeon features and objects */
+	for (t = data, y = 0; y < height && *t; y++) {
+		for (x = 0; x < width && *t; x++, t++) {
+			struct loc grid = loc(x, y);
+			bool icky = !landmark;
+
+			symmetry_transform(&grid, place.y, place.x, height, width, rotate,
+							   reflect);
+
+			/* Skip non-grids */
+			if (*t == ' ') continue;
+
+			/* Restrict to from start to stop */
+			if ((y < place.y) || (y >= place.y + bottom_right.y - top_left.y) ||
+				(x < place.x) || (x >= place.x + bottom_right.x - top_left.x)) {
+				continue;
+			}
+
+			/* Lay floor or grass */
+			if (floor) {
+				square_set_feat(c, grid, FEAT_FLOOR);
+			} else {
+				square_set_feat(c, grid, FEAT_GRASS);
+			}
+
+			/* Debugging assertion */
+			//assert(square_isempty(c, grid));
+
+			/* Analyze the grid */
+			switch (*t) {
+			case '%': {
+				/* In this case, the square isn't really part
+				 * of the vault, but rather is part of the
+				 * "door step" to the vault. We don't mark it
+				 * icky so that the tunneling code knows it's
+				 * allowed to remove this wall. */
+				if (player->themed_level) {
+					set_marked_granite(c, grid, SQUARE_WALL_SOLID);
+				} else {
+					set_marked_granite(c, grid, SQUARE_WALL_OUTER);
+				}
+				if (roomf_has(flags, ROOMF_FEW_ENTRANCES)) {
+					append_entrance(grid);
+				}
+				icky = false;
+				break;
+			}
+				/* Inner or non-tunnelable outside granite wall */
+			case '#': set_marked_granite(c, grid, SQUARE_WALL_SOLID); break;
+				/* Permanent wall */
+			case '@': square_set_feat(c, grid, FEAT_PERM); break;
+				/* Gold seam */
+			case '*': {
+				square_set_feat(c, grid, one_in_(2) ? FEAT_MAGMA_K :
+								FEAT_QUARTZ_K);
+				break;
+			}
+				/* Rubble */
+			case ':': {
+				square_set_feat(c, grid, one_in_(2) ? FEAT_PASS_RUBBLE :
+								FEAT_RUBBLE);
+				break;
+			}
+				/* Secret door */
+			case '+': place_secret_door(c, grid); break;
+				/* Trap */
+			case '^': if (one_in_(4)) place_trap(c, grid, -1, c->depth); break;
+				/* Treasure or a trap */
+			case '&': {
+				if (randint0(100) < 75) {
+					place_object(c, grid, c->depth, false, false, ORIGIN_VAULT,
+								 0);
+				} else if (one_in_(4)) {
+					place_trap(c, grid, -1, c->depth);
+				}
+				break;
+			}
+				/* Stairs */
+			case '<': {
+				place_stairs(c, grid, FEAT_LESS);
+				break;
+			}
+			case '>': {
+				place_stairs(c, grid, FEAT_MORE);
+				break;
+			}
+				/* Lava */
+			case '`': square_set_feat(c, grid, FEAT_LAVA); break;
+				/* Water */
+			case '/': square_set_feat(c, grid, FEAT_WATER); break;
+				/* Trees */
+			case ';': {
+				if (one_in_(2))
+					square_set_feat(c, grid, FEAT_TREE);
+				else
+					square_set_feat(c, grid, FEAT_TREE2);
+				break;
+			}
+				/* Dune */
+			case '(': square_set_feat(c, grid, FEAT_DUNE); break;
+			}
+
+			/* Part of a vault */
+			if (!landmark) sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
+			if (icky) sqinfo_on(square(c, grid)->info, SQUARE_VAULT);
+		}
+	}
+}
+
+/**
  * Dump the given level for post-mortem analysis; handle all I/O.
  * \param basefilename Is the base name (no directory or extension) for the
  * file to use.  If NULL, "dumpedlevel" will be used.

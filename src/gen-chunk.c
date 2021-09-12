@@ -1193,9 +1193,7 @@ void chunk_generate(struct chunk_ref ref, int y_offset, int x_offset,
 
 	/* Build the landmark... */
 	if (n < z_info->landmark_max) {
-#if 0
 		build_landmark(n, y_pos, x_pos, y_offset, x_offset);
-#endif
 	} else {
 		/* ...or generate the chunk */
 		terrain = region_terrain[y_pos / 10][x_pos / 10];
