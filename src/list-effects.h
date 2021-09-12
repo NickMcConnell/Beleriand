@@ -119,7 +119,6 @@ EFFECT(CURSE,						true,	"dam",		0,		EFINFO_NONE,	"damages a monster directly",	
 EFFECT(COMMAND,						true,	NULL,		0,		EFINFO_NONE,	"takes control of a monster",	"command")
 EFFECT(JUMP_AND_BITE,				false,	NULL,		0,		EFINFO_NONE,	"jumps the player to the closest living monster and bites it",	"jump and bite")
 EFFECT(MOVE_ATTACK,					true,	"blows",	1,		EFINFO_DICE,	"moves the player up to 4 spaces and executes up to %d melee blows",	"move and attack")
-EFFECT(SINGLE_COMBAT,				true,	NULL,		0,		EFINFO_NONE,	"engages a monster in single combat",	"engage in single combat")
 EFFECT(MELEE_BLOWS,					true,	"blows",	1,		EFINFO_DICE,	"strikes %d blows against an adjacent monster",	"pummel")
 EFFECT(SWEEP,						false,	"blows",	1,		EFINFO_DICE,	"strikes %d blows against all adjacent monsters",	"sweep")
 EFFECT(DELVING,						true,	NULL,		0,		EFINFO_NONE,	"makes a room or turns stone to mud",	"delve")

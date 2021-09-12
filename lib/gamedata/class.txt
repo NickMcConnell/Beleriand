@@ -1337,11 +1337,6 @@ effect:ENCHANT:TOAC
 dice:1+1d3
 desc:Attempts to improve the armour class bonus of a piece of armour.
 
-spell:Single Combat:40:50:30:300
-effect:SINGLE_COMBAT
-desc:Encases you and the targeted monster in a stone cell from which only the
-desc: winner can emerge.
-
 
 ############### ROGUE ###############
 name:Rogue

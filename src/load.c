@@ -1348,9 +1348,6 @@ static int rd_dungeon_aux(struct chunk **c)
 
 	/* Header info */
 	rd_string(name, sizeof(name));
-	if (streq(name, "arena")) {
-		player->upkeep->arena_level = true;
-	}
 	rd_u16b(&height);
 	rd_u16b(&width);
 

@@ -1193,7 +1193,7 @@ static void get_min_level_size(struct chunk *check, int *min_height,
 }
 
 /**
- * Find an emergency place to restore the player after an arena
+ * Find an emergency place to restore the player after a level teleport
  */
 static void sanitize_player_loc(struct chunk *c, struct player *p)
 {
@@ -1321,58 +1321,6 @@ static void cave_clear(struct chunk *c, struct player *p)
 }
 
 /**
- * Tidy up after an arena level.
- */
-static void leave_arena(struct chunk *c, struct player *p)
-{
-	int y, x;
-	bool found = false;
-
-	/* Find where the player has to go, place them by hand */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			struct loc grid = loc(x, y);
-			if (square(c, grid)->mon == -1) {
-				p->grid = grid;
-				found = true;
-				break;
-			}
-		}
-		if (found) break;
-	}
-
-	/* Failed to find, try near the killed monster */
-	if (!found) {
-		int k;
-		int ty = c->monsters[1].grid.y;
-		int tx = c->monsters[1].grid.x;
-		for (k = 1; k < 10; k++) {
-			for (y = ty - k; y <= ty + k; y++) {
-				for (x = tx - k; x <= tx + k; x++) {
-					struct loc grid = loc(x, y);
-					if (square_in_bounds_fully(c, grid) &&
-						square_isempty(c, grid) &&	!square_isvault(c, grid)) {
-						p->grid = grid;
-						found = true;
-						break;
-					}
-				}
-				if (found) break;
-			}
-			if (found) break;
-		}
-	}
-
-	/* Still failed to find, try anywhere */
-	if (!found) {
-		p->grid = c->monsters[1].grid;
-		sanitize_player_loc(c, p);
-	}
-
-	square_set_mon(c, p->grid, -1);;
-}
-
-/**
  * Release the dynamically allocated resources in a dun_data structure.
  */
 static void cleanup_dun_data(struct dun_data *dd)
@@ -1416,28 +1364,6 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	const char *error = "no generation";
 	int i, tries = 0;
 	struct chunk *chunk = NULL;
-
-	/* Arena levels handled separately */
-	if (p->upkeep->arena_level) {
-		/* Generate level */
-		event_signal_string(EVENT_GEN_LEVEL_START, "arena");
-		chunk = arena_gen(p, height, width);
-
-		/* Allocate new known level, light it if requested */
-		p->cave = cave_new(chunk->height, chunk->width);
-		p->cave->depth = chunk->depth;
-		p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
-									   * sizeof(struct object*));
-		p->cave->obj_max = chunk->obj_max;
-		for (i = 0; i <= p->cave->obj_max; i++) {
-			p->cave->objects[i] = NULL;
-		}
-
-		wiz_light(chunk, p, false);
-		chunk->turn = turn;
- 
-		return chunk;
-	}
 
 	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
@@ -1581,7 +1507,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 */
 void prepare_next_level(struct player *p)
 {
-	bool persist = OPT(p, birth_levels_persist) || p->upkeep->arena_level;
+	bool persist = OPT(p, birth_levels_persist);
 	char prev_name[80];
 	char new_name[80];
 
@@ -1594,36 +1520,13 @@ void prepare_next_level(struct player *p)
 		assert (p->cave);
 
 		if (persist) {
-			/* Arenas don't get stored */
-			if (!cave->name || !streq(cave->name, "arena")) {
-				/* Tidy up */
-				compact_monsters(cave, 0);
-				if (!p->upkeep->arena_level) {
-					/* Leave the player marker if going to an arena */
-					square_set_mon(cave, p->grid, 0);
-				}
+			/* Tidy up */
+			compact_monsters(cave, 0);
+			square_set_mon(cave, p->grid, 0);
 
-				/* Save level and known level */
-				cave_store(cave, prev_name, false, true);
-				cave_store(p->cave, prev_name, true, true);
-			}
-			else if (!p->place)
-			/* Paranoia - try to catch unusual exits from Arena
-			 * Ideally unusual exits never happen and this code is unnecessary */
-			{
-				p->upkeep->arena_level = false;
-				if (!p->last_place) 
-				{
-					p->last_place = p->home; /* paranoia */
-					persist = OPT(p, birth_levels_persist);
-				}
-				player_change_place(p, p->last_place);
-				p->upkeep->arena_level = true;				
-				p->upkeep->health_who = NULL; /* Suppress "defeated" message for unusual exit */
-				my_strcpy(prev_name, level_name(&world->levels[p->last_place]),
-				  sizeof(prev_name));
-				my_strcpy(new_name, level_name(&world->levels[p->place]), sizeof(new_name));
-			}
+			/* Save level and known level */
+			cave_store(cave, prev_name, false, true);
+			cave_store(p->cave, prev_name, true, true);
 		} else {
 			/* Save the town */
 			if (!cave->depth && !chunk_find_name(prev_name)) {
@@ -1647,7 +1550,6 @@ void prepare_next_level(struct player *p)
 		if (old_level && (old_level != cave)) {
 			/* We found an old level, load the known level and assign */
 			int i;
-			bool arena = cave->name && streq(cave->name, "arena");
 			char *known_name = format("%s known", new_name);
 			struct chunk *old_known = chunk_find_name(known_name);
 			assert(old_known);
@@ -1666,24 +1568,15 @@ void prepare_next_level(struct player *p)
 			/* Allow monsters to recover */
 			restore_monsters();
 
-			/* Leaving arenas requires special treatment */
-			if (arena) {
-				leave_arena(cave, p);
-			} else {
-				/* Map boundary changes may not cooperate with level teleport */
-				sanitize_player_loc(cave, p);
+			/* Map boundary changes may not cooperate with level teleport */
+			sanitize_player_loc(cave, p);
 
-				/* Place the player */
-				player_place(cave, p, p->grid);
-			}
+			/* Place the player */
+			player_place(cave, p, p->grid);
 
 			/* Remove from the list */
 			old_chunk_list_remove(new_name);
 			old_chunk_list_remove(known_name);
-		} else if (p->upkeep->arena_level) {
-			/* We're creating a new arena level */
-			cave = cave_generate(p, 6, 6);
-			event_signal_flag(EVENT_GEN_LEVEL_END, true);
 		} else {
 			/* Creating a new level, make sure it joins existing ones right */
 			struct level *lev;

@@ -1295,9 +1295,8 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		struct monster_race *old;
 		struct monster_race *new;
 
-		/* Uniques cannot be polymorphed; nor can an arena monster */
-		if (rf_has(mon->race->flags, RF_UNIQUE)
-				|| player->upkeep->arena_level) {
+		/* Uniques cannot be polymorphed */
+		if (rf_has(mon->race->flags, RF_UNIQUE)) {
 			if (context->seen) add_monster_message(mon, hurt_msg, false);
 			return;
 		}

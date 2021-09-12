@@ -1247,9 +1247,8 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 {
 	assert(t_mon);
 
-	/* "Unique" or arena monsters can only be "killed" by the player */
-	if (rf_has(t_mon->race->flags, RF_UNIQUE)
-			|| player->upkeep->arena_level) {
+	/* "Unique" monsters can only be "killed" by the player */
+	if (rf_has(t_mon->race->flags, RF_UNIQUE)) {
 		/* Reduce monster hp to zero, but don't kill it. */
 		if (dam > t_mon->hp) dam = t_mon->hp;
 	}
@@ -1334,18 +1333,6 @@ bool mon_take_hit(struct monster *mon, struct player *p, int dam, bool *fear,
 	/* Hurt it */
 	mon->hp -= dam;
 	if (mon->hp < 0) {
-		/* Deal with arena monsters */
-		if (p->upkeep->arena_level) {
-			p->upkeep->generate_level = true;
-			p->upkeep->arena_level = false;
-			if (!p->last_place) p->last_place = p->home; /* paranoia */
-			player_change_place(p, p->last_place);
-			p->upkeep->arena_level = true;
-			p->upkeep->health_who = mon;
-			(*fear) = false;
-			return true;
-		}
-
 		/* It is dead now */
 		player_kill_monster(mon, p, note);
 
@@ -1361,15 +1348,6 @@ bool mon_take_hit(struct monster *mon, struct player *p, int dam, bool *fear,
 		/* Not dead yet */
 		return false;
 	}
-}
-
-void kill_arena_monster(struct monster *mon)
-{
-	struct monster *old_mon = cave_monster(cave, mon->midx);
-	assert(old_mon);
-	update_mon(player, old_mon, cave, true);
-	old_mon->hp = -1;
-	player_kill_monster(old_mon, player, " is defeated!");
 }
 
 /**

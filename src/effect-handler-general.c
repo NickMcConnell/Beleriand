@@ -2097,9 +2097,6 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 
 	sound(message_type);
 
-	/* No summoning in arena levels */
-	if (player->upkeep->arena_level) return true;
-
 	/* Monster summon */
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
@@ -2194,12 +2191,6 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	/* Don't allow in an arena. */
-	if (player->upkeep->arena_level) {
-		msg("Nothing happens.");
-		return true;
-	}
-
 	/* If there is a current monster use its race, otherwise prompt */
 	if (cave->mon_current > 0) {
 		typ = ref_mon->race->d_char;
@@ -2259,12 +2250,6 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 	unsigned dam = 0;
 
 	context->ident = true;
-
-	/* Don't allow in an arena. */
-	if (player->upkeep->arena_level) {
-		msg("Nothing happens.");
-		return true;
-	}
 
 	/* Delete the (nearby) monsters */
 	for (i = 1; i < cave_monster_max(cave); i++) {
@@ -2375,9 +2360,6 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	struct monster *t_mon = monster_target_monster(context);
 
 	context->ident = true;
-
-	/* No teleporting in arena levels */
-	if (player->upkeep->arena_level) return true;
 
 	/* Establish the coordinates to teleport from, if we don't know already */
 	if (!loc_is_zero(start)) {
@@ -2555,9 +2537,6 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	/* No teleporting in arena levels */
-	if (player->upkeep->arena_level) return true;
-
 	if (context->origin.what == SRC_MONSTER) {
 		mon = cave_monster(cave, context->origin.which.monster);
 		assert(mon);
@@ -2690,9 +2669,6 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	struct loc decoy = cave_find_decoy(cave);
 
 	context->ident = true;
-
-	/* No teleporting in arena levels */
-	if (player->upkeep->arena_level) return true;
 
 	/* Check for monster targeting another monster */
 	if (t_mon) {

@@ -897,8 +897,10 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 			if (*t == ' ') continue;
 
 			/* Restrict to from start to stop */
-			if ((y < place.y) || (y >= place.y + bottom_right.y - top_left.y) ||
-				(x < place.x) || (x >= place.x + bottom_right.x - top_left.x)) {
+			if ((grid.y < place.y) ||
+				(grid.y >= place.y + bottom_right.y - top_left.y) ||
+				(grid.x < place.x) ||
+				(grid.x >= place.x + bottom_right.x - top_left.x)) {
 				continue;
 			}
 

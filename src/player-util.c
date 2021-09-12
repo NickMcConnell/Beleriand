@@ -163,7 +163,7 @@ void player_change_place(struct player *p, int place)
 {
 	struct level *lev = &world->levels[p->place], *next_lev;
 
-	/* Set last place (unless unchanged or arena) */
+	/* Set last place (unless unchanged) */
 	if (p->last_place != p->place) {
 		p->last_place = p->place;
 	}
@@ -181,14 +181,8 @@ void player_change_place(struct player *p, int place)
 		lev->depth = 0;
 	}
 
-	/* Set new place (unless arena) */
-	if (!p->upkeep->arena_level) {
-		p->place = place;
-	} else {
-		/* Arena is always 0 */
-		p->place = 0;
-		world->levels[p->place].depth = lev->depth; 
-	}
+	/* Set new place */
+	p->place = place;
 
 	/* Underworld and mountaintop levels need to be edited */
 	next_lev = &world->levels[p->place];

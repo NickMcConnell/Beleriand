@@ -3929,54 +3929,6 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	return c;
 }
 
-/* ------------------ ARENA ---------------- */
-
-/**
- * Generate an arena level - an open single combat arena.
- *
- * \param p is the player
- * \return a pointer to the generated chunk
- */
-struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
-	struct chunk *c;
-	struct monster *mon = p->upkeep->health_who;
-
-	c = cave_new(min_height, min_width);
-	c->depth = p->depth;
-	c->place = p->place;
-	c->name = string_make("arena");
-
-	/* Fill cave area with floors */
-	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_FLOOR,
-		SQUARE_NONE);
-
-	/* Bound with perma-rock */
-	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
-		SQUARE_NONE, true);
-
-	/* Place the player */
-	player_place(c, p, loc(1, c->height - 2));
-
-	/* Place the monster */
-	memcpy(&c->monsters[mon->midx], mon, sizeof(*mon));
-	mon = &c->monsters[mon->midx];
-	mon->grid = loc(c->width - 2, 1);
-	square_set_mon(c, mon->grid, mon->midx);
-	c->mon_max = mon->midx + 1;
-	c->mon_cnt = 1;
-	mon->target.midx = -1; /* Careful... */
-	update_mon(p, mon, c, true);
-	p->upkeep->health_who = mon;
-
-	/* Ignore its held objects */
-	mon->held_obj = NULL;
-
-	/* Give it a group */
-	monster_group_start(c, mon, 0);
-
-	return c;
-}
-
 /* ------------------ THEMED LEVEL ---------------- */
 
 /**

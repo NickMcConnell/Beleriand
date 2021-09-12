@@ -525,7 +525,6 @@ struct player_upkeep {
 							 * a choice.  See obj-ui.c */
 
 	bool light_level;		/* Level is to be lit on creation */
-	bool arena_level;		/* Current level is an arena */
     int path_coord;			/**< Records where the exit path was */
 	int create_stair;		/* Create defined stair on next level */
 

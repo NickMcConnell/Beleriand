@@ -1515,8 +1515,8 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	/* No effect in town or arena */
-	if ((!player->depth) || (player->upkeep->arena_level)) {
+	/* No effect in town */
+	if (!player->depth) {
 		msg("The ground shakes for a moment.");
 		return true;
 	}
@@ -1638,11 +1638,10 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	if ((player->depth) && ((!player->upkeep->arena_level)
-							|| (context->origin.what == SRC_MONSTER))) {
+	if (player->depth || (context->origin.what == SRC_MONSTER)) {
 		msg("The ground shakes! The ceiling caves in!");
 	} else {
-		/* No effect in town or arena */
+		/* No effect in town */
 		msg("The ground shakes for a moment.");
 		return true;
 	}
@@ -2240,56 +2239,6 @@ bool effect_handler_MOVE_ATTACK(effect_handler_context_t *context)
 
 	return true;
 }
-
-/**
- * Enter single combat with an enemy
- */
-bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
-{
-	struct monster *mon = target_get_monster();
-	context->ident = true;
-
-	/* Already in an arena */
-	if (player->upkeep->arena_level) {
-		msg("You are already in single combat!");
-		return false;
-	}
-
-	/* Need to choose a monster, not just point */
-	if (mon) {
-		int old_idx = mon->midx;
-
-		/* Monsters with high spell power can resist */
-		if (randint0(mon->race->spell_power) > eff_level(player)) {
-			char m_name[80];
-			monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL);
-			msg("%s resists!", m_name);
-			return true;
-		}
-
-		/* Swap the targeted monster with the first in the monster list */
-		if (old_idx == 1) {
-			/* Do nothing */
-			;
-		} else if (cave_monster(cave, 1)->race) {
-			monster_index_move(old_idx, cave_monster_max(cave));
-			monster_index_move(1, old_idx);
-			monster_index_move(cave_monster_max(cave), 1);
-		} else {
-			monster_index_move(old_idx, 1);
-		}
-		target_set_monster(cave_monster(cave, 1));
-	} else {
-		msg("No monster selected!");
-		return false;
-	}
-
-	/* Head to the arena */
-	player->upkeep->arena_level = true;
-	player_change_place(player, player->place);
-	return true;
-}
-
 
 bool effect_handler_MELEE_BLOWS(effect_handler_context_t *context)
 {

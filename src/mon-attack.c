@@ -251,9 +251,6 @@ static bool summon_possible(struct loc grid)
 {
 	int y, x;
 
-	/* No summons in arenas */
-	if (player->upkeep->arena_level) return false;
-
 	/* Start at the location, and check 2 grids in each dir */
 	for (y = grid.y - 2; y <= grid.y + 2; y++) {
 		for (x = grid.x - 2; x <= grid.x + 2; x++) {

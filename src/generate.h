@@ -336,7 +336,6 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width);
 struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width);
 struct chunk *lair_gen(struct player *p, int min_height, int min_width);
 struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width);
-struct chunk *arena_gen(struct player *p, int min_height, int min_width);
 struct chunk *themed_gen(struct player *p, int min_height, int min_width);
 bool build_landmark(int index, int map_y, int map_x, int y_offset,
 					int x_offset);
