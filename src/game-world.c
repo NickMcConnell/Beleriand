@@ -271,7 +271,7 @@ struct level *level_by_name(struct level_map *map, const char *name)
 	int i;
 	for (i = 0; i < map->num_levels; i++) {
 		struct level *lev = &map->levels[i];
-		if (streq(name, level_name(lev))) {
+		if (name && streq(name, level_name(lev))) {
 			return lev;
 		}
 	}

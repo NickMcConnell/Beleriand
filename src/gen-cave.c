@@ -957,11 +957,11 @@ static void handle_level_stairs(struct chunk *c, bool persistent,
 	 */
 	int minsep = (persistent) ? 4 : 0;
 
-	if (!persistent || !chunk_find_adjacent(c->depth, "down")) {
+	if (!persistent || !chunk_find_adjacent(player->place, "down")) {
 		alloc_stairs(c, FEAT_MORE, down_count, minsep, false,
 			dun->one_off_below);
 	}
-	if (!persistent || !chunk_find_adjacent(c->depth, "up")) {
+	if (!persistent || !chunk_find_adjacent(player->place, "up")) {
 		alloc_stairs(c, FEAT_LESS, up_count, minsep, false,
 			dun->one_off_above);
 	}

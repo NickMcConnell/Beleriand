@@ -1818,25 +1818,7 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 {
 	context->ident = true;
 
-	/* Only allow stairs to be created on empty floor */
-	if (!square_isfloor(cave, player->grid)) {
-		msg("There is no empty floor here.");
-		return false;
-	}
-
-	/* Fails for persistent levels (for now) */
-	if (OPT(player, birth_levels_persist)) {
-		msg("Nothing happens!");
-		return false;
-	}
-
-	/* Push objects off the grid */
-	if (square_object(cave, player->grid))
-		push_object(player->grid);
-
-	square_add_stairs(cave, player->grid, player->place);
-
-	return true;
+	return false;
 }
 
 /**

@@ -328,8 +328,8 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
 				continue;
 
 			/* No trap doors with persistent levels (for now) */
-			if (OPT(player, birth_levels_persist))
-				continue;
+			//if (OPT(player, birth_levels_persist))
+			//	continue;
 	    }
 
 		/* Trap is okay, store the cumulative probability */

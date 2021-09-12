@@ -89,6 +89,4 @@ OP(birth_know_runes,      "Know all runes on birth",
 BIRTH, false)
 OP(birth_know_flavors,    "Know all flavors on birth",
 BIRTH, false)
-OP(birth_levels_persist,  "Persistent levels (disabled)",
-BIRTH, false)
 

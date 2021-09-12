@@ -1408,22 +1408,20 @@ static int rd_dungeon_aux(struct chunk **c)
 	rd_s32b(&c1->turn);
 
 	/* Read connector info */
-	if (OPT(player, birth_levels_persist)) {
+	rd_byte(&tmp8u);
+	while (tmp8u != 0xff) {
+		struct connector *current = mem_zalloc(sizeof *current);
+		current->info = mem_zalloc(square_size * sizeof(bitflag));
+		current->grid.x = tmp8u;
 		rd_byte(&tmp8u);
-		while (tmp8u != 0xff) {
-			struct connector *current = mem_zalloc(sizeof *current);
-			current->info = mem_zalloc(square_size * sizeof(bitflag));
-			current->grid.x = tmp8u;
-			rd_byte(&tmp8u);
-			current->grid.y = tmp8u;
-			rd_byte(&current->feat);
-			for (n = 0; n < square_size; n++) {
-				rd_byte(&current->info[n]);
-			}
-			current->next = c1->join;
-			c1->join = current;
-			rd_byte(&tmp8u);
+		current->grid.y = tmp8u;
+		rd_byte(&current->feat);
+		for (n = 0; n < square_size; n++) {
+			rd_byte(&current->info[n]);
 		}
+		current->next = c1->join;
+		c1->join = current;
+		rd_byte(&tmp8u);
 	}
 
 	/* Assign */
@@ -1675,6 +1673,9 @@ int rd_chunks(void)
 	rd_u16b(&chunk_max);
 	for (j = 0; j < chunk_max; j++) {
 		struct chunk *c;
+		char buf[80];
+		int i;
+		u16b tmp16u;
 
 		/* Read the dungeon */
 		if (rd_dungeon_aux(&c))
@@ -1694,41 +1695,20 @@ int rd_chunks(void)
 
 
 		/* Read other chunk info */
-		if (OPT(player, birth_levels_persist)) {
-			char buf[80];
-			int i;
-			u16b tmp16u;
-
-			rd_string(buf, sizeof(buf));
-			string_free(c->name);
-			c->name = string_make(buf);
-			rd_s32b(&c->turn);
+		rd_string(buf, sizeof(buf));
+		string_free(c->name);
+		c->name = string_make(buf);
+		rd_s32b(&c->turn);
+		rd_u16b(&tmp16u);
+		c->depth = tmp16u;
+		rd_u16b(&tmp16u);
+		c->height = tmp16u;
+		rd_u16b(&tmp16u);
+		c->width = tmp16u;
+		rd_u16b(&c->runes);
+		for (i = 0; i < z_info->f_max + 1; i++) {
 			rd_u16b(&tmp16u);
-			c->depth = tmp16u;
-			rd_u16b(&tmp16u);
-			c->height = tmp16u;
-			rd_u16b(&tmp16u);
-			c->width = tmp16u;
-			rd_u16b(&c->runes);
-			for (i = 0; i < z_info->f_max + 1; i++) {
-				rd_u16b(&tmp16u);
-				c->feat_count[i] = tmp16u;
-			}
-		} else if (c->name) {
-			struct level *lev = level_by_name(world, c->name);
-
-			if (lev) {
-				c->depth = lev->depth;
-			} else if (suffix(c->name, " known")) {
-				size_t offset = strlen(c->name) -
-					strlen(" known");
-				c->name[offset] = '\0';
-				lev = level_by_name(world, c->name);
-				if (lev) {
-					c->depth = lev->depth;
-				}
-				c->name[offset] = ' ';
-			}
+			c->feat_count[i] = tmp16u;
 		}
 
 		old_chunk_list_add(c);

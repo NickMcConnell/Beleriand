@@ -923,10 +923,7 @@ static const struct cave_profile *choose_profile(struct player *p)
 		case TOP_VALLEY: profile = find_cave_profile("old_valley"); break;
 		case TOP_MOUNTAINTOP: profile = find_cave_profile("old_mtntop"); break;
 		case TOP_CAVE: {
-			if (find_quest(p->place) && !OPT(p, birth_levels_persist)) {
-				/* Quest levels must be normal levels */
-				profile = find_cave_profile("modified");
-			} else if (labyrinth_check(p->depth) &&
+			if (labyrinth_check(p->depth) &&
 					   (labyrinth_alloc > 0 || labyrinth_alloc == -1)) {
 				profile = find_cave_profile("labyrinth");
 			} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40) &&
@@ -1391,13 +1388,9 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		dun->curr_join = NULL;
 		dun->nstair_room = 0;
 
-		/* Get connector info for persistent levels */
-		if (OPT(p, birth_levels_persist)) {
-			dun->persist = true;
-			get_join_info(p, dun);
-		} else {
-			dun->persist = false;
-		}
+		/* Get connector info */
+		dun->persist = true;
+		get_join_info(p, dun);
 
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p);
@@ -1507,9 +1500,9 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 */
 void prepare_next_level(struct player *p)
 {
-	bool persist = OPT(p, birth_levels_persist);
 	char prev_name[80];
 	char new_name[80];
+	struct chunk *old_level = chunk_find_name(new_name);
 
 	my_strcpy(prev_name, level_name(&world->levels[p->last_place]),
 			  sizeof(prev_name));
@@ -1519,94 +1512,74 @@ void prepare_next_level(struct player *p)
 	if (character_dungeon) {
 		assert (p->cave);
 
-		if (persist) {
-			/* Tidy up */
-			compact_monsters(cave, 0);
-			square_set_mon(cave, p->grid, 0);
+		/* Tidy up */
+		compact_monsters(cave, 0);
+		square_set_mon(cave, p->grid, 0);
 
-			/* Save level and known level */
-			cave_store(cave, prev_name, false, true);
-			cave_store(p->cave, prev_name, true, true);
-		} else {
-			/* Save the town */
-			if (!cave->depth && !chunk_find_name(prev_name)) {
-				cave_store(cave, prev_name, false, false);
-			}
-
-			/* Forget knowledge of old level */
-			if (cave) {
-				cave_clear(cave, p);
-				cave = NULL;
-			}
-		}
+		/* Save level and known level */
+		cave_store(cave, prev_name, false, true);
+		cave_store(p->cave, prev_name, true, true);
 	}
 
 	/* Prepare the new level */
-	if (persist) {
-		/* Persistent levels need careful work */
-		struct chunk *old_level = chunk_find_name(new_name);
+	old_level = chunk_find_name(new_name);
 
-		/* Check all the possibilities */
-		if (old_level && (old_level != cave)) {
-			/* We found an old level, load the known level and assign */
-			int i;
-			char *known_name = format("%s known", new_name);
-			struct chunk *old_known = chunk_find_name(known_name);
-			assert(old_known);
+	/* Check all the possibilities */
+	if (old_level && (old_level != cave)) {
+		/* We found an old level, load the known level and assign */
+		int i;
+		char *known_name = format("%s known", new_name);
+		struct chunk *old_known = chunk_find_name(known_name);
+		assert(old_known);
 
-			/* Assign the new ones */
-			cave = old_level;
-			p->cave = old_known;
+		/* Assign the new ones */
+		cave = old_level;
+		p->cave = old_known;
 
-			/* Associate known objects */
-			for (i = 0; i < p->cave->obj_max; i++) {
-				if (cave->objects[i] && p->cave->objects[i]) {
-					cave->objects[i]->known = p->cave->objects[i];
-				}
+		/* Associate known objects */
+		for (i = 0; i < p->cave->obj_max; i++) {
+			if (cave->objects[i] && p->cave->objects[i]) {
+				cave->objects[i]->known = p->cave->objects[i];
 			}
-
-			/* Allow monsters to recover */
-			restore_monsters();
-
-			/* Map boundary changes may not cooperate with level teleport */
-			sanitize_player_loc(cave, p);
-
-			/* Place the player */
-			player_place(cave, p, p->grid);
-
-			/* Remove from the list */
-			old_chunk_list_remove(new_name);
-			old_chunk_list_remove(known_name);
-		} else {
-			/* Creating a new level, make sure it joins existing ones right */
-			struct level *lev;
-			int min_height = 0, min_width = 0;
-
-			/* Check level above */
-			lev = level_by_name(world, world->levels[p->place].up);
-			if (lev) {
-				struct chunk *check = chunk_find_name(level_name(lev));
-				if (check) {
-					get_min_level_size(check, &min_height, &min_width, true);
-				}
-			}
-
-			/* Check level below */
-			lev = level_by_name(world, world->levels[p->place].down);
-			if (lev) {
-				struct chunk *check = chunk_find_name(level_name(lev));
-				if (check) {
-					get_min_level_size(check, &min_height, &min_width, false);
-				}
-			}
-
-			/* Generate a new level */
-			cave = cave_generate(p, min_height, min_width);
-			event_signal_flag(EVENT_GEN_LEVEL_END, true);
 		}
+
+		/* Allow monsters to recover */
+		restore_monsters();
+
+		/* Map boundary changes may not cooperate with level teleport */
+		sanitize_player_loc(cave, p);
+
+		/* Place the player */
+		player_place(cave, p, p->grid);
+
+		/* Remove from the list */
+		old_chunk_list_remove(new_name);
+		old_chunk_list_remove(known_name);
 	} else {
-		/* Just generate a new level */
-		cave = cave_generate(p, 0, 0);
+		/* Creating a new level, make sure it joins existing ones right */
+		struct level *lev;
+		int min_height = 0, min_width = 0;
+
+		/* Check level above */
+		lev = level_by_name(world, world->levels[p->place].up);
+		if (lev) {
+			struct chunk *check = chunk_find_name(level_name(lev));
+			if (check) {
+				get_min_level_size(check, &min_height, &min_width, true);
+			}
+		}
+
+		/* Check level below */
+		lev = level_by_name(world, world->levels[p->place].down);
+		if (lev) {
+			struct chunk *check = chunk_find_name(level_name(lev));
+			if (check) {
+				get_min_level_size(check, &min_height, &min_width, false);
+			}
+		}
+
+		/* Generate a new level */
+		cave = cave_generate(p, min_height, min_width);
 		event_signal_flag(EVENT_GEN_LEVEL_END, true);
 	}
 
@@ -1616,8 +1589,7 @@ void prepare_next_level(struct player *p)
 	}
 
 	/* Apply illumination */
-	if (p->place) cave_illuminate(cave, is_daytime());
-	else wiz_light(cave, p, true);
+	cave_illuminate(cave, is_daytime());
 
 	/* The dungeon is ready */
 	character_dungeon = true;

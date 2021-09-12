@@ -880,23 +880,21 @@ static void wr_dungeon_aux(struct chunk *c)
 	wr_s32b(c->turn);
 
 	/* Write connector info */
-	if (OPT(player, birth_levels_persist)) {
-		if (c->join) {
-			struct connector *current = c->join;
-			while (current) {
-				wr_byte(current->grid.x);
-				wr_byte(current->grid.y);
-				wr_byte(current->feat);
-				for (i = 0; i < SQUARE_SIZE; i++) {
-					wr_byte(current->info[i]);
-				}
-				current = current->next;
+	if (c->join) {
+		struct connector *current = c->join;
+		while (current) {
+			wr_byte(current->grid.x);
+			wr_byte(current->grid.y);
+			wr_byte(current->feat);
+			for (i = 0; i < SQUARE_SIZE; i++) {
+				wr_byte(current->info[i]);
 			}
+			current = current->next;
 		}
-
-		/* Write a sentinel byte */
-		wr_byte(0xff);
 	}
+
+	/* Write a sentinel byte */
+	wr_byte(0xff);
 }
 
 /**
@@ -1031,7 +1029,7 @@ void wr_traps(void)
  */
 void wr_chunks(void)
 {
-	int j;
+	int i, j;
 
 	if (player->is_dead)
 		return;
@@ -1055,18 +1053,14 @@ void wr_chunks(void)
 		wr_traps_aux(c);
 
 		/* Write other chunk info */
-		if (OPT(player, birth_levels_persist)) {
-			int i;
-
-			wr_string(c->name);
-			wr_s32b(c->turn);
-			wr_u16b(c->depth);
-			wr_u16b(c->height);
-			wr_u16b(c->width);
-			wr_u16b(c->runes);
-			for (i = 0; i < z_info->f_max + 1; i++) {
-				wr_u16b(c->feat_count[i]);
-			}
+		wr_string(c->name);
+		wr_s32b(c->turn);
+		wr_u16b(c->depth);
+		wr_u16b(c->height);
+		wr_u16b(c->width);
+		wr_u16b(c->runes);
+		for (i = 0; i < z_info->f_max + 1; i++) {
+			wr_u16b(c->feat_count[i]);
 		}
 	}
 }
