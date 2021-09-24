@@ -916,6 +916,7 @@ void object_sense(struct player *p, struct object *obj)
 
 		/* Attach it to the current floor pile */
 		new_obj->grid = grid;
+		new_obj->floor = true;
 		pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, new_obj);
 	}
 }
@@ -947,6 +948,7 @@ void object_see(struct player *p, struct object *obj)
 
 		/* Attach it to the current floor pile */
 		new_obj->grid = grid;
+		new_obj->floor = true;
 		pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, new_obj);
 	} else {
 		struct loc old = known_obj->grid;
@@ -972,6 +974,7 @@ void object_see(struct player *p, struct object *obj)
 			}
 
 			known_obj->grid = grid;
+			known_obj->floor = true;
 			pile_insert_end(&p->cave->squares[grid.y][grid.x].obj, known_obj);
 		}
 	}

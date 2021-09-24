@@ -1060,14 +1060,6 @@ bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 	return uncurse_object(obj, strength, dice_string);
 }
 
-bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
-{
-	msg("The world changes!");
-	player_change_place(player, player->place);
-	context->ident = true;
-	return true;
-}
-
 /**
  * Map an area around a point, usually the player.
  * The height to map above and below the player is context->y,
@@ -1460,6 +1452,7 @@ static void forget_remembered_objects(struct chunk *c, struct chunk *knownc, str
 		assert(original);
 		square_excise_object(knownc, grid, obj);
 		obj->grid = loc(0, 0);
+		obj->floor = false;
 
 		/* Delete objects which no longer exist anywhere */
 		if (obj->notice & OBJ_NOTICE_IMAGINED) {
@@ -2645,8 +2638,6 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 {
 	bool up = true;
 	bool down = true;
-	struct level *current = &world->levels[player->place];
-	int target_place = player_get_next_place(current->index, "down", 1);
 	struct monster *t_mon = monster_target_monster(context);
 	struct loc decoy = cave_find_decoy(cave);
 
@@ -2690,23 +2681,19 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 		}
 	}
 
-	/* No going up with force_descend or in the town */
-	//if (OPT(player, birth_force_descend) || !player->depth)
-	//	up = false;
-
 	/* No forcing player down to quest levels if they can't leave */
-	if (!up && quest_forbid_downstairs(target_place))
+	if (!up)
 		down = false;
 
 	/* Can't leave quest levels or go down deeper than the dungeon */
 	if (quest_forbid_downstairs(player->place))
 		down = false;
 
-	/* Deal with underworld and mountain top */
-	if (!current->up && !mountain_top_possible(current->index)) {
+	/* Deal with depth */
+	if (chunk_list[player->place].z_pos <= 1) {
 		up = false;
 	}
-	if (!current->down && !underworld_possible(current->index)) {
+	if (player->depth == z_info->max_depth - 1) {
  		down = false;
 	}
  
@@ -2721,21 +2708,11 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 
 	/* Now actually do the level change */
 	if (up) {
-		const char *msg = (current->topography == TOP_CAVE) ?
-			"You rise up through the ceiling." : "You rise into the air.";
-		msgt(MSG_TPLEVEL, msg);
-		target_place = player_get_next_place(player->place, "up", 1);
-		player_change_place(player, target_place);
+		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
+		chunk_change(-1, 0, 0);
  	} else if (down) {
  		msgt(MSG_TPLEVEL, "You sink through the floor.");
- 
-		//if (OPT(player, birth_force_descend)) {
-		//	target_place = player_get_next_place(player->max_depth, "down", 1);
-		//	player_change_place(player, target_place);
-		//} else {
-		target_place = player_get_next_place(player->place, "down", 1);
-		player_change_place(player, target_place);
-		//}
+		chunk_change(1, 0, 0);
 	} else {
 		msg("Nothing happens.");
 	}
@@ -2779,7 +2756,7 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 					square_set_feat(cave, grid, FEAT_PASS_RUBBLE);
 				else
 					square_set_feat(cave, grid, FEAT_RUBBLE);
-				if (cave->depth == 0)
+				if (player->depth == 0)
 					expose_to_sun(cave, grid, is_daytime());
 				rubble_grids--;
 			}
@@ -2803,7 +2780,7 @@ bool effect_handler_GRANITE(effect_handler_context_t *context)
 {
 	struct trap *trap = context->origin.which.trap;
 	square_set_feat(cave, trap->grid, FEAT_GRANITE);
-	if (cave->depth == 0) expose_to_sun(cave, trap->grid, is_daytime());
+	if (player->depth == 0) expose_to_sun(cave, trap->grid, is_daytime());
 
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);

@@ -21,6 +21,7 @@
 #include "effects.h"
 #include "game-input.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-desc.h"
 #include "mon-attack.h"
@@ -284,10 +285,6 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
     if (!feat_is_trap_holding(feat))
 		return -1;
 
-    /* No traps in town */
-    if (c->depth == 0)
-		return -1;
-
     /* Get trap probabilities */
 	trap_probs = mem_zalloc(z_info->trap_max * sizeof(int));
 	for (i = 0; i < z_info->trap_max; i++) {
@@ -318,18 +315,16 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
 
 		/* Check legality of trapdoors. */
 		if (trf_has(kind->flags, TRF_DOWN)) {
-			struct level *current = &world->levels[player->place];
-			
 			/* No trap doors on quest levels */
 			if (quest_forbid_downstairs(player->place)) continue;
 
 			/* No trap doors on the deepest level */
-			if (!current->down && !underworld_possible(current->index))
+			if (player->depth == z_info->max_depth - 1)
 				continue;
 
 			/* No trap doors with persistent levels (for now) */
-			//if (OPT(player, birth_levels_persist))
-			//	continue;
+			//B if (OPT(player, birth_levels_persist))
+			//B	continue;
 	    }
 
 		/* Trap is okay, store the cumulative probability */
@@ -576,8 +571,7 @@ extern void hit_trap(struct loc grid, int delayed)
 
 		/* Some traps drop you a dungeon level */
 		if (trf_has(trap->kind->flags, TRF_DOWN)) {
-			int target_place = player_get_next_place(player->place, "down", 1);
-			player_change_place(player,	target_place);
+			chunk_change(1, 0, 0);
 		}
 
 		/* Some traps drop you onto them */

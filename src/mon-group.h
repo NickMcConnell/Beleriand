@@ -34,8 +34,9 @@ struct monster_group {
 
 struct monster_group *monster_group_new(void);
 void monster_group_free(struct chunk *c, struct monster_group *group);
-void monster_group_remove_leader(struct chunk *c, struct monster *leader,
-								 struct monster_group *group);
+void monster_group_copy(struct monster_group *dest, struct monster_group *src);
+void monster_group_remove_leader(struct chunk *c, struct monster_race *race,
+								 struct monster_group *group, bool verify);
 void monster_remove_from_groups(struct chunk *c, struct monster *mon);
 int monster_group_index_new(struct chunk *c);
 void monster_add_to_group(struct chunk *c, struct monster *mon,

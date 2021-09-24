@@ -2728,6 +2728,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
  */
 void disconnect_stats(int nsim, bool stop_on_disconnect)
 {
+#if 0
 	int i, y, x;
 	int **cave_dist;
 	long bad_starts = 0, dsc_area = 0, dsc_from_stairs = 0;
@@ -2977,6 +2978,7 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 
 	/* Redraw the level */
 	do_cmd_redraw();
+#endif
 }
 
 

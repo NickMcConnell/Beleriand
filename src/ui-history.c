@@ -66,7 +66,7 @@ void history_display(void)
 		{
 			strnfmt(buf, sizeof(buf), "%10d%7d\'  %s",
 				history_list_local[i].turn,
-				history_list_local[i].dlev * 50,
+				history_list_local[i].z_pos * 50,
 				history_list_local[i].event);
 
 			if (hist_has(history_list_local[i].type, HIST_ARTIFACT_LOST))
@@ -136,7 +136,7 @@ void dump_history(ang_file *file)
 	for (i = 0; i < max_item; i++) {
 		strnfmt(buf, sizeof(buf), "%10d%7d\'  %s",
 				history_list_local[i].turn,
-				history_list_local[i].dlev * 50,
+				history_list_local[i].z_pos * 50,
 				history_list_local[i].event);
 
 		if (hist_has(history_list_local[i].type, HIST_ARTIFACT_LOST))

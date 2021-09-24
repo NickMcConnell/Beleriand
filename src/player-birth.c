@@ -1324,7 +1324,13 @@ void do_cmd_accept_character(struct command *cmd)
 
 	ignore_birth_init();
 
-	player->place = player->home;
+	/* Start on the stairs to Angband, for now */
+	player->place = 0;
+	//chunk_list[0].region = 30;
+	chunk_list[0].z_pos = 0;
+	chunk_list[0].y_pos = 422;
+	chunk_list[0].x_pos = 3965;
+	player->depth = 0;
 
 	/* No locations generated yet */
 	gen_loc_cnt = 0;
@@ -1362,7 +1368,6 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Initialise the stores, dungeon */
 	init_race_probs();
-	old_chunk_list_max = 0;
 
 	/* Player learns innate runes */
 	player_learn_innate(player);

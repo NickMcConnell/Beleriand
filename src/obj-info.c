@@ -1566,8 +1566,8 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 		origin = obj->origin;
 
 	/* Name the place of origin */
-	strnfmt(loot_spot, sizeof(loot_spot), "in %s",
-			level_name(&world->levels[obj->origin_place]));
+	strnfmt(loot_spot, sizeof(loot_spot), "in %s", "a place");
+			//level_name(&world->levels[obj->origin_place]));
 
 	/* Name the monster of origin */
 	if (obj->origin_race) {

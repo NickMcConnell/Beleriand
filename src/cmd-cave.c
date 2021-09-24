@@ -50,124 +50,34 @@
 #include "trap.h"
 
 /**
- * Get the direction a path is heading
- */
-static const char *path_direction(int feat)
-{
-	if (feat == FEAT_LESS_NORTH) return "north";
-	if (feat == FEAT_MORE_NORTH) return "north";
-	if (feat == FEAT_LESS_EAST) return "east";
-	if (feat == FEAT_MORE_EAST) return "east";
-	if (feat == FEAT_LESS_SOUTH) return "south";
-	if (feat == FEAT_MORE_SOUTH) return "south";
-	if (feat == FEAT_LESS_WEST) return "west";
-	if (feat == FEAT_MORE_WEST) return "west";
-	if (feat == FEAT_LESS) return "up";
-	if (feat == FEAT_MORE) return "down";
-	return "";
-}
-
-/**
- * Get the return path of a path or stair (sigh)
- */
-static int return_path(int feat)
-{
-	if (feat == FEAT_LESS_NORTH) return FEAT_MORE_SOUTH;
-	if (feat == FEAT_MORE_NORTH) return FEAT_LESS_SOUTH;
-	if (feat == FEAT_LESS_EAST) return FEAT_MORE_WEST;
-	if (feat == FEAT_MORE_EAST) return FEAT_LESS_WEST;
-	if (feat == FEAT_LESS_SOUTH) return FEAT_MORE_NORTH;
-	if (feat == FEAT_MORE_SOUTH) return FEAT_LESS_NORTH;
-	if (feat == FEAT_LESS_WEST) return FEAT_MORE_EAST;
-	if (feat == FEAT_MORE_WEST) return FEAT_LESS_EAST;
-	if (feat == FEAT_LESS) return FEAT_MORE;
-	if (feat == FEAT_MORE) return FEAT_LESS;
-	return -1;
-}
-
-/**
  * Go up one level
  */
 void do_cmd_go_up(struct command *cmd)
 {
 	int feat = square_feat(cave, player->grid)->fidx;
-	int new_place;
 
 	/* Verify stairs */
-	if (!(square_isstairs(cave, player->grid) ||
-		  square_ispath(cave, player->grid))) {
+	if (!square_isstairs(cave, player->grid)) {
 		msg("I see no path or staircase here.");
 		return;
 	} else if (square_isdownstairs(cave, player->grid)) {
-		if (square_ispath(cave, player->grid)) {
-			msg("This is a path to greater danger.");
-			return;
-		} else {
-			msg("This staircase leads down.");
-			return;
-		}
+		msg("This staircase leads down.");
+		return;
 	}
-
-	/* Make certain the player really wants to leave a themed level. -LM- */
-	if (player->themed_level) {
-		if (!get_check("This level will never appear again.  Really leave?")) {
-			return;
-		}
-	}
-
-	/* Force descend */
-	//if (OPT(player, birth_force_descend)) {
-	//	msg("Nothing happens!");
-	//	return;
-	//}
-
-	new_place = player_get_next_place(player->place, path_direction(feat), 1);
 
 	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Success */
 	if (feat == FEAT_LESS) {
-		/* Magical portal for dungeon-only games */
-		if (streq(world->name, "Hybrid Dungeon") && (player->depth != 1)) {
-			struct level *lev = &world->levels[player->place];
-			if (lev->up) {
-				struct level *up = level_by_name(world, lev->up);
-				if (lev->locality != up->locality) {
-					/* Land properly */
-					player->last_place = 0;
-
-					/* Portal */
-					msgt(MSG_STAIRS_UP, "You trigger a magic portal.");
-
-					/* Change level */
-					player_change_place(player, new_place);
-					return;
-				}
-			} else {
-				msg("Nothing happens!");
-				return;
-			}
-		}
-		msgt(MSG_STAIRS_UP, "You enter a maze of up staircases.");
-	} else {
-		msgt(MSG_STAIRS_UP, "You enter a winding path to less danger.");
+		msgt(MSG_STAIRS_UP, "You climb the stairs.");
 	}
 
 	/* Create a way back */
-	player->upkeep->create_stair = return_path(feat);
-
-	/* Record the non-obvious exit coordinate */
-	if ((feat == FEAT_LESS_NORTH) || (feat == FEAT_MORE_NORTH) ||
-		(feat == FEAT_LESS_SOUTH) || (feat == FEAT_MORE_SOUTH)) {
-		player->upkeep->path_coord = player->grid.x;
-	} else if ((feat == FEAT_LESS_EAST) || (feat == FEAT_MORE_EAST) ||
-			   (feat == FEAT_LESS_WEST) || (feat == FEAT_MORE_WEST)) {
-		player->upkeep->path_coord = player->grid.y;
-	}
+	player->upkeep->create_stair = FEAT_MORE;
 
 	/* Change level */
-	player_change_place(player, new_place);
+	chunk_change(-1, 0, 0);
 }
 
 
@@ -177,21 +87,14 @@ void do_cmd_go_up(struct command *cmd)
 void do_cmd_go_down(struct command *cmd)
 {
 	int feat = square_feat(cave, player->grid)->fidx;
-	int new_place;
 
 	/* Verify stairs */
-	if (!(square_isstairs(cave, player->grid) ||
-		  square_ispath(cave, player->grid))) {
-		msg("I see no path or staircase here.");
+	if (!square_isstairs(cave, player->grid)) {
+		msg("I see no staircase here.");
 		return;
 	} else if (square_isupstairs(cave, player->grid)) {
-		if (square_ispath(cave, player->grid)) {
-			msg("This is a path to less danger.");
-			return;
-		} else {
-			msg("This staircase leads up.");
-			return;
-		}
+		msg("This staircase leads up.");
+		return;
 	}
 
 	/* Paranoia, no descent from z_info->max_depth - 1 */
@@ -200,46 +103,19 @@ void do_cmd_go_down(struct command *cmd)
 		return;
 	}
 
-	/* Make certain the player really wants to leave a themed level. -LM- */
-	if (player->themed_level) {
-		if (!get_check("This level will never appear again.  Really leave? ")) {
-			return;
-		}
-	}
-
-	new_place = player_get_next_place(player->place, path_direction(feat), 1);
-
-	/* Warn a force_descend player if they're going to a quest level */
-	//if (OPT(player, birth_force_descend) && quest_forbid_downstairs(new_place)) {
-	//	if (!get_check("Are you sure you want to descend?")) {
-	//		return;
-	//	}
-	//}
-
 	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Success */
 	if (feat == FEAT_MORE) {
-		msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
-	} else {
-		msgt(MSG_STAIRS_DOWN, "You enter a winding path to greater danger.");
+		msgt(MSG_STAIRS_DOWN, "You descend the stairs.");
 	}
 
 	/* Create a way back */
-	player->upkeep->create_stair = return_path(feat);
-
-	/* Record the non-obvious exit coordinate */
-	if ((feat == FEAT_LESS_NORTH) || (feat == FEAT_MORE_NORTH) ||
-		(feat == FEAT_LESS_SOUTH) || (feat == FEAT_MORE_SOUTH)) {
-		player->upkeep->path_coord = player->grid.x;
-	} else if ((feat == FEAT_LESS_EAST) || (feat == FEAT_MORE_EAST) ||
-			   (feat == FEAT_LESS_WEST) || (feat == FEAT_MORE_WEST)) {
-		player->upkeep->path_coord = player->grid.y;
-	}
+	player->upkeep->create_stair = FEAT_LESS;
 
 	/* Change level */
-	player_change_place(player, new_place);
+	chunk_change(1, 0, 0);
 }
 
 
@@ -684,7 +560,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			msg("You have finished the tunnel.");
 		}
 		/* On the surface, new terrain may be exposed to the sun. */
-		if (cave->depth == 0) expose_to_sun(cave, grid, is_daytime());
+		if (player->depth == 0) expose_to_sun(cave, grid, is_daytime());
 		/* Update the visuals. */
 		square_memorize(cave, grid);
 		square_light_spot(cave, grid);
@@ -907,7 +783,7 @@ static bool do_cmd_disarm_aux(struct loc grid)
 		skill = skill / 10;
 
 	/* Extract trap power */
-	power = cave->depth / 5;
+	power = player->depth / 5;
 
 	/* Extract the percentage success */
 	chance = skill - power;

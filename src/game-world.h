@@ -124,6 +124,8 @@ extern struct gen_loc *gen_loc_list;
 extern u32b gen_loc_max;
 extern u32b gen_loc_cnt;
 
+void gen_loc_list_init(void);
+void gen_loc_list_cleanup(void);
 bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
 void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx);
 bool no_vault(int place);

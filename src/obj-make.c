@@ -1466,8 +1466,9 @@ void acquirement(struct loc grid, int level, int num, bool great)
 		if (!nice_obj) continue;
 
 		nice_obj->origin = ORIGIN_ACQUIRE;
-		nice_obj->origin_depth = player->depth;
-		nice_obj->origin_place = player->place;
+		nice_obj->origin_z = chunk_list[player->place].z_pos;
+		nice_obj->origin_y = chunk_list[player->place].y_pos;
+		nice_obj->origin_x = chunk_list[player->place].x_pos;
 
 		/* Drop the object */
 		drop_near(cave, &nice_obj, 0, grid, true, false);

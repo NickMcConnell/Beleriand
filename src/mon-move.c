@@ -1681,7 +1681,7 @@ static void monster_turn(struct monster *mon)
 
 	/* Handle territorial monsters */
 	if (rf_has(mon->race->flags, RF_TERRITORIAL) &&
-		(level_topography(player->place) != TOP_CAVE)) {
+		(chunk_list[player->place].z_pos == 0)) {
 		/* Territorial monsters get a direct energy boost when close to home */
 		int from_home =	distance(mon->home, mon->grid);
 
@@ -2174,20 +2174,17 @@ void reset_monsters(void)
 /**
  * Allow monsters on a frozen persistent level to recover
  */
-void restore_monsters(void)
+void restore_monsters(struct chunk *c, int num_turns)
 {
 	int i;
 	struct monster *mon;
 
-	/* Get the number of turns that have passed */
-	int num_turns = turn - cave->turn;
-
 	/* Process the monsters (backwards) */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+	for (i = cave_monster_max(c) - 1; i >= 1; i--) {
 		int status, status_red;
 
 		/* Access the monster */
-		mon = cave_monster(cave, i);
+		mon = cave_monster(c, i);
 
 		/* Regenerate */
 		regen_monster(mon, num_turns / 100);

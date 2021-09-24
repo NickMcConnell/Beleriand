@@ -437,7 +437,6 @@ struct chunk *cave_new(int height, int width) {
 	c->monster_groups = mem_zalloc(z_info->level_monster_max *
 								   sizeof(struct monster_group*));
 
-	c->turn = turn;
 	return c;
 }
 
@@ -450,7 +449,6 @@ void cave_connectors_free(struct connector *join)
 		struct connector *current = join;
 
 		join = current->next;
-		mem_free(current->info);
 		mem_free(current);
 	}
 }
@@ -461,10 +459,8 @@ void cave_connectors_free(struct connector *join)
 void cave_free(struct chunk *c) {
 	int y, x, i;
 
-	cave_connectors_free(c->join);
-
 	/* Look for orphaned objects and delete them. */
-	for (i = 1; i < c->obj_max; i++) {
+	for (i = 0; i < c->obj_max; i++) {
 		if (c->objects[i] && loc_is_zero(c->objects[i]->grid)) {
 			object_delete(&c->objects[i]);
 		}
@@ -488,8 +484,6 @@ void cave_free(struct chunk *c) {
 	mem_free(c->objects);
 	mem_free(c->monsters);
 	mem_free(c->monster_groups);
-	if (c->name)
-		string_free(c->name);
 	mem_free(c);
 }
 
@@ -504,7 +498,7 @@ void list_object(struct chunk *c, struct object *obj)
 
 	/* Check for duplicates and objects already deleted or combined */
 	if (!obj) return;
-	for (i = 1; i < c->obj_max; i++)
+	for (i = 0; i < c->obj_max; i++)
 		if (c->objects[i] == obj)
 			return;
 
@@ -573,17 +567,19 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 			struct object *known_obj = c_k->objects[i];
 			if (obj) {
 				assert(obj->oidx == i);
-				if (!loc_is_zero(obj->grid))
+				if (obj->floor) {
 					assert(pile_contains(square_object(c, obj->grid), obj));
+				}
 			}
 			if (known_obj) {
 				assert (obj);
 				if (player->upkeep->playing) {
 					assert(known_obj == obj->known);
 				}
-				if (!loc_is_zero(known_obj->grid))
+				if (known_obj->floor) {
 					assert (pile_contains(square_object(c_k, known_obj->grid),
 										  known_obj));
+				}
 				assert (known_obj->oidx == i);
 			}
 		}
@@ -592,8 +588,9 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 			struct object *obj = c->objects[i];
 			if (obj) {
 				assert(obj->oidx == i);
-				if (!loc_is_zero(obj->grid))
+				if (obj->floor) {
 					assert(pile_contains(square_object(c, obj->grid), obj));
+				}
 			}
 		}
 	}

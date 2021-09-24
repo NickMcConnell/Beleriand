@@ -99,6 +99,36 @@ const byte extract_energy[200] =
  * Map-related functions
  * ------------------------------------------------------------------------ */
 /**
+ * Initialise the generated locations list
+ */
+void gen_loc_list_init(void)
+{
+	gen_loc_list = mem_zalloc(GEN_LOC_INCR * sizeof(struct gen_loc));
+}
+
+/**
+ * Clean up the generated locations list
+ */
+void gen_loc_list_cleanup(void)
+{
+	size_t i;
+
+	/* Free the locations list */
+	for (i = 0; i < gen_loc_cnt; i++) {
+		if (gen_loc_list[i].change) {
+			struct terrain_change *change = gen_loc_list[i].change;
+			while (change) {
+				change = change->next;
+				mem_free(change);
+			}
+		}
+		cave_connectors_free(gen_loc_list[i].join);
+	}
+	mem_free(gen_loc_list);
+	gen_loc_list = NULL;
+}
+
+/**
  * Find a given generation location in the list, or failing that the one
  * after it
  */
@@ -362,9 +392,8 @@ bool is_daytime(void)
  */
 bool outside(void)
 {
-	if (level_topography(player->place) == TOP_CAVE) return false;
-	if (level_topography(player->place) == TOP_VALLEY) return false;
-	return true;
+	//B need to deal with dark forest, etc
+	return chunk_list[player->place].z_pos == 0;
 }
 
 /**
@@ -493,7 +522,7 @@ static void recharge_objects(void)
 	}
 
 	/* Recharge other level objects */
-	for (i = 1; i < cave->obj_max; i++) {
+	for (i = 0; i < cave->obj_max; i++) {
 		obj = cave->objects[i];
 		if (!obj) continue;
 

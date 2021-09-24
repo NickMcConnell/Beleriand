@@ -332,6 +332,7 @@ void object_delete(struct object **obj_address)
 		(obj == cave->objects[obj->oidx]) &&
 		player->cave->objects[obj->oidx]) {
 		obj->grid = loc(0, 0);
+		obj->floor = false;
 		obj->held_m_idx = 0;
 		obj->mimicking_m_idx = 0;
 
@@ -544,8 +545,9 @@ void object_origin_combine(struct object *obj1, const struct object *obj2)
 		case 1:
 		{
 			obj1->origin = obj2->origin;
-			obj1->origin_depth = obj2->origin_depth;
-			obj1->origin_place = obj2->origin_place;
+			obj1->origin_z = obj2->origin_z;
+			obj1->origin_y = obj2->origin_y;
+			obj1->origin_x = obj2->origin_x;
 			obj1->origin_race = obj2->origin_race;
 			break;
 		}
@@ -937,6 +939,7 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 
 	/* Location */
 	drop->grid = grid;
+	drop->floor = true;
 
 	/* Forget monster */
 	drop->held_m_idx = 0;
@@ -954,6 +957,7 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 		drop->known->oidx = drop->oidx;
 		drop->known->held_m_idx = 0;
 		drop->known->grid = loc(0, 0);
+		drop->known->floor = false;
 		player->cave->objects[drop->oidx] = drop->known;
 	}
 
@@ -986,7 +990,7 @@ static void floor_carry_fail(struct chunk *c, struct object *drop, bool broke)
 			VERB_AGREEMENT(drop->number, "disappears", "disappear");
 		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE, player);
 		msg("The %s %s.", o_name, verb);
-		if (!loc_is_zero(known->grid))
+		if (known->floor)
 			square_excise_object(player->cave, known->grid, known);
 		delist_object(player->cave, known);
 		object_delete(&known);
@@ -1164,6 +1168,7 @@ void push_object(struct loc grid)
 		object_copy(newobj, obj);
 		newobj->oidx = 0;
 		newobj->grid = loc(0, 0);
+		newobj->floor = false;
 		if (newobj->known) {
 			newobj->known = object_new();
 			object_copy(newobj->known, obj->known);
@@ -1223,9 +1228,8 @@ void push_object(struct loc grid)
 					break;
 				}
 				if (scatter_ext(cave, &newgrid, 1, grid, d,
-						true, square_isempty) > 0
-						&& floor_carry(cave, newgrid,
-						obj, &dummy)) {
+								true, square_isempty) > 0
+						&& floor_carry(cave, newgrid, obj, &dummy)) {
 					/*
 					 * Move the monster and give it the
 					 * object.

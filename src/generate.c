@@ -771,6 +771,44 @@ static void cleanup_template_parser(void)
  * ------------------------------------------------------------------------
  * Level profile routines
  * ------------------------------------------------------------------------ */
+
+/**
+ * Return the number of room builders available.
+ */
+int get_room_builder_count(void)
+{
+	return (int) N_ELEMENTS(room_builders);
+}
+/**
+ * Convert the name of a room builder into its index.  Return -1 if the
+ * name does not match any of the room builders.
+ */
+int get_room_builder_index_from_name(const char *name)
+{
+	int i = 0;
+
+	while (1) {
+		if (i >= (int) N_ELEMENTS(room_builders)) {
+			return -1;
+		}
+		if (streq(name, room_builders[i].name)) {
+			return i;
+		}
+		++i;
+	}
+}
+
+/**
+ * Get the name of a room builder given its index.  Return NULL if the index
+ * is out of bounds (less than one or greater than or equal to
+ * get_room_builder_count()).
+ */
+const char *get_room_builder_name_from_index(int i)
+{
+	return (i >= 0 && i < (int) get_room_builder_count()) ?
+		room_builders[i].name : NULL;
+}
+
 /**
  * Find a cave_profile by name
  * \param name is the name of the cave_profile being looked for
@@ -789,6 +827,28 @@ static const struct cave_profile *find_cave_profile(const char *name)
 
 	/* Not there */
 	return NULL;
+}
+
+/**
+ * Convert the name of a level profile into its index in the cave_profiles
+ * list.  Return -1 if the name does not match any of the profiles.
+ */
+int get_level_profile_index_from_name(const char *name)
+{
+	const struct cave_profile *p = find_cave_profile(name);
+
+	return (p) ? (int) (p - cave_profiles) : -1;
+}
+
+/**
+ * Get the name of a level profile given its index.  Return NULL if the index
+ * is out of bounds (less than one or greater than or equal to
+ * z_info->profile_max).
+ */
+const char *get_level_profile_name_from_index(int i)
+{
+	return (i >= 0 && i < z_info->profile_max) ?
+		cave_profiles[i].name : NULL;
 }
 
 /**
@@ -817,7 +877,8 @@ static bool labyrinth_check(int depth)
 	if (randint0(100) >= chance) return false;
 
 	/* Successfully ran the gauntlet! */
-	return true;
+	//B return true;
+	return false;
 }
 
 /**
@@ -912,55 +973,41 @@ static const struct cave_profile *choose_profile(struct player *p)
 	}
 
 	/* Make the profile choice */
-	switch (world->levels[p->place].topography) {
-		case TOP_TOWN: profile = find_cave_profile("old_town"); break;
-		case TOP_PLAIN: profile = find_cave_profile("old_plain"); break;
-		case TOP_FOREST: profile = find_cave_profile("old_forest"); break;
-		case TOP_MOUNTAIN: profile = find_cave_profile("old_mtn"); break;
-		case TOP_SWAMP: profile = find_cave_profile("old_swamp"); break;
-		case TOP_RIVER: profile = find_cave_profile("old_river"); break;
-		case TOP_DESERT: profile = find_cave_profile("old_desert"); break;
-		case TOP_VALLEY: profile = find_cave_profile("old_valley"); break;
-		case TOP_MOUNTAINTOP: profile = find_cave_profile("old_mtntop"); break;
-		case TOP_CAVE: {
-			if (labyrinth_check(p->depth) &&
-					   (labyrinth_alloc > 0 || labyrinth_alloc == -1)) {
-				profile = find_cave_profile("labyrinth");
-			} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40) &&
-					   (moria_alloc > 0 || moria_alloc == -1)) {
-				profile = find_cave_profile("moria");
-			} else {
-				int total_alloc = 0;
-				size_t i;
+	if (labyrinth_check(p->depth) &&
+		(labyrinth_alloc > 0 || labyrinth_alloc == -1)) {
+		profile = find_cave_profile("labyrinth");
+	} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40) &&
+			   (moria_alloc > 0 || moria_alloc == -1)) {
+		profile = find_cave_profile("moria");
+	} else {
+		int total_alloc = 0;
+		size_t i;
 
-				/*
-				 * Use PowerWyrm's selection algorithm from
-				 * get_random_monster_object() so the selection can be done in
-				 * one pass and without auxiliary storage (at the cost of more
-				 * calls to randint0()).  The mth valid profile out of n valid
-				 * profiles appears with probability, alloc(m) /
-				 * sum(i = 0 to m, alloc(i)) * product(j = m + 1 to n - 1,
-				 * 1 - alloc(j) / sum(k = 0 to j, alloc(k))) which is equal to
-				 * alloc(m) / sum(i = 0 to m, alloc(i)) * product(j = m + 1 to
-				 * n - 1, sum(k = 0 to j - 1, alloc(k)) / sum(l = 0 to j,
-				 * alloc(l))) which, by the canceling of successive numerators
-				 * and denominators is alloc(m) / sum(l = 0 to n - 1, alloc(l)).
-				 */
-				for (i = 0; i < z_info->profile_max; i++) {
-					struct cave_profile *test_profile = &cave_profiles[i];
-					if (test_profile->alloc <= 0 ||
-						p->depth < test_profile->min_level) continue;
-					total_alloc += test_profile->alloc;
-					if (randint0(total_alloc) < test_profile->alloc) {
-						profile = test_profile;
-					}
-				}
-				if (!profile) {
-					profile = find_cave_profile("classic");
-				}
+		/*
+		 * Use PowerWyrm's selection algorithm from
+		 * get_random_monster_object() so the selection can be done in
+		 * one pass and without auxiliary storage (at the cost of more
+		 * calls to randint0()).  The mth valid profile out of n valid
+		 * profiles appears with probability, alloc(m) /
+		 * sum(i = 0 to m, alloc(i)) * product(j = m + 1 to n - 1,
+		 * 1 - alloc(j) / sum(k = 0 to j, alloc(k))) which is equal to
+		 * alloc(m) / sum(i = 0 to m, alloc(i)) * product(j = m + 1 to
+		 * n - 1, sum(k = 0 to j - 1, alloc(k)) / sum(l = 0 to j,
+		 * alloc(l))) which, by the canceling of successive numerators
+		 * and denominators is alloc(m) / sum(l = 0 to n - 1, alloc(l)).
+		 */
+		for (i = 0; i < z_info->profile_max; i++) {
+			struct cave_profile *test_profile = &cave_profiles[i];
+			if (test_profile->alloc <= 0 ||
+				p->depth < test_profile->min_level) continue;
+			total_alloc += test_profile->alloc;
+			if (randint0(total_alloc) < test_profile->alloc) {
+				profile = test_profile;
 			}
 		}
-		default: break;
+		if (!profile) {
+			profile = find_cave_profile("classic");
+		}
 	}
 
 	/* Return the profile or fail horribly */
@@ -977,215 +1024,114 @@ static const struct cave_profile *choose_profile(struct player *p)
  * Helper routines for generation
  * ------------------------------------------------------------------------ */
 /**
- * Get information for constructing stairs and paths in the correct places
+ * Get information for constructing stairs in the correct places
  */
 static void get_join_info(struct player *p, struct dun_data *dd)
 {
-	struct level *current_lev = &world->levels[p->place];
-	struct level *lev = NULL;
+	int y, x;
+	int y_offset = p->grid.y / CHUNK_SIDE;
+	int x_offset = p->grid.x / CHUNK_SIDE;
 
-	/* Check level north */
-	lev = level_by_name(world, current_lev->north);
-	if (lev) {
-		struct chunk *check = chunk_find_name(level_name(lev));
-		if (check) {
-			struct connector *join = check->join;
-			while (join) {
-				if (join->feat == FEAT_MORE_SOUTH) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.x = join->grid.x;
-					new->feat = FEAT_LESS_NORTH;
-					new->next = dun->join;
-					dun->join = new;
-				} else if (join->feat == FEAT_LESS_SOUTH) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.x = join->grid.x;
-					new->feat = FEAT_MORE_NORTH;
-					new->next = dun->join;
-					dun->join = new;
-				}
-				join = join->next;
-			}
-		}
-	}
-
-	/* Check level east */
-	lev = level_by_name(world, current_lev->east);
-	if (lev) {
-		struct chunk *check = chunk_find_name(level_name(lev));
-		if (check) {
-			struct connector *join = check->join;
-			while (join) {
-				if (join->feat == FEAT_MORE_WEST) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = join->grid.y;
-					new->feat = FEAT_LESS_EAST;
-					new->next = dun->join;
-					dun->join = new;
-				} else if (join->feat == FEAT_LESS_WEST) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = join->grid.y;
-					new->feat = FEAT_MORE_EAST;
-					new->next = dun->join;
-					dun->join = new;
-				}
-				join = join->next;
-			}
-		}
-	}
-
-	/* Check level south */
-	lev = level_by_name(world, current_lev->south);
-	if (lev) {
-		struct chunk *check = chunk_find_name(level_name(lev));
-		if (check) {
-			struct connector *join = check->join;
-			while (join) {
-				if (join->feat == FEAT_MORE_NORTH) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.x = join->grid.x;
-					new->feat = FEAT_LESS_SOUTH;
-					new->next = dun->join;
-					dun->join = new;
-				} else if (join->feat == FEAT_LESS_NORTH) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.x = join->grid.x;
-					new->feat = FEAT_MORE_SOUTH;
-					new->next = dun->join;
-					dun->join = new;
-				}
-				join = join->next;
-			}
-		}
-	}
-
-	/* Check level west */
-	lev = level_by_name(world, current_lev->west);
-	if (lev) {
-		struct chunk *check = chunk_find_name(level_name(lev));
-		if (check) {
-			struct connector *join = check->join;
-			while (join) {
-				if (join->feat == FEAT_MORE_EAST) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = join->grid.y;
-					new->feat = FEAT_LESS_WEST;
-					new->next = dun->join;
-					dun->join = new;
-				} else if (join->feat == FEAT_LESS_EAST) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = join->grid.y;
-					new->feat = FEAT_MORE_WEST;
-					new->next = dun->join;
-					dun->join = new;
-				}
-				join = join->next;
-			}
-		}
-	}
-
-	/* Check level above */
-	lev = level_by_name(world, current_lev->up);
-	if (lev) {
-		struct chunk *check = chunk_find_name(level_name(lev));
-		if (check) {
-			struct connector *join = check->join;
-			while (join) {
-				if (join->feat == FEAT_MORE) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = join->grid.y;
-					new->grid.x = join->grid.x;
-					new->feat = FEAT_LESS;
-					new->next = dd->join;
-					dd->join = new;
-				}
-				join = join->next;
-			}
-		}
-	} else if ((lev = level_by_name(world, current_lev->up)) &&
-			   lev && (lev = level_by_name(world, lev->up))) {
-		/*
-		 * When there isn't a level above but there is one two levels
-		 * up, remember where the down staircases are so up staircases
-		 * on this level won't conflict with them if the level above is
-		 * ever generated.
-		 */
-		struct chunk *check = chunk_find_name(level_name(lev));
-
-		if (check) {
+	/* Search across all the chunks on the level */
+	for (y = 0; y < 3; y++) {
+		for (x = 0; x < 3; x++) {
+			struct chunk_ref ref = { 0 };
+			int y0 = y - y_offset;
+			int x0 = x - x_offset;
+			int lower, upper;
+			bool exists;
+			struct gen_loc *location;
 			struct connector *join;
 
-			for (join = check->join; join; join = join->next) {
-				if (join->feat == FEAT_MORE) {
-					struct connector *nc =
-						mem_zalloc(sizeof(*nc));
+			/* Get the location data */
+			ref.region = chunk_list[p->last_place].region;
+			ref.z_pos = p->depth;
+			ref.y_pos = chunk_list[p->last_place].y_pos + y0;
+			ref.x_pos = chunk_list[p->last_place].x_pos + x0;
 
-					nc->grid = join->grid;
-					nc->feat = FEAT_MORE;
-					nc->next = dd->one_off_above;
-					dd->one_off_above = nc;
+			/* See if the location up has been generated before */
+			exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1, &lower,
+								  &upper);
+
+			/* Get the joins from the location up */
+			if (exists) {
+				location = &gen_loc_list[lower];
+				join = location->join;
+				while (join) {
+					if (join->feat == FEAT_MORE) {
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_LESS;
+						new->next = dd->join;
+						dd->join = new;
+					}
+					join = join->next;
+				}
+			} else {
+				/*
+				 * When there isn't a location above but there is one two levels
+				 * up, remember where the down staircases are so up staircases
+				 * on this level won't conflict with them if the level above is
+				 * ever generated.
+				 */
+				exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 2,
+									  &lower, &upper);
+				if (exists) {
+					location = &gen_loc_list[lower];
+					for (join = location->join; join; join = join->next) {
+						if (join->feat == FEAT_MORE) {
+							struct connector *nc = mem_zalloc(sizeof(*nc));
+							struct loc offset = loc(x * CHUNK_SIDE,
+													y * CHUNK_SIDE);
+							nc->grid = loc_sum(join->grid, offset);
+							nc->feat = FEAT_MORE;
+							nc->next = dd->one_off_above;
+							dd->one_off_above = nc;
+						}
+					}
+				}
+			}
+			
+			/* See if the location down has been generated before */
+			exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos + 1, &lower,
+								  &upper);
+
+			/* Get the joins from the location down */
+			if (exists) {
+				location = &gen_loc_list[lower];
+				join = location->join;
+				while (join) {
+					if (join->feat == FEAT_LESS) {
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_MORE;
+						new->next = dd->join;
+						dd->join = new;
+					}
+					join = join->next;
+				}
+			} else {
+				/* Same logic as above for looking one past the next level */
+				exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos + 2,
+									  &lower, &upper);
+				if (exists) {
+					location = &gen_loc_list[lower];
+					for (join = location->join; join; join = join->next) {
+						if (join->feat == FEAT_LESS) {
+							struct connector *nc = mem_zalloc(sizeof(*nc));
+							struct loc offset = loc(x * CHUNK_SIDE,
+													y * CHUNK_SIDE);
+							nc->grid = loc_sum(join->grid, offset);
+							nc->feat = FEAT_LESS;
+							nc->next = dd->one_off_above;
+							dd->one_off_above = nc;
+						}
+					}
 				}
 			}
 		}
-	}
-
-	/* Check level below */
-	lev = level_by_name(world, current_lev->down);
-	if (lev) {
-		struct chunk *check = chunk_find_name(level_name(lev));
-		if (check) {
-			struct connector *join = check->join;
-			while (join) {
-				if (join->feat == FEAT_LESS) {
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = join->grid.y;
-					new->grid.x = join->grid.x;
-					new->feat = FEAT_MORE;
-					new->next = dd->join;
-					dd->join = new;
-				}
-				join = join->next;
-			}
-		}
-	} else if ((lev = level_by_name(world, current_lev->down)) &&
-			   lev && (lev = level_by_name(world, lev->down))) {
-		/* Same logic as above for looking one past the next level */
-		struct chunk *check = chunk_find_name(level_name(lev));
-
-		if (check) {
-			struct connector *join;
-
-			for (join = check->join; join; join = join->next) {
-				if (join->feat == FEAT_LESS) {
-					struct connector *nc =
-						mem_zalloc(sizeof(*nc));
-
-					nc->grid = join->grid;
-					nc->feat = FEAT_LESS;
-					nc->next = dd->one_off_below;
-					dd->one_off_below = nc;
-				}
-			}
-		}
-	}
-}
-
-/**
- * Check the size of the level above or below the next level to be generated
- * to make sure stairs can connect
- */
-static void get_min_level_size(struct chunk *check, int *min_height,
-							   int *min_width, bool above)
-{
-	struct connector *join = check->join;
-
-	while (join) {
-		if ((above && (join->feat == FEAT_MORE)) ||
-			(!above && (join->feat == FEAT_LESS))) {
-			*min_height = MAX(*min_height, join->grid.y + 2);
-			*min_width = MAX(*min_width, join->grid.x + 2);
-		}
-		join = join->next;
 	}
 }
 
@@ -1251,29 +1197,6 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 }
 
 /**
- * Store a dungeon level for reloading
- */
-static void cave_store(struct chunk *c, char *name, bool known, bool keep_all)
-{
-	struct chunk *stored;
-	if (keep_all) {
-		stored = c;
-	} else {
-		stored = old_chunk_write(c);
-	}
-	if (stored->name) {
-		string_free(stored->name);
-	}
-	stored->name = string_make(name);
-	if (known) {
-		stored->name = string_append(stored->name, " known");
-	}
-	stored->turn = turn;
-	old_chunk_list_add(stored);
-}
-
-
-/**
  * Clear the dungeon, ready for generation to begin.
  */
 static void cave_clear(struct chunk *c, struct player *p)
@@ -1324,9 +1247,11 @@ static void cleanup_dun_data(struct dun_data *dd)
 {
 	int i;
 
-	cave_connectors_free(dun->join);
-	cave_connectors_free(dun->one_off_above);
-	cave_connectors_free(dun->one_off_below);
+	if (!dd) return;
+
+	//cave_connectors_free(dun->join);
+	//cave_connectors_free(dun->one_off_above);
+	//cave_connectors_free(dun->one_off_below);
 	mem_free(dun->cent);
 	mem_free(dun->ent_n);
 	for (i = 0; i < z_info->level_room_max; ++i) {
@@ -1350,21 +1275,21 @@ static void cleanup_dun_data(struct dun_data *dd)
  * Main level generation functions
  * ------------------------------------------------------------------------ */
 /**
- * Generate a random level.
+ * Generate a dungeon level.
  *
- * Confusingly, this function also generates the town level (level 0).
  * \param p is the current player struct, in practice the global player
+ * \param y_offset
+ * \param x_offset
  * \return a pointer to the new level
  */
-static struct chunk *cave_generate(struct player *p, int height, int width)
+static struct chunk *cave_generate(struct player *p, u32b seed)
 {
 	const char *error = "no generation";
-	int i, tries = 0;
+	int y, x, y_offset, x_offset, tries = 0;
 	struct chunk *chunk = NULL;
+	struct connector *dun_join, *one_off_above, *one_off_below;
 
-	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
-		int y, x;
 		struct dun_data dun_body;
 		struct quest *quest = find_quest(p->place);
 
@@ -1373,7 +1298,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		/* Mark the dungeon as being unready (to avoid artifact loss, etc) */
 		character_dungeon = false;
 
-		/* Allocate global data (will be freed when we leave the loop) */
+		/* Allocate global data (freed when we leave the loop) */
 		dun = &dun_body;
 		dun->cent = mem_zalloc(z_info->level_room_max * sizeof(struct loc));
 		dun->ent_n = mem_zalloc(z_info->level_room_max * sizeof(*dun->ent_n));
@@ -1392,16 +1317,33 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		dun->persist = true;
 		get_join_info(p, dun);
 
+		/* Set the RNG to give reproducible results */
+		//B This needs work, as we really want reproducible results for
+		//B terrain only.  Options are to use Rand_quick only for terrain,
+		//B or to clear out monsters and objects on re-generation (and
+		//B maybe add some back?).  Messy.
+		Rand_quick = true;
+		if (!seed) {
+			seed = randint0(0x10000000);
+		}
+		Rand_value = seed;
+
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p);
 		event_signal_string(EVENT_GEN_LEVEL_START, dun->profile->name);
-		chunk = dun->profile->builder(p, height, width);
+		chunk = dun->profile->builder(p, ARENA_SIDE, ARENA_SIDE);
 		if (!chunk) {
 			error = "Failed to find builder";
 			cleanup_dun_data(dun);
 			event_signal_flag(EVENT_GEN_LEVEL_END, false);
-			continue;
+			if (seed) {
+				quit_fmt("Generation seed failure!");
+			} else {
+				continue;
+			}
 		}
+
+		Rand_quick = false;
 
 		/* Ensure quest monsters */
 		if (quest && !quest->complete) {
@@ -1427,58 +1369,293 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_SOLID);
 				sqinfo_off(square(chunk, grid)->info, SQUARE_MON_RESTRICT);
 
-				if (square_isstairs(chunk, grid)) {
-					size_t n;
-					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid = grid;
-					new->feat = square_feat(chunk, grid)->fidx;
-					new->info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
-					for (n = 0; n < SQUARE_SIZE; n++) {
-						new->info[n] = square(chunk, grid)->info[n];
+				/* Regenerate levels that overflow their maxima */
+				if (cave_monster_max(chunk) >= z_info->level_monster_max) {
+					if (seed) {
+						quit_fmt("Generation seed failure!");
+					} else {
+						error = "too many monsters";
 					}
-					new->next = chunk->join;
-					chunk->join = new;
+				}
+
+				if (error) {
+					if (OPT(p, cheat_room)) {
+						msg("Generation restarted: %s.", error);
+					}
+
+					/* Clear the monsters */
+					wipe_mon_list(chunk, p);
+
+					/* Free the chunk */
+					cave_free(chunk);
+					event_signal_flag(EVENT_GEN_LEVEL_END, false);
+
+					//B Probably need to clear stuff out of chunk_list, etc here
 				}
 			}
 		}
-
-		/* Regenerate levels that overflow their maxima */
-		if (cave_monster_max(chunk) >= z_info->level_monster_max)
-			error = "too many monsters";
-
-		if (error) {
-			if (OPT(p, cheat_room)) {
-				msg("Generation restarted: %s.", error);
-			}
-
-			/* Clear the monsters */
-			wipe_mon_list(chunk, p);
-
-			/* Free the chunk */
-			cave_free(chunk);
-			event_signal_flag(EVENT_GEN_LEVEL_END, false);
-		}
-
+		one_off_above = dun->one_off_above;
+		one_off_below = dun->one_off_below;
+		dun_join = dun->join;
 		cleanup_dun_data(dun);
 	}
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
+	/* Chunk it */
+	y_offset = p->grid.y / CHUNK_SIDE;
+	x_offset = p->grid.x / CHUNK_SIDE;
+	for (y = 0; y < 3; y++) {
+		for (x = 0; x < 3; x++) {
+			struct chunk_ref ref = { 0 };
+			int y0 = y - y_offset;
+			int x0 = x - x_offset;
+			int lower, upper;
+			bool reload;
+			struct gen_loc *location;
+			struct loc grid;
+
+			/* Get the location data */
+			ref.region = chunk_list[p->last_place].region;
+			ref.z_pos = p->depth;
+			ref.y_pos =	chunk_list[p->last_place].y_pos + y0;
+			ref.x_pos =	chunk_list[p->last_place].x_pos + x0;
+
+			/* Should have been generated before */
+			reload = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos, &lower,
+								  &upper);
+
+			/* Access the old place in the gen_loc_list */
+			if (reload) {
+				location = &gen_loc_list[upper];
+			} else {
+				quit("Location failure!");
+			}
+
+			/* Write the seed */
+			location->seed = seed;
+
+			/* Now write the connectors */
+			for (grid.y = y * CHUNK_SIDE; grid.y < (y + 1) * CHUNK_SIDE;
+				 grid.y++) {
+				for (grid.x = x * CHUNK_SIDE; grid.x < (x + 1) * CHUNK_SIDE;
+					 grid.x++) {
+					int feat = square(chunk, grid)->feat;
+					if (feat_is_stair(feat)	|| feat_is_fall(feat)) {
+						/* Check previous join info for conflicts */
+						struct connector *join = dun_join, *new;
+						while (join) {
+							if (loc_eq(grid, join->grid)) break;
+							join = join->next;
+						}
+						if (join) continue;
+						join = one_off_above;
+						while (join) {
+							if (loc_eq(grid, join->grid)) break;
+							join = join->next;
+						}
+						join = one_off_below;
+						if (join) continue;
+						while (join) {
+							if (loc_eq(grid, join->grid)) break;
+							join = join->next;
+						}
+						if (join) continue;
+
+						/* Write the join */
+						new = mem_zalloc(sizeof *new);
+						new->grid.y = grid.y - y * CHUNK_SIDE;
+						new->grid.x = grid.x - x * CHUNK_SIDE;
+						new->feat = feat;
+						sqinfo_copy(new->info, square(chunk, grid)->info);
+						new->next = location->join;
+						location->join = new;
+					}
+				}
+			}
+		}
+	}
+	cave_connectors_free(dun_join);
+	cave_connectors_free(one_off_above);
+	cave_connectors_free(one_off_below);
+
+	return chunk;
+}
+
+/**
+ * Prepare the level the player is about to enter, either by generating
+ * or reloading.
+ *
+ * Note that this function is only called when the player is changing level
+ * vertically, so that an entire 3x3-chunk arena is needed.
+ *
+ * \param c is the level we're going to end up with, in practice the global cave
+ * \param p is the current player struct, in practice the global player
+*/
+void prepare_next_level(struct player *p)
+{
+	int i, y, x;
+	struct chunk *chunk = NULL, *p_chunk = NULL;
+
+	/* First turn */
+	if (turn == 1) {
+		/* Make an arena to build into */
+		chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
+
+		for (y = 0; y < 3; y++) {
+			for (x = 0; x < 3; x++) {
+				struct chunk_ref ref = { 0 };
+
+				/* Get the location data */
+				ref.z_pos = chunk_list[p->place].z_pos;
+				ref.y_pos = chunk_list[p->place].y_pos;
+				ref.x_pos = chunk_list[p->place].x_pos;
+				ref.region = find_region(ref.y_pos, ref.x_pos);
+				chunk_list[p->place].region = ref.region;
+				chunk_adjacent_data(&ref, 0, y, x);
+
+				/* Generate a new chunk */
+				chunk_fill(chunk, &ref, y, x);
+			}
+		}
+		player_place(chunk, p, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+
+		/* Allocate new known level */
+		p->cave = chunk_new(chunk->height, chunk->width);
+		p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
+									   * sizeof(struct object*));
+		p->cave->obj_max = chunk->obj_max;
+		for (i = 0; i <= p->cave->obj_max; i++) {
+			p->cave->objects[i] = NULL;
+		}
+	} else {
+		/* No existing level */
+		if (p->place == MAX_CHUNKS) {
+			int y_offset = p->grid.y / CHUNK_SIDE;
+			int x_offset = p->grid.x / CHUNK_SIDE;
+			u32b seed;
+
+			/* The assumption here is that dungeon levels are always generated
+			 * all at once, and there are no, for example, long tunnels of
+			 * generation at the same z-level.  If that assumption becomes
+			 * wrong, this code will have to change. */
+			bool completely_new = false;
+
+			/* Deal with location data */
+			for (y = 0; y < 3; y++) {
+				for (x = 0; x < 3; x++) {
+					struct chunk_ref ref = { 0 };
+					int y0 = y - y_offset;
+					int x0 = x - x_offset;
+					int lower, upper;
+					bool reload;
+
+					/* Get the location data */
+					ref.region = chunk_list[p->last_place].region;
+					ref.z_pos = p->depth;
+					ref.y_pos = chunk_list[p->last_place].y_pos + y0;
+					ref.x_pos = chunk_list[p->last_place].x_pos + x0;
+
+					/* See if we've been generated before */
+					reload = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos,
+										  &lower, &upper);
+
+					/* New gen_loc, or seed loading and checking */
+					if (!reload) {
+						gen_loc_make(ref.x_pos, ref.y_pos, ref.z_pos, upper);
+						completely_new = true;
+					} else if (!y && !x) {
+						assert(gen_loc_list[upper].seed);
+						seed = gen_loc_list[upper].seed;
+					} else {
+						assert(seed == gen_loc_list[upper].seed);
+					}
+
+					/* Store the chunk reference */
+					(void) chunk_store(1, 1, ref.region, ref.z_pos, ref.y_pos,
+									   ref.x_pos, false);
+
+					/* Is this where the player is? */
+					if ((y0 == 0) && (x0 == 0)) {
+						p->place = chunk_find(ref);
+						assert(p->place != MAX_CHUNKS);
+					}
+				}
+			}
+
+			/* Generate */
+			if (completely_new) {
+				chunk = cave_generate(p, 0);
+			} else {
+				/* Re-generate */
+				chunk = cave_generate(p, seed);
+			}
+
+			/* Allocate new known level */
+			p->cave = chunk_new(chunk->height, chunk->width);
+			p->cave->objects = mem_realloc(p->cave->objects,
+										   (chunk->obj_max + 1)
+										   * sizeof(struct object*));
+			p->cave->obj_max = chunk->obj_max;
+			for (i = 0; i <= p->cave->obj_max; i++) {
+				p->cave->objects[i] = NULL;
+			}
+		} else {
+			/* Otherwise load up the chunks */
+			int centre = chunk_get_centre();
+			assert(centre != MAX_CHUNKS);
+
+			/* Silly games */
+			chunk_wipe(cave);
+			chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
+			cave = chunk;
+			chunk_wipe(p->cave);
+			p_chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
+			p->cave = p_chunk;
+
+			for (y = 0; y < 3; y++) {
+				for (x = 0; x < 3; x++) {
+					int chunk_idx;
+					struct chunk_ref ref = { 0 };
+
+					/* Get the location data */
+					ref.region = chunk_list[centre].region;
+					ref.z_pos = p->depth;
+					ref.y_pos = chunk_list[centre].y_pos + y - 1;
+					ref.x_pos = chunk_list[centre].x_pos + x - 1;
+
+					/* Load it */
+					chunk_idx = chunk_find(ref);
+					if ((chunk_idx != MAX_CHUNKS) &&
+						chunk_list[chunk_idx].chunk) {
+						chunk_read(chunk_idx, y, x);
+					} else {
+						quit("Failed to find chunk!");
+					}
+				}
+			}
+			player_place(chunk, p, p->grid);
+		}
+	}
+
+	/* Generated a new level */
+	cave = chunk;
+	event_signal_flag(EVENT_GEN_LEVEL_END, true);
+
 	/* Validate the dungeon (we could use more checks here) */
 	chunk_validate_objects(chunk);
 
-	/* Allocate new known level, light it if requested */
-	p->cave = cave_new(chunk->height, chunk->width);
-	p->cave->depth = chunk->depth;
-	p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
-								   * sizeof(struct object*));
-	p->cave->obj_max = chunk->obj_max;
-	for (i = 0; i <= p->cave->obj_max; i++) {
-		p->cave->objects[i] = NULL;
-	}
+	/* Light it if requested */
 	if (p->upkeep->light_level) {
 		wiz_light(chunk, p, false);
 		p->upkeep->light_level = false;
+	}
+
+	/* Record details for where we came from, if possible */
+	if (chunk_list[p->place].adjacent[DIR_UP] == p->last_place) {
+		chunk_list[p->last_place].adjacent[DIR_DOWN] = p->place;
+	} else if (chunk_list[p->place].adjacent[DIR_DOWN] == p->last_place) {
+		chunk_list[p->last_place].adjacent[DIR_UP] = p->place;
 	}
 
 	/* Record themed level */
@@ -1486,173 +1663,11 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		p->themed_level_appeared |= (1L << (p->themed_level - 1));
 	}
 
-	chunk->turn = turn;
-
-	return chunk;
-}
-
-/**
- * Prepare the level the player is about to enter, either by generating
- * or reloading
- *
- * \param c is the level we're going to end up with, in practice the global cave
- * \param p is the current player struct, in practice the global player
-*/
-void prepare_next_level(struct player *p)
-{
-	char prev_name[80];
-	char new_name[80];
-	struct chunk *old_level = chunk_find_name(new_name);
-
-	my_strcpy(prev_name, level_name(&world->levels[p->last_place]),
-			  sizeof(prev_name));
-	my_strcpy(new_name, level_name(&world->levels[p->place]), sizeof(new_name));
-
-	/* Deal with any existing current level */
-	if (character_dungeon) {
-		assert (p->cave);
-
-		/* Tidy up */
-		compact_monsters(cave, 0);
-		square_set_mon(cave, p->grid, 0);
-
-		/* Save level and known level */
-		cave_store(cave, prev_name, false, true);
-		cave_store(p->cave, prev_name, true, true);
-	}
-
-	/* Prepare the new level */
-	old_level = chunk_find_name(new_name);
-
-	/* Check all the possibilities */
-	if (old_level && (old_level != cave)) {
-		/* We found an old level, load the known level and assign */
-		int i;
-		char *known_name = format("%s known", new_name);
-		struct chunk *old_known = chunk_find_name(known_name);
-		assert(old_known);
-
-		/* Assign the new ones */
-		cave = old_level;
-		p->cave = old_known;
-
-		/* Associate known objects */
-		for (i = 0; i < p->cave->obj_max; i++) {
-			if (cave->objects[i] && p->cave->objects[i]) {
-				cave->objects[i]->known = p->cave->objects[i];
-			}
-		}
-
-		/* Allow monsters to recover */
-		restore_monsters();
-
-		/* Map boundary changes may not cooperate with level teleport */
-		sanitize_player_loc(cave, p);
-
-		/* Place the player */
-		player_place(cave, p, p->grid);
-
-		/* Remove from the list */
-		old_chunk_list_remove(new_name);
-		old_chunk_list_remove(known_name);
-	} else {
-		/* Creating a new level, make sure it joins existing ones right */
-		struct level *lev;
-		int min_height = 0, min_width = 0;
-
-		/* Check level above */
-		lev = level_by_name(world, world->levels[p->place].up);
-		if (lev) {
-			struct chunk *check = chunk_find_name(level_name(lev));
-			if (check) {
-				get_min_level_size(check, &min_height, &min_width, true);
-			}
-		}
-
-		/* Check level below */
-		lev = level_by_name(world, world->levels[p->place].down);
-		if (lev) {
-			struct chunk *check = chunk_find_name(level_name(lev));
-			if (check) {
-				get_min_level_size(check, &min_height, &min_width, false);
-			}
-		}
-
-		/* Generate a new level */
-		cave = cave_generate(p, min_height, min_width);
-		event_signal_flag(EVENT_GEN_LEVEL_END, true);
-	}
-
-	/* Know the town */
-	if ((!(p->depth)) || (!(p->place))) {
-		cave_known(p);
-	}
-
 	/* Apply illumination */
 	cave_illuminate(cave, is_daytime());
 
 	/* The dungeon is ready */
 	character_dungeon = true;
-}
-
-/**
- * Return the number of room builders available.
- */
-int get_room_builder_count(void)
-{
-	return (int) N_ELEMENTS(room_builders);
-}
-
-/**
- * Convert the name of a room builder into its index.  Return -1 if the
- * name does not match any of the room builders.
- */
-int get_room_builder_index_from_name(const char *name)
-{
-	int i = 0;
-
-	while (1) {
-		if (i >= (int) N_ELEMENTS(room_builders)) {
-			return -1;
-		}
-		if (streq(name, room_builders[i].name)) {
-			return i;
-		}
-		++i;
-	}
-}
-
-/**
- * Get the name of a room builder given its index.  Return NULL if the index
- * is out of bounds (less than one or greater than or equal to
- * get_room_builder_count()).
- */
-const char *get_room_builder_name_from_index(int i)
-{
-	return (i >= 0 && i < (int) get_room_builder_count()) ?
-		room_builders[i].name : NULL;
-}
-
-/**
- * Convert the name of a level profile into its index in the cave_profiles
- * list.  Return -1 if the name does not match any of the profiles.
- */
-int get_level_profile_index_from_name(const char *name)
-{
-	const struct cave_profile *p = find_cave_profile(name);
-
-	return (p) ? (int) (p - cave_profiles) : -1;
-}
-
-/**
- * Get the name of a level profile given its index.  Return NULL if the index
- * is out of bounds (less than one or greater than or equal to
- * z_info->profile_max).
- */
-const char *get_level_profile_name_from_index(int i)
-{
-	return (i >= 0 && i < z_info->profile_max) ?
-		cave_profiles[i].name : NULL;
 }
 
 /**

@@ -509,7 +509,7 @@ static void chest_death(struct loc grid, struct object *chest, bool scatter)
 	}
 
 	/* Drop some valuable objects (non-chests) */
-	level = chest->origin_depth + 5;
+	level = chest->origin_z + 5;
 	while (number > 0) {
 		struct object *treasure;
 		treasure = make_object(cave, level, true, large, false, 0);
@@ -526,8 +526,9 @@ static void chest_death(struct loc grid, struct object *chest, bool scatter)
 		}
 
 		treasure->origin = ORIGIN_CHEST;
-		treasure->origin_depth = chest->origin_depth;
-		treasure->origin_place = chest->origin_place;
+		treasure->origin_z = chunk_list[player->place].z_pos;
+		treasure->origin_y = chunk_list[player->place].y_pos;
+		treasure->origin_x = chunk_list[player->place].x_pos;
 		drop_near(cave, &treasure, 0, grid, true, false);
 		number--;
 	}

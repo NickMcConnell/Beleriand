@@ -178,11 +178,11 @@ struct heatmap {
 struct connector {
 	struct loc grid;
 	byte feat;
-	bitflag *info;
+	bitflag info[SQUARE_SIZE];
 	struct connector *next;
 };
 
-struct chunk {
+struct old_chunk {
 	char *name;
 	s32b turn;
 	int depth;
@@ -216,14 +216,16 @@ struct chunk {
 /**
  * A chunk of the world
  */
-struct world_chunk {
+struct chunk {
 	int height;
 	int width;
 	int *feat_count;
+	u16b runes;
 
 	struct square **squares;
 	struct heatmap noise;
 	struct heatmap scent;
+	struct loc decoy;
 
 	struct object **objects;
 	u16b obj_max;
@@ -238,7 +240,7 @@ struct world_chunk {
 };
 
 /**
- * Location data for a world_chunk
+ * Location data for a chunk
  */
 struct chunk_ref {
 	u16b place;			/**< Index of this chunk */
@@ -247,7 +249,8 @@ struct chunk_ref {
 	u16b z_pos;			/**< Depth of the chunk below ground */
 	u16b y_pos;			/**< y position of the chunk */
 	u16b x_pos;			/**< x position of the chunk */
-	struct world_chunk *chunk;	/**< The actual chunk */
+	struct chunk *chunk;	/**< The actual chunk */
+	struct chunk *p_chunk;	/**< The player's knowledge of the chunk */
 	u32b gen_loc_idx;	/**< The chunk index in the generated locations list */
 	int adjacent[11];	/**< Adjacent chunks */
 };
@@ -268,6 +271,7 @@ struct gen_loc {
     int x_pos;
     int y_pos;
     int z_pos;
+	u32b seed;
     struct terrain_change *change;
     struct connector *join;
 };
@@ -330,8 +334,6 @@ extern int FEAT_ICE;
 /* Current level */
 extern struct chunk *cave;
 /* Stored levels */
-extern struct chunk **old_chunk_list;
-extern u16b old_chunk_list_max;
 extern u16b chunk_max;
 extern u16b chunk_cnt;
 extern u32b gen_loc_max;

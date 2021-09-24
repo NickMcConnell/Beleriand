@@ -37,7 +37,6 @@ EFFECT(DRAIN_LIGHT,					false,	NULL,		0,		EFINFO_NONE,	"drains your light source
 EFFECT(DRAIN_MANA,					false,	NULL,		0,		EFINFO_NONE,	"drains some mana",	"")
 EFFECT(RESTORE_MANA,				false,	NULL,		0,		EFINFO_NONE,	"restores some mana",	"restore some mana")
 EFFECT(REMOVE_CURSE,				false,	NULL,		1,		EFINFO_DICE,	"attempts power %s removal of a single curse on an object",	"remove curse")
-EFFECT(ALTER_REALITY,				false,	NULL,		0,		EFINFO_NONE,	"creates a new dungeon level",	"alter reality")
 EFFECT(MAP_AREA,					false,	NULL,		0,		EFINFO_NONE,	"maps the area around you",	"map surroundings")
 EFFECT(READ_MINDS,					false,	NULL,		0,		EFINFO_NONE,	"maps the area around recently detected monsters",	"read minds")
 EFFECT(DETECT_TRAPS,				false,	NULL,		0,		EFINFO_NONE,	"detects traps nearby",	"detect traps")

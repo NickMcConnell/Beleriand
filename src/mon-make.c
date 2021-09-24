@@ -214,7 +214,8 @@ static bool get_mon_forbidden(struct monster_race *race)
 	}
 
 	/* Dungeon-only monsters */
-	if (rf_has(race->flags, RF_DUNGEON)	&& (lev->topography != TOP_CAVE)) {
+	if (rf_has(race->flags, RF_DUNGEON)	&&
+		(chunk_list[player->place].z_pos == 0)) {
 		return true;
 	}
 
@@ -1044,7 +1045,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 	/* Take the best of (average of monster level and current depth)
 	   and (monster level) - to reward fighting OOD monsters */
-	level = MAX((monlevel + c->depth) / 2, monlevel);
+	level = MAX((monlevel + player->depth) / 2, monlevel);
 	level = MIN(level, 100);
 
 	/* Check for quest artifacts */
@@ -1071,8 +1072,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 				/* Set origin details */
 				obj->origin = origin;
-				obj->origin_depth = c->depth;
-				obj->origin_place = c->place;
+				obj->origin_z = chunk_list[player->place].z_pos;
+				obj->origin_y = chunk_list[player->place].y_pos;
+				obj->origin_x = chunk_list[player->place].x_pos;
 				obj->origin_race = mon->race;
 				obj->number = 1;
 
@@ -1111,8 +1113,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 		/* Set origin details */
 		obj->origin = origin;
-		obj->origin_depth = c->depth;
-		obj->origin_place = c->place;
+		obj->origin_z = chunk_list[player->place].z_pos;
+		obj->origin_y = chunk_list[player->place].y_pos;
+		obj->origin_x = chunk_list[player->place].x_pos;
 		obj->origin_race = mon->race;
 		obj->number = (obj->artifact) ?
 			1 : randint0(drop->max - drop->min) + drop->min;
@@ -1137,8 +1140,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 		/* Set origin details */
 		obj->origin = origin;
-		obj->origin_depth = c->depth;
-		obj->origin_place = c->place;
+		obj->origin_z = chunk_list[player->place].z_pos;
+		obj->origin_y = chunk_list[player->place].y_pos;
+		obj->origin_x = chunk_list[player->place].x_pos;
 		obj->origin_race = mon->race;
 
 		/* Try to carry */
@@ -1178,15 +1182,16 @@ void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
 	}
 
 	if (tval_is_money_k(kind)) {
-		obj = make_gold(c->depth, kind->name);
+		obj = make_gold(player->depth, kind->name);
 	} else {
 		obj = object_new();
 		object_prep(obj, kind, mon->race->level, RANDOMISE);
 		apply_magic(obj, mon->race->level, true, false, false, false);
 		obj->number = 1;
 		obj->origin = ORIGIN_DROP_MIMIC;
-		obj->origin_depth = c->depth;
-		obj->origin_place = c->place;
+		obj->origin_z = chunk_list[player->place].z_pos;
+		obj->origin_y = chunk_list[player->place].y_pos;
+		obj->origin_x = chunk_list[player->place].x_pos;
 	}
 
 	obj->mimicking_m_idx = index;
@@ -1438,11 +1443,11 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 		return false;
 
 	/* Depth monsters may NOT be created out of depth */
-	if (rf_has(race->flags, RF_FORCE_DEPTH) && c->depth < race->level)
+	if (rf_has(race->flags, RF_FORCE_DEPTH) && player->depth < race->level)
 		return false;
 
 	/* Check out-of-depth-ness */
-	if (race->level > c->depth) {
+	if (race->level > player->depth) {
 		if (rf_has(race->flags, RF_UNIQUE)) { /* OOD unique */
 			if (OPT(player, cheat_hear))
 				msg("Deep unique (%s).", race->name);
@@ -1659,7 +1664,7 @@ static bool place_friends(struct chunk *c, struct loc grid, struct monster_race 
 	int extra_chance;
 
 	/* Find the difference between current dungeon depth and monster level */
-	int level_difference = c->depth - friends_race->level + 5;
+	int level_difference = player->depth - friends_race->level + 5;
 
 	/* Handle unique monsters */
 	bool is_unique = rf_has(friends_race->flags, RF_UNIQUE);
@@ -1789,7 +1794,7 @@ bool place_new_monster(struct chunk *c, struct loc grid,
 		get_mon_num_prep(place_monster_base_okay);
 
 		/* Pick a random race */
-		friends_race = get_mon_num(race->level, c->depth);
+		friends_race = get_mon_num(race->level, player->depth);
 
 		/* Reset allocation table */
 		get_mon_num_prep(NULL);
@@ -1830,7 +1835,7 @@ bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 							bool sleep, bool group_okay, byte origin)
 {
 	/* Pick a monster race, no specified group */
-	struct monster_race *race = get_mon_num(depth, c->depth);
+	struct monster_race *race = get_mon_num(depth, player->depth);
 	struct monster_group_info info = { 0, 0, 0 };
 
 	/* Enforce sleep at nighttime in the wilderness */

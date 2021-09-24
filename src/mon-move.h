@@ -28,6 +28,6 @@ enum monster_stagger {
 bool multiply_monster(const struct monster *mon);
 void process_monsters(int minimum_energy);
 void reset_monsters(void);
-void restore_monsters(void);
+void restore_monsters(struct chunk *c, int num_turns);
 
 #endif /* !MONSTER_MOVE_H */

@@ -376,26 +376,26 @@ static bool find_start(struct chunk *c, struct loc *grid)
  */
 bool new_player_spot(struct chunk *c, struct player *p)
 {
-	struct loc grid;
+	//struct loc grid;
 
-	/* Try to find a good place to put the player */
-	if (square_in_bounds_fully(c, p->grid) && square_isstairs(c, p->grid)) {
-		grid = p->grid;
-	} else if (!find_start(c, &grid)) {
-		msg("Failed to place player; please report.  Restarting generation.");
-		dump_level_simple(NULL, "Player Placement Failure", c);
-		return false;
-	}
+	///* Try to find a good place to put the player */
+	//if (square_in_bounds_fully(c, p->grid) && square_isstairs(c, p->grid)) {
+	//	grid = p->grid;
+	//} else if (!find_start(c, &grid)) {
+	//	msg("Failed to place player; please report.  Restarting generation.");
+	//	dump_level_simple(NULL, "Player Placement Failure", c);
+	//	return false;
+	//}
 
-	/* Create stairs the player came down if allowed and necessary */
-	if (!OPT(p, birth_connect_stairs))
-		;
-	else if (p->upkeep->create_stair == FEAT_MORE)
-		square_set_feat(c, grid, FEAT_MORE);
-	else if (p->upkeep->create_stair == FEAT_LESS)
-		square_set_feat(c, grid, FEAT_LESS);
+	///* Create stairs the player came down if allowed and necessary */
+	//if (!OPT(p, birth_connect_stairs))
+	//	;
+	//else if (p->upkeep->create_stair == FEAT_MORE)
+	//	square_set_feat(c, grid, FEAT_MORE);
+	//else if (p->upkeep->create_stair == FEAT_LESS)
+	//	square_set_feat(c, grid, FEAT_LESS);
 
-	player_place(c, p, grid);
+	player_place(c, p, p->grid);
 	return true;
 }
 
@@ -421,20 +421,11 @@ static void place_rubble(struct chunk *c, struct loc grid)
  */
 void place_stairs(struct chunk *c, struct loc grid, int feat)
 {
-	struct level *current = &world->levels[player->place];
 	bool down = true, up = true;
 
 	/* Can't leave quest levels */
 	if (quest_forbid_downstairs(player->place))
 		down = false;
-
-	/* Deal with underworld and mountain top */
-	if (!current->up && !mountain_top_possible(current->index)) {
-		up = false;
-	}
-	if (!current->down && !underworld_possible(current->index)) {
-		down = false;
-	}
 
 	/* Determine up/down if not already done */
 	if (up && down) {
@@ -483,8 +474,9 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
 	new_obj = make_object(c, level, good, great, false, tval);
 	if (!new_obj) return;
 	new_obj->origin = origin;
-	new_obj->origin_depth = c->depth;
-	new_obj->origin_place = player->place;
+	new_obj->origin_z = chunk_list[player->place].z_pos;
+	new_obj->origin_y = chunk_list[player->place].y_pos;
+	new_obj->origin_x = chunk_list[player->place].x_pos;
 
 	/* Give it to the floor */
 	if (!floor_carry(c, grid, new_obj, &dummy)) {
@@ -516,8 +508,9 @@ void place_gold(struct chunk *c, struct loc grid, int level, byte origin)
 
 	money = make_gold(level, "any");
 	money->origin = origin;
-	money->origin_depth = level;
-	money->origin_place = player->place;
+	money->origin_z = chunk_list[player->place].z_pos;
+	money->origin_y = chunk_list[player->place].y_pos;
+	money->origin_x = chunk_list[player->place].x_pos;
 
 	if (!floor_carry(c, grid, money, &dummy)) {
 		object_delete(&money);
@@ -885,7 +878,7 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 	/* Place dungeon features and objects */
 	for (t = data, y = 0; y < height && *t; y++) {
 		for (x = 0; x < width && *t; x++, t++) {
-			struct loc grid = loc(x, y);
+			struct loc grid = loc(x - top_left.x, y - top_left.y);
 			bool icky = !landmark;
 
 			symmetry_transform(&grid, place.y, place.x, height, width, rotate,
@@ -895,10 +888,8 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 			if (*t == ' ') continue;
 
 			/* Restrict to from start to stop */
-			if ((grid.y < place.y) ||
-				(grid.y >= place.y + bottom_right.y - top_left.y) ||
-				(grid.x < place.x) ||
-				(grid.x >= place.x + bottom_right.x - top_left.x)) {
+			if ((y < top_left.y) ||	(y >= bottom_right.y) ||
+				(x < top_left.x) ||	(x >= bottom_right.x)) {
 				continue;
 			}
 
@@ -950,14 +941,15 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 				/* Secret door */
 			case '+': place_secret_door(c, grid); break;
 				/* Trap */
-			case '^': if (one_in_(4)) place_trap(c, grid, -1, c->depth); break;
+			case '^': if (one_in_(4)) place_trap(c, grid, -1, player->depth);
+				break;
 				/* Treasure or a trap */
 			case '&': {
 				if (randint0(100) < 75) {
-					place_object(c, grid, c->depth, false, false, ORIGIN_VAULT,
-								 0);
+					place_object(c, grid, player->depth, false, false,
+								 ORIGIN_VAULT, 0);
 				} else if (one_in_(4)) {
-					place_trap(c, grid, -1, c->depth);
+					place_trap(c, grid, -1, player->depth);
 				}
 				break;
 			}
@@ -987,8 +979,69 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 			}
 
 			/* Part of a vault */
-			if (!landmark) sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
 			if (icky) sqinfo_on(square(c, grid)->info, SQUARE_VAULT);
+
+			/* Analyze again for landmark-specific terrain */
+			if (landmark) {
+				switch (*t) {
+					/* Grass */
+					case '1':
+					{
+						square_set_feat(c, grid, FEAT_GRASS);
+						break;
+					}
+					/* Road */
+					case '2':
+					{
+						square_set_feat(c, grid, FEAT_ROAD);
+						break;
+					}
+					/* Void */
+					case '3':
+					{
+						square_set_feat(c, grid, FEAT_VOID);
+						break;
+					}
+					/* Pit */
+					case '4':
+					{
+						//square_set_feat(c, grid, FEAT_PIT);
+						break;
+					}
+					/* Reed */
+					case '5':
+					{
+						square_set_feat(c, grid, FEAT_REED);
+						break;
+					}
+					/* Mountain */
+					case '6':
+					{
+						square_set_feat(c, grid, FEAT_MTN);
+						break;
+					}
+					/* Snow */
+					case '7':
+					{
+						square_set_feat(c, grid, FEAT_SNOW);
+						break;
+					}
+					/* Battlement */
+					case '8':
+					{
+						square_set_feat(c, grid, FEAT_BTLMNT);
+						break;
+					}
+					/* Ice */
+					case '9':
+					{
+						square_set_feat(c, grid, FEAT_ICE);
+						break;
+					}
+				}
+			} else {
+				sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
+			}
 		}
 	}
 }

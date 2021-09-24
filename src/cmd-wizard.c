@@ -295,8 +295,9 @@ static void wiz_drop_object(struct object *obj)
 
 	/* Mark as cheat and where it was created */
 	obj->origin = ORIGIN_CHEAT;
-	obj->origin_depth = player->depth;
-	obj->origin_place = player->place;
+	obj->origin_z = chunk_list[player->place].z_pos;
+	obj->origin_y = chunk_list[player->place].y_pos;
+	obj->origin_x = chunk_list[player->place].x_pos;
 
 	/* Drop the object from heaven. */
 	drop_near(cave, &obj, 0, player->grid, true, true);
@@ -1394,6 +1395,7 @@ void do_cmd_wiz_increase_exp(struct command *cmd)
  */
 void do_cmd_wiz_jump_level(struct command *cmd)
 {
+#if 0
 	int place = 0, choose_gen = 0;
 
 	if (cmd_get_arg_number(cmd, "level", &place) != CMD_OK) {
@@ -1444,6 +1446,7 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	 * performing another action that takes energy.
 	 */
 	player->upkeep->energy_use = z_info->move_energy;
+#endif
 }
 
 

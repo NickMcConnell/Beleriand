@@ -257,7 +257,9 @@ static void fill_in_object(struct object *obj, struct object_kind *kind)
 	obj->held_m_idx = 0;
 	obj->mimicking_m_idx = 0;
 	obj->origin = ORIGIN_DROP_WIZARD;
-	obj->origin_depth = 1;
+	obj->origin_z = 1;
+	obj->origin_y = 1;
+	obj->origin_x = 1;
 	obj->origin_race = NULL;
 	obj->note = 0;
 }

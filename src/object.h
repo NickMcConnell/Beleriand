@@ -481,6 +481,7 @@ struct object {
 	u16b oidx;				/**< Item list index, if any */
 
 	struct loc grid;		/**< position on map, or (0, 0) */
+	bool floor;				/**< Floor item ((0, 0) may be a valid grid) */
 
 	byte tval;				/**< Item type (from kind) */
 	byte sval;				/**< Item sub-type (from kind) */
@@ -516,8 +517,9 @@ struct object {
 	s16b mimicking_m_idx;	/**< Monster mimicking us (if any) */
 
 	byte origin;			/**< How this item was found */
-	byte origin_depth;		/**< What depth the item was found at */
-	s16b origin_place;		/**< What place the item was found at */
+    u16b origin_z;			/* Where the item was found - z */
+    u16b origin_y;			/* Where the item was found - y */
+    u16b origin_x;			/* Where the item was found - x */
 	struct monster_race *origin_race;	/**< Monster race that dropped it */
 
 	quark_t note; 			/**< Inscription index */
@@ -535,6 +537,7 @@ static struct object const OBJECT_NULL = {
 	.known = NULL,
 	.oidx = 0,
 	.grid = { 0, 0 },
+	.floor = false,
 	.tval = 0,
 	.sval = 0,
 	.pval = 0,
@@ -565,8 +568,9 @@ static struct object const OBJECT_NULL = {
 	.held_m_idx = 0,
 	.mimicking_m_idx = 0,
 	.origin = 0,
-	.origin_depth = 0,
-	.origin_place = 0,
+	.origin_z = 0,
+	.origin_y = 0,
+	.origin_x = 0,
 	.origin_race = NULL,
 	.note = 0,
 };

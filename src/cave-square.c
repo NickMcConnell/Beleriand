@@ -1318,6 +1318,7 @@ void square_know_pile(struct chunk *c, struct loc grid)
 			struct object *original = c->objects[obj->oidx];
 			square_excise_object(player->cave, grid, obj);
 			obj->grid = loc(0, 0);
+			obj->floor = false;
 
 			/* Delete objects which no longer exist anywhere */
 			if (obj->notice & OBJ_NOTICE_IMAGINED) {
@@ -1388,10 +1389,10 @@ void square_set_feat(struct chunk *c, struct loc grid, int feat)
 	current_feat = square(c, grid)->feat;
 
 	/* Floor and road have only cosmetic differences; use road when outside */
-	if (player->place && (feat == FEAT_FLOOR) &&
-		(level_topography(player->place) != TOP_CAVE)) {
-		feat = FEAT_ROAD;
-	}
+	//B if (player->place && (feat == FEAT_FLOOR) &&
+	//B	(level_topography(player->place) != TOP_CAVE)) {
+	//B	feat = FEAT_ROAD;
+	//}
 
 	/* Track changes */
 	if (current_feat) c->feat_count[current_feat]--;
@@ -1461,7 +1462,7 @@ void square_set_trap(struct chunk *c, struct loc grid, struct trap *trap)
 void square_add_trap(struct chunk *c, struct loc grid)
 {
 	assert(square_in_bounds_fully(c, grid));
-	place_trap(c, grid, -1, c->depth);
+	place_trap(c, grid, -1, player->depth);
 }
 
 void square_add_glyph(struct chunk *c, struct loc grid, int type)

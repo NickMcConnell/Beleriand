@@ -507,8 +507,8 @@ static void prt_speed(int row, int col)
 
 static int fmt_depth(char buf[], int max)
 {
-	struct level *lev = &world->levels[player->place];
-	my_strcpy(buf, level_name(lev), max);
+	//B do better
+	my_strcpy(buf, format("Depth %d", player->depth), max);
 	return strlen(buf);
 }
 

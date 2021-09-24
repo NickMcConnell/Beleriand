@@ -4512,6 +4512,10 @@ bool init_angband(void)
 	/* Initialize some other things */
 	event_signal_message(EVENT_INITSTATUS, 0, "Initializing other stuff...");
 
+	/* chunks and locations */
+	gen_loc_list_init();
+	chunk_list_init();
+
 	/* List display codes */
 	monster_list_init();
 	object_list_init();
@@ -4530,28 +4534,6 @@ void cleanup_angband(void)
 {
 	size_t i;
 
-	/* Free the chunk list */
-	for (i = 0; i < old_chunk_list_max; i++) {
-		wipe_mon_list(old_chunk_list[i], player);
-		cave_free(old_chunk_list[i]);
-	}
-	mem_free(old_chunk_list);
-	old_chunk_list = NULL;
-
-	/* Free the locations list */
-	for (i = 0; i < gen_loc_cnt; i++) {
-		if (gen_loc_list[i].change) {
-			struct terrain_change *change = gen_loc_list[i].change;
-			while (change) {
-				change = change->next;
-				mem_free(change);
-			}
-		}
-		cave_connectors_free(gen_loc_list[i].join);
-	}
-	mem_free(gen_loc_list);
-	gen_loc_list = NULL;
-
 	for (i = 0; modules[i]; i++)
 		if (modules[i]->cleanup)
 			modules[i]->cleanup();
@@ -4563,6 +4545,9 @@ void cleanup_angband(void)
 		cave_free(cave);
 		cave = NULL;
 	}
+
+	chunk_list_cleanup();
+	gen_loc_list_cleanup();
 
 	monster_list_finalize();
 	object_list_finalize();

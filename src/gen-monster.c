@@ -281,11 +281,11 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 	int start_mon_num = c->mon_max;
 
 	/* Restrict monsters.  Allow uniques. Leave area empty if none found. */
-	if (!mon_restrict(type, depth, c->depth, true))
+	if (!mon_restrict(type, depth, player->depth, true))
 		return;
 
 	/* Build the monster probability table. */
-	if (!get_mon_num(depth, c->depth))
+	if (!get_mon_num(depth, player->depth))
 		return;
 
 
@@ -297,7 +297,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 			x = x0;
 			if (!square_in_bounds(c, loc(x, y))) {
 				(void) mon_restrict(NULL, depth,
-					c->depth, true);
+					player->depth, true);
 				return;
 			}
 		} else {
@@ -309,7 +309,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 						continue;
 					} else {
 						(void) mon_restrict(NULL, depth,
-							c->depth, true);
+							player->depth, true);
 						return;
 					}
 				}
@@ -333,7 +333,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 	}
 
 	/* Remove monster restrictions. */
-	(void) mon_restrict(NULL, depth, c->depth, true);
+	(void) mon_restrict(NULL, depth, player->depth, true);
 }
 
 
@@ -361,23 +361,23 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 		allow_unique = true;
 		my_strcpy(base_d_char, format("%c", racial_symbol[i]),
 			sizeof(base_d_char));
-		select_current_level = c->depth;
+		select_current_level = player->depth;
 
 		/* Determine level of monster */
 		if (strstr(vault_type, "Lesser vault"))
-			depth = c->depth + 2;
+			depth = player->depth + 2;
 		else if (strstr(vault_type, "Medium vault"))
-			depth = c->depth + 4;
+			depth = player->depth + 4;
 		else if (strstr(vault_type, "Greater vault"))
-			depth = c->depth + 6;
+			depth = player->depth + 6;
 		else
-			depth = c->depth;
+			depth = player->depth;
 
 		/* Prepare allocation table */
 		get_mon_num_prep(mon_select);
 
 		/* Build the monster probability table. */
-		if (!get_mon_num(depth, c->depth))
+		if (!get_mon_num(depth, player->depth))
 			continue;
 
 
@@ -416,7 +416,7 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 	bool random = one_in_(20);
 
 	/* Get a legal depth. */
-	depth = c->depth + randint0(11) - 5;
+	depth = player->depth + randint0(11) - 5;
 
 	/* Choose a pit profile, using that depth. */
 	if (!random) {
@@ -432,22 +432,22 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 	}
 
 	/* Allow (slightly) tougher monsters. */
-	depth = c->depth + (c->depth < 60 ? c->depth / 12 : 5);
+	depth = player->depth + (player->depth < 60 ? player->depth / 12 : 5);
 
 	/* Set monster generation restrictions. Occasionally random. */
 	if (random) {
-		if (!mon_restrict("random", depth, c->depth, true))
+		if (!mon_restrict("random", depth, player->depth, true))
 			return;
 		my_strcpy(name, "random", sizeof(name));
 	} else {
-		if (!mon_restrict(dun->pit_type->name, depth, c->depth, true))
+		if (!mon_restrict(dun->pit_type->name, depth, player->depth, true))
 			return;
 		my_strcpy(name, dun->pit_type->name, sizeof(name));
 	}
 
 	/* Build the monster probability table. */
-	if (!get_mon_num(depth, c->depth)) {
-		(void) mon_restrict(NULL, depth, c->depth, false);
+	if (!get_mon_num(depth, player->depth)) {
+		(void) mon_restrict(NULL, depth, player->depth, false);
 		name = NULL;
 		return;
 	}
@@ -456,7 +456,7 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 	generate_mark(c, y1, x1, y2, x2, SQUARE_MON_RESTRICT);
 
 	/* Allow about a monster every 20-30 grids. */
-	monsters_left = area / (30 - c->depth / 10);
+	monsters_left = area / (30 - player->depth / 10);
 
 	/* Place the monsters. */
 	for (i = 0; i < 300; i++) {
@@ -473,7 +473,7 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 			continue;
 
 		/* Place a single monster.  Sleeping 2/3rds of the time. */
-		pick_and_place_monster(c, loc(x, y), c->depth, (randint0(3) != 0),
+		pick_and_place_monster(c, loc(x, y), player->depth, (randint0(3) != 0),
 			false, ORIGIN_DROP_SPECIAL);
 
 		/* One less monster to place. */
@@ -481,6 +481,6 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 	}
 
 	/* Remove our restrictions. */
-	(void) mon_restrict(NULL, depth, c->depth, false);
+	(void) mon_restrict(NULL, depth, player->depth, false);
 }
 

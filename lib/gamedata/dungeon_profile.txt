@@ -188,7 +188,7 @@ params:1:50:500:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
 min-level:20
-alloc:1
+alloc:-1 #B
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:50
@@ -225,13 +225,13 @@ room:staircase room:0:3:3:1:0:99:0
 name:gauntlet
 params:1:0:200:0
 min-level:20
-alloc:1
+alloc:-1 #B
 
 ## Hard Centre
 name:hard centre
 params:1:0:200:0
 min-level:50
-alloc:1
+alloc:-1 #B
 
 ########### Wilderness profiles
 

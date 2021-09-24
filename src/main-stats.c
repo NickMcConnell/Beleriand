@@ -401,7 +401,7 @@ static void descend_dungeon(void)
 			}
 		}
 
-		player_change_place(player, level);
+		chunk_change(1, 0, 0);
 		prepare_next_level(player);
 
 		log_all_objects(level);

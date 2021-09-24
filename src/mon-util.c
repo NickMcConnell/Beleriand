@@ -20,6 +20,7 @@
 #include "cmd-core.h"
 #include "effects.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-desc.h"
 #include "mon-list.h"
@@ -577,6 +578,7 @@ static void move_mimicked_object(struct chunk *c, struct monster *mon,
 		object_copy(moved->known, mimicked->known);
 		moved->known->oidx = 0;
 		moved->known->grid = loc(0,0);
+		moved->known->floor = false;
 	}
 	if (floor_carry(c, dest, moved, &dummy)) {
 		mon->mimicked_obj = moved;
@@ -604,6 +606,9 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	int m1, m2;
 	struct monster *mon;
 	struct loc pgrid = player->grid;
+	int y_offset, x_offset;
+	int old_y_offset = player->grid.y / CHUNK_SIDE;
+	int old_x_offset = player->grid.x / CHUNK_SIDE;
 
 	/* Monsters */
 	m1 = cave->squares[grid1.y][grid1.x].mon;
@@ -714,6 +719,26 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	/* Redraw */
 	square_light_spot(cave, grid1);
 	square_light_spot(cave, grid2);
+
+	/* Deal with change of chunk */
+	y_offset = player->grid.y / CHUNK_SIDE;
+	x_offset = player->grid.x / CHUNK_SIDE;
+
+	/* On the surface, re-align */
+	if (player->depth == 0) {
+		if ((y_offset != 1) || (x_offset != 1))
+			chunk_change(0, y_offset, x_offset);
+	} else {
+		/* In the dungeon, change place */
+		int y0 = old_y_offset - y_offset;
+		int x0 = old_x_offset - x_offset;
+		int adj_index = chunk_offset_to_adjacent(0, 1 - y0, 1 - x0);
+
+		if (adj_index != DIR_NONE) {
+			player->last_place = player->place;
+			player->place = chunk_list[player->place].adjacent[adj_index];
+		}
+	}
 }
 
 /**
@@ -788,6 +813,7 @@ void become_aware(struct chunk *c, struct monster *mon, struct player *p)
 					object_copy(given->known, obj->known);
 					given->known->oidx = 0;
 					given->known->grid = loc(0, 0);
+					given->known->floor = false;
 				}
 				if (! monster_carry(c, mon, given)) {
 					if (given->known) {
@@ -1413,16 +1439,17 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 
 	/* Forget location */
 	obj->grid = loc(0, 0);
+	obj->floor = false;
 
 	/* Link the object to the monster */
 	obj->held_m_idx = mon->midx;
 
 	/* Add the object to the monster's inventory */
-	list_object(c, obj);
-	if (obj->known) {
-		obj->known->oidx = obj->oidx;
-		player->cave->objects[obj->oidx] = obj->known;
-	}
+	delist_object(c, obj);
+	//if (obj->known) {
+	//	obj->known->oidx = obj->oidx;
+	//	player->cave->objects[obj->oidx] = obj->known;
+	//}
 	pile_insert(&mon->held_obj, obj);
 
 	/* Result */

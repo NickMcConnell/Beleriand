@@ -24,6 +24,7 @@
 #include "effects-info.h"
 #include "game-input.h"
 #include "game-world.h"
+#include "generate.h"
 #include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"
@@ -1472,10 +1473,10 @@ static struct object *find_artifact(struct artifact *artifact)
 	}
 
 	/* Stored chunk objects */
-	for (i = 0; i < old_chunk_list_max; i++) {
-		struct chunk *c = old_chunk_list[i];
+	for (i = 0; i < MAX_CHUNKS; i++) {
+		struct chunk *c = chunk_list[i].chunk;
 		int j;
-		if (strstr(c->name, "known")) continue;
+		if (!c) continue;
 
 		/* Ground objects */
 		for (y = 1; y < c->height; y++) {

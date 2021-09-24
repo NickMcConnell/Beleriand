@@ -1043,6 +1043,7 @@ static struct object TEST_DATA test_player_knowledge = {
 	.known = NULL,
 	.oidx = 0,
 	.grid = { 0, 0 },
+	.floor = false,
 	.tval = 0,
 	.sval = 0,
 	.pval = 0,
@@ -1099,8 +1100,9 @@ static struct object TEST_DATA test_player_knowledge = {
 	.held_m_idx = 0,
 	.mimicking_m_idx = 0,
 	.origin = 0,
-	.origin_depth = 0,
-	.origin_place = 0,
+	.origin_z = 0,
+	.origin_y = 0,
+	.origin_x = 0,
 	.origin_race = NULL,
 	.note = 0,
 };
@@ -1254,22 +1256,26 @@ static struct player TEST_DATA test_player = {
 };
 
 static struct chunk TEST_DATA test_cave = {
-	.name = "Test",
-	.turn = 1,
-	.depth = 1,
-
 	.height = 2,
 	.width = 2,
-
 	.runes = 0,
 	.feat_count = NULL,
 
 	.squares = NULL,
+	.noise = {0},
+	.scent = {0},
+	.decoy = {0, 0},
+
+	.objects = NULL,
+	.obj_max = 1,
 
 	.monsters = NULL,
 	.mon_max = 1,
 	.mon_cnt = 0,
 	.mon_current = -1,
+	.num_repro = 0,
+
+	.monster_groups = NULL,
 };
 
 static struct projection TEST_DATA test_projections[4] = {

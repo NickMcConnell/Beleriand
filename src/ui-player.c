@@ -847,7 +847,7 @@ static struct panel *get_panel_skills(void) {
 	int skill;
 	byte attr;
 	const char *desc;
-	int depth = cave ? cave->depth : 0;
+	int depth = player->depth;
 
 #define BOUND(x, min, max)		MIN(max, MAX(min, x))
 

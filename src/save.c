@@ -82,6 +82,10 @@ static void wr_item(const struct object *obj)
 	/* Location */
 	wr_byte(obj->grid.y);
 	wr_byte(obj->grid.x);
+	if (obj->floor)
+		wr_byte(1);
+	else
+		wr_byte(0);
 
 	/* Names of object base and object */
 	wr_string(tval_find_name(obj->tval));
@@ -126,8 +130,9 @@ static void wr_item(const struct object *obj)
 	wr_byte(obj->ds);
 
 	wr_byte(obj->origin);
-	wr_byte(obj->origin_depth);
-	wr_s16b(obj->origin_place);
+	wr_u16b(obj->origin_z);
+	wr_u16b(obj->origin_y);
+	wr_u16b(obj->origin_x);
 	if (obj->origin_race) {
 		wr_string(obj->origin_race->name);
 	} else {
@@ -815,7 +820,6 @@ static void wr_dungeon_aux(struct chunk *c)
 	byte prev_char;
 
 	/* Dungeon specific info follows */
-	wr_string(c->name ? c->name : "Blank");
 	wr_u16b(c->height);
 	wr_u16b(c->width);
 
@@ -877,21 +881,6 @@ static void wr_dungeon_aux(struct chunk *c)
 
 	/* Write runes, turn */
 	wr_u16b(c->runes);
-	wr_s32b(c->turn);
-
-	/* Write connector info */
-	if (c->join) {
-		struct connector *current = c->join;
-		while (current) {
-			wr_byte(current->grid.x);
-			wr_byte(current->grid.y);
-			wr_byte(current->feat);
-			for (i = 0; i < SQUARE_SIZE; i++) {
-				wr_byte(current->info[i]);
-			}
-			current = current->next;
-		}
-	}
 
 	/* Write a sentinel byte */
 	wr_byte(0xff);
@@ -922,9 +911,10 @@ static void wr_objects_aux(struct chunk *c)
 
 	/* Write known objects we don't know the location of, and imagined versions
 	 * of known objects */
-	for (i = 1; i < c->obj_max; i++) {
+	for (i = 0; i < c->obj_max; i++) {
 		struct object *obj = c->objects[i];
 		if (!obj) continue;
+		if (obj->floor) continue;
 		if (square_in_bounds_fully(c, obj->grid)) continue;
 		if (obj->held_m_idx) continue;
 		if (obj->mimicking_m_idx) continue;
@@ -1034,28 +1024,54 @@ void wr_chunks(void)
 	if (player->is_dead)
 		return;
 
-	wr_u16b(old_chunk_list_max);
+	//B? compact_chunks();
+	wr_u16b(chunk_max);
 
 	/* Now write each chunk */
-	for (j = 0; j < old_chunk_list_max; j++) {
-		struct chunk *c = old_chunk_list[j];
+	for (j = 0; j < chunk_max; j++) {
+		struct chunk_ref *ref = &chunk_list[j];
+		struct chunk *c = ref->chunk;
+		struct chunk *p_c = ref->p_chunk;
+		byte tmp8u;
+
+		wr_s32b(ref->turn);
+		wr_u16b(ref->region);
+		wr_u16b(ref->z_pos);
+		wr_u16b(ref->y_pos);
+		wr_u16b(ref->x_pos);
+		wr_u32b(ref->gen_loc_idx);
+		for (i = 0; i < 11; i++)
+			wr_u16b(ref->adjacent[i]);
+
+		/* Skip dead chunks */
+		if (c) {
+			assert(p_c);
+			tmp8u = 1;
+		} else {
+			assert(p_c == NULL);
+			tmp8u = 0;
+		}
+
+		wr_byte(tmp8u);
+		if (!c)	continue;
 
 		/* Write the terrain and info */
 		wr_dungeon_aux(c);
+		wr_dungeon_aux(p_c);
 
 		/* Write the objects */
 		wr_objects_aux(c);
+		wr_objects_aux(p_c);
 
 		/* Write the monsters */
 		wr_monsters_aux(c);
+		wr_monsters_aux(p_c);
 
 		/* Write the traps */
 		wr_traps_aux(c);
+		wr_traps_aux(p_c);
 
 		/* Write other chunk info */
-		wr_string(c->name);
-		wr_s32b(c->turn);
-		wr_u16b(c->depth);
 		wr_u16b(c->height);
 		wr_u16b(c->width);
 		wr_u16b(c->runes);
@@ -1064,7 +1080,6 @@ void wr_chunks(void)
 		}
 	}
 }
-
 void wr_locations(void)
 {
 	size_t i, j;
@@ -1084,6 +1099,7 @@ void wr_locations(void)
 		wr_u16b(location->x_pos);
 		wr_u16b(location->y_pos);
 		wr_u16b(location->z_pos);
+		wr_u32b(location->seed);
 
 		/* Count the terrain changes */
 		for (change = location->change; change; change = change->next) {
@@ -1128,7 +1144,9 @@ void wr_history(void)
 		for (j = 0; j < HIST_SIZE; j++)
 			wr_byte(history_list[i].type[j]);
 		wr_s32b(history_list[i].turn);
-		wr_s16b(history_list[i].dlev);
+		wr_u16b(history_list[i].z_pos);
+		wr_u16b(history_list[i].y_pos);
+		wr_u16b(history_list[i].x_pos);
 		wr_s16b(history_list[i].clev);
 		if (history_list[i].a_idx) {
 			wr_string(a_info[history_list[i].a_idx].name);

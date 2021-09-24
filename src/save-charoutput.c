@@ -30,9 +30,9 @@ bool save_charoutput(void)
 	ang_file *fo;
 	bool written = true;
 	char depths[80];
-	struct level *lev = &world->levels[player->place];
+	//B struct level *lev = &world->levels[player->place];
 
-	my_strcpy(depths, locality_name(lev->locality), sizeof(depths));
+	//B my_strcpy(depths, locality_name(lev->locality), sizeof(depths));
 
 	path_build(path, sizeof(path), ANGBAND_DIR_USER, "CharOutput.txt");
 	fo = file_open(path, MODE_WRITE, FTYPE_TEXT);
@@ -40,7 +40,7 @@ bool save_charoutput(void)
 		if (! file_put(fo, "{\n")) written = false;
 		if (! file_putf(fo, "race: \"%s\",\n", player->race->name)) written = false;
 		if (! file_putf(fo, "class: \"%s\",\n", player->class->name)) written = false;
-		if (! file_putf(fo, "mapName: \"%s\",\n", depths)) written = false;
+		//B if (! file_putf(fo, "mapName: \"%s\",\n", depths)) written = false;
 		if (! file_putf(fo, "dLvl: \"%i\",\n", player->depth)) written = false;
 		if (! file_putf(fo, "cLvl: \"%i\",\n", player->lev)) written = false;
 		if (! file_putf(fo, "isDead: \"%i\",\n", (player->is_dead) ? 1 : 0)) written = false;

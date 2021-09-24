@@ -88,127 +88,6 @@ bool mountain_top_possible(int place)
 }
 
 /**
- * Determine the next place on the world map the player is about to move to.
- *
- * \param place is the start - either current place or a recall point or similar
- * \param direction is one of the cardinal directions or up or down
- * \param added is how many steps to move (1 apart from deep descent)
- * \return the place to move to
- */
-int player_get_next_place(int place, const char *direction, int multiple)
-{
-	int next_place = place;
-	struct level *start = &world->levels[place];
-	assert(start);
-
-	/* Follow the given direction (possibly multiple times for down) */
-	if (streq(direction, "north")) {
-		next_place = start->north ?
-			level_by_name(world, start->north)->index : -1;
-	} else if (streq(direction, "east")) {
-		next_place = start->east ?
-			level_by_name(world, start->east)->index : -1;
-	} else if (streq(direction, "south")) {
-		next_place = start->south ?
-			level_by_name(world, start->south)->index : -1;
-	} else if (streq(direction, "west")) {
-		next_place = start->west ?
-			level_by_name(world, start->west)->index : -1;
-	} else if (streq(direction, "up")) {
-		if (mountain_top_possible(place)) {
-			/* Find stupidly named level */
-			struct level *next = level_by_name(world, "Mountain Top Town");
-			next_place = next->index;
-		} else {
-			next_place = start->up ?
-				level_by_name(world, start->up)->index : -1;
-		}
-	} else if (streq(direction, "down")) {
-		if (underworld_possible(place)) {
-			/* Find stupidly named level */
-			struct level *next = level_by_name(world, "Underworld Town");
-			next_place = next->index;
-		} else {
-			struct level *lev = start;
-			while (multiple) {
-				/* Stop at unfinished quest levels */
-				if (quest_forbid_downstairs(lev->index)) break;
-
-				/* Go down */
-				next_place = lev->down ?
-					level_by_name(world, lev->down)->index : -1;
-
-				/* Check failures */
-				if (next_place < 0) {
-					/* If we've taken some steps use the last valid one */
-					if (lev != start) {
-						return lev->index;
-					} else {
-						return -1;
-					}
-				}
-				lev = &world->levels[next_place];
-				multiple--;
-			}
-		}
-	}
-
-	return next_place;
-}
-
-/**
- * Move the player to a new place in the world map.
- */
-void player_change_place(struct player *p, int place)
-{
-	struct level *lev = &world->levels[p->place], *next_lev;
-
-	/* Set last place (unless unchanged) */
-	if (p->last_place != p->place) {
-		p->last_place = p->place;
-	}
-
-	/* Underworld and mountaintop levels need to be edited */
-	if (lev->locality == LOC_UNDERWORLD || lev->locality == LOC_MOUNTAIN_TOP) {
-		if (lev->up) {
-			string_free(lev->up);
-			lev->up = NULL;
-		}
-		if (lev->down) {
-			string_free(lev->down);
-			lev->down = NULL;
-		}
-		lev->depth = 0;
-	}
-
-	/* Set new place */
-	p->place = place;
-
-	/* Underworld and mountaintop levels need to be edited */
-	next_lev = &world->levels[p->place];
-	if (next_lev->locality == LOC_UNDERWORLD) {
-		next_lev->up = string_make(level_name(lev));
-		next_lev->depth = lev->depth;
-	}
-	if (next_lev->locality == LOC_MOUNTAIN_TOP) {
-		next_lev->down = string_make(level_name(lev));
-		next_lev->depth = lev->depth;
-	}
-
-	p->depth = world->levels[place].depth;
-
-	/* We've been here now */
-	lev->visited = true;
-
-	/* Leaving, make new level */
-	p->upkeep->generate_level = true;
-
-	/* Save the game when we arrive on the new level. */
-	p->upkeep->autosave = true;
-}
-
-
-/**
  * Decreases players hit points and sets death flag if necessary
  *
  * Hack -- this function allows the user to save (or quit) the game
@@ -918,50 +797,23 @@ void player_add_speed_boost(struct player *p, int value)
  */
 void player_fall_off_cliff(struct player *p)
 {
-	int i, dam;
-	struct level *lev = &world->levels[p->place];
+	int dam;
 
 	msg(square_feat(cave, p->grid)->hurt_msg);
 
-	/* Where we fell from */
-	p->last_place = p->place;
+	chunk_change(-1, 0, 0);
 
-	/* From the mountaintop, or down Nan Dungortheb */
-	if (lev->locality == LOC_MOUNTAIN_TOP) {
-		player_change_place(p, level_by_name(world, lev->down)->index);
-
-		if (player_of_has(p, OF_FEATHER)) {
-			equip_learn_flag(p, OF_FEATHER);
-			dam = damroll(2, 8);
-			(void) player_inc_timed(p, TMD_STUN, damroll(2, 8), true, true);
-			(void) player_inc_timed(p, TMD_CUT, damroll(2, 8), true, true);
-		} else {
-			dam = damroll(4, 8);
-			(void) player_inc_timed(p, TMD_STUN, damroll(4, 8), true, true);
-			(void) player_inc_timed(p, TMD_CUT, damroll(4, 8), true, true);
-		}
-		take_hit(p, dam, square_feat(cave, p->grid)->die_msg);
-	} else if (lev->locality == LOC_NAN_DUNGORTHEB) {
-		/* Fall at least one level */
-		for (i = 0; i < 1; i = randint0(3)) {
-			/* Check we haven't come to the end */
-			if (!world->levels[p->place].south) break;
-
-			player_change_place(p, level_by_name(world, lev->south)->index);
-
-			if (player_of_has(p, OF_FEATHER)) {
-				equip_learn_flag(p, OF_FEATHER);
-				dam = damroll(2, 8);
-				(void) player_inc_timed(p, TMD_STUN, damroll(2, 8), true, true);
-				(void) player_inc_timed(p, TMD_CUT, damroll(2, 8), true, true);
-			} else {
-				dam = damroll(4, 8);
-				(void) player_inc_timed(p, TMD_STUN, damroll(4, 8), true, true);
-				(void) player_inc_timed(p, TMD_CUT, damroll(4, 8), true, true);
-			}
-			take_hit(p, dam, square_feat(cave, p->grid)->die_msg);
-		}
+	if (player_of_has(p, OF_FEATHER)) {
+		equip_learn_flag(p, OF_FEATHER);
+		dam = damroll(2, 8);
+		(void) player_inc_timed(p, TMD_STUN, damroll(2, 8), true, true);
+		(void) player_inc_timed(p, TMD_CUT, damroll(2, 8), true, true);
+	} else {
+		dam = damroll(4, 8);
+		(void) player_inc_timed(p, TMD_STUN, damroll(4, 8), true, true);
+		(void) player_inc_timed(p, TMD_CUT, damroll(4, 8), true, true);
 	}
+	take_hit(p, dam, square_feat(cave, p->grid)->die_msg);
 }
 
 /**

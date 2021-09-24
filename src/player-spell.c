@@ -735,7 +735,7 @@ static int spell_value_base_player_level(void)
 
 static int spell_value_base_dungeon_level(void)
 {
-	return cave->depth;
+	return player->depth;
 }
 
 static int spell_value_base_max_sight(void)

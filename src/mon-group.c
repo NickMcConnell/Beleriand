@@ -49,6 +49,27 @@ void monster_group_free(struct chunk *c, struct monster_group *group)
 }
 
 /**
+ * Copy all monster group data to a completely fresh group
+ */
+void monster_group_copy(struct monster_group *dest, struct monster_group *src)
+{
+	dest->index = src->index;
+	dest->leader = src->leader;
+	dest->player_race = src->player_race;
+	if (src->member_list) {
+		struct mon_group_list_entry *src_entry = src->member_list;
+		struct mon_group_list_entry *dest_entry;
+		while (src_entry) {
+			dest_entry = mem_zalloc(sizeof(struct mon_group_list_entry));
+			dest_entry->midx = src_entry->midx;
+			dest_entry->next = dest->member_list;
+			dest->member_list = dest_entry;
+			src_entry = src_entry->next;
+		}
+	}
+}
+
+/**
  * Break a monster group into race-based pieces
  */
 static void monster_group_split(struct chunk *c, struct monster_group *group)
@@ -92,8 +113,8 @@ static void monster_group_split(struct chunk *c, struct monster_group *group)
 /**
  * Handle the leader of a group being removed
  */
-void monster_group_remove_leader(struct chunk *c, struct monster *leader,
-								 struct monster_group *group)
+void monster_group_remove_leader(struct chunk *c, struct monster_race *race,
+								 struct monster_group *group, bool verify)
 {
 	struct mon_group_list_entry *list_entry = group->member_list;
 	int poss_leader = 0;
@@ -108,7 +129,7 @@ void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 		}
 
 		/* Monsters of the same race can take over as leader */
-		if ((leader->race == mon->race) && !poss_leader
+		if ((race == mon->race) && !poss_leader
 			&& (mon->group_info[PRIMARY_GROUP].role != MON_GROUP_SUMMON)) {
 			poss_leader = mon->midx;
 		}
@@ -141,7 +162,9 @@ void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 			list_entry = list_entry->next;
 		}
 	}
-	monster_groups_verify(c);
+	if (verify) {
+		monster_groups_verify(c);
+	}
 }
 
 /**
@@ -173,7 +196,7 @@ void monster_remove_from_groups(struct chunk *c, struct monster *mon)
 				group->member_list = list_entry->next;
 				mem_free(list_entry);
 				if (group->leader == mon->midx) {
-					monster_group_remove_leader(c, mon, group);
+					monster_group_remove_leader(c, mon->race, group, true);
 				}
 				continue;
 			}
@@ -192,7 +215,7 @@ void monster_remove_from_groups(struct chunk *c, struct monster *mon)
 				list_entry->next = list_entry->next->next;
 				mem_free(remove);
 				if (group->leader == mon->midx) {
-					monster_group_remove_leader(c, mon, group);
+					monster_group_remove_leader(c, mon->race, group, true);
 				}
 				break;
 			}

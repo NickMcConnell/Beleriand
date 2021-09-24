@@ -501,8 +501,7 @@ static void run_init(int dir)
 	run_old_dir = dir;
 
 	/* If it's wilderness, done -NRM- */
-	if ((level_topography(player->place) != TOP_CAVE) &&
-		(level_topography(player->place) != TOP_TOWN))
+	if (chunk_list[player->place].z_pos == 0)
 		return;
 
 	/* Assume looking for open area */
@@ -621,8 +620,7 @@ static bool run_test(const struct player *p)
 			if (obj->known && !ignore_item_ok(p, obj)) return true;
 
 		/* Simplistic running for outdoors -NRM- */
-		if ((level_topography(player->place) != TOP_CAVE) &&
-			(level_topography(player->place) != TOP_TOWN)) {
+		if (chunk_list[player->place].z_pos == 0) {
 			bool on_path = square_isrun1(cave, player->grid);
 
 			/* Assume main direction */
