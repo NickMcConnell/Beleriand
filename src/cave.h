@@ -182,37 +182,6 @@ struct connector {
 	struct connector *next;
 };
 
-struct old_chunk {
-	char *name;
-	s32b turn;
-	int depth;
-	int place;
-
-	int height;
-	int width;
-
-	u16b runes;
-	int *feat_count;
-
-	struct square **squares;
-	struct heatmap noise;
-	struct heatmap scent;
-	struct loc decoy;
-
-	struct object **objects;
-	u16b obj_max;
-
-	struct monster *monsters;
-	u16b mon_max;
-	u16b mon_cnt;
-	int mon_current;
-	int num_repro;
-
-	struct monster_group **monster_groups;
-
-	struct connector *join;
-};
-
 /**
  * A chunk of the world
  */
@@ -528,7 +497,6 @@ void square_set_trap(struct chunk *c, struct loc grid, struct trap *trap);
 void square_add_trap(struct chunk *c, struct loc grid);
 void square_add_glyph(struct chunk *c, struct loc grid, int type);
 void square_add_web(struct chunk *c, struct loc grid);
-void square_add_stairs(struct chunk *c, struct loc grid, int depth);
 void square_add_door(struct chunk *c, struct loc grid, bool closed);
 
 /* Feature modifiers */
@@ -567,9 +535,9 @@ int lookup_feat(const char *name);
 void set_terrain(void);
 u16b **heatmap_new(struct chunk *c);
 void heatmap_free(struct chunk *c, struct heatmap map);
-struct chunk *cave_new(int height, int width);
 void cave_connectors_free(struct connector *join);
-void cave_free(struct chunk *c);
+struct chunk *chunk_new(int height, int width);
+void chunk_wipe(struct chunk *c);
 void list_object(struct chunk *c, struct object *obj);
 void delist_object(struct chunk *c, struct object *obj);
 void object_lists_check_integrity(struct chunk *c, struct chunk *c_k);

@@ -314,7 +314,6 @@ struct room_template {
 
 extern struct dun_data *dun;
 extern struct vault *vaults;
-extern struct vault *themed_levels;
 extern struct room_template *room_templates;
 
 /* generate.c */
@@ -326,7 +325,6 @@ int get_level_profile_index_from_name(const char *name);
 const char *get_level_profile_name_from_index(int i);
 
 /* gen-cave.c */
-struct chunk *old_town_gen(struct player *p, int min_height, int min_width);
 struct chunk *classic_gen(struct player *p, int min_height, int min_width);
 struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width);
 void ensure_connectedness(struct chunk *c, bool allow_vault_disconnect);
@@ -336,19 +334,10 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width);
 struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width);
 struct chunk *lair_gen(struct player *p, int min_height, int min_width);
 struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width);
-struct chunk *themed_gen(struct player *p, int min_height, int min_width);
 bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
 					int y_offset, int x_offset);
 
 /* gen-wilderness.c */
-struct chunk *old_plain_gen(struct player *p, int height, int width);
-struct chunk *old_mtn_gen(struct player *p, int height, int width);
-struct chunk *old_mtntop_gen(struct player *p, int height, int width);
-struct chunk *old_forest_gen(struct player *p, int height, int width);
-struct chunk *old_swamp_gen(struct player *p, int height, int width);
-struct chunk *old_desert_gen(struct player *p, int height, int width);
-struct chunk *old_river_gen(struct player *p, int height, int width);
-struct chunk *old_valley_gen(struct player *p, int height, int width);
 void plain_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 			   int x_offset, struct connector *first);
 void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
@@ -393,8 +382,6 @@ void chunk_adjacent_data(struct chunk_ref *ref, int z_offset, int y_offset,
 						 int x_offset);
 void chunk_list_init(void);
 void chunk_list_cleanup(void);
-struct chunk *chunk_new(int height, int width);
-void chunk_wipe(struct chunk *c);
 int chunk_find(struct chunk_ref ref);
 int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
 				u16b y_pos, u16b x_pos, bool write);

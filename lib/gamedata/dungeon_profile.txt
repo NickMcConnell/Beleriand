@@ -65,12 +65,6 @@
 # there are also restrictions in the code that make their generation fail
 # frequently.
 
-## Town
-name:old_town
-streamer:1:1:0:0:0:0
-params:1:0:200:0
-alloc:-1
-
 ## Labyrinth - these have alloc -1, but still appear after other checks
 ## To completely turn them off, set alloc to zero
 name:labyrinth
@@ -232,51 +226,3 @@ name:hard centre
 params:1:0:200:0
 min-level:50
 alloc:-1 #B
-
-########### Wilderness profiles
-
-## Plain
-name:old_plain
-streamer:5:2:3:90:2:40
-alloc:-1
-
-## Mountain
-name:old_mtn
-streamer:5:2:3:90:2:40
-alloc:-1
-
-## Mountain top
-name:old_mtntop
-streamer:5:2:3:90:2:40
-alloc:-1
-
-## Forest
-name:old_forest
-streamer:5:2:3:90:2:40
-alloc:-1
-
-## Swamp
-name:old_swamp
-streamer:5:2:3:90:2:40
-alloc:-1
-
-## Desert
-name:old_desert
-streamer:5:2:3:90:2:40
-alloc:-1
-
-## River
-name:old_river
-streamer:5:2:3:90:2:40
-alloc:-1
-
-## Valley
-name:old_valley
-streamer:5:2:3:90:2:40
-alloc:-1
-
-########### Special themed level profile
-
-## Themed level
-name:themed
-alloc:-1

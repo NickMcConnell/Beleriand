@@ -29,8 +29,6 @@ extern int **race_prob;
  */
 #define MIDX_FAKE -2
 
-void init_race_probs(void);
-void free_race_probs(void);
 void delete_monster_idx(int m_idx);
 void delete_monster(struct loc grid);
 void monster_index_move(int i1, int i2);

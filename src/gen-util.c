@@ -423,10 +423,6 @@ void place_stairs(struct chunk *c, struct loc grid, int feat)
 {
 	bool down = true, up = true;
 
-	/* Can't leave quest levels */
-	if (quest_forbid_downstairs(player->place))
-		down = false;
-
 	/* Determine up/down if not already done */
 	if (up && down) {
 		square_set_feat(c, grid, feat);
@@ -911,11 +907,7 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 				 * "door step" to the vault. We don't mark it
 				 * icky so that the tunneling code knows it's
 				 * allowed to remove this wall. */
-				if (player->themed_level) {
-					set_marked_granite(c, grid, SQUARE_WALL_SOLID);
-				} else {
-					set_marked_granite(c, grid, SQUARE_WALL_OUTER);
-				}
+				set_marked_granite(c, grid, SQUARE_WALL_OUTER);
 				if (roomf_has(flags, ROOMF_FEW_ENTRANCES)) {
 					append_entrance(grid);
 				}

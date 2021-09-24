@@ -44,12 +44,6 @@ static int choose_direction(struct chunk *c, struct player *p) {
         }
 }
 
-static int reverse_direction(int dir) {
-	int rdir[10] = { 5, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-
-	return (dir >= 0 && dir <= 9) ? rdir[dir] : -1;
-}
-
 static void reset_before_load(void) {
 	play_again = true;
 	wipe_mon_list(cave, player);
@@ -115,43 +109,6 @@ static int test_loadgame(void *state) {
 	notnull(cave);
 	eq(player->chp, player->mhp);
 	eq(player->timed[TMD_FOOD], PY_FOOD_FULL - 1);
-
-	ok;
-}
-
-static int test_stairs1(void *state) {
-	reset_before_load();
-
-	/* Load the saved game */
-	eq(savefile_load("Test1", false), true);
-
-	cmdq_push(CMD_GO_DOWN);
-	run_game_loop();
-	require(player->depth > 1);
-
-	ok;
-}
-
-static int test_stairs2(void *state) {
-	int dir;
-	reset_before_load();
-
-	/* Load the saved game */
-	eq(savefile_load("Test1", false), true);
-
-	dir = choose_direction(cave, player);
-	if (dir >= 0) {
-		cmdq_push(CMD_WALK);
-		cmd_set_arg_direction(cmdq_peek(), "direction", dir);
-		run_game_loop();
-		cmdq_push(CMD_WALK);
-		cmd_set_arg_direction(cmdq_peek(), "direction",
-			reverse_direction(dir));
-		run_game_loop();
-	}
-	cmdq_push(CMD_GO_DOWN);
-	run_game_loop();
-	require(player->depth > 1);
 
 	ok;
 }
@@ -223,8 +180,6 @@ const char *suite_name = "game/basic";
 struct test tests[] = {
 	{ "newgame", test_newgame },
 	{ "loadgame", test_loadgame },
-	{ "stairs1", test_stairs1 },
-	{ "stairs2", test_stairs2 },
 	{ "droppickup", test_drop_pickup },
 	{ "dropeat", test_drop_eat },
 	{ NULL, NULL }

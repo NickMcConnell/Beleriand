@@ -44,50 +44,6 @@
 #include "ui-input.h"
 
 /**
- * Check if an underworld level is available
- */
-bool underworld_possible(int place)
-{
-	struct level *current = &world->levels[place];
-
-	if (current->down) {
-		return false;
-	} else if (current->topography == TOP_CAVE) {
-		return false;
-	} else if (current->topography == TOP_MOUNTAINTOP) {
-		return false;
-	} else if (current->topography == TOP_TOWN) {
-		return false;
-	} else if (current->topography == TOP_VALLEY) {
-		return false;
-	}
-	return true;
-}
-
-/**
- * Check if a mountain top level is available
- */
-bool mountain_top_possible(int place)
-{
-	struct level *current = &world->levels[place];
-
-	if (current->up) {
-		return false;
-	} else if (current->topography == TOP_CAVE) {
-		return false;
-	} else if (current->topography == TOP_MOUNTAINTOP) {
-		return false;
-	} else if (current->topography == TOP_SWAMP) {
-		return false;
-	} else if (current->topography == TOP_TOWN) {
-		return false;
-	} else if (current->topography == TOP_VALLEY) {
-		return false;
-	}
-	return true;
-}
-
-/**
  * Decreases players hit points and sets death flag if necessary
  *
  * Hack -- this function allows the user to save (or quit) the game
@@ -497,8 +453,8 @@ void player_update_light(struct player *p)
 	if (obj && tval_is_light(obj)) {
 		bool burn_fuel = true;
 
-		/* Turn off the wanton burning of light during the day when not in a dungeon */
-		if (level_topography(p->place) != TOP_CAVE && is_daytime())
+		/* Turn off the wanton burning of light during the day when outside */
+		if (is_daylight())
 			burn_fuel = false;
 
 		/* If the light has the NO_FUEL flag, well... */

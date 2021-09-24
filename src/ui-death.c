@@ -68,7 +68,6 @@ static void print_tomb(void)
 	time_t death_time = (time_t)0;
 	bool boat = player->total_winner && player_has(player, PF_ELVEN);
 	bool tree = player->total_winner && player_has(player, PF_WOODEN);
-	struct level *lev = &world->levels[player->place];
 
 
 	Term_clear();
@@ -116,9 +115,9 @@ static void print_tomb(void)
 	} else if (tree) {
 		put_str_centred(line++,start, start+31, "Retired to Fangorn Forest.");
 	} else {
-		put_str_centred(line++, start, start+31, "Killed in %s level %d",
-						region_info[chunk_list[player->place].region].name,
-						chunk_list[player->place].z_pos);
+		//B put_str_centred(line++, start, start+31, "Killed in %s level %d",
+		//B				region_info[chunk_list[player->place].region].name,
+		//B				chunk_list[player->place].z_pos);
 		put_str_centred(line++, start, start+31, "by %s.", player->died_from);
 	}
 

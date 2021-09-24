@@ -31,7 +31,6 @@ extern bool player_make_simple(const char *nrace, const char *nclass,
 
 void do_cmd_birth_init(struct command *cmd);
 void do_cmd_birth_reset(struct command *cmd);
-void do_cmd_choose_map(struct command *cmd);
 void do_cmd_choose_race(struct command *cmd);
 void do_cmd_choose_class(struct command *cmd);
 void do_cmd_buy_stat(struct command *cmd);

@@ -652,93 +652,6 @@ int rd_object_memory(void)
 
 int rd_quests(void)
 {
-	u16b tmp16u;
-	struct quest *quest = quests;
-	char buf[80];
-
-	/* Load the standard quests */
-	while (quest) {
-		/* Check the name */
-		rd_string(buf, sizeof(buf));
-		if (!streq(buf, quest->name)) {
-			note(format("Invalid quest (%s).", buf));
-			return -1;
-		}
-
-		/* Read the data */
-		rd_u16b(&tmp16u);
-		if (tmp16u) {
-			quest->complete = true;
-		} else {
-			quest->complete = false;
-		}
-		rd_u16b(&tmp16u);
-		quest->cur_num = tmp16u;
-
-		/* If we're at the last one, stay there so we can add any more */
-		if (quest->type == QUEST_FINAL) break;
-		quest = quest->next;
-	}
-
-	/* Load any extra quests */
-	while (true) {
-		/* Get the name, check if we're done */
-		rd_string(buf, sizeof(buf));
-		if (streq(buf, "No more quests")) break;
-
-		/* Make a new quest and read the data */
-		quest->next = mem_zalloc(sizeof(*quest));
-		quest->name = string_make(buf);
-		rd_u16b(&tmp16u);
-		if (tmp16u) {
-			quest->complete = true;
-		} else {
-			quest->complete = false;
-		}
-		rd_u16b(&tmp16u);
-		quest->cur_num = tmp16u;
-		rd_u16b(&tmp16u);
-		quest->type = tmp16u;
-
-		/* Read the places */
-		rd_string(buf, sizeof(buf));
-		while (!streq(buf, "No more places")) {
-			struct level_map *map = maps;
-			while (map) {
-				if (streq(buf, map->name)) {
-					quest->place->map = map;
-					break;
-				}
-				map = map->next;
-			}
-			if (!map) {
-				note(format("Invalid quest map (%s).", buf));
-				return -1;
-			}
-			rd_u16b(&tmp16u);
-			quest->place->place = tmp16u;
-			rd_u16b(&tmp16u);
-			if (tmp16u) {
-				quest->place->block = true;
-			} else {
-				quest->place->block = false;
-			}
-			rd_string(buf, sizeof(buf));
-		}
-
-		/* Read the monster, if any, and number */
-		rd_string(buf, sizeof(buf));
-		if (!streq(buf, "none")) {
-			quest->race = lookup_monster(buf);
-			if (!quest->race) {
-				note(format("Invalid quest monster (%s).", buf));
-				return -1;
-			}
-		}
-		rd_u16b(&tmp16u);
-		quest->max_num = tmp16u;
-	}
-
 	return 0;
 }
 
@@ -850,8 +763,6 @@ int rd_player(void)
 		player->body.slots[i].name = string_make(buf);
 	}
 
-	rd_u16b(&player->themed_level_appeared);
-	rd_byte(&player->themed_level);
 	rd_byte(&player->num_traps);
 
 	rd_s32b(&player->au);
@@ -1055,35 +966,7 @@ int rd_ignore(void)
 int rd_misc(void)
 {
 	size_t i;
-	int j;
 	byte tmp8u;
-	char tmp[80];
-
-	/* Read the map */
-	rd_string(tmp, sizeof(tmp));
-	world = maps;
-	while (world) {
-		if (streq(world->name, tmp)) break;
-		world = world->next;
-	}
-	if (!world) {
-		quit("Failed to find world.");
-	}
-	
-	/* Where we've been */
-	for (j = 0; j < world->num_levels; j++) {
-		rd_byte(&tmp8u);
-		world->levels[j].visited = tmp8u ? true : false;
-	}
-
-	/* Check underworld and mountain top way back */
-	if (world->levels[player->place].locality == LOC_UNDERWORLD) {
-		world->levels[player->place].up =
-			string_make(level_name(&world->levels[player->last_place]));
-	} else if (world->levels[player->place].locality == LOC_MOUNTAIN_TOP) {
-		world->levels[player->place].down =
-			string_make(level_name(&world->levels[player->last_place]));
-	}
 
 	/* Read the randart seed */
 	rd_u32b(&seed_randart);
@@ -1104,7 +987,7 @@ int rd_misc(void)
 	/* Current turn */
 	rd_s32b(&turn);
 
-	/* Handle randart file parsing, race probabilities */
+	/* Handle randart file parsing */
 	if (!player->is_dead) {
 		if (randart_file_exists()) {
 			activate_randart_file();
@@ -1113,7 +996,6 @@ int rd_misc(void)
 			initialize_random_artifacts(seed_randart);
 		}
 		deactivate_randart_file();
-		init_race_probs();
 	}
 
 	/* Property knowledge */
@@ -1662,7 +1544,6 @@ int rd_traps(void)
 int rd_chunks(void)
 {
 	int j;
-	u16b chunk_max;
 
 	if (player->is_dead)
 		return 0;

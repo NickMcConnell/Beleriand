@@ -2034,8 +2034,7 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		struct monster *mon = cave_monster(cave, i);
 		if (mon->race) {
-			int radius = player->themed_level ? z_info->max_sight :
-				z_info->max_sight * 2;
+			int radius = z_info->max_sight * 2;
 			int dist = distance(origin, mon->grid);
 
 			/* Skip monsters too far away */
@@ -2683,10 +2682,6 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 
 	/* No forcing player down to quest levels if they can't leave */
 	if (!up)
-		down = false;
-
-	/* Can't leave quest levels or go down deeper than the dungeon */
-	if (quest_forbid_downstairs(player->place))
 		down = false;
 
 	/* Deal with depth */

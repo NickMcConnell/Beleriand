@@ -976,18 +976,10 @@ static struct equip_slot TEST_DATA test_slot_light = {
 	.obj = NULL,
 };
 
-static struct quest_place TEST_DATA test_quest_place = {
-	.map = NULL,
-	.place = 1,
-	.block = true,
-	.next = NULL,
-};
-
 static struct quest TEST_DATA test_quest = {
 	.next = NULL,
 	.name = "Test",
 	.type = 0,
-	.place = &test_quest_place,
 	.race = &test_r_human,
 	.cur_num = 0,
 	.max_num = 4,

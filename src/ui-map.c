@@ -888,125 +888,6 @@ void display_map(int *cy, int *cx)
 	mem_free(mp);
 }
 
-static void print_map_name(int place, int row, int col, bool down)
-{
-	byte attr = COLOUR_L_PINK;
-	char name[30];
-	const char *locality = locality_name(world->levels[place].locality);
-
-	/* Get the correct colour */
-	switch (world->levels[place].topography) {
-		case TOP_TOWN: attr = COLOUR_L_BLUE; break;
-		case TOP_PLAIN: attr = COLOUR_UMBER; break;
-		case TOP_FOREST: attr = COLOUR_GREEN; break;
-		case TOP_MOUNTAIN: attr = COLOUR_L_DARK; break;
-		case TOP_SWAMP: attr = COLOUR_L_GREEN; break;
-		case TOP_RIVER: attr = COLOUR_BLUE; break;
-		case TOP_DESERT: attr = COLOUR_L_UMBER; break;
-		case TOP_VALLEY: attr = COLOUR_RED; break;
-		case TOP_CAVE: attr = COLOUR_L_RED; break;
-		default: break;
-	}
-	if (place == player->place) {
-		attr = COLOUR_VIOLET;
-	}
-
-	/* Build the name */
-	if (down) {
-		my_strcpy(name, "(", sizeof(name));
-		my_strcat(name, locality, sizeof(name));
-		my_strcat(name, ")", sizeof(name));
-	} else {
-		my_strcpy(name, locality, sizeof(name));
-	}
-
-	/* Print it */
-	c_put_str(attr, name, row, col);
-}
-
-
-/**
- * Display a map of the type of wilderness surrounding the current level
- */
-static void regional_map(int num, int centre_place)
-{
-	int i, j, col, row;
-	int side = 2 * num + 1;
-	int size = side * side;
-	int *place = mem_zalloc(size * sizeof(*place));
-	int north, east, south, west;
-	const char *lev_name;
-	struct level *lev;
-
-	/* Set the centre */
-	place[size / 2] = centre_place;
-
-	/* Redo the right number of times */
-	for (j = 0; j < side; j++) {
-		/* Pass across the whole array */
-		for (i = 0; i < size; i++) {
-			if (!place[i]) continue;
-			lev = &world->levels[place[i]];
-
-			/* See what's adjacent */
-			north = (i > (side - 1) ? (i - side) : -1);
-			east = ((i % side) != (side - 1) ? (i + 1) : -1);
-			south = (i < (size - side) ? (i + side) : -1);
-			west = ((i % side) ? (i - 1) : -1);
-
-			/* Set them */
-			if ((north >= 0) && lev->north && (!place[north]))
-				place[north] = level_by_name(world, lev->north)->index;
-			if ((east >= 0) && lev->east && (!place[east]))
-				place[east] = level_by_name(world, lev->east)->index;
-			if ((south >= 0) && lev->south && (!place[south]))
-				place[south] = level_by_name(world, lev->south)->index;
-			if ((west >= 0) && lev->west && (!place[west]))
-				place[west] = level_by_name(world, lev->west)->index;
-		}
-	}
-
-	/* Now print the info */
-	for (i = 0; i < size; i++) {
-		/* Nowhere */
-		if (!place[i])
-			continue;
-
-		/* Get the place */
-		col = (i % side) * 18 + 1;
-		row = (i / side) * 4 + 1;
-
-		/* Get the level string */
-		lev_name = format("Level %d", world->levels[place[i]].depth);
-		/* Print the locality name */
-		print_map_name(place[i], row, col, false);
-
-		/* Print the other details */
-		c_put_str(i == size / 2 ? COLOUR_WHITE : COLOUR_L_DARK, lev_name,
-				  row + 1, col);
-		if (world->levels[place[i]].east) {
-			c_put_str(COLOUR_WHITE, "   ---", row + 1, col + 8);
-		}
-
-		/* Deal with mountain tops and dungeons */
-		if (world->levels[place[i]].down) {
-			lev = level_by_name(world, world->levels[place[i]].down);
-			if (lev->topography == TOP_MOUNTAINTOP) {
-				print_map_name(lev->index, row + 2, col, true);
-			} else if (lev->locality != LOC_UNDERWORLD) {
-				print_map_name(lev->index, row + 2, col, true);
-			}
-		}
-		if (world->levels[place[i]].south) {
-			c_put_str(COLOUR_WHITE, "|", row + 3, col + 3);
-		}
-		if (world->levels[place[i]].south && !world->levels[place[i]].down) {
-			c_put_str(COLOUR_WHITE, "|", row + 2, col + 3);
-		}
-	}
-	mem_free(place);
-}
-
 /**
  * Display a "small-scale" map of the dungeon.
  *
@@ -1019,8 +900,6 @@ void do_cmd_view_map(void)
 	const char *prompt = "Hit any key to continue";
 	/* variables for regional map */
 	int wid, hgt;
-	int num_down, num_across, num, centre_place, next_place;
-	ui_event ke;
 
 	//if (Term->view_map_hook) {
 	//	(*(Term->view_map_hook))(Term);
@@ -1029,14 +908,6 @@ void do_cmd_view_map(void)
 
 	/* Get size */
 	Term_get_size(&wid, &hgt);
-
-	/* Get dimensions for the regional map */
-	num_down = (hgt - 6) / 8;
-	num_across = (wid - 24) / 20;
-	num = (num_down < num_across ? num_down : num_across);
-
-	/* Hack - limit range for now */
-	num = 2;
 
 	/* Save screen */
 	screen_save();
@@ -1071,62 +942,6 @@ void do_cmd_view_map(void)
 	/* Restore the tile multipliers */
 	tile_width = w;
 	tile_height = h;
-
-	/* Regional map if not in the dungeon */
-	if (level_topography(player->place) != TOP_CAVE) {
-		centre_place = player->place;
-		while (true) {
-			/* Get the adjacent levels */
-			struct level *lev = &world->levels[centre_place];
-			struct level *north = NULL;
-			struct level *east = NULL;
-			struct level *south = NULL;
-			struct level *west = NULL;
-			if (lev->north) north = level_by_name(world, lev->north);
-			if (lev->east) east = level_by_name(world, lev->east);
-			if (lev->south) south = level_by_name(world, lev->south);
-			if (lev->west) west = level_by_name(world, lev->west);
-
-			/* Flush */
-			Term_fresh();
-
-			/* Clear the screen */
-			Term_clear();
-
-			/* Display the regional map */
-			regional_map(num, centre_place);
-
-			/* Wait for it */
-			put_str("Move keys to scroll, other input to continue",
-					hgt - 1, (wid - 40) / 2);
-
-			/* Get any key */
-			ke = inkey_ex();
-			next_place = -1;
-			switch (ke.key.code) {
-			case 'k':
-			case ARROW_UP:
-				next_place = north ? north->index : 0;
-				break;
-			case 'j':
-			case ARROW_DOWN:
-				next_place = south ? south->index : 0;
-				break;
-			case 'h':
-			case ARROW_LEFT:
-				next_place = west ? west->index : 0;
-				break;
-			case 'l':
-			case ARROW_RIGHT:
-				next_place = east ? east->index : 0;
-				break;
-			}
-			if (next_place == -1)
-				break;
-			if (next_place)
-				centre_place = next_place;
-		}
-	}
 
 	/* Load screen */
 	screen_load();

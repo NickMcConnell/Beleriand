@@ -43,8 +43,6 @@ u32b seed_flavor;		/* Hack -- consistent object colors */
 s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
-struct level_map *maps;
-struct level_map *world;
 struct world_region *region_info;
 char **region_terrain;
 struct landmark *landmark_info;
@@ -246,131 +244,11 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
  */
 bool no_vault(int place)
 {
-	struct level *lev = &world->levels[place];
-
-	/* No vaults on mountaintops */
-	if (lev->topography == TOP_MOUNTAINTOP)
-		return true;
-
-	/* No vaults on dungeon entrances */
-	if ((lev->topography != TOP_CAVE) && (lev->down))
-		return true;
-
+	//B
 	/* Anywhere else is OK */
 	return false;
 }
 
-/**
- * List of { locality, name } pairs.
- */
-static const grouper locality_names[] =
-{
-	#define LOC(a, b) { LOC_##a, b },
-	#include "list-localities.h"
-	#undef LOC
-};
-
-/**
- * Get a locality name
- */
-const char *locality_name(enum locality locality)
-{
-	return locality_names[locality].name;
-}
-
-/**
- * Form a level's name
- */
-char *level_name(struct level *lev)
-{
-	char *name;
-
-	if (lev->depth) {
-		name = format("%s %d", locality_name(lev->locality), lev->depth);
-	} else {
-		name = format("%s Town", locality_name(lev->locality));
-	}
-	return name;
-}
-
-/**
- * Find a level by its name
- */
-struct level *level_by_name(struct level_map *map, const char *name)
-{
-	int i;
-	for (i = 0; i < map->num_levels; i++) {
-		struct level *lev = &map->levels[i];
-		if (name && streq(name, level_name(lev))) {
-			return lev;
-		}
-	}
-	return NULL;
-}
-
-/**
- * Find a town by its name
- */
-struct town *town_by_name(struct level_map *map, const char *name)
-{
-	int i;
-
-	/* No hometown */
-	if (!name) return NULL;
-
-	for (i = 0; i < map->num_towns; i++) {
-		struct town *town = &map->towns[i];
-		struct level *lev = &map->levels[town->index];
-		if (streq(name, level_name(lev))) {
-			return town;
-		}
-	}
-	return NULL;
-}
-
-/**
- * Return a current world level's topography
- */
-int level_topography(int index)
-{
-	return world->levels[index].topography;
-}
-
-/**
- * Return the themed level of the given index
- */
-struct vault *themed_level(int index)
-{
-	int which = player->themed_level;
-	struct vault *level = themed_levels;
-	assert(index >= 1);
-
-	/* Iterate to the themed level */
-	while (which > 1) {
-		level = level->next;
-		assert(level);
-		which--;
-	}
-	return level;
-}
-
-/**
- * Return the themed level index of the given named level
- */
-int themed_level_index(const char *name)
-{
-	int which = 1;
-	struct vault *level = themed_levels;
-
-	/* Search for the themed level */
-	while (!streq(name, level->name)) {
-		level = level->next;
-		which++;
-		if (!level) return 0;
-	}
-
-	return which;
-}
 
 /**
  * ------------------------------------------------------------------------
@@ -746,8 +624,8 @@ void process_world(struct chunk *c)
 		player->upkeep->update |= PU_BONUS;
 	}
 
-	/* Check for creature generation, except on themed levels */
-	if (one_in_(z_info->alloc_monster_chance) && (!player->themed_level))
+	/* Check for creature generation */
+	if (one_in_(z_info->alloc_monster_chance))
 		(void)pick_and_place_distant_monster(c, player, z_info->max_sight + 5,
 											 true, player->depth);
 

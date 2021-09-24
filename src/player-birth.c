@@ -347,40 +347,6 @@ char *get_history(struct history_chart *chart)
 
 
 /**
- * Sets the character's starting level -NRM-
- */
-static void get_level(struct player *p)
-{
-	/* Check if they're an "advanced race" */
-	if (world && (p->race->start_lev - 1) && !strstr(world->name, "Dungeon")) {
-		/* Add the experience */
-		p->exp = player_exp[p->race->start_lev - 2];
-		p->max_exp = player_exp[p->race->start_lev - 2];
-
-		/* Set the level */
-		p->lev = p->race->start_lev;
-		p->max_lev = p->race->start_lev;
-	} else {
-		/* Add the experience */
-		p->exp = 0;
-		p->max_exp = 0;
-
-		/* Set the level */
-		p->lev = 1;
-		p->max_lev = 1;
-	}
-
-	if (!world) return;
-
-	/* Set home town */
-	if (strstr(world->name, "Dungeon")) {
-		p->home = 1;
-	} else {
-		p->home = level_by_name(world, p->race->hometown)->index;
-	}
-}
-
-/**
  * Computes character's age, height, and weight
  */
 static void get_ahw(struct player *p)
@@ -540,41 +506,6 @@ void wield_all(struct player *p)
 }
 
 /**
- * Upgrade weapon for advanced races.
- */
-static void upgrade_weapon(struct player *p)
-{
-	int weapon_slot = slot_by_name(player, "weapon");
-	struct object *weapon = slot_object(player, weapon_slot);
-	struct town *hometown = town_by_name(world, p->race->hometown);
-	struct ego_item *ego;
-
-	/* Check if this is possible */
-	if (!weapon) return;
-	if (!hometown) return;
-	if (!hometown->ego) return;
-
-	/* Find the ego */
-	ego = lookup_ego_item(hometown->ego, weapon->tval, weapon->sval);
-	if (ego) {
-		/* Upgrade */
-		struct object *prevw = weapon->prev;
-		struct object *nextw = weapon->next;
-		struct object *knownw = weapon->known;
-		object_prep(weapon, weapon->kind, p->depth, MINIMISE);
-		weapon->ego = ego;
-		weapon->prev = prevw;
-		weapon->next = nextw;
-		weapon->known = knownw;
-		ego_apply_magic(weapon, p->depth, MINIMISE);
-		player_know_object(p, weapon);
-		while (!object_fully_known(weapon)) {
-			object_learn_unknown_rune(p, weapon, false);
-		}
-	}
-}
-
-/**
  * Initialize the global player as if the full birth process happened.
  * \param nrace Is the name of the race to use.  It may be NULL to use *races.
  * \param nclass Is the name of the class to use.  It may be NULL to use
@@ -629,7 +560,6 @@ bool player_make_simple(const char *nrace, const char *nclass,
 
 	cmdq_push(CMD_BIRTH_INIT);
 	cmdq_push(CMD_BIRTH_RESET);
-	cmdq_push(CMD_CHOOSE_MAP);
 	cmdq_push(CMD_CHOOSE_RACE);
 	cmd_set_arg_choice(cmdq_peek(), "choice", ir);
 	cmdq_push(CMD_CHOOSE_CLASS);
@@ -732,9 +662,6 @@ static void player_outfit(struct player *p)
 
 	/* Now try wielding everything */
 	wield_all(p);
-
-	/* Upgrade weapon for free if an advanced race */
-	upgrade_weapon(p);
 
 	/* Update knowledge */
 	update_player_object_knowledge(p);
@@ -1061,7 +988,8 @@ void player_generate(struct player *p, const struct player_race *r,
 	p->race = r;
 
 	/* Set the level */
-	get_level(p);
+	p->lev = 1;
+	p->max_lev = 1;
 
 	/* Hitdice */
 	p->hitdie = p->race->r_mhp + p->class->c_mhp;
@@ -1155,22 +1083,6 @@ void do_cmd_birth_reset(struct command *cmd)
 	player_init(player);
 	reset_stats(stats, points_spent, points_inc, &points_left, false);
 	do_birth_reset(quickstart_allowed, &quickstart_prev);
-	rolled_stats = false;
-}
-
-void do_cmd_choose_map(struct command *cmd)
-{
-	int choice = 0;
-	world = maps;
-	cmd_get_arg_choice(cmd, "choice", &choice);
-	while (choice) {
-		world = world->next;
-		choice--;
-	}
-	player_generate(player, NULL, NULL, false);
-
-	reset_stats(stats, points_spent, points_inc, &points_left, false);
-	generate_stats(stats, points_spent, points_inc, &points_left);
 	rolled_stats = false;
 }
 
@@ -1365,9 +1277,6 @@ void do_cmd_accept_character(struct command *cmd)
 	player->obj_k->to_d = 1;
 	player->obj_k->ac = 1;
 	player->obj_k->dd = 1;
-
-	/* Initialise the stores, dungeon */
-	init_race_probs();
 
 	/* Player learns innate runes */
 	player_learn_innate(player);

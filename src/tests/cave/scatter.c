@@ -47,7 +47,7 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
-	cave_free(state);
+	chunk_wipe(state);
 	cleanup_angband();
 	return 0;
 }

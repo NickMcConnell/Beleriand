@@ -470,7 +470,7 @@ void player_cleanup_members(struct player *p)
 	string_free(p->body.name);
 	string_free(p->history);
 	if (p->cave) {
-		cave_free(p->cave);
+		chunk_wipe(p->cave);
 		p->cave = NULL;
 	}
 }

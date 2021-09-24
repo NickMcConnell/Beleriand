@@ -846,8 +846,6 @@ void close_game(void)
 	/* Wipe the monster list */
 	wipe_mon_list(cave, player);
 
-	free_race_probs();
-
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;
 

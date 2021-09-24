@@ -32,49 +32,6 @@
 #define MAX_Y_REGION 588
 #define MAX_X_REGION 735
 
-enum locality {
-	#define LOC(x, b)	LOC_##x,
-	#include "list-localities.h"
-	#undef LOC
-};
-
-enum topography {
-	#define TOP(x, b)	TOP_##x,
-	#include "list-topography.h"
-	#undef TOP
-};
-
-struct level {
-	int index;
-	int depth;
-	bool visited;
-	enum locality locality;
-	enum topography topography;
-	char *north;
-	char *east;
-	char *south;
-	char *west;
-	char *up;
-	char *down;
-	struct level *next;
-};
-
-struct town {
-	int index;
-	char *code;
-	char *ego;
-};
-
-struct level_map {
-	char *name;
-	char *help;
-	int num_levels;
-	int num_towns;
-	struct level *levels;
-	struct town *towns;
-	struct level_map *next;
-};
-
 /**
  * Information about landmarks
  */
@@ -115,8 +72,6 @@ extern s32b turn;
 extern bool character_generated;
 extern bool character_dungeon;
 extern const byte extract_energy[200];
-extern struct level_map *maps;
-extern struct level_map *world;
 extern struct world_region *region_info;
 extern char **region_terrain;
 extern struct landmark *landmark_info;
@@ -129,13 +84,6 @@ void gen_loc_list_cleanup(void);
 bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
 void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx);
 bool no_vault(int place);
-const char *locality_name(enum locality locality);
-char *level_name(struct level *lev);
-struct level *level_by_name(struct level_map *map, const char *name);
-struct town *town_by_name(struct level_map *map, const char *name);
-int level_topography(int index);
-struct vault *themed_level(int index);
-int themed_level_index(const char *name);
 bool is_daytime(void);
 bool outside(void);
 bool is_daylight(void);

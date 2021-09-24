@@ -1420,27 +1420,13 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 	centre.y -= thgt / 2;
 
 	/* Get the room corners */
-	if (player->themed_level) {
-		y1 = 0;
-		x1 = 0;
-		y2 = z_info->dungeon_hgt - 1;
-		x2 = z_info->dungeon_wid - 1;
-	} else {
-		y1 = centre.y;
-		x1 = centre.x;
-		y2 = y1 + thgt - 1;
-		x2 = x1 + twid - 1;
-	}
+	y1 = centre.y;
+	x1 = centre.x;
+	y2 = y1 + thgt - 1;
+	x2 = x1 + twid - 1;
 
-	/* Vault and themed level monsters satisfy restrictions */
-	if (player->themed_level) {
-		/* Themed levels usually have monster restrictions that take effect 
-		 * if no other restrictions are currently in force. */
-		general_monster_restrictions();
-	} else {
-		/* No random monsters in vaults. */
-		generate_mark(c, y1, x1, y2, x2, SQUARE_MON_RESTRICT);
-	}
+	/* Vault monsters satisfy restrictions */
+	generate_mark(c, y1, x1, y2, x2, SQUARE_MON_RESTRICT);
 
 	/* Place dungeon features and objects */
 	get_terrain(c, loc(0, 0), loc(v->wid, v->hgt), centre, v->hgt, v->wid,
@@ -1595,8 +1581,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 					/* Inner or non-tunnelable outside granite wall */
 				case '#': {
 					/* Check consistency with first pass. */
-					assert((square_isroom(c, grid) || player->themed_level) &&
-						square_isvault(c, grid) &&
+					assert(square_isroom(c, grid) && square_isvault(c, grid) &&
 						square_isgranite(c, grid) &&
 						sqinfo_has(square(c, grid)->info, SQUARE_WALL_SOLID));
 					/*
@@ -1604,8 +1589,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 					 * does not touch the outside of the
 					 * vault.
 					 */
-					if (count_neighbors(NULL, c, grid,
-							square_isroom, false) == 8) {
+					if (count_neighbors(NULL, c, grid,		square_isroom, false) == 8) {
 						sqinfo_off(square(c, grid)->info,
 							SQUARE_WALL_SOLID);
 						sqinfo_on(square(c, grid)->info,
@@ -1616,8 +1600,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v)
 					/* Permanent wall */
 				case '@': {
 					/* Check consistency with first pass. */
-					assert((square_isroom(c, grid) || player->themed_level) &&
-						square_isvault(c, grid) &&
+					assert(square_isroom(c, grid) && square_isvault(c, grid) &&
 						square_isperm(c, grid));
 					/*
 					 * Mark as SQUARE_WALL_INNER if it does

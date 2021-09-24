@@ -240,8 +240,6 @@ static void initialize_character(void)
 	seed_flavor = randint0(0x10000000);
 	seed_randart = randint0(0x10000000);
 
-	world = maps;
-	init_race_probs();
 	flavor_init();
 	player->upkeep->playing = true;
 	player->upkeep->autosave = false;
@@ -389,9 +387,8 @@ static void descend_dungeon(void)
 
 	clock_t wait = CLOCKS_PER_SEC / 5;
 
-	for (level = 1; level < world->num_levels - 1; level++)
+	for (level = 1; level < z_info->max_depth; level++)
 	{
-		if (!world->levels[player->place].depth) continue;
 		if (!quiet) {
 			clock_t now = clock();
 			if (now - last > wait) {
@@ -1469,11 +1466,11 @@ static void stats_cleanup_angband_run(void)
 	if (character_dungeon) {
 		wipe_mon_list(cave, player);
 		if (player->cave) {
-			cave_free(player->cave);
+			chunk_wipe(player->cave);
 			player->cave = NULL;
 		}
 		if (cave) {
-			cave_free(cave);
+			chunk_wipe(cave);
 			cave = NULL;
 		}
 		character_dungeon = false;

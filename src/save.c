@@ -426,45 +426,6 @@ void wr_object_memory(void)
 
 void wr_quests(void)
 {
-	struct quest *quest = quests;
-	bool extra = false;
-
-	/* Dump the quest results */
-	while (quest) {
-		struct quest_place *place = quest->place;
-		wr_string(quest->name);
-		wr_u16b(quest->complete ? 1 : 0);
-		wr_u16b(quest->cur_num);
-
-		/* Note final quest */
-		if (quest->type == QUEST_FINAL) {
-			extra = true;
-			quest = quest->next;
-			continue;
-		}
-		if (!extra) {
-			quest = quest->next;
-			continue;
-		}
-
-		/* Extra quests */
-		wr_u16b(quest->type);
-		while (place) {
-			wr_string(place->map->name);
-			wr_u16b(place->place);
-			wr_u16b(place->block ? 1 : 0);
-			place = place->next;
-		}
-		wr_string("No more places");
-		if (quest->race->name) {
-			wr_string(quest->race->name);
-		} else {
-			wr_string("none");
-		}
-		wr_u16b(quest->max_num);
-		quest = quest->next;
-	}
-	wr_string("No more quests");
 }
 
 
@@ -510,8 +471,6 @@ void wr_player(void)
 		wr_string(player->body.slots[i].name);
 	}
 
-	wr_s16b(player->themed_level_appeared);
-	wr_byte(player->themed_level);
 	wr_byte(player->num_traps);
 
 	wr_u32b(player->au);
@@ -667,15 +626,6 @@ void wr_ignore(void)
 void wr_misc(void)
 {
 	size_t i;
-	int j;
-
-	/* Map */
-	wr_string(world->name);
-
-	/* Where we've been */
-	for (j = 0; j < world->num_levels; j++) {
-		wr_byte(world->levels[j].visited ? 1 : 0);
-	}
 
 	/* Random artifact seed */
 	wr_u32b(seed_randart);

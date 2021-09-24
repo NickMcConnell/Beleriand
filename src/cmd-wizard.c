@@ -1395,7 +1395,7 @@ void do_cmd_wiz_increase_exp(struct command *cmd)
  */
 void do_cmd_wiz_jump_level(struct command *cmd)
 {
-#if 0
+#if 0 //B
 	int place = 0, choose_gen = 0;
 
 	if (cmd_get_arg_number(cmd, "level", &place) != CMD_OK) {

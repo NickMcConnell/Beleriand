@@ -2097,7 +2097,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	int extra_might = 0;
 	int extra_moves = 0;
 	int armor_weight = 0;
-	int topography = world ? world->levels[p->place].topography : 0;
 	struct object *launcher = equipped_item_by_slot_name(p, "shooting");
 	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
 	bitflag f[OF_SIZE];
@@ -2384,10 +2383,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	state->evasion_chance = 0;
 
 	/* Evasion AC boost */
-	if (player_has(p, PF_EVASION) ||
-		(player_has(p, PF_DWARVEN) && topography == TOP_MOUNTAIN) ||
-		(player_has(p, PF_PLAINSMAN)  && topography == TOP_PLAIN) ||
-		(player_has(p, PF_EDAIN) && topography == TOP_FOREST)) {
+	if (player_has(p, PF_EVASION)) {
 		/* Highest weight to get any bonus */
 		int evasion_weight = 150 + (3 * p->lev);
 

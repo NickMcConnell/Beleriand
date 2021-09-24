@@ -52,7 +52,6 @@ struct angband_constants
 	u16b ordinary_kind_max;	/**< Maximum number of objects in object.txt */
 	u16b shape_max;		/**< Maximum number of player shapes */
 	u16b p_race_max;	/**< Maximum number of player races */
-	u16b themed_max;		/**< Maximum number of themed levels */
     u16b region_max;	/**< Maximum number of world regions */
     u16b landmark_max;	/**< Maximum number of landmarks */
 
@@ -95,8 +94,6 @@ struct angband_constants
 	u16b town_hgt;	/**< Maximum number of vertical grids in the town */
 	u16b town_wid;	/**< Maximum number of horizontical grids in the town */
 	u16b move_energy;	/* Energy the player or monster needs to move */
-	u16b themed_dun;	/* !/Chance of a themed level in the dungeon */
-	u16b themed_wild;	/* !/Chance of a themed level in the wilderness */
 
 	/* Carrying capacity constants, read from constants.txt */
 	u16b pack_size;		/**< Maximum number of pack slots */

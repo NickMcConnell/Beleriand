@@ -327,9 +327,6 @@ void update_mon(struct player *p, struct monster *mon, struct chunk *c,
 	/* ESP permitted */
 	bool telepathy_ok = player_of_has(p, OF_TELEPATHY);
 
-	/* Themed level */
-	bool themed = player->themed_level ? true : false;
-
 	assert(mon != NULL);
 
 	/* Return if this is not the current level */
@@ -382,7 +379,7 @@ void update_mon(struct player *p, struct monster *mon, struct chunk *c,
 	}
 
 	/* Nearby */
-	if (d <= (themed ? z_info->max_sight / 2 : z_info->max_sight)) {
+	if (d <= z_info->max_sight) {
 		/* Basic telepathy */
 		if (telepathy_ok && monster_is_esp_detectable(mon)) {
 			/* Detectable */

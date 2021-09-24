@@ -140,16 +140,6 @@ enum quest_type {
 };
 
 /**
- * Structure for quest locations per map
- */
-struct quest_place {
-	struct level_map *map;
-	int place;
-	bool block;
-	struct quest_place *next;
-};
-
-/**
  * Structure for quest artifacts
  */
 struct quest_artifact {
@@ -165,7 +155,6 @@ struct quest {
 	struct quest *next;
 	char *name;
 	int type;
-	struct quest_place *place;	/* Place */
 	struct monster_race *race;	/* Monster race */
 	struct quest_artifact *arts;/* Artifacts dropped by quest unique */
 	int cur_num;				/* Number killed/found */
@@ -610,8 +599,6 @@ struct player {
     s16b speed_boost;			/* Short term speed boost (Fury, Phasewalk) */
     s16b heighten_power;		/* Magic Intensity boost (Heightn Magic) */
 	byte num_traps;				/* Number of current monster traps set */
-    byte themed_level; 			/* Player in a themed level?  Which one? */
-    u16b themed_level_appeared;	/* Which themed levels have already appeared */
 
 	char full_name[PLAYER_NAME_LEN];	/* Full name */
 	char died_from[80];					/* Cause of death */

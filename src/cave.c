@@ -407,9 +407,23 @@ void heatmap_free(struct chunk *c, struct heatmap map)
 }
 
 /**
+ * Free a linked list of cave connections.
+ */
+void cave_connectors_free(struct connector *join)
+{
+	while (join) {
+		struct connector *current = join;
+
+		join = current->next;
+		mem_free(current);
+	}
+}
+
+/**
  * Allocate a new chunk of the world
  */
-struct chunk *cave_new(int height, int width) {
+struct chunk *chunk_new(int height, int width)
+{
 	int y, x;
 
 	struct chunk *c = mem_zalloc(sizeof *c);
@@ -441,27 +455,16 @@ struct chunk *cave_new(int height, int width) {
 }
 
 /**
- * Free a linked list of cave connections.
+ * Wipe the actual details of a chunk
  */
-void cave_connectors_free(struct connector *join)
+void chunk_wipe(struct chunk *c)
 {
-	while (join) {
-		struct connector *current = join;
-
-		join = current->next;
-		mem_free(current);
-	}
-}
-
-/**
- * Free a chunk
- */
-void cave_free(struct chunk *c) {
 	int y, x, i;
 
 	/* Look for orphaned objects and delete them. */
 	for (i = 0; i < c->obj_max; i++) {
-		if (c->objects[i] && loc_is_zero(c->objects[i]->grid)) {
+		if (c->objects[i] && !c->objects[i]->floor) {
+			assert(loc_is_zero(c->objects[i]->grid));
 			object_delete(&c->objects[i]);
 		}
 	}
@@ -486,7 +489,6 @@ void cave_free(struct chunk *c) {
 	mem_free(c->monster_groups);
 	mem_free(c);
 }
-
 
 /**
  * Enter an object in the list of objects for the current level/chunk.  This

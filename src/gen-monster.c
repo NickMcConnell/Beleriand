@@ -102,17 +102,6 @@ static bool vault_aux_elemental(struct monster_race *race)
  */
 static bool mon_select(struct monster_race *race)
 {
-	/* Special case: Elemental war themed level. */
-	if (player->themed_level == themed_level_index("Elemental")) {
-		return (vault_aux_elemental(race));
-	}
-
-	/* Special case: Estolad themed level. */
-	if (player->themed_level == themed_level_index("Estolad")) {
-		if (!rf_has(race->flags, RF_PLAYER))
-			return false;
-	}
-
 	/* Require that the monster symbol be correct. */
 	if (base_d_char[0] != '\0') {
 		if (strchr(base_d_char, race->base->d_char) == 0)
@@ -237,21 +226,7 @@ void general_monster_restrictions(void)
     for (i = 0; i < 10; i++)
 		base_d_char[i] = '\0';
 
-	/* Most themed levels have monster restrictions. */
-	if (player->themed_level == themed_level_index("Elemental")) {
-		get_mon_num_prep(mon_select);
-	} else if (player->themed_level == themed_level_index("Dragon")) {
-		my_strcpy(base_d_char, "dD", sizeof(base_d_char));
-		get_mon_num_prep(mon_select);
-	} else if (player->themed_level == themed_level_index("Wilderness")) {
-		get_mon_num_prep(mon_select);
-	} else if (player->themed_level == themed_level_index("Demon")) {
-		get_mon_num_prep(mon_select);
-	} else if (player->themed_level == themed_level_index("Mines")) {
-		get_mon_num_prep(mon_select);
-	} else if (player->themed_level == themed_level_index("Estolad")) {
-		get_mon_num_prep(mon_select);
-	}
+	//B Maybe?
 }
 
 /**

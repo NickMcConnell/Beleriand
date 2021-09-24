@@ -40,54 +40,20 @@ race:Morgoth, Lord of Darkness
 artifact:100:of Morgoth
 artifact:100:'Grond'
 number:1
-map:Standard Wilderness
-place:ANGBAND:100:block
-map:Extended Wilderness
-place:ANGBAND:100:block
-map:Hybrid Dungeon
-place:ANGBAND:100:block
-map:Angband Dungeon
-place:ANGBAND:100:block
 
 name:Mîm
 type:unique
 race:Mîm, Betrayer of Turin
-map:Standard Wilderness
-place:AMON_RUDH:30
-map:Extended Wilderness
-place:AMON_RUDH:30
-map:Hybrid Dungeon
-place:AMON_RUDH:30
 
 name:Glaurung
 type:unique
 race:Glaurung, Father of the Dragons
-map:Standard Wilderness
-place:NARGOTHROND:55
-map:Extended Wilderness
-place:NARGOTHROND:55
-map:Hybrid Dungeon
-place:NARGOTHROND:55
 
 name:Ungoliant
 type:unique
 race:Ungoliant, the Unlight
 artifact:100:of Ungoliant
-map:Standard Wilderness
-place:NAN_DUNGORTHEB:70:block
-map:Extended Wilderness
-place:NAN_DUNGORTHEB:70:block
-map:Hybrid Dungeon
-place:NAN_DUNGORTHEB:70
 
 name:Sauron
 type:unique
 race:Sauron, the Sorcerer
-map:Standard Wilderness
-place:TOL_IN_GAURHOTH:85
-map:Extended Wilderness
-place:TOL_IN_GAURHOTH:85
-map:Hybrid Dungeon
-place:TOL_IN_GAURHOTH:85
-map:Angband Dungeon
-place:ANGBAND:99:block

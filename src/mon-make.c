@@ -37,7 +37,6 @@
 #include "player-timed.h"
 #include "target.h"
 
-int **race_prob;
 /**
  * ------------------------------------------------------------------------
  * Monster race allocation
@@ -177,7 +176,6 @@ static bool get_mon_forbidden(struct monster_race *race)
 {
 	time_t cur_time = time(NULL);
 	struct tm *date = localtime(&cur_time);
-	struct level *lev = &world->levels[player->place];
 
 	/* No seasonal monsters outside of Christmas */
 	if (rf_has(race->flags, RF_SEASONAL) &&
@@ -193,24 +191,18 @@ static bool get_mon_forbidden(struct monster_race *race)
 		return true;
 
 	/* Some monsters only appear in a given dungeon... */
-	if (rf_has(race->flags, RF_ANGBAND) && (lev->locality != LOC_ANGBAND))
+	if (rf_has(race->flags, RF_ANGBAND))
 		return true;
 
 	/* ...if it exists on the current map */
-	if (!streq(world->name, "Angband Dungeon")) {
-		if (rf_has(race->flags, RF_AMON_RUDH) &&
-			(lev->locality != LOC_AMON_RUDH)) {
-			return true;
-		} else if (rf_has(race->flags, RF_NARGOTHROND) &&
-				   (lev->locality != LOC_NARGOTHROND)) {
-			return true;
-		} else if (rf_has(race->flags, RF_DUNGORTHEB) &&
-				   (lev->locality != LOC_NAN_DUNGORTHEB)) {
-			return true;
-		} else if (rf_has(race->flags, RF_GAURHOTH) &&
-				   (lev->locality != LOC_TOL_IN_GAURHOTH)) {
-			return true;
-		}
+	if (rf_has(race->flags, RF_AMON_RUDH)) {
+		return true;
+	} else if (rf_has(race->flags, RF_NARGOTHROND)) {
+		return true;
+	} else if (rf_has(race->flags, RF_DUNGORTHEB)) {
+		return true;
+	} else if (rf_has(race->flags, RF_GAURHOTH)) {
+		return true;
 	}
 
 	/* Dungeon-only monsters */
@@ -219,65 +211,7 @@ static bool get_mon_forbidden(struct monster_race *race)
 		return true;
 	}
 
-	/* Flying monsters for mountaintop */
-	if (!rf_has(race->flags, RF_FLYING) &&
-		(lev->topography == TOP_MOUNTAINTOP)) {
-		return true;
-	}
-
 	return false;
-}
-
-/**
- * Helper function for get_mon_num().  Adjust the probabilities of monsters
- * based on the locality and topography into which they are vying to spawn
- *
- * Ideally topography and locality and their effects on monsters would be
- * read from datafiles
- */
-static int get_mon_adjust(int prob, struct monster_race *race)
-{
-	struct level *lev = &world->levels[player->place];
-
-	/* Locality adjustments */
-	if (lev->locality == LOC_NAN_DUNGORTHEB) {
-		/* Nan Dungortheb is spiderland, bad for humans and humanoids */
-		if (streq(race->base->name, "spider")) {
-			prob *= 5;
-		} else if (streq(race->base->name, "person") ||
-				   streq(race->base->name, "humanoid")) {
-			prob /= 3;
-		}
-	} else if (lev->locality == LOC_TOL_IN_GAURHOTH) {
-		/* Tol-In-Gaurhoth is full of wolves and undead */
-		if (streq(race->base->name, "wolf")) {
-			prob *= 4;
-		} else if (rf_has(race->flags, RF_UNDEAD)) {
-			prob *= 2;
-		}
-	}
-
-	/* Topography adjustments */
-	if ((lev->topography == TOP_DESERT)	|| (lev->topography == TOP_MOUNTAIN)) {
-		/* Some animals love desert and mountains, most don't */
-		if (streq(race->base->name, "reptile") ||
-			streq(race->base->name, "snake") ||
-			streq(race->base->name, "centipede")) {
-			prob *= 2;
-		} else if (rf_has(race->flags, RF_ANIMAL)) {
-			prob /= 2;
-		}
-	} else if (lev->topography == TOP_FOREST) {
-		/* Most animals do like forest */
-		if (streq(race->base->name, "reptile")) {
-			prob /= 2;
-		} else if (rf_has(race->flags, RF_ANIMAL) &&
-				   !streq(race->base->name, "zephyr hound")) {
-			prob *= 2;
-		}
-	}
-
-	return prob;
 }
 
 /**
@@ -365,9 +299,6 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
 		/* Accept */
 		table[i].prob3 = table[i].prob2;
 
-		/* Adjust for locality and topography */
-		table[i].prob3 = get_mon_adjust(table[i].prob3, race);
-
 		/* Total */
 		total += table[i].prob3;
 	}
@@ -404,155 +335,6 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
 
 	/* Result */
 	return race;
-}
-
-/**
- * ------------------------------------------------------------------------
- * Handling of 'player race' monsters
- * ------------------------------------------------------------------------ */
-/**
- * Initialize the racial probability array
- */
-void init_race_probs(void)
-{
-	int i, j, k, n;
-	int **adjacency, **lev_path, **temp_path;
-
-	/* Make the array */
-	race_prob = mem_zalloc(z_info->p_race_max * sizeof(int*));
-	for (i = 0; i < z_info->p_race_max; i++) {
-		race_prob[i] = mem_zalloc(world->num_levels * sizeof(int));
-	}
-
-	/* Prepare temporary adjacency arrays */
-	adjacency = mem_zalloc(world->num_levels * sizeof(int*));
-	lev_path = mem_zalloc(world->num_levels * sizeof(int*));
-	temp_path = mem_zalloc(world->num_levels * sizeof(int*));
-	for (i = 0; i < world->num_levels; i++) {
-		adjacency[i] = mem_zalloc(world->num_levels * sizeof(int));
-		lev_path[i] = mem_zalloc(world->num_levels * sizeof(int));
-		temp_path[i] = mem_zalloc(world->num_levels * sizeof(int));
-	}
-
-	/* Make the adjacency matrix */
-	for (i = 0; i < world->num_levels; i++) {
-		/* Get the horizontally adjacent levels */
-		struct level *lev = &world->levels[i];
-		struct level *north = NULL;
-		struct level *east = NULL;
-		struct level *south = NULL;
-		struct level *west = NULL;
-		if (lev->north) north = level_by_name(world, lev->north);
-		if (lev->east) east = level_by_name(world, lev->east);
-		if (lev->south) south = level_by_name(world, lev->south);
-		if (lev->west) west = level_by_name(world, lev->west);
-
-		/* Initialise this row */
-		for (k = 0; k < world->num_levels; k++) {
-			adjacency[i][k] = 0;
-			lev_path[i][k] = 0;
-			temp_path[i][k] = 0;
-		}
-
-		/* Add 1s where there's an adjacent stage (not up or down) */
-		if (north) {
-			adjacency[i][north->index] = 1;
-			temp_path[i][north->index] = 1;
-		}
-		if (east) {
-			adjacency[i][east->index] = 1;
-			temp_path[i][east->index] = 1;
-		}
-		if (south) {
-			adjacency[i][south->index] = 1;
-			temp_path[i][south->index] = 1;
-		}
-		if (west) {
-			adjacency[i][west->index] = 1;
-			temp_path[i][west->index] = 1;
-		}
-	}
-
-	/* Power it up (squaring 3 times gives eighth power) */
-	for (n = 0; n < 3; n++) {
-		/* Square */
-		for (i = 0; i < world->num_levels; i++) {
-			for (j = 0; j < world->num_levels; j++) {
-				lev_path[i][j] = 0;
-				for (k = 0; k < world->num_levels; k++) {
-					lev_path[i][j] += temp_path[i][k] * temp_path[k][j];
-				}
-			}
-		}
-
-		/* Copy it over for the next squaring or final multiply */
-		for (i = 0; i < world->num_levels; i++) {
-			for (j = 0; j < world->num_levels; j++) {
-				temp_path[i][j] = lev_path[i][j];
-			}
-		}
-	}
-
-	/* Get the max of length 8 and length 9 paths */
-	for (i = 0; i < world->num_levels; i++) {
-		for (j = 0; j < world->num_levels; j++) {
-			/* Multiply to get the length 9s */
-			lev_path[i][j] = 0;
-			for (k = 0; k < world->num_levels; k++) {
-				lev_path[i][j] += temp_path[i][k] * adjacency[k][j];
-			}
-
-			/* Now replace by the length 8s if it's larger */
-			if (lev_path[i][j] < temp_path[i][j]) {
-				lev_path[i][j] = temp_path[i][j];
-			}
-		}
-	}
-
-	/* We now have the maximum of the number of paths of length 8 and the
-	 * number of paths of length 9 (we need to try odd and even length paths,
-	 * as using just one leads to anomalies) from any level to any other,
-	 * which we will use as a basis for the racial probability table for
-	 * racially based monsters in any given level.  For a level, we give
-	 * every race a 1, then add the number of paths of length 8 from their
-	 * hometown to that level.  We then turn every row entry into the
-	 * cumulative total of the row to that point.  Whenever a racially based
-	 * monster is called for, we will take a random integer less than the
-	 * last entry of the row for that level, and proceed along the row,
-	 * allocating the race corresponding to the position where we first
-	 * exceed that integer.
-	 */
-	for (i = 0; i < world->num_levels; i++) {
-		int prob = 0;
-		struct player_race *p_race = races;
-		while (p_race) {
-			int hometown = 	strstr(world->name, "Dungeon") ? 1 :
-				level_by_name(world, p_race->hometown)->index;
-			/* Enter the cumulative probability */
-			prob += 1 + lev_path[world->levels[hometown].index][i];
-			race_prob[p_race->ridx][i] = prob;
-			p_race = p_race->next;
-		}
-	}
-
-	/* Free the temporary arrays */
-	for (i = 0; i < world->num_levels; i++) {
-		mem_free(temp_path[i]);
-		mem_free(adjacency[i]);
-		mem_free(lev_path[i]);
-	}
-	mem_free(temp_path);
-	mem_free(adjacency);
-	mem_free(lev_path);
-}
-
-void free_race_probs(void)
-{
-	int i;
-	for (i = 0; i < z_info->p_race_max; i++) {
-		mem_free(race_prob[i]);
-	}
-	mem_free(race_prob);
 }
 
 /**
@@ -841,16 +623,6 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 					mark_artifact_created(obj->artifact,
 						false);
 				}
-				/*
-				 * Also, remove from the cave's object list.
-				 * That way, the scan for orphaned objects
-				 * in cave_free() doesn't attempt to
-				 * access freed memory or free memory
-				 * twice.
-				 */
-				if (obj->oidx) {
-					c->objects[obj->oidx] = NULL;
-				}
 				obj = obj->next;
 			}
 			object_pile_free(held_obj);
@@ -1050,7 +822,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 	/* Check for quest artifacts */
 	if (quest_unique_monster_check(mon->race)) {
-		struct quest *quest = find_quest(player->place);
+		struct quest *quest = NULL; //B
 		if (quest && quest->arts) {
 			struct quest_artifact *arts = quest->arts;
 			while (arts) {
@@ -1246,34 +1018,15 @@ int mon_hp(const struct monster_race *race, aspect hp_aspect)
 }
 
 /**
- * Get a player race according to the probabilites in race_prob[][]
+ * Get a player race
  */
 struct player_race *get_player_race(void)
 {
 	struct player_race *p_race = races;
-	int i, k;
-
-	/* Special case -  Estolad themed level - Edain or Druedain */
-	if (player->themed_level == themed_level_index("Estolad")) {
-		/* Pick one of the races from Sphel Brandir */
-		bool pick = (one_in_(2) ? true : false);
-		while (p_race) {
-			if (streq(p_race->hometown, "Ephel Brandir Town")) {
-				if (pick) {
-					return p_race;
-				} else {
-					pick = true;
-				}
-			}
-			p_race = p_race->next;
-		}
-	}
+	int i;
 
 	/* Pick one according to the probablilities */
-	k = randint0(race_prob[z_info->p_race_max - 1][player->place]);
-	for (i = 0; i < z_info->p_race_max; i++) {
-		if (race_prob[i][player->place] > k) break;
-	}
+	i = randint0(z_info->p_race_max);
 
 	/* Find the actual race */
 	for (p_race = races; p_race; p_race = p_race->next) {
@@ -1299,9 +1052,7 @@ static bool mon_is_neutral(struct chunk *c, struct monster *mon,
 
 	chance = MAX(dislikes->rel - 100, 0);
 	k = randint0(chance + 20);
-	if ((k > 20) || (level_topography(player->place) == TOP_CAVE) ||
-		(player->themed_level == themed_level_index("Warlords")) ||
-		square_isvault(c, grid)) {
+	if (k > 20) {
 		return false;
 	}
 
@@ -1473,8 +1224,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 		if (race->sleep) {
 			int val = race->sleep;
 			mon->m_timed[MON_TMD_SLEEP] = ((val * 2) + randint1(val * 10));
-		} else if (is_night() &&
-				   (level_topography(player->place) != TOP_TOWN)) {
+		} else if (is_night()) {
 			mon->m_timed[MON_TMD_SLEEP] += 20;
 		}
 	}
@@ -1839,7 +1589,7 @@ bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 	struct monster_group_info info = { 0, 0, 0 };
 
 	/* Enforce sleep at nighttime in the wilderness */
-	if (is_night() && (level_topography(player->place) != TOP_TOWN)) {
+	if (is_night()) {
 		sleep = true;
 	}
 

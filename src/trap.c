@@ -309,22 +309,14 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
 			continue;
 
 		/* Dungeon? */
-		if ((level_topography(player->place) != TOP_CAVE) &&
-			trf_has(kind->flags, TRF_DUNGEON))
+		if (outside() && trf_has(kind->flags, TRF_DUNGEON))
 			continue;
 
 		/* Check legality of trapdoors. */
 		if (trf_has(kind->flags, TRF_DOWN)) {
-			/* No trap doors on quest levels */
-			if (quest_forbid_downstairs(player->place)) continue;
-
 			/* No trap doors on the deepest level */
 			if (player->depth == z_info->max_depth - 1)
 				continue;
-
-			/* No trap doors with persistent levels (for now) */
-			//B if (OPT(player, birth_levels_persist))
-			//B	continue;
 	    }
 
 		/* Trap is okay, store the cumulative probability */
