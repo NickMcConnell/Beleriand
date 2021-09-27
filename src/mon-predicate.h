@@ -56,5 +56,6 @@ bool monster_is_obvious(const struct monster *mon);
 bool monster_is_mimicking(const struct monster *mon);
 bool monster_can_be_scared(const struct monster *mon);
 bool monster_is_decoyed(const struct monster *mon);
+bool monster_is_stored(const struct monster *mon);
 
 #endif /* !MON_PREDICATE_H */

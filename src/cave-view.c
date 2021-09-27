@@ -22,6 +22,7 @@
 #include "game-world.h"
 #include "init.h"
 #include "monster.h"
+#include "mon-make.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -704,12 +705,13 @@ static void calc_lighting(struct chunk *c, struct player *p)
 	add_light(c, p, p->grid, radius, light);
 
 	/* Scan monster list and add monster light or darkness */
-	for (k = 1; k < cave_monster_max(c); k++) {
+	for (k = 1; k < mon_max; k++) {
 		/* Check the k'th monster */
-		struct monster *mon = cave_monster(c, k);
+		struct monster *mon = monster(k);
 
-		/* Skip dead monsters */
+		/* Skip dead or stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Skip if the monster is hidden */
 		if (monster_is_camouflaged(mon)) continue;

@@ -383,6 +383,7 @@ struct monster {
 	int midx;
 
 	struct loc grid;					/* Location on map */
+	s16b place;							/* Chunk index of the monster */
 
 	s16b hp;							/* Current Hit points */
 	s16b maxhp;							/* Max Hit points */

@@ -1277,7 +1277,7 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
 
 	/* Determine the character location */
 	if (!new_player_spot(c, p)) {
-		wipe_mon_list(c, p);
+		delete_temp_monsters();
 		chunk_wipe(c);
 		return NULL;
 	}
@@ -2267,7 +2267,7 @@ static struct chunk *modified_chunk(struct player *p, int depth, int height,
 		 * saying no further progress is likely.
 		 */
 		if (n_attempt > 500) {
-			wipe_mon_list(c, p);
+			delete_temp_monsters();
 			chunk_wipe(c);
 			return NULL;
 		}
@@ -2391,7 +2391,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 
 	/* Determine the character location */
 	if (!new_player_spot(c, p)) {
-		wipe_mon_list(c, p);
+		delete_temp_monsters();
 		chunk_wipe(c);
 		return NULL;
 	}
@@ -2497,7 +2497,7 @@ static struct chunk *moria_chunk(struct player *p, int depth, int height,
 		 * cutoff for saying no further progress is likely.
 		 */
 		if (n_attempt > 500) {
-			wipe_mon_list(c, p);
+			delete_temp_monsters();
 			chunk_wipe(c);
 			return NULL;
 		}
@@ -2614,7 +2614,7 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
 
 	/* Determine the character location */
 	if (!new_player_spot(c, p)) {
-		wipe_mon_list(c, p);
+		delete_temp_monsters();
 		chunk_wipe(c);
 		return NULL;
 	}
@@ -2747,7 +2747,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 
 	/* No persistent levels of this type for now */
 	if (dun->persist) {
-		wipe_mon_list(centre, p);
+		delete_temp_monsters();
 		chunk_wipe(centre);
 		return NULL;
 	}
@@ -2767,7 +2767,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 			 */
 			if (!cave_find(centre, &grid, square_iswall_outer)) {
 				if (i == 0) {
-					wipe_mon_list(centre, p);
+					delete_temp_monsters();
 					chunk_wipe(centre);
 					return NULL;
 				}
@@ -2778,7 +2778,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 				dun->wall, i);
 			if (loc_eq(grid, loc(0, 0))) {
 				if (i == 0) {
-					wipe_mon_list(centre, p);
+					delete_temp_monsters();
 					chunk_wipe(centre);
 					return NULL;
 				}
@@ -2829,7 +2829,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 		if (left_cavern) chunk_wipe(left_cavern);
 		if (lower_cavern) chunk_wipe(lower_cavern);
 		if (upper_cavern) chunk_wipe(upper_cavern);
-		wipe_mon_list(centre, p);
+		delete_temp_monsters();
 		chunk_wipe(centre);
 		return NULL;
 	}
@@ -2907,7 +2907,7 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 
 	/* Determine the character location */
 	if (!new_player_spot(c, p)) {
-		wipe_mon_list(c, p);
+		delete_temp_monsters();
 		chunk_wipe(c);
 		return NULL;
 	}
@@ -3013,7 +3013,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	cave_connectors_free(dun->join);
 	dun->join = cached_join;
 	if (!lair) {
-		wipe_mon_list(normal, p);
+		delete_temp_monsters();
 		chunk_wipe(normal);
 		return NULL;
 	}
@@ -3024,7 +3024,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	/* Put the character in the normal half */
 	if (!new_player_spot(normal, p)) {
 		chunk_wipe(lair);
-		wipe_mon_list(normal, p);
+		delete_temp_monsters();
 		chunk_wipe(normal);
 		return NULL;
 	}

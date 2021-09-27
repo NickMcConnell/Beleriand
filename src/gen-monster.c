@@ -253,7 +253,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 	int i, j;
 	int count;
 	int y = y0, x = x0;
-	int start_mon_num = c->mon_max;
+	int start_mon_num = mon_max;
 
 	/* Restrict monsters.  Allow uniques. Leave area empty if none found. */
 	if (!mon_restrict(type, depth, player->depth, true))
@@ -299,7 +299,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 		pick_and_place_monster(c, loc(x, y), depth, true, true, origin);
 
 		/* Rein in monster groups and escorts a little. */
-		if (c->mon_max - start_mon_num > num * 2)
+		if (mon_max - start_mon_num > num * 2)
 			break;
 
 		/* Count the monster(s), reset the loop count */

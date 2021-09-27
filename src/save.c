@@ -233,6 +233,7 @@ static void wr_monster(const struct monster *mon)
 	}
 	wr_byte(mon->grid.y);
 	wr_byte(mon->grid.x);
+	wr_s16b(mon->place);
 	wr_s16b(mon->hp);
 	wr_s16b(mon->maxhp);
 	wr_byte(mon->mspeed);
@@ -879,27 +880,6 @@ static void wr_objects_aux(struct chunk *c)
 	mem_free(dummy);
 }
 
-/**
- * Write the monster list
- */
-static void wr_monsters_aux(struct chunk *c)
-{
-	int i;
-
-	if (player->is_dead)
-		return;
-
-	/* Total monsters */
-	wr_u16b(cave_monster_max(c));
-
-	/* Dump the monsters */
-	for (i = 1; i < cave_monster_max(c); i++) {
-		const struct monster *mon = cave_monster(c, i);
-
-		wr_monster(mon);
-	}
-}
-
 static void wr_traps_aux(struct chunk *c)
 {
     int x, y;
@@ -942,7 +922,7 @@ void wr_dungeon(void)
 	wr_dungeon_aux(player->cave);
 
 	/* Compact the monsters */
-	compact_monsters(cave, 0);
+	compact_monsters(0);
 }
 
 
@@ -950,12 +930,6 @@ void wr_objects(void)
 {
 	wr_objects_aux(cave);
 	wr_objects_aux(player->cave);
-}
-
-void wr_monsters(void)
-{
-	wr_monsters_aux(cave);
-	wr_monsters_aux(player->cave);
 }
 
 void wr_traps(void)
@@ -974,7 +948,6 @@ void wr_chunks(void)
 	if (player->is_dead)
 		return;
 
-	//B? compact_chunks();
 	wr_u16b(chunk_max);
 
 	/* Now write each chunk */
@@ -1013,10 +986,6 @@ void wr_chunks(void)
 		wr_objects_aux(c);
 		wr_objects_aux(p_c);
 
-		/* Write the monsters */
-		wr_monsters_aux(c);
-		wr_monsters_aux(p_c);
-
 		/* Write the traps */
 		wr_traps_aux(c);
 		wr_traps_aux(p_c);
@@ -1030,6 +999,23 @@ void wr_chunks(void)
 		}
 	}
 }
+
+void wr_monsters(void)
+{
+	int i;
+
+	if (player->is_dead)
+		return;
+
+	/* Total monsters */
+	wr_u16b(mon_max);
+
+	/* Dump the monsters */
+	for (i = 1; i < mon_max; i++) {
+		wr_monster(monster(i));
+	}
+}
+
 void wr_locations(void)
 {
 	size_t i, j;

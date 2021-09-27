@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "mon-make.h"
 #include "mon-util.h"
 #include "obj-chest.h"
 #include "obj-desc.h"
@@ -588,9 +589,7 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 			} else if (obj->mimicking_m_idx) {
 				/* Reveal mimics */
 				if (obvious)
-					become_aware(cave, cave_monster(
-						cave, obj->mimicking_m_idx),
-						player);
+					become_aware(cave, monster(obj->mimicking_m_idx), player);
 			} else {
 				/* Describe if needed */
 				if (obvious && obj->known && note_kill

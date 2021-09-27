@@ -1029,7 +1029,7 @@ static struct chunk *cave_generate(struct player *p, u32b seed)
 
 	for (tries = 0; tries < 100 && error; tries++) {
 		struct dun_data dun_body;
-		struct quest *quest = NULL; //B
+		struct quest *quest = NULL; //B quests not functional yet
 
 		error = NULL;
 
@@ -1107,8 +1107,8 @@ static struct chunk *cave_generate(struct player *p, u32b seed)
 				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_SOLID);
 				sqinfo_off(square(chunk, grid)->info, SQUARE_MON_RESTRICT);
 
-				/* Regenerate levels that overflow their maxima */
-				if (cave_monster_max(chunk) >= z_info->level_monster_max) {
+				/* Regenerate levels that overflow the maximum monster limit */
+				if (mon_max >= z_info->monster_max) {
 					if (seed) {
 						quit_fmt("Generation seed failure!");
 					} else {
@@ -1122,7 +1122,7 @@ static struct chunk *cave_generate(struct player *p, u32b seed)
 					}
 
 					/* Clear the monsters */
-					wipe_mon_list(chunk, p);
+					delete_temp_monsters();
 
 					/* Free the chunk */
 					chunk_wipe(chunk);
@@ -1217,6 +1217,7 @@ static struct chunk *cave_generate(struct player *p, u32b seed)
 	cave_connectors_free(one_off_above);
 	cave_connectors_free(one_off_below);
 
+	set_monster_place_current();
 	return chunk;
 }
 

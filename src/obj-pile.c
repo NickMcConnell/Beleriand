@@ -1198,8 +1198,7 @@ void push_object(struct loc grid)
 
 		/* Unrevealed mimics require special handling, as always. */
 		if (obj->mimicking_m_idx) {
-			struct monster *mimic =
-				cave_monster(cave, obj->mimicking_m_idx);
+			struct monster *mimic =	monster(obj->mimicking_m_idx);
 			int d;
 
 			assert(mimic);

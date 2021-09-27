@@ -96,10 +96,10 @@ static const char *desc_stat(int stat, bool positive)
 struct monster *monster_target_monster(effect_handler_context_t *context)
 {
 	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *mon = monster(context->origin.which.monster);
 		if (!mon) return NULL;
 		if (mon->target.midx > 0) {
-			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+			struct monster *t_mon = monster(mon->target.midx);
 			assert(t_mon);
 			return t_mon;
 		}
@@ -539,7 +539,7 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 	context->ident = true;
 
 	/* Destroy decoy if it's a monster attack */
-	if (cave->mon_current > 0 && decoy.y && decoy.x) {
+	if (mon_current > 0 && decoy.y && decoy.x) {
 		square_destroy_decoy(cave, decoy);
 		return true;
 	}
@@ -617,7 +617,7 @@ bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 	assert(context->origin.what == SRC_MONSTER);
 
 	int amount = effect_calculate_value(context, false);
-	struct monster *mon = cave_monster(cave, context->origin.which.monster);
+	struct monster *mon = monster(context->origin.which.monster);
 
 	if (mon) {
 		mon_inc_timed(mon, context->subtype, MAX(amount, 0), 0);
@@ -689,8 +689,8 @@ bool effect_handler_WEB(effect_handler_context_t *context)
 	struct loc grid;
 
 	/* Get the monster creating */
-	if (cave->mon_current > 0) {
-		mon = cave_monster(cave, cave->mon_current);
+	if (mon_current > 0) {
+		mon = monster(mon_current);
 	} else {
 		/* Player can't currently create webs */
 		return false;
@@ -920,7 +920,7 @@ bool effect_handler_DRAIN_LIGHT(effect_handler_context_t *context)
 bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 {
 	int drain = effect_calculate_value(context, false);
-	bool monster = context->origin.what != SRC_TRAP;
+	bool monster_spell = context->origin.what != SRC_TRAP;
 	char m_name[80];
 	struct monster *mon = NULL;
 	struct monster *t_mon = monster_target_monster(context);
@@ -928,10 +928,10 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 
 	context->ident = true;
 
-	if (monster) {
+	if (monster_spell) {
 		assert(context->origin.what == SRC_MONSTER);
 
-		mon = cave_monster(cave, context->origin.which.monster);
+		mon = monster(context->origin.which.monster);
 
 		/* Get the monster name (or "it") */
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
@@ -952,7 +952,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 	/* The player has no mana */
 	if (!player->csp) {
 		msg("The draining fails.");
-		if (monster) {
+		if (mon) {
 			update_smart_learn(mon, player, 0, PF_NO_MANA, -1);
 		}
 		return true;
@@ -968,7 +968,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 	}
 
 	/* Heal the monster */
-	if (monster) {
+	if (mon) {
 		if (mon->hp < mon->maxhp) {
 			mon->hp += (6 * drain);
 			if (mon->hp > mon->maxhp)
@@ -1157,11 +1157,12 @@ bool effect_handler_READ_MINDS(effect_handler_context_t *context)
 	bool found = false;
 
 	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
-		/* Skip dead monsters */
+		/* Skip dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Detect all appropriate monsters */
 		if (mflag_has(mon->mflag, MFLAG_MARK)) {
@@ -1600,11 +1601,12 @@ static bool detect_monsters(int y_dist, int x_dist, monster_predicate pred)
 	if (x2 > cave->width - 1) x2 = cave->width - 1;
 
 	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
-		/* Skip dead monsters */
+		/* Skip dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Location */
 		y = mon->grid.y;
@@ -2031,9 +2033,9 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 	struct loc origin = origin_get_loc(context->origin);
 
 	/* Wake everyone nearby */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
-		if (mon->race) {
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
+		if (mon->race && !monster_is_stored(mon)) {
 			int radius = z_info->max_sight * 2;
 			int dist = distance(origin, mon->grid);
 
@@ -2073,7 +2075,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 
 	/* Monster summon */
 	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *mon = monster(context->origin.which.monster);
 		int rlev;
 		struct loc grid = one_in_(2) ? player->grid : mon->grid;
 
@@ -2161,12 +2163,12 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 
 	bool hurt = true;
 	char typ;
-	struct monster *ref_mon = cave_monster(cave, cave->mon_current);
+	struct monster *ref_mon = monster(mon_current);
 
 	context->ident = true;
 
 	/* If there is a current monster use its race, otherwise prompt */
-	if (cave->mon_current > 0) {
+	if (mon_current > 0) {
 		typ = ref_mon->race->d_char;
 		hurt = false;
 	} else {
@@ -2176,11 +2178,12 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 	}
 
 	/* Delete the monsters of that "type" */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
-		/* Paranoia -- Skip dead monsters */
+		/* Paranoia -- Skip dead  and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Hack -- Skip Unique Monsters */
 		if (monster_is_unique(mon)) continue;
@@ -2226,11 +2229,12 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 	context->ident = true;
 
 	/* Delete the (nearby) monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
-		/* Paranoia -- Skip dead monsters */
+		/* Paranoia -- Skip dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Hack -- Skip unique monsters */
 		if (monster_is_unique(mon)) continue;
@@ -2264,11 +2268,12 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 	bool probe = false;
 
 	/* Probe all (nearby) monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
-		/* Paranoia -- Skip dead monsters */
+		/* Paranoia -- Skip dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Require line of sight */
 		if (!square_isview(cave, mon->grid)) continue;
@@ -2372,7 +2377,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		}
 	} else {
 		assert(context->origin.what == SRC_MONSTER);
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *mon = monster(context->origin.which.monster);
 		start = mon->grid;
 	}
 
@@ -2512,7 +2517,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	context->ident = true;
 
 	if (context->origin.what == SRC_MONSTER) {
-		mon = cave_monster(cave, context->origin.which.monster);
+		mon = monster(context->origin.which.monster);
 		assert(mon);
 	}
 
@@ -2834,7 +2839,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	bool decoy_unseen = false;
 
 	if (context->origin.what == SRC_MONSTER) {
-		mon = cave_monster(cave, context->origin.which.monster);
+		mon = monster(context->origin.which.monster);
 	}
 
 	/* Check for monster targeting another monster */

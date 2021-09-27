@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "datafile.h"
 #include "init.h"
+#include "mon-make.h"
 #include "mon-util.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
@@ -647,8 +648,7 @@ bool player_inc_check(struct player *p, int idx, bool lore)
 	/* Determine whether an effect can be prevented by a flag */
 	if (effect->fail_code == TMD_FAIL_FLAG_OBJECT) {
 		/* If the effect is from a monster action, extra stuff happens */
-		struct monster *mon = cave->mon_current > 0 ?
-				cave_monster(cave, cave->mon_current) : NULL;
+		struct monster *mon = mon_current > 0 ?	monster(mon_current) : NULL;
 
 		/* Effect is inhibited by an object flag */
 		equip_learn_flag(p, effect->fail);

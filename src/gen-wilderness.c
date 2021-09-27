@@ -888,7 +888,7 @@ void landmk_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	if (!character_dungeon)
 		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
 }
-#if 0
+#if 0 //B for reference
 /**
  * Generate a new plain level. Place stairs, 
  * and random monsters, objects, and traps.  Place any quest monsters.

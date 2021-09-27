@@ -112,7 +112,7 @@ static bool monster_can_hear(struct monster *mon)
 		noise_map = cave->noise;
 		hearing -= player->state.skills[SKILL_STEALTH] / 3;
 	} else if (mon->target.midx > 0) {
-		noise_map = cave_monster(cave, mon->target.midx)->noise;
+		noise_map = monster(mon->target.midx)->noise;
 	} else {
 		return false;
 	}
@@ -135,7 +135,7 @@ static bool monster_can_smell(struct monster *mon)
 	if (mon->target.midx == -1) {
 		scent_map = cave->scent;
 	} else if (mon->target.midx > 0) {
-		scent_map = cave_monster(cave, mon->target.midx)->scent;
+		scent_map = monster(mon->target.midx)->scent;
 	} else {
 		return false;
 	}
@@ -337,7 +337,7 @@ static void get_move_find_range(struct monster *mon)
 static bool get_move_bodyguard(struct monster *mon)
 {
 	int i;
-	struct monster *leader = monster_group_leader(cave, mon);
+	struct monster *leader = monster_group_leader(mon);
 	int dist;
 	struct loc best;
 	bool found = false;
@@ -460,7 +460,7 @@ static bool get_move_advance(struct monster *mon, bool *track)
 		hearing -= player->state.skills[SKILL_STEALTH] / 3;
 	} else if (mon->target.midx > 0) {
 		/* Monster */
-		noise_map = cave_monster(cave, mon->target.midx)->noise;
+		noise_map = monster(mon->target.midx)->noise;
 	} else {
 		/* Location */
 		best_grid = target;
@@ -904,7 +904,7 @@ static bool get_move(struct monster *mon, int *dir, bool *good)
 		mflag_on(mon->mflag, MFLAG_TRACKING);
 	} else {
 		/* Try to follow someone who knows where they're going */
-		struct monster *tracker = group_monster_tracking(cave, mon);
+		struct monster *tracker = group_monster_tracking(mon);
 		if (tracker && los(cave, mon->grid, tracker->grid)) { /* Need los? */
 			grid = loc_diff(tracker->grid, mon->grid);
 			/* No longer tracking */
@@ -953,7 +953,7 @@ static bool get_move(struct monster *mon, int *dir, bool *good)
 		if (mon->target.midx == -1) {
 			strong = (player->chp > player->mhp / 2) ? true : false;
 		} else if (mon->target.midx > 0) {
-			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+			struct monster *t_mon = monster(mon->target.midx);
 			strong = (mon->hp > t_mon->hp) ? true : false;
 		}
 
@@ -1078,8 +1078,8 @@ static bool monster_turn_multiply(struct monster *mon)
 
 	struct monster_lore *lore = get_lore(mon->race);
 
-	/* Too many breeders on the level already */
-	if (cave->num_repro >= z_info->repro_monster_max) return false;
+	/* Too many breeders already */
+	if (num_repro >= z_info->repro_monster_max) return false;
 
 	/* Count the adjacent monsters */
 	for (y = mon->grid.y - 1; y <= mon->grid.y + 1; y++)
@@ -1701,7 +1701,7 @@ static void monster_turn(struct monster *mon)
 	}
 
 	/* Let other group monsters know about the player */
-	monster_group_rouse(cave, mon);
+	monster_group_rouse(mon);
 
 	/* Try to multiply - this can use up a turn */
 	if (monster_turn_multiply(mon))
@@ -1809,10 +1809,8 @@ static void monster_turn(struct monster *mon)
 
 		/* A monster is in the way, try to push past/kill */
 		if (square_monster(cave, new)) {
-			if (square_monster(cave, new) == cave_monster(cave,
-														  mon->target.midx)) {
-				monster_attack_monster(mon,
-									   cave_monster(cave, mon->target.midx));
+			if (square_monster(cave, new) == monster(mon->target.midx)) {
+				monster_attack_monster(mon, monster(mon->target.midx));
 			} else {
 				did_something = monster_turn_try_push(mon, m_name, new, &dead);
 			}
@@ -2053,7 +2051,7 @@ static void regen_monster(struct monster *mon, int num)
  * Monster processing routines to be called by the main game loop
  * ------------------------------------------------------------------------ */
 /**
- * Process all the "live" monsters, once per game turn.
+ * Process all the "live" monsters in the playing arena, once per game turn.
  *
  * During each game turn, we scan through the list of all the "live" monsters,
  * (backwards, so we can excise any "freshly dead" monsters), energizing each
@@ -2076,7 +2074,7 @@ void process_monsters(int minimum_energy)
 		regen = true;
 
 	/* Process the monsters (backwards) */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+	for (i = mon_max - 1; i >= 1; i--) {
 		struct monster *mon;
 		bool moving;
 
@@ -2084,12 +2082,12 @@ void process_monsters(int minimum_energy)
 		if (player->is_dead || player->upkeep->generate_level) break;
 
 		/* Get a 'live' monster */
-		mon = cave_monster(cave, i);
+		mon = monster(i);
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Ignore monsters that have already been handled */
-		if (mflag_has(mon->mflag, MFLAG_HANDLED))
-			continue;
+		if (mflag_has(mon->mflag, MFLAG_HANDLED)) continue;
 
 		/* Not enough energy to move yet */
 		if (mon->energy < minimum_energy) continue;
@@ -2133,13 +2131,13 @@ void process_monsters(int minimum_energy)
 				continue;
 
 			/* Set this monster to be the current actor */
-			cave->mon_current = i;
+			mon_current = i;
 
 			/* The monster takes its turn */
 			monster_turn(mon);
 
 			/* Monster is no longer current */
-			cave->mon_current = -1;
+			mon_current = -1;
 		}
 	}
 
@@ -2159,9 +2157,12 @@ void reset_monsters(void)
 	struct monster *mon;
 
 	/* Process the monsters (backwards) */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+	for (i = mon_max - 1; i >= 1; i--) {
 		/* Access the monster */
-		mon = cave_monster(cave, i);
+		mon = monster(i);
+
+		/* No stored monsters */
+		if (monster_is_stored(mon)) continue;
 
 		/* Dungeon hurts monsters */
 		monster_take_terrain_damage(mon);
@@ -2174,17 +2175,20 @@ void reset_monsters(void)
 /**
  * Allow monsters on a frozen persistent level to recover
  */
-void restore_monsters(struct chunk *c, int num_turns)
+void restore_monsters(int place, int num_turns)
 {
 	int i;
 	struct monster *mon;
 
 	/* Process the monsters (backwards) */
-	for (i = cave_monster_max(c) - 1; i >= 1; i--) {
+	for (i = mon_max - 1; i >= 1; i--) {
 		int status, status_red;
 
 		/* Access the monster */
-		mon = cave_monster(c, i);
+		mon = monster(i);
+
+		/* Check the place */
+		if (mon->place != place) continue;
 
 		/* Regenerate */
 		regen_monster(mon, num_turns / 100);

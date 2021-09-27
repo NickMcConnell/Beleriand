@@ -21,6 +21,7 @@
 #include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
+#include "mon-make.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -232,8 +233,8 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 		if (g->hallucinate) {
 			/* Just pick a random monster to display. */
 			hallucinatory_monster(&a, &c);
-		} else if (!monster_is_mimicking(cave_monster(cave, g->m_idx)))	{
-			struct monster *mon = cave_monster(cave, g->m_idx);
+		} else if (!monster_is_mimicking(monster(g->m_idx)))	{
+			struct monster *mon = monster(g->m_idx);
 
 			byte da;
 			wchar_t dc;

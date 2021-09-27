@@ -20,6 +20,7 @@
 #include "mon-desc.h"
 #include "mon-list.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-util.h"
 #include "player-timed.h"
 #include "ui-mon-list.h"
@@ -379,8 +380,10 @@ void monster_list_show_subwindow(int height, int width)
 	list = monster_list_shared_instance();
 
 	/* Force an update if detected monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		if (mflag_has(cave_monster(cave, i)->mflag, MFLAG_MARK)) {
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
+		if (monster_is_stored(mon)) continue;
+		if (mflag_has(mon->mflag, MFLAG_MARK)) {
 			list->creation_turn = -1;
 			break;
 		}

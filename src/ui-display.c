@@ -26,6 +26,7 @@
 #include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -507,8 +508,9 @@ static void prt_speed(int row, int col)
 
 static int fmt_depth(char buf[], int max)
 {
-	//B do better
-	my_strcpy(buf, format("Depth %d", player->depth), max);
+	my_strcpy(buf, format("%s %d",
+						  region_info[chunk_list[player->place].region].name,
+						  player->depth), max);
 	return strlen(buf);
 }
 
@@ -1308,9 +1310,9 @@ static void do_animation(void)
 {
 	int i;
 
-	for (i = 1; i < cave_monster_max(cave); i++) {
+	for (i = 1; i < mon_max; i++) {
 		byte attr;
-		struct monster *mon = cave_monster(cave, i);
+		struct monster *mon = monster(i);
 
 		if (!mon || !mon->race || !monster_is_visible(mon))
 			continue;

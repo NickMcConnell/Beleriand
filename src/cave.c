@@ -444,12 +444,6 @@ struct chunk *chunk_new(int height, int width)
 	c->objects = mem_zalloc(OBJECT_LIST_SIZE * sizeof(struct object*));
 	c->obj_max = OBJECT_LIST_SIZE - 1;
 
-	c->monsters = mem_zalloc(z_info->level_monster_max *sizeof(struct monster));
-	c->mon_max = 1;
-	c->mon_current = -1;
-
-	c->monster_groups = mem_zalloc(z_info->level_monster_max *
-								   sizeof(struct monster_group*));
 
 	return c;
 }
@@ -463,7 +457,8 @@ void chunk_wipe(struct chunk *c)
 
 	/* Look for orphaned objects and delete them. */
 	for (i = 0; i < c->obj_max; i++) {
-		if (c->objects[i] && !c->objects[i]->floor) {
+		if (c->objects[i] && !c->objects[i]->floor &&
+			!c->objects[i]->held_m_idx && !c->objects[i]->mimicking_m_idx) {
 			assert(loc_is_zero(c->objects[i]->grid));
 			object_delete(&c->objects[i]);
 		}
@@ -485,8 +480,6 @@ void chunk_wipe(struct chunk *c)
 
 	mem_free(c->feat_count);
 	mem_free(c->objects);
-	mem_free(c->monsters);
-	mem_free(c->monster_groups);
 	mem_free(c);
 }
 
@@ -672,28 +665,6 @@ int scatter_ext(struct chunk *c, struct loc *places, int n, struct loc grid,
 
 	mem_free(feas);
 	return result;
-}
-
-/**
- * Get a monster on the current level by its index.
- */
-struct monster *cave_monster(struct chunk *c, int idx) {
-	if (idx <= 0) return NULL;
-	return &c->monsters[idx];
-}
-
-/**
- * The maximum number of monsters allowed in the level.
- */
-int cave_monster_max(struct chunk *c) {
-	return c->mon_max;
-}
-
-/**
- * The current number of monsters present on the level.
- */
-int cave_monster_count(struct chunk *c) {
-	return c->mon_cnt;
 }
 
 /**

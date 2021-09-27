@@ -56,6 +56,6 @@ bool monster_change_shape(struct monster *mon);
 bool monster_revert_shape(struct monster *mon);
 struct loc monster_target_loc(const struct monster *mon);
 void monster_make_heatmaps(struct chunk *c, struct monster *mon);
-void monster_remove_from_targets(struct chunk *c, struct monster *mon);
+void monster_remove_from_targets(struct monster *mon);
 
 #endif /* MONSTER_UTILITIES_H */

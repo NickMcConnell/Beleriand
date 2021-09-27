@@ -198,14 +198,6 @@ struct chunk {
 
 	struct object **objects;
 	u16b obj_max;
-
-	struct monster *monsters;
-	u16b mon_max;
-	u16b mon_cnt;
-	int mon_current;
-	int num_repro;
-
-	struct monster_group **monster_groups;
 };
 
 /**
@@ -545,10 +537,6 @@ void scatter(struct chunk *c, struct loc *place, struct loc grid, int d,
 			 bool need_los);
 int scatter_ext(struct chunk *c, struct loc *places, int n, struct loc grid,
 		int d, bool need_los, bool (*pred)(struct chunk *, struct loc));
-
-struct monster *cave_monster(struct chunk *c, int idx);
-int cave_monster_max(struct chunk *c);
-int cave_monster_count(struct chunk *c);
 
 int count_feats(struct loc *grid,
 				bool (*test)(struct chunk *c, struct loc grid), bool under);

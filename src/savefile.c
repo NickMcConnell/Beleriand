@@ -119,9 +119,9 @@ static const struct {
 	{ "gear", wr_gear, 1 },
 	{ "dungeon", wr_dungeon, 1 },
 	{ "objects", wr_objects, 1 },
-	{ "monsters", wr_monsters, 1 },
 	{ "traps", wr_traps, 1 },
 	{ "chunks", wr_chunks, 1 },
+	{ "monsters", wr_monsters, 1 },
 	{ "locations", wr_locations, 1 },
 	{ "history", wr_history, 1 },
 };
@@ -146,9 +146,9 @@ static const struct blockinfo loaders[] = {
 	{ "gear", rd_gear, 1 },	
 	{ "dungeon", rd_dungeon, 1 },
 	{ "objects", rd_objects, 1 },	
-	{ "monsters", rd_monsters, 1 },
 	{ "traps", rd_traps, 1 },
 	{ "chunks", rd_chunks, 1 },
+	{ "monsters", rd_monsters, 1 },
 	{ "locations", rd_locations, 1 },
 	{ "history", rd_history, 1 },
 };

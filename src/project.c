@@ -22,6 +22,7 @@
 #include "game-input.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-make.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "player-calcs.h"
@@ -410,7 +411,7 @@ struct loc origin_get_loc(struct source origin)
 {
 	switch (origin.what) {
 		case SRC_MONSTER: {
-			struct monster *who = cave_monster(cave, origin.which.monster);
+			struct monster *who = monster(origin.which.monster);
 			return who ? who->grid : loc(-1, -1);
 		}
 
@@ -992,7 +993,7 @@ bool project(struct source origin, int rad, struct loc finish,
 		/* Set power */
 		int power = 0;
 		if (origin.what == SRC_MONSTER) {
-			struct monster *mon = cave_monster(cave, origin.which.monster);
+			struct monster *mon = monster(origin.which.monster);
 			power = mon->race->spell_power;
 
 			/* Breaths from powerful monsters get power effects as well */

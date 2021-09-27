@@ -86,7 +86,7 @@ static void spell_message(struct monster *mon,
 
 	/* Get the target monster, if any */
 	if (mon->target.midx > 0) {
-		t_mon = cave_monster(cave, mon->target.midx);
+		t_mon = monster(mon->target.midx);
 	}
 
 	/* Get the message */
@@ -268,7 +268,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	} else {
 		if (target_midx > 0) {
 			hits = test_hit(chance_of_spell_hit(mon, spell),
-				cave_monster(cave, target_midx)->race->ac);
+							monster(target_midx)->race->ac);
 		} else {
 			hits = check_hit(player, chance_of_spell_hit(mon, spell));
 		}

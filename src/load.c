@@ -263,7 +263,7 @@ static struct object *rd_item(void)
 /**
  * Read a monster
  */
-static bool rd_monster(struct chunk *c, struct monster *mon)
+static bool rd_monster(struct monster *mon)
 {
 	byte tmp8u;
 	u16b tmp16u;
@@ -271,6 +271,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	char race_name[80];
 	size_t j;
 	bool delete = false;
+	struct chunk *c = NULL;
 
 	/* Read the monster race */
 	rd_u16b(&tmp16u);
@@ -305,6 +306,9 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	mon->grid.y = tmp8u;
 	rd_byte(&tmp8u);
 	mon->grid.x = tmp8u;
+	rd_s16b(&tmp16s);
+	mon->place = tmp16s;
+	c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
 	rd_s16b(&mon->hp);
 	rd_s16b(&mon->maxhp);
 	rd_byte(&mon->mspeed);
@@ -376,7 +380,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 
 	/* Now delete the monster if necessary */
 	if (delete) {
-		delete_monster(mon->grid);
+		delete_monster_idx(mon->midx);
 	}
 
 	return true;
@@ -1350,50 +1354,6 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 	return 0;
 }
 
-/**
- * Read monsters
- */
-static int rd_monsters_aux(struct chunk *c)
-{
-	int i;
-	u16b limit;
-
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
-
-	/* Read the monster count */
-	rd_u16b(&limit);
-	if (limit > z_info->level_monster_max) {
-		note(format("Too many (%d) monster entries!", limit));
-		return (-1);
-	}
-
-	/* Read the monsters */
-	for (i = 1; i < limit; i++) {
-		struct monster *mon;
-		struct monster monster_body;
-
-		/* Get local monster */
-		mon = &monster_body;
-		memset(mon, 0, sizeof(*mon));
-
-		/* Read the monster */
-		if (!rd_monster(c, mon)) {
-			note(format("Cannot read monster %d", i));
-			return (-1);
-		}
-
-		/* Place monster in dungeon */
-		if (place_monster(c, mon->grid, mon, 0) != i) {
-			note(format("Cannot place monster %d", i));
-			return (-1);
-		}
-	}
-
-	return 0;
-}
-
 static int rd_traps_aux(struct chunk *c)
 {
 	struct loc grid;
@@ -1496,15 +1456,44 @@ int rd_objects(void)
 int rd_monsters(void)
 {
 	int i;
+	u16b limit;
 
 	/* Only if the player's alive */
 	if (player->is_dead)
 		return 0;
 
-	if (rd_monsters_aux(cave))
-		return -1;
-	if (rd_monsters_aux(player->cave))
-		return -1;
+	/* Read the monster count */
+	rd_u16b(&limit);
+	if (limit > z_info->monster_max) {
+		note(format("Too many (%d) monster entries!", limit));
+		return (-1);
+	}
+
+	/* Read the monsters */
+	for (i = 1; i < limit; i++) {
+		struct monster *mon;
+		struct monster monster_body;
+		struct chunk *c;
+
+		/* Get local monster */
+		mon = &monster_body;
+		memset(mon, 0, sizeof(*mon));
+
+		/* Read the monster */
+		if (!rd_monster(mon)) {
+			note(format("Cannot read monster %d", i));
+			return (-1);
+		}
+
+		/* Set the chunk */
+		c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
+
+		/* Place monster in dungeon */
+		if (place_monster(c, mon->grid, mon, 0) != i) {
+			note(format("Cannot place monster %d", i));
+			return (-1);
+		}
+	}
 
 #if OBJ_RECOVER
 	player->cave->objects = mem_zalloc((cave->obj_max + 1) * sizeof(struct object*));
@@ -1519,9 +1508,11 @@ int rd_monsters(void)
 	}
 #else
 	/* Associate known objects */
-	for (i = 0; i < player->cave->obj_max; i++)
-		if (cave->objects[i] && player->cave->objects[i])
+	for (i = 0; i < player->cave->obj_max; i++) {
+		if (cave->objects[i] && player->cave->objects[i]) {
 			cave->objects[i]->known = player->cave->objects[i];
+		}
+	}
 #endif
 	return 0;
 }
@@ -1588,11 +1579,25 @@ int rd_chunks(void)
 		if (rd_objects_aux(rd_item, p_c))
 			return -1;
 
-		/* Read the monsters */
-		if (rd_monsters_aux(c))
-			return -1;
-		if (rd_monsters_aux(p_c))
-			return -1;
+#if OBJ_RECOVER
+		p_c->objects = mem_zalloc((c->obj_max + 1) * sizeof(struct object*));
+		p_c->obj_max = c->obj_max;
+		for (i = 0; i <= c->obj_max; i++) {
+			struct object *obj = c->objects[i], *known_obj;
+			if (!obj) continue;
+			known_obj = object_new();
+			obj->known = known_obj;
+			object_copy(known_obj, obj);
+			p_c->objects[i] = known_obj;
+		}
+#else
+		/* Associate known objects */
+		for (i = 0; i < player->cave->obj_max; i++) {
+			if (c->objects[i] && p_c->objects[i]) {
+				c->objects[i]->known = p_c->objects[i];
+			}
+		}
+#endif
 
 		/* Read traps */
 		if (rd_traps_aux(c))

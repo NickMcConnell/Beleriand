@@ -300,7 +300,7 @@ bool monster_can_be_scared(const struct monster *mon)
 		case MON_GROUP_BODYGUARD: return false;
 		case MON_GROUP_SERVANT:	return one_in_(3) ? false : true;
 		default: {
-			int count = monster_primary_group_size(cave, mon) - 1;
+			int count = monster_primary_group_size(mon) - 1;
 			while (count--) {
 				if (one_in_(20)) return false;
 			}
@@ -323,4 +323,12 @@ bool monster_is_decoyed(const struct monster *mon)
 	if (!los(cave, mon->grid, decoy)) return false;
 
 	return true;
+}
+
+/**
+ * Monster is not in the current playing arena
+ */
+bool monster_is_stored(const struct monster *mon)
+{
+	return mon->place >= 0;
 }

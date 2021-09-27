@@ -204,11 +204,12 @@ struct monster *get_commanded_monster(void)
 	int i;
 
 	/* Look for it */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
-		/* Skip dead monsters */
+		/* Skip dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Test for control */
 		if (mon->m_timed[MON_TMD_COMMAND]) return mon;
@@ -330,9 +331,7 @@ void update_mon(struct player *p, struct monster *mon, struct chunk *c,
 	assert(mon != NULL);
 
 	/* Return if this is not the current level */
-	if (c != cave) {
-		return;
-	}
+	if (c != cave) return;
 
 	lore = get_lore(mon->race);
 	
@@ -366,7 +365,7 @@ void update_mon(struct player *p, struct monster *mon, struct chunk *c,
 	}
 
 	/* Remove any dead monster targets (then what happens? - NRM)*/
-	if ((mon->target.midx > 0) && !cave_monster(c, mon->target.midx)) {
+	if ((mon->target.midx > 0) && !monster(mon->target.midx)) {
 		mon->target.midx = 0;
 	}
 
@@ -512,18 +511,21 @@ void update_mon(struct player *p, struct monster *mon, struct chunk *c,
 
 /**
  * Updates all the (non-dead) monsters via update_mon().
+ *
+ * Note that update_mon() restricts to monsters from the current playing arena.
  */
 void update_monsters(struct player *p, bool full)
 {
 	int i;
 
 	/* Update each (live) monster */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
 		/* Update the monster if alive */
-		if (mon->race)
+		if (mon->race) {
 			update_mon(p, mon, cave, full);
+		}
 	}
 }
 
@@ -585,7 +587,7 @@ static void move_mimicked_object(struct chunk *c, struct monster *mon,
 		mon->mimicked_obj = NULL;
 		/* Give object to monster if appropriate; otherwise, delete. */
 		if (! rf_has(mon->race->flags, RF_MIMIC_INV) ||
-			! monster_carry(c, mon, moved)) {
+			!monster_carry(c, mon, moved)) {
 			if (moved->known) {
 				object_delete(&moved->known);
 			}
@@ -618,7 +620,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	/* Monster 1 */
 	if (m1 > 0) {
 		/* Monster */
-		mon = cave_monster(cave, m1);
+		mon = monster(m1);
 
 		/* Update monster */
 		if (monster_is_mimicking(mon)) {
@@ -667,7 +669,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	/* Monster 2 */
 	if (m2 > 0) {
 		/* Monster */
-		mon = cave_monster(cave, m2);
+		mon = monster(m2);
 
 		/* Update monster */
 		if (monster_is_mimicking(mon)) {
@@ -812,7 +814,7 @@ void become_aware(struct chunk *c, struct monster *mon, struct player *p)
 					given->known->grid = loc(0, 0);
 					given->known->floor = false;
 				}
-				if (! monster_carry(c, mon, given)) {
+				if (!monster_carry(c, mon, given)) {
 					if (given->known) {
 						object_delete(&given->known);
 					}
@@ -1442,11 +1444,11 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 	obj->held_m_idx = mon->midx;
 
 	/* Add the object to the monster's inventory */
-	delist_object(c, obj);
-	//if (obj->known) {
-	//	obj->known->oidx = obj->oidx;
-	//	player->cave->objects[obj->oidx] = obj->known;
-	//}
+	list_object(c, obj);
+	if (obj->known) {
+		obj->known->oidx = obj->oidx;
+		player->cave->objects[obj->oidx] = obj->known;
+	}
 	pile_insert(&mon->held_obj, obj);
 
 	/* Result */
@@ -1593,7 +1595,7 @@ void steal_monster_item(struct monster *mon, int midx)
 	} else {
 		/* Get the thief details */
 		char t_name[80];
-		thief = cave_monster(cave, midx);
+		thief = monster(midx);
 		assert(thief);
 		monster_desc(t_name, sizeof(t_name), thief, MDESC_STANDARD);
 
@@ -1793,7 +1795,7 @@ struct loc monster_target_loc(const struct monster *mon)
 		return monster_is_decoyed(mon) ? cave_find_decoy(cave) : player->grid;
 	} else if (mon->target.midx > 0) {
 		/* Monster */
-		return cave_monster(cave, mon->target.midx)->grid;
+		return monster(mon->target.midx)->grid;
 	} else if (!loc_eq(mon->target.grid, loc(0, 0))) {
 		return mon->target.grid;
 	}
@@ -1822,11 +1824,11 @@ void monster_make_heatmaps(struct chunk *c, struct monster *mon)
  *
  * Currently the monster with its target removed does not acquire a new one
  */
-void monster_remove_from_targets(struct chunk *c, struct monster *mon)
+void monster_remove_from_targets(struct monster *mon)
 {
 	int i;
-	for (i = 1; i < cave_monster_max(c); i++) {
-		struct monster *mon1 = cave_monster(c, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon1 = monster(i);
 		if (!mon1->race) continue;
 		if (mon1->target.midx == mon->midx) {
 			mon1->target.midx = 0;

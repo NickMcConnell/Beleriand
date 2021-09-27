@@ -28,6 +28,7 @@
 #include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
@@ -1462,8 +1463,8 @@ static struct object *find_artifact(struct artifact *artifact)
 	}
 
 	/* Monster objects */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = mon_max - 1; i >= 1; i--) {
+		struct monster *mon = monster(i);
 		obj = mon ? mon->held_obj : NULL;
 
 		while (obj) {
@@ -1475,7 +1476,6 @@ static struct object *find_artifact(struct artifact *artifact)
 	/* Stored chunk objects */
 	for (i = 0; i < MAX_CHUNKS; i++) {
 		struct chunk *c = chunk_list[i].chunk;
-		int j;
 		if (!c) continue;
 
 		/* Ground objects */
@@ -1485,17 +1485,6 @@ static struct object *find_artifact(struct artifact *artifact)
 				for (obj = square_object(c, grid); obj; obj = obj->next) {
 					if (obj->artifact == artifact) return obj;
 				}
-			}
-		}
-
-		/* Monster objects */
-		for (j = cave_monster_max(c) - 1; j >= 1; j--) {
-			struct monster *mon = cave_monster(c, j);
-			obj = mon ? mon->held_obj : NULL;
-
-			while (obj) {
-				if (obj->artifact == artifact) return obj;
-				obj = obj->next;
 			}
 		}
 	}	

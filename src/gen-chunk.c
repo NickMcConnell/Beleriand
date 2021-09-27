@@ -223,7 +223,7 @@ int calc_default_transpose_weight(int height, int width)
 static void chunk_copy_grid(struct player *p, struct chunk *source,
 							struct chunk *dest, int height, int width,
 							struct loc src_top_left, struct loc dest_top_left,
-							int rotate, bool reflect, bool player)
+							int idx, int rotate, bool reflect, bool player)
 {
 	struct loc grid, trans = loc_diff(dest_top_left, src_top_left);
 
@@ -231,6 +231,7 @@ static void chunk_copy_grid(struct player *p, struct chunk *source,
 	for (grid.y = src_top_left.y; grid.y < src_top_left.y + height; grid.y++) {
 		for (grid.x = src_top_left.x; grid.x < src_top_left.x + width;
 			 grid.x++) {
+			struct monster *mon = square_monster(source, grid);
 			/* Work out where we're going */
 			struct loc dest_grid = grid;
 			symmetry_transform(&dest_grid, trans.y, trans.x, height, width,
@@ -267,6 +268,14 @@ static void chunk_copy_grid(struct player *p, struct chunk *source,
 					trap = trap->next;
 				}
 				source->squares[grid.y][grid.x].trap = NULL;
+			}
+
+			/* Monsters */
+			if (mon) {
+				dest->squares[dest_grid.y][dest_grid.x].mon = mon->midx;
+				source->squares[grid.y][grid.x].mon = 0;
+				mon->grid = dest_grid;
+				mon->place = idx;
 			}
 
 			/* Player */
@@ -334,7 +343,6 @@ static void chunk_copy_objects_add(struct player *p, struct chunk *source,
 			dest_max++;
 			source->objects[i] = NULL;
 		} else if (p_source && p_source->objects[i]) {
-			assert(p_source->objects[i]->notice & OBJ_NOTICE_IMAGINED);
 			p_dest->objects[dest_max] = p_source->objects[i];
 			p_dest->objects[dest_max]->oidx = dest_max;
 			dest_max++;
@@ -357,7 +365,7 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 	struct loc grid;
 	int count = 0, extra = 0;
 
-	/* Count actual objects */
+	/* Count floor objects */
 	for (grid.y = dest_top_left.y; grid.y < height; grid.y++) {
 		for (grid.x = dest_top_left.x; grid.x < width; grid.x++) {
 			struct object *obj = square_object(dest, grid);
@@ -381,6 +389,7 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 		for (grid.x = dest_top_left.x; grid.x < width; grid.x++) {
 			struct object *obj = square_object(dest, grid);
 			struct object *p_obj = square_object(p_dest, grid);
+			struct monster *mon = square_monster(dest, grid);
 
 			/* Keep a list of known objects for reference */
 			int i, j, num = 0;
@@ -394,7 +403,7 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 				known[i] = -1;
 			}
 
-			/* Move actual objects, pairing with known objects as needed */
+			/* Move floor objects, pairing with known objects as needed */
 			while (obj) {
 				count++;
 				/* Find the known object if it is here */
@@ -432,6 +441,48 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 				obj = obj->next;
 			}
 
+			/* Move monster objects */
+			if (mon) {
+				/* Held objects */
+				obj = mon->held_obj;
+				while (obj) {
+					count++;
+					p_obj = p_source->objects[obj->oidx];
+
+					/* Relabel */
+					dest->objects[count] = obj;
+					dest->objects[count]->oidx = count;
+					source->objects[obj->oidx] = NULL;
+					if (p_obj) {
+						p_dest->objects[count] = p_obj;
+						p_dest->objects[count]->oidx = count;
+						p_source->objects[p_obj->oidx] = NULL;
+						assert(p_obj == obj->known);
+					}
+					obj = obj->next;
+				}
+
+				/* Mimicked objects */
+				obj = mon->mimicked_obj;
+				while (obj) {
+					count++;
+					p_obj = p_source->objects[obj->oidx];
+
+					/* Relabel */
+					dest->objects[count] = obj;
+					dest->objects[count]->oidx = count;
+					source->objects[obj->oidx] = NULL;
+					if (p_obj) {
+						p_dest->objects[count] = p_obj;
+						p_dest->objects[count]->oidx = count;
+						p_source->objects[p_obj->oidx] = NULL;
+						assert(p_obj == obj->known);
+					}
+					obj = obj->next;
+				}
+			}
+
+
 			/* Now see if there are any left over known objects */
 			for (i = 0; i < num; i++) {
 				p_obj = square_object(p_dest, grid);
@@ -440,7 +491,6 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 					p_obj = p_obj->next;
 				}
 				assert(p_obj);
-				assert(p_obj->notice & OBJ_NOTICE_IMAGINED);
 
 				/* Extend the object list if needed */
 				count++;
@@ -458,257 +508,6 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 			mem_free(known);
 		}
 	}
-}
-
-/**
- * Write the monsters of a chunk to another, first splitting them from groups
- * and the list in the current chunk
- */
-static void chunk_copy_monsters_split(struct player *p, struct chunk *source,
-								 struct chunk *dest, int height, int width,
-								 struct loc src_top_left,
-								 struct loc dest_top_left)
-{
-	int i, midx = 1;
-
-	/* Make a copy of monster array, groups and a list of group leaders */
-	struct monster *old_mons = mem_zalloc(z_info->level_monster_max
-										  * sizeof(struct monster));
-	int *leaders = mem_zalloc(z_info->level_monster_max * sizeof(int));
-
-	memcpy(old_mons, source->monsters, z_info->level_monster_max
-		   * sizeof(struct monster));
-
-	for (i = 1; i < z_info->level_monster_max; i++) {
-		/* Copy monster groups, track the leaders */
-		if (source->monster_groups[i]) {
-			dest->monster_groups[i] = mem_zalloc(sizeof(struct monster_group));
-			monster_group_copy(dest->monster_groups[i],
-							   source->monster_groups[i]);
-			leaders[i] = monster_group_leader_idx(source->monster_groups[i]);
-		}
-	}
-
-	/* Move the individual monsters */
-	for (i = 1; i < source->mon_max; i++) {
-		struct monster *source_mon = &source->monsters[i];
-		struct monster *dest_mon = &dest->monsters[midx];
-		struct loc trans = loc_diff(dest_top_left, src_top_left);
-
-		/* Mark old version */
-		old_mons[i].grid.y = 0;
-
-		/* Valid monster */
-		if (!source_mon->race) continue;
-		if ((source_mon->grid.y < src_top_left.y) ||
-			(source_mon->grid.y >= src_top_left.y + height)) continue;
-		if ((source_mon->grid.x < src_top_left.x) ||
-			(source_mon->grid.x >= src_top_left.x + width)) continue;
-
-		/* Copy */
-		memcpy(dest_mon, source_mon, sizeof(struct monster));
-
-		/* Adjust monster index and counts */
-		dest_mon->midx = midx;
-		midx++;
-		dest->mon_cnt++;
-		dest->mon_max++;
-		if (rf_has(dest_mon->race->flags, RF_MULTIPLY)) {
-			dest->num_repro++;
-		}
-
-		/* Move grid */
-		symmetry_transform(&dest_mon->grid, trans.y, trans.x, height, width, 0,
-						   false);
-		dest->squares[dest_mon->grid.y][dest_mon->grid.x].mon
-			= dest_mon->midx;
-
-		/* Re-mark old version, add new index */
-		old_mons[i].grid.y = dest_mon->grid.y;
-		old_mons[i].midx = midx;
-
-		/* Held or mimicked objects */
-		if (source_mon->held_obj) {
-			struct object *obj;
-			dest_mon->held_obj = source_mon->held_obj;
-			for (obj = source_mon->held_obj; obj; obj = obj->next) {
-				obj->held_m_idx = dest_mon->midx;
-			}
-			source_mon->held_obj = NULL;
-		}
-		if (source_mon->mimicked_obj) {
-			dest_mon->mimicked_obj = source_mon->mimicked_obj;
-		}
-		monster_remove_from_groups(source, source_mon);
-		memset(source_mon, 0, sizeof(struct monster));
-	}
-	compact_monsters(source, 0);
-
-	/* Now handle destination groups */
-	for (i = 1; i < z_info->level_monster_max; i++) {
-		/* For each group, remove everyone left behind but the leader */
-		struct mon_group_list_entry *entry, *first = NULL;
-		if (!dest->monster_groups[i]) continue;
-		entry = dest->monster_groups[i]->member_list;
-		while (entry) {
-			if (old_mons[entry->midx].grid.y == 0) {
-				struct mon_group_list_entry *temp = entry->next;
-
-				/* Skip this entry */
-				mem_free(entry);
-				entry = temp;
-			} else {
-				struct monster *mon;
-
-				/* Modify the index to the new one */
-				entry->midx = old_mons[entry->midx].midx;
-
-				/* Fix the monster's group info */
-				mon = cave_monster(dest, entry->midx);
-				mon->group_info[PRIMARY_GROUP].index = i;
-				mon->group_info[SUMMON_GROUP].index = 0; //B This should go
-
-				/* Record the first kept entry if needed, iterate */
-				if (!first) {
-					first = entry;
-				}
-				entry = entry->next;
-			}
-		}
-
-		/* Set the start of the list, discard groups with no-one left */
-		if (first) {
-			dest->monster_groups[i]->member_list = first;
-		} else {
-			dest->monster_groups[i]->member_list = NULL;
-			monster_group_free(dest, dest->monster_groups[i]);
-			dest->monster_groups[i] = NULL;
-		}
-
-		/* Now split the group and set a new leader if necessary */
-		if ((old_mons[leaders[i]].grid.y == 0) && dest->monster_groups[i]) {
-			monster_group_remove_leader(dest, old_mons[leaders[i]].race,
-										dest->monster_groups[i], false);
-		}
-	}
-	monster_groups_verify(dest);
-	mem_free(old_mons);
-	mem_free(leaders);
-}
-
-
-/**
- * Write the monsters of a chunk to another and add them to the existing
- * monsters in the destination chunk
- */
-static void chunk_copy_monsters_add(struct player *p, struct chunk *source,
-							   struct chunk *dest, int height, int width,
-							   struct loc src_top_left,
-							   struct loc dest_top_left,
-							   int rotate, bool reflect)
-{
-	int i, max_group_id = 0, mon_skip = dest->mon_max - 1;
-
-	dest->mon_max += source->mon_max - 1;
-	dest->mon_cnt += source->mon_cnt;
-	dest->num_repro += source->num_repro;
-	for (i = 1; i < source->mon_max; i++) {
-		struct monster *source_mon = &source->monsters[i];
-		struct monster *dest_mon = &dest->monsters[mon_skip + i];
-		struct loc trans = loc_diff(dest_top_left, src_top_left);
-
-		/* Valid monster */
-		if (!source_mon->race) continue;
-
-		/* Copy */
-		memcpy(dest_mon, source_mon, sizeof(struct monster));
-
-		/* Adjust monster index */
-		dest_mon->midx += mon_skip;
-
-		/* Move grid */
-		symmetry_transform(&dest_mon->grid, trans.y, trans.x, height, width,
-						   rotate, reflect);
-		dest->squares[dest_mon->grid.y][dest_mon->grid.x].mon = dest_mon->midx;
-
-		/* Held or mimicked objects */
-		if (source_mon->held_obj) {
-			struct object *obj;
-			dest_mon->held_obj = source_mon->held_obj;
-			for (obj = source_mon->held_obj; obj; obj = obj->next) {
-				obj->held_m_idx = dest_mon->midx;
-			}
-		}
-		if (source_mon->mimicked_obj) {
-			dest_mon->mimicked_obj = source_mon->mimicked_obj;
-		}
-	}
-
-	/* Find max monster group id */
-	for (i = 1; i < z_info->level_monster_max; i++) {
-		if (dest->monster_groups[i]) max_group_id = i;
-	}
-
-	/* Copy monster groups */
-	for (i = 1; i < z_info->level_monster_max - max_group_id; i++) {
-		struct monster_group *group = source->monster_groups[i];
-		struct mon_group_list_entry *entry;
-
-		/* Copy monster group list */
-		dest->monster_groups[i + max_group_id] = source->monster_groups[i];
-
-		/* Adjust monster group indices */
-		if (!group) continue;
-		entry = group->member_list;
-		group->index += max_group_id;
-		group->leader += mon_skip;
-		while (entry) {
-			int idx = entry->midx;
-			struct monster *mon = &dest->monsters[mon_skip + idx];
-			entry->midx = mon->midx;
-			assert(entry->midx == mon_skip + idx);
-			mon->group_info[0].index += max_group_id;
-			entry = entry->next;
-		}
-	}
-	monster_groups_verify(dest);
-}
-
-/**
- * Write the monsters of a chunk to another, leaving list and groups unaffected
- */
-static void chunk_copy_monsters_move(struct player *p, struct chunk *source,
-								 struct chunk *dest, int height, int width,
-								 struct loc src_top_left,
-								 struct loc dest_top_left)
-{
-	int i;
-
-	dest->mon_max = source->mon_max;
-	dest->mon_cnt = source->mon_cnt;
-	dest->num_repro = source->num_repro;
-	for (i = 1; i < source->mon_max; i++) {
-		struct monster *source_mon = &source->monsters[i];
-		struct monster *dest_mon = &dest->monsters[i];
-		struct loc trans = loc_diff(dest_top_left, src_top_left);
-
-		/* Valid monster */
-		if (!source_mon->race) continue;
-
-		/* Copy */
-		memcpy(dest_mon, source_mon, sizeof(struct monster));
-
-		/* Move grid */
-		symmetry_transform(&dest_mon->grid, trans.y, trans.x, height, width, 0,
-						   false);
-		dest->squares[dest_mon->grid.y][dest_mon->grid.x].mon = dest_mon->midx;
-	}
-
-	/* Copy monster groups */
-	for (i = 1; i < z_info->level_monster_max; i++) {
-		dest->monster_groups[i] = source->monster_groups[i];
-	}
-	monster_groups_verify(dest);
 }
 
 /**
@@ -745,9 +544,7 @@ bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 	}
 
 	chunk_copy_grid(p, source, dest, source->height, source->width,
-					loc(0, 0), loc(x0, y0), rotate, reflect, true);
-	chunk_copy_monsters_add(p, source, dest, source->height, source->width,
-							loc(0, 0), loc(x0, y0), rotate, reflect);
+					loc(0, 0), loc(x0, y0), CHUNK_TEMP, rotate, reflect, true);
 	chunk_copy_objects_add(p, source, NULL, dest, NULL);
 	chunk_validate_objects(dest);
 	object_lists_check_integrity(dest, NULL);
@@ -771,17 +568,13 @@ void chunk_read(int idx, int y_offset, int x_offset)
 	struct chunk *p_chunk = chunk_list[idx].p_chunk;
 
 	/* Restore the monsters */
-	restore_monsters(chunk, turn - chunk_list[idx].turn);
+	restore_monsters(idx, turn - chunk_list[idx].turn);
 
 	/* Copy everything across */
 	chunk_copy_grid(player, chunk, cave, CHUNK_SIDE, CHUNK_SIDE,
-					loc(0, 0), loc(x0, y0), 0, false, false);
+					loc(0, 0), loc(x0, y0), CHUNK_CUR, 0, false, false);
 	chunk_copy_grid(player, p_chunk, player->cave, CHUNK_SIDE, CHUNK_SIDE,
-					loc(0, 0), loc(x0, y0), 0, false, false);
-	//chunk_copy_monsters_add(player, chunk, cave, CHUNK_SIDE, CHUNK_SIDE,
-	//						loc(0, 0), loc(x0, y0), 0, false);
-	//chunk_copy_monsters_add(player, p_chunk, player->cave, CHUNK_SIDE,
-	//						CHUNK_SIDE, loc(0, 0), loc(x0, y0), 0, false);
+					loc(0, 0), loc(x0, y0), CHUNK_CUR, 0, false, false);
 	chunk_copy_objects_add(player, chunk, p_chunk, cave, player->cave);
 	chunk_validate_objects(cave);
 	chunk_validate_objects(player->cave);
@@ -806,21 +599,17 @@ void chunk_read(int idx, int y_offset, int x_offset)
 /**
  * Write a pair of chunks to memory and record pointers to them
  */
-static void chunk_write(int y_offset, int x_offset, struct chunk **chunk,
-						struct chunk **p_chunk)
+static void chunk_write(int idx, int y_offset, int x_offset,
+						struct chunk **chunk, struct chunk **p_chunk)
 {
 	struct loc from = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
 	struct chunk *new = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
 	struct chunk *p_new = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
 
 	chunk_copy_grid(player, cave, new, CHUNK_SIDE, CHUNK_SIDE,
-					from, loc(0, 0), 0, false, false);
+					from, loc(0, 0), idx, 0, false, false);
 	chunk_copy_grid(player, player->cave, p_new, CHUNK_SIDE, CHUNK_SIDE,
-					from, loc(0, 0), 0, false, false);
-	//chunk_copy_monsters_split(player, cave, new, CHUNK_SIDE, CHUNK_SIDE,
-	//						from, loc(0, 0));
-	//chunk_copy_monsters_split(player, player->cave, p_new, CHUNK_SIDE,
-	//						CHUNK_SIDE, from, loc(0, 0));
+					from, loc(0, 0), idx, 0, false, false);
 	chunk_copy_objects_split(player, cave, player->cave, new, p_new, CHUNK_SIDE,
 							 CHUNK_SIDE, loc(0, 0));
 	chunk_validate_objects(new);
@@ -1127,7 +916,7 @@ static void chunk_fix_all(void)
 		struct chunk_ref *ref = &chunk_list[idx];
 
 		/* Remove dead chunks */
-		if (!ref->region) {
+		if (!ref->region) {//B need something better, as this is Belegaer
 			chunk_delete(idx);
 			continue;
 		}
@@ -1190,29 +979,30 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
 		if (chunk_cnt >= MAX_CHUNKS) {
 			/* Find and delete the oldest chunk */
 			idx = 0;
-			for (i = 0; i < MAX_CHUNKS; i++)
+			for (i = 0; i < MAX_CHUNKS; i++) {
 				if (chunk_list[i].turn < max) {
 					max = chunk_list[i].turn;
 					idx = i;
 				}
-
+			}
 			chunk_delete(idx);
 
 			/* Delete whole levels at once */
-			if (chunk_list[idx].z_pos > 0)
+			if (chunk_list[idx].z_pos > 0) {
 				chunk_delete_level(max);
+			}
 
 			/* Decrement the counter, and the maximum if necessary */
 			chunk_cnt--;
 			if (idx == chunk_max)
 				chunk_max--;
-		}
-
-		/* Find the next free slot */
-		else {
-			for (idx = 0; idx < chunk_max; idx++)
-				if (!chunk_list[idx].region)
+		} else {
+			/* Find the next free slot */
+			for (idx = 0; idx < chunk_max; idx++) {
+				if (!chunk_list[idx].region) {
 					break;
+				}
+			}
 		}
 
 		/* Increment the counter, and the maximum if necessary */
@@ -1235,7 +1025,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
 
 	/* Write the chunks */
 	if (write) {
-		chunk_write(y_offset, x_offset, &chunk_list[idx].chunk,
+		chunk_write(idx, y_offset, x_offset, &chunk_list[idx].chunk,
 					&chunk_list[idx].p_chunk);
 	}
 
@@ -1689,14 +1479,10 @@ static void arena_realign(int y_offset, int x_offset)
 		dest_top_left.x = 0;
 		width = 2 * CHUNK_SIDE;
 	}
-	chunk_copy_grid(player, cave, new, height, width,
-					src_top_left, dest_top_left, 0, false, true);
-	chunk_copy_grid(player, player->cave, p_new, height, width,
-					src_top_left, dest_top_left, 0, false, true);
-	//chunk_copy_monsters_move(player, cave, new, height, width,
-	//						 src_top_left, dest_top_left);
-	//chunk_copy_monsters_move(player, player->cave, p_new, height, width,
-	//						 src_top_left, dest_top_left);
+	chunk_copy_grid(player, cave, new, height, width, src_top_left,
+					dest_top_left, CHUNK_CUR, 0, false, true);
+	chunk_copy_grid(player, player->cave, p_new, height, width,	src_top_left,
+					dest_top_left, CHUNK_CUR, 0, false, true);
 	chunk_copy_objects_split(player, cave, player->cave, new, p_new, height,
 							 width, dest_top_left);
 	chunk_validate_objects(new);
@@ -1746,6 +1532,7 @@ static void arena_realign(int y_offset, int x_offset)
 			}
 		}
 	}
+	set_monster_place_current();
 	cave_illuminate(cave, is_daytime());
 	update_view(cave, player);
 }

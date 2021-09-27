@@ -1484,7 +1484,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	if (origin.what == SRC_MONSTER && origin.which.monster == m_idx) return;
 
 	/* Obtain monster info */
-	mon = cave_monster(cave, m_idx);
+	mon = monster(m_idx);
 	lore = get_lore(mon->race);
 	context.mon = mon;
 	context.lore = lore;
@@ -1503,7 +1503,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	/* Breathers may not blast members of the same race. */
 	if (origin.what == SRC_MONSTER && (flg & PROJECT_SAFE)) {
 		/* Point to monster information of caster */
-		struct monster *caster = cave_monster(cave, origin.which.monster);
+		struct monster *caster = monster(origin.which.monster);
 		if (!caster) return;
 
 		/* Skip monsters with the same race */

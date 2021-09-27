@@ -55,10 +55,8 @@ struct angband_constants
     u16b region_max;	/**< Maximum number of world regions */
     u16b landmark_max;	/**< Maximum number of landmarks */
 
-	/* Maxima of things on a given level, read from constants.txt */
-	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
-
 	/* Monster generation constants, read from constants.txt */
+	u16b monster_max;			/**< Maximum number of monsters */
 	u16b alloc_monster_chance;	/**< 1/per-turn-chance of generation */
 	u16b level_monster_min;		/**< Minimum number generated */
 	u16b town_monsters_day;		/**< Townsfolk generated - day */

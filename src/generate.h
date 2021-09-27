@@ -311,6 +311,8 @@ struct room_template {
 #define CHUNK_SIDE 22
 #define ARENA_SIDE 66
 #define MAX_CHUNKS 256
+#define CHUNK_TEMP -2
+#define CHUNK_CUR -1
 
 extern struct dun_data *dun;
 extern struct vault *vaults;

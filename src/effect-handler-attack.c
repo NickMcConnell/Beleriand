@@ -53,12 +53,12 @@ static void get_target(struct source origin, int dir, struct loc *grid,
 {
 	switch (origin.what) {
 		case SRC_MONSTER: {
-			struct monster *monster = cave_monster(cave, origin.which.monster);
+			struct monster *mon = monster(origin.which.monster);
 			int conf_level, accuracy = 100;
 
-			if (!monster) break;
+			if (!mon) break;
 
-			conf_level = monster_effect_level(monster, MON_TMD_CONF);
+			conf_level = monster_effect_level(mon, MON_TMD_CONF);
 			while (conf_level) {
 				accuracy *= (100 - CONF_RANDOM_CHANCE);
 				accuracy /= 100;
@@ -69,12 +69,12 @@ static void get_target(struct source origin, int dir, struct loc *grid,
 
 			if (randint1(100) > accuracy) {
 				dir = randint1(9);
-				*grid = loc_sum(monster->grid, ddgrid[dir]);
-			} else if (monster->target.midx > 0) {
-				struct monster *mon = cave_monster(cave, monster->target.midx);
-				*grid = mon->grid;
+				*grid = loc_sum(mon->grid, ddgrid[dir]);
+			} else if (mon->target.midx > 0) {
+				struct monster *mon1 = monster(mon->target.midx);
+				*grid = mon1->grid;
 			} else {
-				if (monster_is_decoyed(monster)) {
+				if (monster_is_decoyed(mon)) {
 					*grid = cave_find_decoy(cave);
 				} else {
 					*grid = player->grid;
@@ -264,7 +264,7 @@ bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
 	assert(context->origin.what == SRC_MONSTER);
 
 	int midx = context->origin.which.monster;
-	struct monster *mon = midx > 0 ? cave_monster(cave, midx) : NULL;
+	struct monster *mon = midx > 0 ? monster(midx) : NULL;
 
 	int amount = effect_calculate_value(context, false);
 	char m_name[80], m_poss[80];
@@ -321,7 +321,7 @@ bool effect_handler_MON_HEAL_KIN(effect_handler_context_t *context)
 	assert(context->origin.what == SRC_MONSTER);
 
 	int midx = context->origin.which.monster;
-	struct monster *mon = midx > 0 ? cave_monster(cave, midx) : NULL;
+	struct monster *mon = midx > 0 ? monster(midx) : NULL;
 	if (!mon) return true;
 
 	int amount = effect_calculate_value(context, false);
@@ -422,7 +422,7 @@ bool effect_handler_TOUCH(effect_handler_context_t *context)
 	int rad = context->radius ? context->radius : 1;
 
 	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *mon = monster(context->origin.which.monster);
 		struct monster *t_mon = monster_target_monster(context);
 		struct loc decoy = cave_find_decoy(cave);
 
@@ -473,8 +473,7 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 
 	switch (context->origin.what) {
 		case SRC_MONSTER: {
-			struct monster *mon = cave_monster(cave,
-											   context->origin.which.monster);
+			struct monster *mon = monster(context->origin.which.monster);
 			struct monster *t_mon = monster_target_monster(context);
 			struct loc decoy = cave_find_decoy(cave);
 
@@ -559,7 +558,7 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
 	if (context->origin.what == SRC_PLAYER) {
 		grid = player->grid;
 	} else if (context->origin.what == SRC_MONSTER) {
-		grid = cave_monster(cave, context->origin.which.monster)->grid;
+		grid = monster(context->origin.which.monster)->grid;
 	} else {
 		/* Must be a trap */
 		assert(context->origin.what == SRC_TRAP);
@@ -655,7 +654,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	/* Player or monster? */
 	switch (context->origin.what) {
 		case SRC_MONSTER: {
-			struct monster *mon = cave_monster(cave, context->origin.which.monster);
+			struct monster *mon = monster(context->origin.which.monster);
 			int conf_level, accuracy = 100;
 			struct monster *t_mon = monster_target_monster(context);
 
@@ -742,7 +741,7 @@ bool effect_handler_CLOUD(effect_handler_context_t *context)
 	/* Player or monster? */
 	switch (context->origin.what) {
 		case SRC_MONSTER: {
-			struct monster *mon = cave_monster(cave, context->origin.which.monster);
+			struct monster *mon = monster(context->origin.which.monster);
 			int conf_level, accuracy = 100;
 			struct monster *t_mon = monster_target_monster(context);
 
@@ -843,7 +842,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *mon = monster(context->origin.which.monster);
 		struct monster *t_mon = monster_target_monster(context);
 		int conf_level, accuracy = 100;
 
@@ -1056,7 +1055,7 @@ bool effect_handler_LASH(effect_handler_context_t *context)
 
 	/* Monsters only */
 	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *mon = monster(context->origin.which.monster);
 		struct monster *t_mon = monster_target_monster(context);
 		int i;
 
@@ -1439,11 +1438,12 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
 
 	/* Affect all (nearby) monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
-		/* Paranoia -- Skip dead monsters */
+		/* Paranoia -- Skip dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Require line of sight */
 		if (!los(cave, origin, mon->grid)) continue;
@@ -1475,12 +1475,13 @@ bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 	if (context->aware) flg |= PROJECT_AWARE;
 
 	/* Affect all (nearby) monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 		struct loc grid;
 
-		/* Paranoia -- Skip dead monsters */
+		/* Paranoia -- Skip dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Location */
 		grid = mon->grid;
@@ -1850,7 +1851,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 					/* Delete (not kill) "dead" monsters */
 					if (mon->hp < 0) {
 						/* Delete the monster */
-						delete_monster(grid);
+						delete_monster_idx(mon->midx);
 
 						/* No longer safe */
 						safe_grids = 0;

@@ -458,11 +458,14 @@ void do_cmd_wiz_banish(struct command *cmd)
 		cmd_set_arg_number(cmd, "range", d);
 	}
 
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
 		/* Skip dead monsters */
 		if (!mon->race) continue;
+
+		/* Skip stored monsters */
+		if (monster_is_stored(mon)) continue;
 
 		/* Skip distant monsters */
 		if (mon->cdis > d) continue;

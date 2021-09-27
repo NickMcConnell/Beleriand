@@ -22,6 +22,7 @@
 #include "effects.h"
 #include "init.h"
 #include "monster.h"
+#include "mon-make.h"
 #include "obj-gear.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -711,11 +712,12 @@ static int spell_value_base_spell_power(void)
 	int power = 0;
 
 	/* Check the reference race first */
-	if (ref_race)
+	if (ref_race) {
 	   power = ref_race->spell_power;
-	/* Otherwise the current monster if there is one */
-	else if (cave->mon_current > 0)
-		power = cave_monster(cave, cave->mon_current)->race->spell_power;
+	} else if (mon_current > 0) {
+		/* Otherwise the current monster if there is one */
+		power = monster(mon_current)->race->spell_power;
+	}
 
 	return power;
 }

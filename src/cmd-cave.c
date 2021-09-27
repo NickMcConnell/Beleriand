@@ -28,6 +28,7 @@
 #include "mon-attack.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
@@ -1058,7 +1059,7 @@ void move_player(int dir, bool disarm)
 	struct loc grid = loc_sum(player->grid, ddgrid[dir]);
 
 	int m_idx = square(cave, grid)->mon;
-	struct monster *mon = cave_monster(cave, m_idx);
+	struct monster *mon = monster(m_idx);
 	bool trapsafe = player_is_trapsafe(player);
 	bool trap = square_isdisarmabletrap(cave, grid);
 	bool door = square_iscloseddoor(cave, grid);
@@ -1208,7 +1209,7 @@ void move_player(int dir, bool disarm)
 static bool do_cmd_walk_test(struct loc grid)
 {
 	int m_idx = square(cave, grid)->mon;
-	struct monster *mon = cave_monster(cave, m_idx);
+	struct monster *mon = monster(m_idx);
 
 	/* Allow attack on visible monsters if unafraid */
 	if (m_idx > 0 && monster_is_visible(mon) &&	!monster_is_mimicking(mon)) {

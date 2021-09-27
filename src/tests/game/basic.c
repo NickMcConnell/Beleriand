@@ -46,7 +46,7 @@ static int choose_direction(struct chunk *c, struct player *p) {
 
 static void reset_before_load(void) {
 	play_again = true;
-	wipe_mon_list(cave, player);
+	wipe_mon_list();
 	cleanup_angband();
 	init_angband();
 	play_again = false;
@@ -73,7 +73,7 @@ int setup_tests(void **state) {
 
 int teardown_tests(void *state) {
 	file_delete("Test1");
-	wipe_mon_list(cave, player);
+	wipe_mon_list();
 	cleanup_angband();
 	return 0;
 }

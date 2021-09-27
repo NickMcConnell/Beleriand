@@ -244,7 +244,7 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
  */
 bool no_vault(int place)
 {
-	//B
+	//B Policy on wilderness vaults needed
 	/* Anywhere else is OK */
 	return false;
 }
@@ -422,15 +422,16 @@ static void sun_banish(void)
 	int i;
 
 	/* Process all monsters */
-	for (i = 1; i < cave_monster_max(cave) - 1; i++) {
+	for (i = 1; i < mon_max - 1; i++) {
 		/* Access the monster */
-		mon = cave_monster(cave, i);
+		mon = monster(i);
 
 		/* Check if it hates light */
 		race = mon->race;
 
-		/* Paranoia -- Skip dead monsters */
+		/* Paranoia -- Skip dead and stored monsters */
 		if (!race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Skip Unique Monsters */
 		if (rf_has(race->flags, RF_UNIQUE)) continue;
@@ -585,18 +586,21 @@ void process_world(struct chunk *c)
 	int i, y, x;
 
 	/* Compact the monster list if we're approaching the limit */
-	if (cave_monster_count(c) + 32 > z_info->level_monster_max)
-		compact_monsters(c, 64);
+	if (mon_cnt + 32 > z_info->monster_max) {
+		compact_monsters(64);
+	}
 
 	/* Too many holes in the monster list - compress */
-	if (cave_monster_count(c) + 32 < cave_monster_max(c))
-		compact_monsters(c, 0);
+	if (mon_cnt + 32 < mon_max) {
+		compact_monsters(0);
+	}
 
 	/*** Check the Time ***/
 
 	/* Play an ambient sound at regular intervals. */
-	if (!(turn % ((10L * z_info->day_length) / 4)))
+	if (!(turn % ((10L * z_info->day_length) / 4))) {
 		play_ambient_sound();
+	}
 
 	/* Handle sunshine */
 	if (outside()) {
@@ -846,25 +850,21 @@ static void process_player_cleanup(void)
 			if (player->timed[TMD_IMAGE])
 				player->upkeep->redraw |= (PR_MAP);
 
-			/* Shimmer multi-hued monsters */
-			for (i = 1; i < cave_monster_max(cave); i++) {
-				struct monster *mon = cave_monster(cave, i);
-				if (!mon->race)
-					continue;
-				if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
-					continue;
-				square_light_spot(cave, mon->grid);
-			}
+			for (i = 1; i < mon_max; i++) {
+				struct monster *mon = monster(i);
+				if (!mon->race || monster_is_stored(mon)) continue;
 
-			/* Clear NICE flag, and show marked monsters */
-			for (i = 1; i < cave_monster_max(cave); i++) {
-				struct monster *mon = cave_monster(cave, i);
+				/* Shimmer multi-hued monsters */
+				if (rf_has(mon->race->flags, RF_ATTR_MULTI)) {
+					square_light_spot(cave, mon->grid);
+				}
+
+				/* Clear NICE flag, and show marked monsters */
 				mflag_off(mon->mflag, MFLAG_NICE);
 				if (mflag_has(mon->mflag, MFLAG_MARK)) {
 					if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
 						mflag_off(mon->mflag, MFLAG_MARK);
-						update_mon(player, mon, cave,
-							false);
+						update_mon(player, mon, cave, false);
 					}
 				}
 			}
@@ -872,8 +872,8 @@ static void process_player_cleanup(void)
 	}
 
 	/* Clear SHOW flag and player drop status */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 		mflag_off(mon->mflag, MFLAG_SHOW);
 	}
 	player->upkeep->dropping = false;

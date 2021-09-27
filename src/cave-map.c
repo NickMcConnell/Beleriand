@@ -21,6 +21,7 @@
 #include "game-world.h"
 #include "init.h"
 #include "monster.h"
+#include "mon-make.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "obj-ignore.h"
@@ -174,7 +175,7 @@ void map_info(struct loc grid, struct grid_data *g)
 	/* Monsters */
 	if (g->m_idx > 0) {
 		/* If the monster isn't "visible", make sure we don't list it.*/
-		struct monster *mon = cave_monster(cave, g->m_idx);
+		struct monster *mon = monster(g->m_idx);
 		if (!monster_is_visible(mon)) g->m_idx = 0;
 	}
 
@@ -191,7 +192,7 @@ void map_info(struct loc grid, struct grid_data *g)
 
 	assert((int) g->f_idx < z_info->f_max);
 	if (!g->hallucinate)
-		assert((int)g->m_idx < cave->mon_max);
+		assert((int)g->m_idx < mon_max);
 	/* All other g fields are 'flags', mostly booleans. */
 }
 

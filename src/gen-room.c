@@ -2775,7 +2775,7 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 		what[i] = what[i * 2];
 
 	/* Get a group ID */
-	group_index = monster_group_index_new(c);
+	group_index = monster_group_index_new();
 
 	/* Center monster */
 	info.index = group_index;

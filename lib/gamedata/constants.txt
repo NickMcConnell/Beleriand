@@ -4,15 +4,11 @@
 # This file is used to initialize game constants for Angband.
 
 #---------------------------------------------------------------------
-# Level Maxima
-#---------------------------------------------------------------------
-
-# Maximum number of monsters on the level
-level-max:monsters:1024
-
-#---------------------------------------------------------------------
 # Monster Generation
 #---------------------------------------------------------------------
+
+# Maximum number of monsters
+mon-gen:monster-max:8192
 
 # 1/per-turn-chance of new monster generation
 mon-gen:chance:500

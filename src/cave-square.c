@@ -21,6 +21,7 @@
 #include "game-world.h"
 #include "init.h"
 #include "monster.h"
+#include "mon-make.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-util.h"
@@ -1202,7 +1203,7 @@ struct monster *square_monster(struct chunk *c, struct loc grid)
 {
 	if (!square_in_bounds(c, grid)) return NULL;
 	if (square(c, grid)->mon > 0) {
-		struct monster *mon = cave_monster(c, square(c, grid)->mon);
+		struct monster *mon = monster(square(c, grid)->mon);
 		return mon && mon->race ? mon : NULL;
 	}
 
@@ -1389,10 +1390,9 @@ void square_set_feat(struct chunk *c, struct loc grid, int feat)
 	current_feat = square(c, grid)->feat;
 
 	/* Floor and road have only cosmetic differences; use road when outside */
-	//B if (player->place && (feat == FEAT_FLOOR) &&
-	//B	(level_topography(player->place) != TOP_CAVE)) {
-	//B	feat = FEAT_ROAD;
-	//}
+	if (outside() && (feat == FEAT_FLOOR)) {
+		feat = FEAT_ROAD;
+	}
 
 	/* Track changes */
 	if (current_feat) c->feat_count[current_feat]--;

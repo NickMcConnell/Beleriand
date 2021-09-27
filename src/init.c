@@ -437,26 +437,6 @@ void create_needed_dirs(void)
  * Initialize game constants
  * ------------------------------------------------------------------------ */
 
-static enum parser_error parse_constants_level_max(struct parser *p) {
-	struct angband_constants *z;
-	const char *label;
-	int value;
-
-	z = parser_priv(p);
-	label = parser_getsym(p, "label");
-	value = parser_getint(p, "value");
-
-	if (value < 0)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	if (streq(label, "monsters"))
-		z->level_monster_max = value;
-	else
-		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
-
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_constants_mon_gen(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
@@ -469,7 +449,9 @@ static enum parser_error parse_constants_mon_gen(struct parser *p) {
 	if (value < 0)
 		return PARSE_ERROR_INVALID_VALUE;
 
-	if (streq(label, "chance"))
+	if (streq(label, "monster-max"))
+		z->monster_max = value;
+	else if (streq(label, "chance"))
 		z->alloc_monster_chance = value;
 	else if (streq(label, "level-min"))
 		z->level_monster_min = value;
@@ -676,7 +658,6 @@ struct parser *init_parse_constants(void) {
 	struct parser *p = parser_new();
 
 	parser_setpriv(p, z);
-	parser_reg(p, "level-max sym label int value", parse_constants_level_max);
 	parser_reg(p, "mon-gen sym label int value", parse_constants_mon_gen);
 	parser_reg(p, "mon-play sym label int value", parse_constants_mon_play);
 	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
@@ -4180,9 +4161,12 @@ bool init_angband(void)
 	/* Initialize some other things */
 	event_signal_message(EVENT_INITSTATUS, 0, "Initializing other stuff...");
 
-	/* chunks and locations */
+	/* Chunks and locations */
 	gen_loc_list_init();
 	chunk_list_init();
+
+	/* Monsters */
+	monsters_init();
 
 	/* List display codes */
 	monster_list_init();

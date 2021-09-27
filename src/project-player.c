@@ -21,6 +21,7 @@
 #include "effects.h"
 #include "init.h"
 #include "mon-desc.h"
+#include "mon-make.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "obj-desc.h"
@@ -425,7 +426,7 @@ static int project_player_handler_NEXUS(project_player_handler_context_t *contex
 {
 	struct monster *mon = NULL;
 	if (context->origin.what == SRC_MONSTER) {
-		mon = cave_monster(cave, context->origin.which.monster);
+		mon = monster(context->origin.which.monster);
 	}
 
 	if (player_resists_effects(player->state, ELEM_NEXUS)) {
@@ -1002,7 +1003,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 		}
 
 		case SRC_MONSTER: {
-			mon = cave_monster(cave, origin.which.monster);
+			mon = monster(origin.which.monster);
 
 			/* Check it is visible */
 			if (!monster_is_visible(mon))

@@ -1088,7 +1088,7 @@ static void monster_death_stats(int m_idx)
 	bool uniq;
 
 	assert(m_idx > 0);
-	mon = cave_monster(cave, m_idx);
+	mon = monster(m_idx);
 
 	/* Check if monster is UNIQUE */
 	uniq = rf_has(mon->race->flags,RF_UNIQUE);
@@ -1423,8 +1423,8 @@ static void scan_for_monsters(void)
 	int i;
 
 	/* Go through the monster list */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
 		/* Skip dead monsters */
 		if (!mon->race) continue;

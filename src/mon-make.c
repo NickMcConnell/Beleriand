@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "alloc.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-group.h"
 #include "mon-lore.h"
@@ -36,6 +37,17 @@
 #include "player-quest.h"
 #include "player-timed.h"
 #include "target.h"
+
+
+/**
+ * Global monster array and related variables
+ */
+struct monster *monsters;
+struct monster_group **monster_groups;
+u16b mon_max = 1;
+u16b mon_cnt = 0;
+int mon_current = -1;
+int num_repro = 0;
 
 /**
  * ------------------------------------------------------------------------
@@ -342,17 +354,39 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
  * Deleting of monsters and monster list handling
  * ------------------------------------------------------------------------ */
 /**
+ * Initialise global monster and monster group lists
+ */
+void monsters_init(void)
+{
+	monsters = mem_zalloc(z_info->monster_max *sizeof(struct monster));
+	monster_groups = mem_zalloc(z_info->monster_max *
+								sizeof(struct monster_group*));
+}
+
+/**
+ * Get a monster on by its index.
+ */
+struct monster *monster(int idx) {
+	if (idx <= 0) return NULL;
+	return &monsters[idx];
+}
+
+/**
  * Deletes a monster by index.
  *
  * When a monster is deleted, all of its objects are deleted.
  */
 void delete_monster_idx(int m_idx)
 {
-	struct monster *mon = cave_monster(cave, m_idx);
+	struct monster *mon = monster(m_idx);
+	struct chunk *c = NULL, *p_c;
 	struct loc grid;
 
-	assert(m_idx > 0);
-	assert(square_in_bounds(cave, mon->grid));
+	assert(mon);
+	c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
+	p_c = mon->place < 0 ? player->cave : chunk_list[mon->place].p_chunk;
+	assert(c);
+	assert(square_in_bounds(c, mon->grid));
 	grid = mon->grid;
 
 	/* Hack -- Reduce the racial counter */
@@ -361,7 +395,7 @@ void delete_monster_idx(int m_idx)
 
 	/* Count the number of "reproducers" */
 	if (rf_has(mon->race->flags, RF_MULTIPLY)) {
-		cave->num_repro--;
+		num_repro--;
 	}
 
 	/* Affect light? */
@@ -382,16 +416,16 @@ void delete_monster_idx(int m_idx)
 	}
 
 	/* Monster is gone from square and group, and no longer targeted */
-	square_set_mon(cave, grid, 0);
-	monster_remove_from_groups(cave, mon);
-	monster_remove_from_targets(cave, mon);
+	square_set_mon(c, grid, 0);
+	monster_remove_from_groups(mon);
+	monster_remove_from_targets(mon);
 
 	/* Free any heatmaps */
 	if (mon->noise.grids) {
-		heatmap_free(cave, mon->noise);
+		heatmap_free(c, mon->noise);
 	}
 	if (mon->scent.grids) {
-		heatmap_free(cave, mon->scent);
+		heatmap_free(c, mon->scent);
 	}
 
 	/* Delete objects */
@@ -409,39 +443,32 @@ void delete_monster_idx(int m_idx)
 		/* Delete the object.  Since it's in the cave's list do
 		 * some additional bookkeeping. */
 		if (obj->known) {
-			/* It's not in a floor pile so remove it completely.
-			 * Once compatibility with old savefiles isn't needed
-			 * can skip the test and simply delist and delete
-			 * since any obj->known from a monster's inventory
-			 * will not be in a floor pile. */
-			if (loc_is_zero(obj->known->grid)) {
-				delist_object(player->cave, obj->known);
-				object_delete(&obj->known);
-			}
+			delist_object(p_c, obj->known);
+			object_delete(&obj->known);
 		}
-		delist_object(cave, obj);
+		delist_object(c, obj);
 		object_delete(&obj);
 		obj = next;
 	}
 
 	/* Delete mimicked objects */
 	if (mon->mimicked_obj) {
-		square_delete_object(cave, mon->grid, mon->mimicked_obj, true, false);
+		square_delete_object(c, mon->grid, mon->mimicked_obj, true, false);
 	}
 
 	/* Wipe the Monster */
 	memset(mon, 0, sizeof(struct monster));
 
 	/* Count monsters */
-	cave->mon_cnt--;
+	mon_cnt--;
 
 	/* Visual update */
-	square_light_spot(cave, grid);
+	if (c == cave) square_light_spot(c, grid);
 }
 
 
 /**
- * Deletes the monster, if any, at the given location.
+ * Deletes the monster, if any, at the given location in the current arena.
  */
 void delete_monster(struct loc grid)
 {
@@ -462,24 +489,26 @@ void monster_index_move(int i1, int i2)
 {
 	struct monster *mon;
 	struct object *obj;
+	struct chunk *c;
 
 	/* Do nothing */
 	if (i1 == i2) return;
 
 	/* Old monster */
-	mon = cave_monster(cave, i1);
+	mon = monster(i1);
 	if (!mon) return;
 
-	/* Update the cave */
-	square_set_mon(cave, mon->grid, i2);
+	/* Set and update the chunk */
+	c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
+	square_set_mon(c, mon->grid, i2);
 
 	/* Update midx */
 	mon->midx = i2;
 
 	/* Update group */
-	if (!monster_group_change_index(cave, i2, i1)) {
+	if (!monster_group_change_index(i2, i1)) {
 		quit("Bad monster group info!") ;
-		monster_groups_verify(cave);
+		monster_groups_verify();
 	}
 
 	/* Repair objects being carried by monster */
@@ -492,19 +521,17 @@ void monster_index_move(int i1, int i2)
 
 	/* Update the target */
 	if (target_get_monster() == mon)
-		target_set_monster(cave_monster(cave, i2));
+		target_set_monster(monster(i2));
 
 	/* Update the health bar */
 	if (player->upkeep->health_who == mon)
-		player->upkeep->health_who = cave_monster(cave, i2);
+		player->upkeep->health_who = monster(i2);
 
 	/* Move monster */
-	memcpy(cave_monster(cave, i2),
-			cave_monster(cave, i1),
-			sizeof(struct monster));
+	memcpy(monster(i2), monster(i1), sizeof(struct monster));
 
 	/* Wipe hole */
-	memset(cave_monster(cave, i1), 0, sizeof(struct monster));
+	memset(monster(i1), 0, sizeof(struct monster));
 }
 
 
@@ -522,17 +549,15 @@ void monster_index_move(int i1, int i2)
  * monsters of a slightly higher level, and monsters slightly closer to
  * the player.
  */
-void compact_monsters(struct chunk *c, int num_to_compact)
+void compact_monsters(int num_to_compact)
 {
 	int m_idx, num_compacted, iter;
 
 	int max_lev, min_dis, chance;
 
-
 	/* Message (only if compacting) */
 	if (num_to_compact)
 		msg("Compacting monsters...");
-
 
 	/* Compact at least 'num_to_compact' objects */
 	for (num_compacted = 0, iter = 1; num_compacted < num_to_compact; iter++) {
@@ -543,8 +568,8 @@ void compact_monsters(struct chunk *c, int num_to_compact)
 		min_dis = 5 * (20 - iter);
 
 		/* Check all the monsters */
-		for (m_idx = 1; m_idx < cave_monster_max(c); m_idx++) {
-			struct monster *mon = cave_monster(c, m_idx);
+		for (m_idx = 1; m_idx < mon_max; m_idx++) {
+			struct monster *mon = monster(m_idx);
 
 			/* Skip "dead" monsters */
 			if (!mon->race) continue;
@@ -569,50 +594,59 @@ void compact_monsters(struct chunk *c, int num_to_compact)
 			if (randint0(100) < chance) continue;
 
 			/* Delete the monster */
-			delete_monster(mon->grid);
+			delete_monster_idx(m_idx);
 
 			/* Count the monster */
 			num_compacted++;
 		}
 	}
 
-
 	/* Excise dead monsters (backwards!) */
-	for (m_idx = cave_monster_max(c) - 1; m_idx >= 1; m_idx--) {
-		struct monster *mon = cave_monster(c, m_idx);
+	for (m_idx = mon_max - 1; m_idx >= 1; m_idx--) {
+		struct monster *mon = monster(m_idx);
 
 		/* Skip real monsters */
 		if (mon->race) continue;
 
 		/* Move last monster into open hole */
-		monster_index_move(cave_monster_max(c) - 1, m_idx);
+		monster_index_move(mon_max - 1, m_idx);
 
-		/* Compress "c->mon_max" */
-		c->mon_max--;
+		/* Compress "mon_max" */
+		mon_max--;
 	}
 }
 
 
 /**
- * Deletes all the monsters when the player leaves the level.
- *
- * This is an efficient method of simulating multiple calls to the
- * "delete_monster()" function, with no visual effects.
+ * Delete all temporarily placed monsters
+ */
+void delete_temp_monsters(void)
+{
+	int i;
+
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
+		if (!mon) continue;
+		if (mon->place == CHUNK_TEMP) {
+			delete_monster_idx(i);
+		}
+	}
+}
+
+/**
+ * Deletes all the monsters when the game is being closed.
  *
  * Note that we must delete the objects the monsters are carrying, but we
  * do nothing with mimicked objects.
  */
-void wipe_mon_list(struct chunk *c, struct player *p)
+void wipe_mon_list(void)
 {
 	int m_idx, i;
 
 	/* Delete all the monsters */
-	for (m_idx = cave_monster_max(c) - 1; m_idx >= 1; m_idx--) {
-		struct monster *mon = cave_monster(c, m_idx);
+	for (m_idx = mon_max - 1; m_idx >= 1; m_idx--) {
+		struct monster *mon = monster(m_idx);
 		struct object *held_obj = mon ? mon->held_obj : NULL;
-
-		/* Skip dead monsters */
-		if (!mon->race) continue;
 
 		/* Delete all the objects */
 		if (held_obj) {
@@ -620,46 +654,21 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 			struct object *obj = held_obj;
 			while (obj) {
 				if (obj->artifact && !obj_is_known_artifact(obj)) {
-					mark_artifact_created(obj->artifact,
-						false);
+					mark_artifact_created(obj->artifact, false);
 				}
 				obj = obj->next;
 			}
 			object_pile_free(held_obj);
 		}
-
-		/* Reduce the racial counter */
-		if (mon->original_race) mon->original_race->cur_num--;
-		else mon->race->cur_num--;
-
-		/* Monster is gone from square */
-		square_set_mon(c, mon->grid, 0);
-
-		/* Wipe the Monster */
-		memset(mon, 0, sizeof(struct monster));
 	}
 
 	/* Delete all the monster groups */
-	for (i = 1; i < z_info->level_monster_max; i++) {
-		if (c->monster_groups[i]) {
-			monster_group_free(c, c->monster_groups[i]);
+	for (i = 1; i < z_info->monster_max; i++) {
+		if (monster_groups[i]) {
+			monster_group_free(monster_groups[i]);
 		}
 	}
-
-	/* Reset "cave->mon_max" */
-	c->mon_max = 1;
-
-	/* Reset "mon_cnt" */
-	c->mon_cnt = 0;
-
-	/* Reset "reproducer" count */
-	c->num_repro = 0;
-
-	/* Hack -- no more target */
-	target_set_monster(0);
-
-	/* Hack -- no more tracking */
-	health_track(p->upkeep, 0);
+	mem_free(monsters);
 }
 
 /**
@@ -675,32 +684,32 @@ void wipe_mon_list(struct chunk *c, struct player *p)
  * This routine should almost never fail, but it *can* happen.
  * The calling code must check for and handle a 0 return.
  */
-s16b mon_pop(struct chunk *c)
+static int mon_pop(void)
 {
 	int m_idx;
 
 	/* Normal allocation */
-	if (cave_monster_max(c) < z_info->level_monster_max) {
+	if (mon_max < z_info->monster_max) {
 		/* Get the next hole */
-		m_idx = cave_monster_max(c);
+		m_idx = mon_max;
 
 		/* Expand the array */
-		c->mon_max++;
+		mon_max++;
 
 		/* Count monsters */
-		c->mon_cnt++;
+		mon_cnt++;
 
 		return m_idx;
 	}
 
 	/* Recycle dead monsters if we've run out of room */
-	for (m_idx = 1; m_idx < cave_monster_max(c); m_idx++) {
-		struct monster *mon = cave_monster(c, m_idx);
+	for (m_idx = 1; m_idx < mon_max; m_idx++) {
+		struct monster *mon = monster(m_idx);
 
 		/* Skip live monsters */
 		if (!mon->race) {
 			/* Count monsters */
-			c->mon_cnt++;
+			mon_cnt++;
 
 			/* Use this monster */
 			return m_idx;
@@ -1060,6 +1069,22 @@ static bool mon_is_neutral(struct chunk *c, struct monster *mon,
 }
 
 /**
+ * Set all temporarily placed monsters to the current playing arena
+ */
+void set_monster_place_current(void)
+{
+	int i;
+
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
+		if (!mon) continue;
+		if (mon->place == CHUNK_TEMP) {
+			mon->place = CHUNK_CUR;
+		}
+	}
+}
+
+/**
  * ------------------------------------------------------------------------
  * Placement of a single monster
  * These are the functions that actually put the monster into the world
@@ -1094,15 +1119,15 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	/* Get a new record, or recycle the old one */
 	if (loading) {
 		m_idx = mon->midx;
-		c->mon_max++;
-		c->mon_cnt++;
+		mon_max++;
+		mon_cnt++;
 	} else {
-		m_idx = mon_pop(c);
+		m_idx = mon_pop();
 		if (!m_idx) return 0;
 	}
 
 	/* Copy the monster */
-	new_mon = cave_monster(c, m_idx);
+	new_mon = monster(m_idx);
 	memcpy(new_mon, mon, sizeof(struct monster));
 
 	/* Set the ID */
@@ -1114,12 +1139,12 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	assert(square_monster(c, grid) == new_mon);
 
 	/* Assign monster to its monster group, or update its entry */
-	monster_group_assign(c, new_mon, info, loading);
+	monster_group_assign(new_mon, info, loading);
 
 	update_mon(player, new_mon, c, true);
 
 	/* Count the number of "reproducers" */
-	if (rf_has(new_mon->race->flags, RF_MULTIPLY)) c->num_repro++;
+	if (rf_has(new_mon->race->flags, RF_MULTIPLY)) num_repro++;
 
 	/* Count racial occurrences */
 	if (new_mon->original_race) new_mon->original_race->cur_num++;
@@ -1219,6 +1244,9 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	/* Save the race */
 	mon->race = race;
 
+	/* Temporary place if during generation, otherwise the playing arena */
+	mon->place = character_dungeon ? CHUNK_CUR : CHUNK_TEMP;
+
 	/* Enforce sleeping if needed */
 	if (sleep) {
 		if (race->sleep) {
@@ -1278,13 +1306,13 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 
 	/* Set hostility, or possible neutrality for player race monsters */
 	if (rf_has(mon->race->flags, RF_PLAYER)) {
-		struct player_race *p_race = monster_group_player_race(c, mon);
+		struct player_race *p_race = monster_group_player_race(mon);
 
 		/* Give the monster the special index to indicate it needs updating */
 		mon->midx = MIDX_FAKE;
 
 		/* Assign the monster to its group */
-		monster_group_assign(c, mon, &group_info, false);
+		monster_group_assign(mon, &group_info, false);
 
 		/* Set player race if needed */
 		if (p_race) {
@@ -1294,7 +1322,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 			/* Pick a race and set the monster and group races to it */
 			p_race = get_player_race();
 			mon->player_race = p_race;
-			set_monster_group_player_race(c, mon, p_race);
+			set_monster_group_player_race(mon, p_race);
 		}
 
 		/* Set hostility */
@@ -1498,7 +1526,7 @@ bool place_new_monster(struct chunk *c, struct loc grid,
 	/* If we don't have a group index already, make one; our first monster
 	 * will be the leader */
 	if (!group_info.index) {
-		group_info.index = monster_group_index_new(c);
+		group_info.index = monster_group_index_new();
 	}
 
 	/* Place one monster, or fail */

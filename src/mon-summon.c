@@ -305,16 +305,17 @@ static bool summon_specific_okay(struct monster_race *race)
  */
 static bool can_call_monster(struct loc grid, struct monster *mon)
 {
-	/* Skip dead monsters */
-	if (!mon->race) return (false);
+	/* Skip dead and stored monsters */
+	if (!mon->race) return false;
+	if (monster_is_stored(mon)) return false;
 
 	/* Only consider callable monsters */
-	if (!summon_specific_okay(mon->race)) return (false);
+	if (!summon_specific_okay(mon->race)) return false;
 
 	/* Make sure the summoned monster is not in LOS of the summoner */
-	if (los(cave, grid, mon->grid)) return (false);
+	if (los(cave, grid, mon->grid)) return false;
 
-	return (true);
+	return true;
 }
 
 
@@ -329,8 +330,8 @@ static int call_monster(struct loc grid)
 
 	mon_count = 0;
 
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		mon = monster(i);
 
 		/* Figure out how many good monsters there are */
 		if (can_call_monster(grid, mon)) mon_count++;
@@ -346,9 +347,9 @@ static int call_monster(struct loc grid)
 	mon_count = 0;
 
 	/* Now go through a second time and store the indices */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		mon = cave_monster(cave, i);
-		
+	for (i = 1; i < mon_max; i++) {
+		mon = monster(i);
+
 		/* Save the values of the good monster */
 		if (can_call_monster(grid, mon)){
 			mon_indices[mon_count] = i;
@@ -360,7 +361,7 @@ static int call_monster(struct loc grid)
 	choice = randint0(mon_count - 1);
 
 	/* Get the lucky monster */
-	mon = cave_monster(cave, mon_indices[choice]);
+	mon = monster(mon_indices[choice]);
 	mem_free(mon_indices);
 
 	/* Swap the monster */
@@ -438,11 +439,11 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call,
 	if (!race) return (0);
 
 	/* Put summons in the group of any summoner */
-	if (cave->mon_current > 0) {
-		struct monster_group *group = summon_group(cave, cave->mon_current);
+	if (mon_current > 0) {
+		struct monster_group *group = summon_group(mon_current);
 		info.index = group->index;
 		info.role = MON_GROUP_SUMMON;
-		info.player_race = cave_monster(cave, cave->mon_current)->player_race;
+		info.player_race = monster(mon_current)->player_race;
 	}
 
 	/* Attempt to place the monster (awake, don't allow groups) */

@@ -19,30 +19,16 @@ int teardown_tests(void *state) {
 }
 
 static int test_negative(void *state) {
-	errr r = parser_parse(state, "level-max:F:-1");
+	errr r = parser_parse(state, "mon-gen:F:-1");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }
 
-static int test_badmax(void *state) {
-	errr r = parser_parse(state, "level-max:D:1");
+static int test_badmon(void *state) {
+	errr r = parser_parse(state, "mon-gen:D:1");
 	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
 	ok;
 }
-
-#define TEST_MAX(l,u) \
-	static int test_##l(void *s) { \
-		struct angband_constants *m = parser_priv(s); \
-		char buf[64]; \
-		errr r; \
-		snprintf(buf, sizeof(buf), "level-max:%s:%d", u, __LINE__); \
-		r = parser_parse(s, buf); \
-		eq(m->l, __LINE__); \
-		eq(r, 0); \
-		ok; \
-	}
-
-TEST_MAX(level_monster_max, "monsters")
 
 #define TEST_MON(l,u) \
 	static int test_##l(void *s) { \
@@ -56,6 +42,7 @@ TEST_MAX(level_monster_max, "monsters")
 		ok; \
 	}
 
+TEST_MON(monster_max, "monster-max")
 TEST_MON(alloc_monster_chance, "chance")
 TEST_MON(level_monster_min, "level-min")
 TEST_MON(town_monsters_day, "town-day")
@@ -65,8 +52,8 @@ TEST_MON(repro_monster_max, "repro-max")
 const char *suite_name = "parse/z-info";
 struct test tests[] = {
 	{ "negative", test_negative },
-	{ "badmax", test_badmax },
-	{ "monsters_max", test_level_monster_max },
+	{ "badmon", test_badmon },
+	{ "monster_max", test_monster_max },
 	{ "mon_chance", test_alloc_monster_chance },
 	{ "monsters_min", test_level_monster_min },
 	{ "town_day", test_town_monsters_day },
