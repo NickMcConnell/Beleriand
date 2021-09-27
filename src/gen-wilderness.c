@@ -348,10 +348,9 @@ static int make_formation(struct chunk *c, struct player *p, struct loc grid,
 		}
 
 		/* Check for treasure */
-		if ((all_feat[i] == FEAT_MAGMA) && (one_in_(dun->profile->str.mc))) {
+		if ((all_feat[i] == FEAT_MAGMA) && (one_in_(90))) {
 			all_feat[i] = FEAT_MAGMA_K;
-		} else if ((all_feat[i] == FEAT_QUARTZ) &&
-				   (one_in_(dun->profile->str.qc))) {
+		} else if ((all_feat[i] == FEAT_QUARTZ) && (one_in_(40))) {
 			all_feat[i] = FEAT_QUARTZ_K;
 		}
 
@@ -365,7 +364,8 @@ static int make_formation(struct chunk *c, struct player *p, struct loc grid,
 			step++;
 		for (j = 0; j < 100; j++) {
 			tgrid = loc_sum(tgrid, ddgrid[step]);
-			if (!square_in_bounds_fully(c, tgrid)) break;
+			/* Make sure we're staying in the sub-chunk being filled */
+			if (!(tgrid.x % CHUNK_SIDE) || !(tgrid.y % CHUNK_SIDE)) break;
 			if (!square_ismark(c, tgrid)) break;
 		}
 
@@ -608,7 +608,7 @@ void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	int x, y, plats, j;
 	int y0 = y_offset * CHUNK_SIDE;
 	int x0 = x_offset * CHUNK_SIDE;
-	int form_grids = 0;
+	int form_grids;
 	struct loc grid;
 
 	int form_feats[] = { FEAT_GRASS, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
@@ -620,8 +620,7 @@ void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	for (y = 0; y < CHUNK_SIDE; y++) {
 		for (x = 0; x < CHUNK_SIDE; x++) {
 			/* Terrain */
-			if (randint1(player->depth + HIGHLAND_TREE_CHANCE)
-				> HIGHLAND_TREE_CHANCE) {
+			if (randint0(100) < HIGHLAND_TREE_CHANCE) {
 				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_TREE2);
 			} else {
 				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_TREE);
@@ -630,7 +629,7 @@ void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	}
 
 	/* Set the number of wilderness vaults */
-	set_num_vaults(cave);
+	set_num_vaults(c);
 
 	/* Make a few clearings */
 	plats = rand_range(1, 2);
@@ -646,7 +645,7 @@ void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 		y = randint0(CHUNK_SIDE - 1) + 1;
 		x = randint0(CHUNK_SIDE - 1) + 1;
 		made_plat =
-		generate_starburst_room(cave, y0 + y - b, x0 + x - a, y0 + y + b,
+		generate_starburst_room(c, y0 + y - b, x0 + x - a, y0 + y + b,
 									x0 + x + a, false, FEAT_GRASS, true);
 
 		/* Success ? */
@@ -659,25 +658,26 @@ void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	}
 
 	/* Place some formations */
-	while (form_grids < randint0(20)) {
+	form_grids = randint0(20);
+	while (form_grids > 0) {
 		/* Choose a place */
 		grid.y = randint1(CHUNK_SIDE - 2) + y0;
-		grid.x = randint1(CHUNK_SIDE - 2) + y0;
-		form_grids += make_formation(cave, player, grid, FEAT_TREE, FEAT_TREE2,
-									 form_feats, "Forest", ref->z_pos + 1);
+		grid.x = randint1(CHUNK_SIDE - 2) + x0;
+		form_grids -= make_formation(c, player, grid, FEAT_TREE, FEAT_TREE2,
+									 form_feats, "Forest", 5 + randint0(5));
 	}
 
 	/* And some water */
-	form_grids = 0;
-	while (form_grids < 300) {
+	form_grids = randint0(40);
+	while (form_grids > 0) {
 		grid.y = randint1(CHUNK_SIDE - 2) + y0;
 		grid.x = randint1(CHUNK_SIDE - 2) + x0;
-		form_grids += make_formation(cave, player, grid, FEAT_TREE, FEAT_TREE2,
-									 ponds, "Forest", 10);
+		form_grids -= make_formation(c, player, grid, FEAT_TREE, FEAT_TREE2,
+									 ponds, "Forest", 5 + randint0(10));
 	}
 
-	if (!character_dungeon)
-		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+	//if (!character_dungeon)
+	//	player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
 }
 
 void ocean_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
