@@ -1158,7 +1158,7 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 /**
  * Generate a chunk on the surface
  */
-void chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
+int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 				int x_offset)
 {
 	int n, z_off, y_off, x_off, idx;
@@ -1175,10 +1175,10 @@ void chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	struct connector *latest = NULL;
 
 	/* If no region, return */
-	if (!ref->region) return;
+	if (!ref->region) return MAX_CHUNKS;
 
 	/* If underground, return */
-	if (z_pos) return;
+	if (z_pos) return MAX_CHUNKS;
 
 	/* See if we've been generated before */
 	reload = gen_loc_find(x_pos, y_pos, z_pos, &lower, &upper);
@@ -1391,6 +1391,7 @@ void chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 			}
 		}
 	}
+	return idx;
 }
 
 /**
@@ -1528,7 +1529,7 @@ static void arena_realign(int y_offset, int x_offset)
 				chunk_read(chunk_idx, y, x);
 			} else {
 				/* Otherwise generate a new one */
-				chunk_fill(cave, &ref, y, x);
+				(void) chunk_fill(cave, &ref, y, x);
 			}
 		}
 	}

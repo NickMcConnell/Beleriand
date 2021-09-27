@@ -387,8 +387,8 @@ void chunk_list_cleanup(void);
 int chunk_find(struct chunk_ref ref);
 int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
 				u16b y_pos, u16b x_pos, bool write);
-void chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				int x_offset);
+int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
+			   int x_offset);
 int chunk_get_centre(void);
 void chunk_change(int z_offset, int y_offset, int x_offset);
 

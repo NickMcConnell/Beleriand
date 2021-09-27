@@ -1398,50 +1398,88 @@ void do_cmd_wiz_increase_exp(struct command *cmd)
  */
 void do_cmd_wiz_jump_level(struct command *cmd)
 {
-#if 0 //B
-	int place = 0, choose_gen = 0;
+	int x_pos = 0, y_pos = 0, z_pos = 0, choose_gen = 0;
+	char prompt[80], s[80];
+	int i, y, x;
+	struct chunk *chunk;
 
-	if (cmd_get_arg_number(cmd, "level", &place) != CMD_OK) {
-		char prompt[80], s[80];
-		int i;
+	/* Ask for x */
+	my_strcpy(prompt, "Give x position : ", sizeof(prompt));
+	strnfmt(s, sizeof(s), "%d",	chunk_list[player->place].x_pos);
+	if (!get_string(prompt, s, 30)) return;
+	if (!get_int_from_string(s, &x_pos)) return;
 
-		strnfmt(prompt, sizeof(prompt), "Jump to place (name): ",
-			z_info->max_depth - 1);
+	/* Ask for y */
+	my_strcpy(prompt, "Give y position : ", sizeof(prompt));
+	strnfmt(s, sizeof(s), "%d",	chunk_list[player->place].y_pos);
+	if (!get_string(prompt, s, 30)) return;
+	if (!get_int_from_string(s, &y_pos)) return;
 
-		/* Default */
-		strnfmt(s, sizeof(s), "%s",	level_name(&world->levels[player->place]));
+	/* Ask for z */
+	my_strcpy(prompt, "Give z position : ", sizeof(prompt));
+	strnfmt(s, sizeof(s), "%d",	chunk_list[player->place].z_pos);
+	if (!get_string(prompt, s, 30)) return;
+	if (!get_int_from_string(s, &z_pos)) return;
 
-		/* Ask for a level */
-		if (!get_string(prompt, s, 30)) return;
+	//B for now
+	z_pos = 0;
 
-		/* Extract request */
-		for (i = 0; i < world->num_levels; i++) {
-			place = i;
-			if (!my_stricmp(s, level_name(&world->levels[i]))) {
-				break;
+	character_dungeon = false;
+
+	/* Make an arena to build into */
+	chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
+
+	/* Set the chunk */
+	player->last_place = player->place;
+
+	for (y = 0; y < 3; y++) {
+		for (x = 0; x < 3; x++) {
+			struct chunk_ref ref = { 0 };
+			int idx;
+
+			/* Get the location data */
+			ref.z_pos = z_pos;
+			ref.y_pos = y_pos;
+			ref.x_pos = x_pos;
+			ref.region = find_region(ref.y_pos, ref.x_pos);
+			chunk_adjacent_data(&ref, 0, y, x);
+
+			/* Generate a new chunk */
+			idx = chunk_fill(chunk, &ref, y, x);
+			if ((y == 1) && (x == 1)) {
+				square_set_feat(chunk, loc(CHUNK_SIDE / 2, CHUNK_SIDE / 2),
+								FEAT_ROAD);
+				player->place = idx;
 			}
 		}
-		if (i == world->num_levels) {
-			return;
-		}
-		cmd_set_arg_number(cmd, "level", place);
+	}
+	player_place(chunk, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+	cave = chunk;
+
+	/* Allocate new known level */
+	player->cave = chunk_new(chunk->height, chunk->width);
+	player->cave->objects = mem_realloc(player->cave->objects,
+										(chunk->obj_max + 1)
+										* sizeof(struct object*));
+	player->cave->obj_max = chunk->obj_max;
+	for (i = 0; i <= player->cave->obj_max; i++) {
+		player->cave->objects[i] = NULL;
 	}
 
-	if (level_topography(place) == TOP_CAVE &&
-		cmd_get_arg_choice(cmd, "choice", &choose_gen) != CMD_OK) {
+	if (z_pos > 0 && cmd_get_arg_choice(cmd, "choice", &choose_gen) != CMD_OK) {
 		choose_gen = (get_check("Choose cave profile? ")) ? 1 : 0;
 		cmd_set_arg_choice(cmd, "choice", choose_gen);
 	}
 
-	if (choose_gen) {
+	if (choose_gen || !z_pos) {
 		player->noscore |= NOSCORE_JUMPING;
 	}
 
 	/* Accept request */
-	msg("You jump to %s.", level_name(&world->levels[place]));
+	msg("You jump to %s.", region_info[chunk_list[player->place].region].name);
 
-	/* New place */
-	player_change_place(player, place);
+	/* Save the game when we arrive on the new level. */
+	player->upkeep->autosave = true;
 
 	/*
 	 * Because of the structure of the game loop, need to take some energy,
@@ -1449,7 +1487,12 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	 * performing another action that takes energy.
 	 */
 	player->upkeep->energy_use = z_info->move_energy;
-#endif
+
+	/* Apply illumination */
+	cave_illuminate(cave, is_daytime());
+
+	/* The dungeon is ready */
+	character_dungeon = true;
 }
 
 

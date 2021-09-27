@@ -1254,7 +1254,7 @@ void prepare_next_level(struct player *p)
 				chunk_adjacent_data(&ref, 0, y, x);
 
 				/* Generate a new chunk */
-				chunk_fill(chunk, &ref, y, x);
+				(void) chunk_fill(chunk, &ref, y, x);
 			}
 		}
 		player_place(chunk, p, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
