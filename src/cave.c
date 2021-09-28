@@ -448,7 +448,7 @@ void chunk_wipe(struct chunk *c)
 		if (c->objects[i] && !c->objects[i]->floor &&
 			!c->objects[i]->held_m_idx && !c->objects[i]->mimicking_m_idx) {
 			assert(loc_is_zero(c->objects[i]->grid));
-			object_delete(&c->objects[i]);
+			object_delete(c, NULL, &c->objects[i]);
 		}
 	}
 
@@ -458,7 +458,7 @@ void chunk_wipe(struct chunk *c)
 			if (c->squares[y][x].trap)
 				square_free_trap(c, loc(x, y));
 			if (c->squares[y][x].obj)
-				object_pile_free(c->squares[y][x].obj);
+				object_pile_free(c, c->squares[y][x].obj);
 		}
 		mem_free(c->squares[y]);
 	}

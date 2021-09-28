@@ -444,10 +444,10 @@ void delete_monster_idx(int m_idx)
 		 * some additional bookkeeping. */
 		if (obj->known) {
 			delist_object(p_c, obj->known);
-			object_delete(&obj->known);
+			object_delete(p_c, NULL, &obj->known);
 		}
 		delist_object(c, obj);
-		object_delete(&obj);
+		object_delete(c, p_c, &obj);
 		obj = next;
 	}
 
@@ -658,7 +658,7 @@ void wipe_mon_list(void)
 				}
 				obj = obj->next;
 			}
-			object_pile_free(held_obj);
+			object_pile_free(NULL, held_obj);
 		}
 	}
 
@@ -991,7 +991,7 @@ void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
 			monster_carry(c, mon, obj);
 		} else {
 			/* Otherwise delete the mimicked object */
-			object_delete(&obj);
+			object_delete(c, NULL, &obj);
 		}
 	}
 }
