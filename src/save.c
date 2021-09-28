@@ -949,6 +949,7 @@ void wr_chunks(void)
 		return;
 
 	wr_u16b(chunk_max);
+	wr_u16b(chunk_cnt);
 
 	/* Now write each chunk */
 	for (j = 0; j < chunk_max; j++) {

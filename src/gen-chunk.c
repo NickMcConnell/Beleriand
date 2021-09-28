@@ -837,9 +837,11 @@ static void chunk_delete(int idx)
 	ref->gen_loc_idx = 0;
 	if (ref->chunk) {
 		chunk_wipe(ref->chunk);
+		ref->chunk = NULL;
 	}
 	if (ref->p_chunk) {
 		chunk_wipe(ref->p_chunk);
+		ref->p_chunk = NULL;
 	}
 	for (i = 0; i < DIR_MAX; i++) {
 		ref->adjacent[i] = MAX_CHUNKS;
@@ -976,7 +978,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
 	/* We need a new slot */
 	if (idx == MAX_CHUNKS) {
 		/* Too many chunks */
-		if (chunk_cnt >= MAX_CHUNKS) {
+		if (chunk_cnt >= MAX_CHUNKS - 1) {
 			/* Find and delete the oldest chunk */
 			idx = 0;
 			for (i = 0; i < MAX_CHUNKS; i++) {
@@ -990,12 +992,12 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
 			/* Delete whole levels at once */
 			if (chunk_list[idx].z_pos > 0) {
 				chunk_delete_level(max);
+			} else {
+				/* Decrement the counter, and the maximum if necessary */
+				chunk_cnt--;
+				if (idx == chunk_max)
+					chunk_max--;
 			}
-
-			/* Decrement the counter, and the maximum if necessary */
-			chunk_cnt--;
-			if (idx == chunk_max)
-				chunk_max--;
 		} else {
 			/* Find the next free slot */
 			for (idx = 0; idx < chunk_max; idx++) {

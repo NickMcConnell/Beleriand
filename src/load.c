@@ -1540,6 +1540,7 @@ int rd_chunks(void)
 		return 0;
 
 	rd_u16b(&chunk_max);
+	rd_u16b(&chunk_cnt);
 	for (j = 0; j < chunk_max; j++) {
 		struct chunk_ref *ref = &chunk_list[j];
 		struct chunk *c, *p_c;
