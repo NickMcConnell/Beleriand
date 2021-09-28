@@ -957,7 +957,7 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 				/* Lava */
 			case '`': square_set_feat(c, grid, FEAT_LAVA); break;
 				/* Water */
-			case '/': square_set_feat(c, grid, FEAT_WATER); break;
+			case '/': square_set_feat(c, grid, FEAT_S_WATER); break;
 				/* Trees */
 			case ';': {
 				if (one_in_(2))

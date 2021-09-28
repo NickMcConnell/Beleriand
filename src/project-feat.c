@@ -563,7 +563,7 @@ static void project_feature_handler_STORM(project_feature_handler_context_t *con
 		/* If enough water available, make pool. */
 		if ((context->dam + (k * 20)) > 100 + (randint0(400))) {
 			/* Create water */
-			square_set_feat(cave, context->grid, FEAT_WATER);
+			square_set_feat(cave, context->grid, FEAT_S_WATER);
 		}
 	}
 }

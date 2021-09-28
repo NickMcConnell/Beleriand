@@ -267,24 +267,16 @@ extern int FEAT_QUARTZ_K;
 extern int FEAT_GRANITE;
 extern int FEAT_PERM;
 
-/* Wilderness paths */
-extern int FEAT_LESS_NORTH;
-extern int FEAT_MORE_NORTH;
-extern int FEAT_LESS_EAST;
-extern int FEAT_MORE_EAST;
-extern int FEAT_LESS_SOUTH;
-extern int FEAT_MORE_SOUTH;
-extern int FEAT_LESS_WEST;
-extern int FEAT_MORE_WEST;
-
 /* Other terrain */
 extern int FEAT_LAVA;
-extern int FEAT_WATER;
+extern int FEAT_S_WATER;
+extern int FEAT_D_WATER;
 extern int FEAT_TREE;
 extern int FEAT_TREE2;
 extern int FEAT_GRASS;
 extern int FEAT_ROAD;
 extern int FEAT_VOID;
+extern int FEAT_SAND;
 extern int FEAT_DUNE;
 extern int FEAT_REED;
 extern int FEAT_MTN;
@@ -334,7 +326,6 @@ bool feat_is_granite(int feat);
 bool feat_is_treasure(int feat);
 bool feat_is_wall(int feat);
 bool feat_is_permanent(int feat);
-bool feat_is_path(int feat);
 bool feat_is_floor(int feat);
 bool feat_is_run1(int feat);
 bool feat_is_run2(int feat);
@@ -386,7 +377,6 @@ bool square_isdoor(struct chunk *c, struct loc grid);
 bool square_isstairs(struct chunk *c, struct loc grid);
 bool square_isupstairs(struct chunk *c, struct loc grid);
 bool square_isdownstairs(struct chunk *c, struct loc grid);
-bool square_ispath(struct chunk *c, struct loc grid);
 bool square_isplayer(struct chunk *c, struct loc grid);
 bool square_isoccupied(struct chunk *c, struct loc grid);
 bool square_isknown(struct chunk *c, struct loc grid);

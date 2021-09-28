@@ -185,7 +185,6 @@ static bool check_clearing_space(struct chunk *c, struct loc top_left,
 	 */
 	for (grid.y = top_left.y + 1; grid.y < bottom_right.y; grid.y++) {
 		for (grid.x = top_left.x + 1; grid.x < bottom_right.x; grid.x++) {
-			if (square_ispath(c, grid)) return false;
 			if (square_ismark(c, grid)) return false;
 		}
 	}
@@ -208,7 +207,6 @@ static bool check_vault_space(struct chunk *c, struct loc avoid,
 	/* Check every square */
 	for (grid.y = top_left.y; grid.y < bottom_right.y; grid.y++) {
 		for (grid.x = top_left.x; grid.x < bottom_right.x; grid.x++) {
-			if (square_ispath(c, grid)) return false;
 			if (distance(grid, avoid) < 20) return false;
 			if (square_ismark(c, grid)) return false;
 			if (square(c, grid)->mon) return false;
@@ -589,6 +587,12 @@ void plain_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	int x, y;
 	int y0 = y_offset * CHUNK_SIDE;
 	int x0 = x_offset * CHUNK_SIDE;
+	int form_grids;
+	struct loc grid;
+
+	int form_feats[] = { FEAT_TREE, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
+						 FEAT_TREE2, FEAT_QUARTZ, FEAT_NONE };
+	int ponds[] = { FEAT_S_WATER, FEAT_NONE };
 
 	/* Write the location stuff */
 	for (y = 0; y < CHUNK_SIDE; y++) {
@@ -598,8 +602,27 @@ void plain_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 		}
 	}
 
-	if (!character_dungeon)
-		player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+	/* Set the number of wilderness vaults */
+	set_num_vaults(c);
+
+	/* Place some formations */
+	form_grids = randint0(40);
+	while (form_grids > 0) {
+		/* Choose a place */
+		grid.y = randint1(CHUNK_SIDE - 2) + y0;
+		grid.x = randint1(CHUNK_SIDE - 2) + x0;
+		form_grids -= make_formation(c, player, grid, FEAT_GRASS, FEAT_GRASS,
+									 form_feats, "Plains", 5 + randint0(5));
+	}
+
+	/* And some water */
+	form_grids = randint0(20);
+	while (form_grids > 0) {
+		grid.y = randint1(CHUNK_SIDE - 2) + y0;
+		grid.x = randint1(CHUNK_SIDE - 2) + x0;
+		form_grids -= make_formation(c, player, grid, FEAT_GRASS, FEAT_GRASS,
+									 ponds, "Plains", 5 + randint0(10));
+	}
 }
 
 void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
@@ -613,7 +636,7 @@ void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 
 	int form_feats[] = { FEAT_GRASS, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
 						 FEAT_GRASS, FEAT_QUARTZ, FEAT_NONE	};
-	int ponds[] = { FEAT_WATER, FEAT_NONE };
+	int ponds[] = { FEAT_S_WATER, FEAT_NONE };
 
 
 	/* Write the location stuff */
@@ -675,9 +698,6 @@ void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 		form_grids -= make_formation(c, player, grid, FEAT_TREE, FEAT_TREE2,
 									 ponds, "Forest", 5 + randint0(10));
 	}
-
-	//if (!character_dungeon)
-	//	player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
 }
 
 void ocean_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
@@ -691,7 +711,7 @@ void ocean_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	for (y = 0; y < CHUNK_SIDE; y++) {
 		for (x = 0; x < CHUNK_SIDE; x++) {
 			/* Terrain */
-			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_WATER);
+			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_D_WATER);
 		}
 	}
 
@@ -710,7 +730,7 @@ void lake_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	for (y = 0; y < CHUNK_SIDE; y++) {
 		for (x = 0; x < CHUNK_SIDE; x++) {
 			/* Terrain */
-			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_WATER);
+			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_S_WATER);
 		}
 	}
 
