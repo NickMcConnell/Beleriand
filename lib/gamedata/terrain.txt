@@ -248,9 +248,9 @@ desc: spells.  May dissolve or be tunnelled to normal floor, and can be walked
 desc: through by the player and monsters.
 
 name:shallow water
-graphics:.:b
+graphics:.:Z
 priority:6
-flags:LOS | PROJECT | PASSABLE | NO_SCENT | EXPOSE | WATERY
+flags:LOS | PROJECT | PASSABLE | NO_SCENT | EXPOSE | WATERY | TORCH
 look-prefix:some
 look-in-preposition:in
 desc:Cannot be passed by fiery, earthbound monsters, slows down most other
@@ -261,7 +261,7 @@ desc:  However, fire-based spells become much less powerful, so find a lake if
 desc: you battle Smaug.  Water may evaporate.
 
 name:deep water
-graphics:~:b
+graphics:~:Z
 priority:6
 flags:LOS | PROJECT | PASSABLE | NO_SCENT | EXPOSE | WATERY | SWIM
 look-prefix:some
@@ -273,9 +273,9 @@ desc: dodge in water.  However, fire-based spells become much less powerful,
 desc: so find a lake if you battle Smaug.
 
 name:lowland trees
-graphics:+:g
+graphics:+:t
 priority:14
-flags:PASSABLE | OBJECT | TREE | PROTECT | ORGANIC | HIDE_OBJ | TRAP
+flags:PASSABLE | OBJECT | TREE | PROTECT | ORGANIC | HIDE_OBJ | TRAP | TORCH
 look-prefix:some
 look-in-preposition:amid
 desc:Slows down characters not familiar with druidic techniques, and all
@@ -286,9 +286,9 @@ desc: ranged, or magical attacks.  Trees can burn.
 
 
 name:highland trees
-graphics:+:t
+graphics:+:g
 priority:14
-flags:PASSABLE | OBJECT | TREE | PROTECT | ORGANIC | HIDE_OBJ | TRAP
+flags:PASSABLE | OBJECT | TREE | PROTECT | ORGANIC | HIDE_OBJ | TRAP | TORCH
 look-prefix:some
 look-in-preposition:amid
 desc:Slows down characters not familiar with druidic techniques, and all
@@ -301,7 +301,7 @@ name:grass
 graphics:.:g
 priority:5
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | ORGANIC | EASY | RUN2 | TRAP
-flags:MTRAP
+flags:MTRAP | TORCH
 look-prefix:some
 desc:Open ground that can be crossed easily by all creatures.  It occurs only
 desc: in wilderness.  It may contain traps.
@@ -336,14 +336,14 @@ desc: hold traps or items.  Does not break line of sight.
 name:sand dune
 graphics:.:y
 priority:13
-flags:PASSABLE | OBJECT | EASY
+flags:PASSABLE | OBJECT | EASY | TORCH
 desc:A hill of sand. Ends LOS, stops missiles, bolts, and beams, and reduces
 desc: the radius of ball spells.
 
 name:reeds
 graphics:;:g
 priority:13
-flags:PASSABLE | OBJECT | EASY | ORGANIC
+flags:PASSABLE | OBJECT | EASY | ORGANIC | TORCH
 desc:Tall reeds, usually surrounded by water.  Ends LOS, stops missiles, bolts,
 desc: and beams, and reduces the radius of ball spells.
 
@@ -357,7 +357,7 @@ desc: the radius of ball spells.
 name:snow
 graphics:*:w
 priority:13
-flags:PASSABLE | OBJECT | PROTECT | HIDE_OBJ | ICY
+flags:PASSABLE | OBJECT | PROTECT | HIDE_OBJ | ICY | TORCH
 desc:Greatly slows down any creature that cannot bore or pass through rock.
 desc:  Ends LOS, stops missiles, bolts, and beams, and reduces the radius of
 desc: ball spells.  Grants the character and monsters within it some protection
@@ -367,13 +367,13 @@ desc: floor.
 name:battlement
 graphics:#:u
 priority:13
-flags:LOS | PROJECT | WALL | ROCK | NO_SCENT | NO_FLOW
+flags:LOS | PROJECT | WALL | ROCK | NO_SCENT | NO_FLOW | TORCH
 desc:Allows LOS, missiles, bolts, and beams, but cannot be passed.
 
 name:ice
 graphics:*:w
 priority:13
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | RUN2 | ICY | TRAP
-flags:MTRAP
+flags:MTRAP | TORCH
 desc:An exposed sheet of ice.  Can be walked across by anything, and can
 desc: hold items.  Does not break line of sight.
