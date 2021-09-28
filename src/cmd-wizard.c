@@ -1402,6 +1402,7 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	char prompt[80], s[80];
 	int i, y, x;
 	struct chunk *chunk;
+	int centre;
 
 	/* Ask for x */
 	my_strcpy(prompt, "Give x position : ", sizeof(prompt));
@@ -1425,6 +1426,22 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	z_pos = 0;
 
 	character_dungeon = false;
+
+	/* Save off the old chunks */
+	centre = chunk_get_centre();
+	for (y = 0; y < 3; y++) {
+		for (x = 0; x < 3; x++) {
+			struct chunk_ref ref = chunk_list[centre];
+
+			/* Get the location data */
+			chunk_adjacent_data(&ref, 0, y, x);
+			ref.z_pos = player->depth;
+
+			/* Store it */
+			(void) chunk_store(y, x, ref.region, ref.z_pos, ref.y_pos,
+							   ref.x_pos, true);
+		}
+	}
 
 	/* Make an arena to build into */
 	chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
