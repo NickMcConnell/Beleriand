@@ -250,7 +250,7 @@ desc: through by the player and monsters.
 name:shallow water
 graphics:.:Z
 priority:6
-flags:LOS | PROJECT | PASSABLE | NO_SCENT | EXPOSE | WATERY | TORCH
+flags:LOS | PROJECT | PASSABLE | NO_SCENT | EXPOSE | WATERY | TORCH | SMOOTH
 look-prefix:some
 look-in-preposition:in
 desc:Cannot be passed by fiery, earthbound monsters, slows down most other
@@ -263,7 +263,7 @@ desc: you battle Smaug.  Water may evaporate.
 name:deep water
 graphics:~:Z
 priority:6
-flags:LOS | PROJECT | PASSABLE | NO_SCENT | EXPOSE | WATERY | SWIM
+flags:LOS | PROJECT | PASSABLE | NO_SCENT | EXPOSE | WATERY | SWIM | SMOOTH
 look-prefix:some
 look-in-preposition:in
 desc:Cannot be passed by fiery, earthbound monsters, requires swimming to get
