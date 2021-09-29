@@ -117,3 +117,12 @@ int point_set_contains(struct point_set *ps, struct loc grid)
 			return 1;
 	return 0;
 }
+
+struct loc point_set_random(struct point_set *ps)
+{
+	int i;
+	for (i = 0; i < ps->n; i++)
+		if (one_in_(ps->n - i))
+			return ps->pts[i];
+	return ps->pts[ps->n - 1];
+}
