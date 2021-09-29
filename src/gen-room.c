@@ -3131,7 +3131,7 @@ bool build_moria(struct chunk *c, struct loc centre, int rating)
 									   x1 + randint0(width / 4),
 									   y2 - randint0(height / 4),
 									   x2 - randint0(width / 4), false,
-									   FEAT_WATER, false);
+									   FEAT_S_WATER, false);
 	}
 
 	/* Success */

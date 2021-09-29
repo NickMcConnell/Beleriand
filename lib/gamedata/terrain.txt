@@ -357,10 +357,9 @@ desc: the radius of ball spells.
 name:snow
 graphics:*:w
 priority:13
-flags:PASSABLE | OBJECT | PROTECT | HIDE_OBJ | ICY | TORCH
+flags:LOS | PROJECT | PASSABLE | OBJECT | PROTECT | HIDE_OBJ | ICY | TORCH
 desc:Greatly slows down any creature that cannot bore or pass through rock.
-desc:  Ends LOS, stops missiles, bolts, and beams, and reduces the radius of
-desc: ball spells.  Grants the character and monsters within it some protection
+desc:  Grants the character and monsters within it some protection
 desc: from melee, ranged, or magical attacks.  Snow may dissolve to normal
 desc: floor.
 
@@ -371,7 +370,7 @@ flags:LOS | PROJECT | WALL | ROCK | NO_SCENT | NO_FLOW | TORCH
 desc:Allows LOS, missiles, bolts, and beams, but cannot be passed.
 
 name:ice
-graphics:*:w
+graphics:.:z
 priority:13
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | RUN2 | ICY | TRAP
 flags:MTRAP | TORCH

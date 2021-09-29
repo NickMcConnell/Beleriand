@@ -1142,11 +1142,6 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 				town_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '&':
-			{
-				landmk_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
 		default:
 			{
 				ocean_gen(c, ref, y_offset, x_offset, first);

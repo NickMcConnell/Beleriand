@@ -29,7 +29,6 @@
 # / Desert
 # * Snow
 # = Town
-# & Landmark
 
 name:Helcaraxë
 danger:2
