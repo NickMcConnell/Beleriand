@@ -7,6 +7,7 @@
 #ifndef GENERATE_H
 #define GENERATE_H
 
+#include "game-world.h"
 #include "monster.h"
 
 #if  __STDC_VERSION__ < 199901L
@@ -382,6 +383,7 @@ int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset);
 int find_region(int y_pos, int x_pos);
 void chunk_adjacent_data(struct chunk_ref *ref, int z_offset, int y_offset,
 						 int x_offset);
+void connectors_free(struct connector *join);
 void chunk_list_init(void);
 void chunk_list_cleanup(void);
 int chunk_find(struct chunk_ref ref);

@@ -987,9 +987,9 @@ static void cleanup_dun_data(struct dun_data *dd)
 
 	if (!dd) return;
 
-	//cave_connectors_free(dun->join);
-	//cave_connectors_free(dun->one_off_above);
-	//cave_connectors_free(dun->one_off_below);
+	//connectors_free(dun->join);
+	//connectors_free(dun->one_off_above);
+	//connectors_free(dun->one_off_below);
 	mem_free(dun->cent);
 	mem_free(dun->ent_n);
 	for (i = 0; i < z_info->level_room_max; ++i) {
@@ -1213,9 +1213,9 @@ static struct chunk *cave_generate(struct player *p, u32b seed)
 			}
 		}
 	}
-	cave_connectors_free(dun_join);
-	cave_connectors_free(one_off_above);
-	cave_connectors_free(one_off_below);
+	connectors_free(dun_join);
+	connectors_free(one_off_above);
+	connectors_free(one_off_below);
 
 	set_monster_place_current();
 	return chunk;

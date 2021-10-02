@@ -395,19 +395,6 @@ void heatmap_free(struct chunk *c, struct heatmap map)
 }
 
 /**
- * Free a linked list of cave connections.
- */
-void cave_connectors_free(struct connector *join)
-{
-	while (join) {
-		struct connector *current = join;
-
-		join = current->next;
-		mem_free(current);
-	}
-}
-
-/**
  * Allocate a new chunk of the world
  */
 struct chunk *chunk_new(int height, int width)

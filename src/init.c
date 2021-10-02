@@ -845,6 +845,7 @@ static errr finish_parse_region(struct parser *p)
 		struct world_region *region = &region_info[i];
 		int y_start = region->y_offset;
 		int x_start = region->x_offset;
+		assert((int)strlen(region->text) == region->width * region->height);
 
 		for (y = 0; y < region->height; y++) {
 			for (x = 0; x < region->width; x++) {

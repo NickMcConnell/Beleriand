@@ -120,7 +120,7 @@ void gen_loc_list_cleanup(void)
 				mem_free(change);
 			}
 		}
-		cave_connectors_free(gen_loc_list[i].join);
+		connectors_free(gen_loc_list[i].join);
 	}
 	mem_free(gen_loc_list);
 	gen_loc_list = NULL;

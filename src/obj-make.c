@@ -18,8 +18,8 @@
 
 #include "angband.h"
 #include "alloc.h"
-#include "cave.h"
 #include "effects.h"
+#include "game-world.h"
 #include "init.h"
 #include "obj-chest.h"
 #include "obj-curse.h"

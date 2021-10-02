@@ -20,6 +20,7 @@
 
 #include "angband.h"
 #include "effects.h"
+#include "game-world.h"
 #include "init.h"
 #include "monster.h"
 #include "mon-attack.h"

@@ -147,6 +147,9 @@ enum grid_light_level
 	LIGHTING_MAX
 };
 
+/**
+ * Data used to present the player map
+ */
 struct grid_data {
 	u32b m_idx;				/* Monster index */
 	u32b f_idx;				/* Feature index */
@@ -162,6 +165,9 @@ struct grid_data {
 	bool hallucinate;
 };
 
+/**
+ * Complete description of what a game grid contains
+ */
 struct square {
 	byte feat;
 	bitflag *info;
@@ -171,19 +177,22 @@ struct square {
 	struct trap *trap;
 };
 
+/**
+ * A structure for assisting monster pathfinding
+ */
 struct heatmap {
     u16b **grids;
 };
 
-struct connector {
-	struct loc grid;
-	byte feat;
-	bitflag info[SQUARE_SIZE];
-	struct connector *next;
-};
-
 /**
  * A chunk of the world
+ *
+ * Chunks are _mostly_ assumed to be 22x22 game grids, (and CHUNK_SIDE is
+ * defined to 22).  This is the standard for chunks referred to in the other
+ * world data structures in game-world.h.
+ *
+ * The important exception is that the current playing arena (the map seen by
+ * the player), which is 66x66 game grids (and ARENA_SIDE is defined to 66).
  */
 struct chunk {
 	int height;
@@ -198,43 +207,6 @@ struct chunk {
 
 	struct object **objects;
 	u16b obj_max;
-};
-
-/**
- * Location data for a chunk
- */
-struct chunk_ref {
-	u16b place;			/**< Index of this chunk */
-	s32b turn;			/**< Turn this chunk was created */
-	u16b region;		/**< Region the chunk is from */
-	u16b z_pos;			/**< Depth of the chunk below ground */
-	u16b y_pos;			/**< y position of the chunk */
-	u16b x_pos;			/**< x position of the chunk */
-	struct chunk *chunk;	/**< The actual chunk */
-	struct chunk *p_chunk;	/**< The player's knowledge of the chunk */
-	u32b gen_loc_idx;	/**< The chunk index in the generated locations list */
-	int adjacent[11];	/**< Adjacent chunks */
-};
-
-/**
- * A change to terrain made after generation
- */
-struct terrain_change {
-	struct loc grid;
-    int feat;
-    struct terrain_change *next;
-};
-
-/**
- * Generation data for a generated location
- */
-struct gen_loc {
-    int x_pos;
-    int y_pos;
-    int z_pos;
-	u32b seed;
-    struct terrain_change *change;
-    struct connector *join;
 };
 
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/
@@ -286,12 +258,6 @@ extern int FEAT_ICE;
 
 /* Current level */
 extern struct chunk *cave;
-/* Stored levels */
-extern u16b chunk_max;
-extern u16b chunk_cnt;
-extern u32b gen_loc_max;
-extern u32b gen_loc_cnt;
-extern struct chunk_ref *chunk_list;
 
 /* cave-view.c */
 int distance(struct loc grid1, struct loc grid2);
@@ -518,7 +484,6 @@ int lookup_feat(const char *name);
 void set_terrain(void);
 u16b **heatmap_new(struct chunk *c);
 void heatmap_free(struct chunk *c, struct heatmap map);
-void cave_connectors_free(struct connector *join);
 struct chunk *chunk_new(int height, int width);
 void chunk_wipe(struct chunk *c);
 void list_object(struct chunk *c, struct object *obj);

@@ -793,6 +793,19 @@ static void connector_add(struct connector **first, struct connector **latest,
 }
 
 /**
+ * Free a linked list of connectiors.
+ */
+void connectors_free(struct connector *join)
+{
+	while (join) {
+		struct connector *current = join;
+
+		join = current->next;
+		mem_free(current);
+	}
+}
+
+/**
  * ------------------------------------------------------------------------
  * Chunk list operations
  * ------------------------------------------------------------------------ */

@@ -2996,7 +2996,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	normal = modified_chunk(p, p->depth, y_size, normal_width,
 		dun->persist);
 	/* Done with the transformed connector information. */
-	cave_connectors_free(dun->join);
+	connectors_free(dun->join);
 	dun->join = cached_join;
 	if (!normal) {
 		return NULL;
@@ -3010,7 +3010,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 		0, lair_offset, 0, false);
 	lair = cavern_chunk(p->depth, y_size, lair_width, dun->join);
 	/* Done with the transformed connector information. */
-	cave_connectors_free(dun->join);
+	connectors_free(dun->join);
 	dun->join = cached_join;
 	if (!lair) {
 		delete_temp_monsters();
