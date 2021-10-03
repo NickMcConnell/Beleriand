@@ -20,7 +20,7 @@ int teardown_tests(void *state) {
 }
 
 static errr run_parse_monster(struct parser *p) {
-	return parse_file(p, "monster");
+	return parse_file(p, "monster", NULL);
 }
 
 static int test_lore_parse_monster_text(void *state) {

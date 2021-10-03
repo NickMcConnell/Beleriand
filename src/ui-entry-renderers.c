@@ -1860,7 +1860,7 @@ static struct parser *init_parse_ui_entry_renderer(void)
 
 static errr run_parse_ui_entry_renderer(struct parser *p)
 {
-	return parse_file(p, "ui_entry_renderer");
+	return parse_file(p, "ui_entry_renderer", NULL);
 }
 
 

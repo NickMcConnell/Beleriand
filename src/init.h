@@ -54,6 +54,7 @@ struct angband_constants
 	u16b p_race_max;	/**< Maximum number of player races */
     u16b region_max;	/**< Maximum number of world regions */
     u16b landmark_max;	/**< Maximum number of landmarks */
+    u16b river_max;	/**< Maximum number of rivers */
 
 	/* Monster generation constants, read from constants.txt */
 	u16b monster_max;			/**< Maximum number of monsters */

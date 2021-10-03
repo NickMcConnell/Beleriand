@@ -1,0 +1,112 @@
+# File: river.txt
+
+# This file lists all the rivers for Belriand, and where to find the files
+# containing their details.
+
+# name:river name
+# file:name of the detailed file
+
+name:River Adurant
+filename:Adurant
+
+name:River Aros
+filename:Aros
+
+name:River Ascar
+filename:Ascar
+
+name:River Brilthor
+filename:Brilthor
+
+name:River Brithon
+filename:Brithon
+
+name:River Celon
+filename:Celon
+
+name:Dry River
+filename:DryRiver
+
+name:River Duilwen
+filename:Duilwen
+
+name:River Esgalduin
+filename:Esgalduin
+
+name:River Esgalduin, first tributary
+filename:Esgalduin1
+
+name:River Esgalduin, second tributary
+filename:Esgalduin2
+
+name:Gate stream
+filename:Gate
+
+name:River Gelion
+filename:Gelion
+
+name:River Ginglith
+filename:Ginglith
+
+name:River Glithui
+filename:Glithui
+
+name:Greater Gelion river
+filename:GreaterGelion
+
+name:Greater Gelion tributary
+filename:GreaterGelion1
+
+name:Northern River of Lammoth 
+filename:Lammoth1
+
+name:Southern River of Lammoth
+filename:Lammoth2
+
+name:River Legolin
+filename:Legolin
+
+name:River Lithir
+filename:Lithir
+
+name:Little Gelion river
+filename:LittleGelion
+
+name:River Malduin
+filename:Malduin
+
+name:River Mindeb
+filename:Mindeb
+
+name:Lake Mithrim, first inflow
+filename:Mithrim1
+
+name:Lake Mithrim, second inflow
+filename:Mithrim2
+
+name:Lake Mithrim, third inflow
+filename:Mithrim3
+
+name:Lake Mithrim, fourth inflow
+filename:Mithrim4
+
+name:River Narog
+filename:Narog
+
+name:River Nenning
+filename:Nenning
+
+name:River Ringwil
+filename:Ringwil
+
+name:River Rivil
+filename:Rivil
+
+name:River Sirion
+filename:Sirion
+
+name:River Teiglin
+filename:Teiglin
+
+name:River Thalos
+filename:Thalos

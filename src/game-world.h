@@ -80,8 +80,10 @@ struct river_chunk {
  */
 struct river {
 	char *name;
+	int index;
 	struct map_square *map_squares;
 	struct river_chunk *chunks;
+	struct river *next;
 };
 
 /**
@@ -207,6 +209,7 @@ extern const byte extract_energy[200];
 extern struct world_region *region_info;
 extern char **region_terrain;
 extern struct landmark *landmark_info;
+extern struct river *river_info;
 extern u16b chunk_max;
 extern u16b chunk_cnt;
 extern struct chunk_ref *chunk_list;

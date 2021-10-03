@@ -2347,7 +2347,7 @@ static struct parser *init_parse_ui_entry(void)
 
 static errr run_parse_ui_entry(struct parser *p)
 {
-	errr result = parse_file(p, "ui_entry_base");
+	errr result = parse_file(p, "ui_entry_base", NULL);
 	int i;
 
 	if (result != 0) {
@@ -2362,7 +2362,7 @@ static errr run_parse_ui_entry(struct parser *p)
 	for (i = 0; i < n_entry; ++i) {
 		entries[i]->flags |= ENTRY_FLAG_TEMPLATE_ONLY;
 	}
-	return parse_file(p, "ui_entry");
+	return parse_file(p, "ui_entry", NULL);
 }
 
 
