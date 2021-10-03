@@ -802,7 +802,7 @@ struct parser *init_parse_region(void)
 
 static errr run_parse_region(struct parser *p)
 {
-	return parse_file(p, "region");
+	return parse_file_quit_not_found(p, "region");
 }
 
 static errr finish_parse_region(struct parser *p)
@@ -880,6 +880,96 @@ static struct file_parser region_parser = {
 	finish_parse_region,
 	cleanup_region
 };
+
+/**
+ * ------------------------------------------------------------------------
+ * Intialize rivers
+ * ------------------------------------------------------------------------ */
+static enum parser_error parse_river_name(struct parser *p)
+{
+	struct river *h = parser_priv(p);
+	struct river *river = mem_zalloc(sizeof *river);
+
+	river->name = string_make(parser_getstr(p, "name"));
+	river->next = h;
+	parser_setpriv(p, river);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_river_filename(struct parser *p)
+{
+	const char *filename = parser_getstr(p, "name");
+	char dirpath[80];
+	errr parse_err;
+	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_GAMEDATA, "rivers");
+	parse_err = parse_file(p, filename, dirpath);
+	if (parse_err)
+		quit(format("Cannot open '%s.txt'", filename));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_river(void)
+{
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_river_name);
+	parser_reg(p, "filename str name", parse_river_filename);
+	return p;
+}
+
+static errr run_parse_river(struct parser *p)
+{
+	return parse_file_quit_not_found(p, "river");
+}
+
+static errr finish_parse_river(struct parser *p)
+{
+	struct river *river, *n;
+	int i;
+
+	/* Scan the list for the max id */
+	z_info->river_max = 0;
+	river = parser_priv(p);
+	while (river) {
+		z_info->river_max++;
+		river = river->next;
+	}
+
+	/* Copy to the array */
+	river_info = mem_zalloc(sizeof(*river) * z_info->river_max);
+	for (river = parser_priv(p), i = 0; river; river = river->next, i++) {
+		river->index = i;
+		memcpy(&river_info[river->index], river, sizeof(*river));
+	}
+
+	river = parser_priv(p);
+	while (river) {
+		n = river->next;
+		mem_free(river);
+		river = n;
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_river(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->river_max; idx++) {
+		mem_free(river_info[idx].name);
+	}
+	mem_free(river_info);
+}
+
+static struct file_parser river_parser = {
+	"river",
+	init_parse_river,
+	run_parse_river,
+	finish_parse_river,
+	cleanup_river
+};
+
 /**
  * ------------------------------------------------------------------------
  * Intialize landmarks
@@ -961,7 +1051,7 @@ struct parser *init_parse_landmark(void)
 
 static errr run_parse_landmark(struct parser *p)
 {
-	return parse_file(p, "landmark");
+	return parse_file_quit_not_found(p, "landmark");
 }
 
 static errr finish_parse_landmark(struct parser *p)
@@ -2236,6 +2326,7 @@ static struct {
 	{ "world", &world_parser },
 	{ "regions", &region_parser },
 	{ "landmarks", &landmark_parser },
+	{ "rivers", &river_parser },
 	{ "projections", &projection_parser },
 	{ "features", &feat_parser },
 	{ "slays", &slay_parser },
