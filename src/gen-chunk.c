@@ -1133,17 +1133,17 @@ static int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
  */
 static void chunk_generate(struct chunk_ref ref, int y_offset, int x_offset)
 {
-	int n, z_off, y_off, x_off, idx;
+	int n, z_off, y_off, x_off;
 	int z_pos = ref.z_pos, y_pos = ref.y_pos, x_pos = ref.x_pos;
 	int lower, upper;
-	char terrain;
+	//char terrain;
 	bool reload;
 	struct gen_loc *location;
-	struct connector east[CHUNK_SIDE] = {{{0}}};
-	struct connector west[CHUNK_SIDE] = {{{0}}};
-	struct connector north[CHUNK_SIDE] = {{{0}}};
-	struct connector south[CHUNK_SIDE] = {{{0}}};
-	struct connector vertical[CHUNK_SIDE][CHUNK_SIDE] = {{{{0}}}};
+	struct connector east[CHUNK_SIDE] = {{{0}, 0, {0}, 0}};
+	struct connector west[CHUNK_SIDE] = {{{0}, 0, {0}, 0}};
+	struct connector north[CHUNK_SIDE] = {{{0}, 0, {0}, 0}};
+	struct connector south[CHUNK_SIDE] = {{{0}, 0, {0}, 0}};
+	struct connector vertical[CHUNK_SIDE][CHUNK_SIDE] = {{{{0}, 0, {0}, 0}}};
 	struct connector *first = NULL;
 	struct connector *latest = NULL;
 
@@ -1162,7 +1162,8 @@ static void chunk_generate(struct chunk_ref ref, int y_offset, int x_offset)
 	}
 
 	/* Store the chunk reference */
-	idx = chunk_store(1, 1, ref.region, z_pos, y_pos, x_pos, false);
+	//idx = chunk_store(1, 1, ref.region, z_pos, y_pos, x_pos, false);
+	(void) chunk_store(1, 1, ref.region, z_pos, y_pos, x_pos, false);
 
 	/* Get adjacent data */
 	for (n = 0; n < DIR_MAX; n++) {
@@ -1305,7 +1306,7 @@ static void chunk_generate(struct chunk_ref ref, int y_offset, int x_offset)
 #endif
 	} else {
 		/* ...or generate the chunk */
-		terrain = region_terrain[y_pos / 10][x_pos / 10];
+		//terrain = region_terrain[y_pos / 10][x_pos / 10];
 
 		/* Set the RNG to give reproducible results */
 		Rand_quick = true;
@@ -1509,7 +1510,7 @@ static void chunk_generate(struct chunk_ref ref, int y_offset, int x_offset)
  *
  * Used for walking off the edge of a chunk
  */
-void arena_realign(int y_offset, int x_offset)
+static void arena_realign(int y_offset, int x_offset)
 {
 	int x, y;
 	bool chunk_exists[10] = { 0 };
@@ -1657,7 +1658,7 @@ int chunk_get_centre(void)
  *
  * Used for stairs, teleport level, falling
  */
-void level_change(int z_offset)
+static void level_change(int z_offset)
 {
 	int y, x, new_idx;
 	int centre = chunk_get_centre();

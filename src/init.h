@@ -56,6 +56,7 @@ struct angband_constants
 	uint16_t obj_alloc_max;	/**< Maximum number of object allocations */
     u16b region_max;	/**< Maximum number of world regions */
     u16b landmark_max;	/**< Maximum number of landmarks */
+    u16b river_max;	/**< Maximum number of rivers */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	uint16_t level_monster_max;	/**< Maximum number of monsters on a given level */
@@ -145,6 +146,7 @@ extern char *ANGBAND_DIR_ARCHIVE;
 extern struct parser *init_parse_artifact(void);
 extern struct parser *init_parse_ego(void);
 extern struct parser *init_parse_region(void);
+extern struct parser *init_parse_river(void);
 extern struct parser *init_parse_landmark(void);
 extern struct parser *init_parse_feat(void);
 extern struct parser *init_parse_history(void);

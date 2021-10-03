@@ -181,13 +181,6 @@ struct flow {
 	uint16_t **grids;
 };
 
-struct connector {
-	struct loc grid;
-	uint8_t feat;
-	bitflag *info;
-	struct connector *next;
-};
-
 struct chunk {
 	char *name;
 	int32_t turn;
@@ -219,41 +212,6 @@ struct chunk {
 	char *vault_name;
 };
 
-/**
- * Location data for a chunk
- */
-struct chunk_ref {
-	u16b place;			/**< Index of this chunk */
-	s32b turn;			/**< Turn this chunk was created */
-	u16b region;		/**< Region the chunk is from */
-	u16b z_pos;			/**< Depth of the chunk below ground */
-	u16b y_pos;			/**< y position of the chunk */
-	u16b x_pos;			/**< x position of the chunk */
-	struct chunk *chunk;	/**< The actual chunk */
-	u32b gen_loc_idx;	/**< The chunk index in the generated locations list */
-	int adjacent[11];	/**< Adjacent chunks */
-};
-
-/**
- * A change to terrain made after generation
- */
-struct terrain_change {
-	struct loc grid;
-    int feat;
-    struct terrain_change *next;
-};
-
-/**
- * Generation data for a generated location
- */
-struct gen_loc {
-    int x_pos;
-    int y_pos;
-    int z_pos;
-    struct terrain_change *change;
-    struct connector *join;
-};
-
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/
 enum {
 	#define FEAT(x) FEAT_##x,
@@ -267,11 +225,6 @@ extern struct chunk *cave;
 /* Stored levels */
 extern struct chunk **old_chunk_list;
 extern u16b old_chunk_list_max;
-extern u16b chunk_max;
-extern u16b chunk_cnt;
-extern u32b gen_loc_max;
-extern u32b gen_loc_cnt;
-extern struct chunk_ref *chunk_list;
 
 /* cave-fire.c */
 errr vinfo_init(void);
@@ -490,7 +443,6 @@ const char *get_feat_code_name(int idx);
 void flow_new(struct chunk *c, struct flow *flow);
 void flow_free(struct chunk *c, struct flow *flow);
 struct chunk *cave_new(int height, int width);
-void cave_connectors_free(struct connector *join);
 void cave_free(struct chunk *c);
 void list_object(struct chunk *c, struct object *obj);
 void delist_object(struct chunk *c, struct object *obj);

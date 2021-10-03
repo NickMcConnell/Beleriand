@@ -34,7 +34,7 @@ extern const char *parser_error_str[PARSE_ERROR_MAX];
 
 errr run_parser(struct file_parser *fp);
 errr parse_file_quit_not_found(struct parser *p, const char *filename);
-errr parse_file(struct parser *p, const char *filename);
+errr parse_file(struct parser *p, const char *filename, const char *dir);
 void cleanup_parser(struct file_parser *fp);
 int lookup_flag(const char **flag_table, const char *flag_name);
 int code_index_in_array(const char *code_name[], const char *code);

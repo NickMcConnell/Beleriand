@@ -7,6 +7,7 @@
 #ifndef GENERATE_H
 #define GENERATE_H
 
+#include "game-world.h"
 #include "monster.h"
 
 #if  __STDC_VERSION__ < 199901L
@@ -210,6 +211,9 @@ void get_random_symmetry_transform(int height, int width, int flags,
 int calc_default_transpose_weight(int height, int width);
 bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 	 int y0, int x0, int rotate, bool reflect);
+void cave_connectors_free(struct connector *join);
+int chunk_get_centre(void);
+void chunk_change(int z_offset, int y_offset, int x_offset);
 
 
 /* gen-room.c */
