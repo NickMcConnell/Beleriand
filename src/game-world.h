@@ -66,6 +66,17 @@ struct world_region {
 	u16b x_offset;                 /**< Region x location */
 };
 
+enum river_part {
+	RIVER_NONE,
+	RIVER_SOURCE,
+	RIVER_SPLIT,
+	RIVER_STRETCH,
+	RIVER_JOIN
+};
+
+struct map_square;
+struct square_mile;
+
 /**
  * Information about a piece of river at a chunk
  */
@@ -76,13 +87,46 @@ struct river_chunk {
 };
 
 /**
+ * Information about a piece of river at a square mile
+ */
+//struct river_mile {
+//	struct square_mile *mile;
+//	enum river_part part;
+//	struct river_stretch *in1;
+//	struct river_stretch *in2;
+//	struct river_stretch *out1;
+//	struct river_stretch *out2;
+//	struct river *river;
+//};
+
+/**
+ * Information about river stretches
+ */
+struct river_stretch {
+	int index;
+	struct square_mile *miles;
+	struct river_stretch *in1;
+	struct river_stretch *in2;
+	struct river_stretch *out1;
+	struct river_stretch *out2;
+	//struct river_mile *start;
+	//struct river_mile *end;
+	//struct river *river;
+	//struct river *big;
+	struct river_stretch *next;
+};
+
+/**
  * Information about rivers
  */
 struct river {
 	char *name;
+	char *filename;
 	int index;
-	struct map_square *map_squares;
-	struct river_chunk *chunks;
+	struct river_stretch *stretch;
+	//struct map_square *map_squares;
+	//struct river_chunk *chunks;
+	char *join;
 	struct river *next;
 };
 
@@ -115,9 +159,9 @@ struct road {
 struct map_square {
 	char letter;				/**< y coordinate, letters A-M excluding I */
 	int number;					/**< x coordinate, numbers 1-15 */
-	struct world_region *regions;	/**< Regions overlapping the map square */
-	struct river *rivers;		/**< Rivers passing through the map square */
-	struct road *roads;			/**< Roads passing through the map square */
+	//struct world_region *regions;	/**< Regions overlapping the map square */
+	//struct river *rivers;		/**< Rivers passing through the map square */
+	//struct road *roads;			/**< Roads passing through the map square */
 };
 
 /**
@@ -128,11 +172,13 @@ struct map_square {
  * as a single grid in region.txt.
  */
 struct square_mile {
-	struct map_square *map_square;	/**< The map square containing us */
+	struct map_square map_square;	/**< The map square containing us */
 	struct loc map_square_grid;		/**< Our position (49x49) in map_square */
-	struct world_region *region;	/**< Region containing us */
-	struct river *rivers;			/**< Rivers passing through us */
-	struct road *roads;				/**< Roads passing through us */
+	//struct world_region *region;	/**< Region containing us */
+	enum river_part river_type;		/**< Part of a river, if any */
+	//struct river *rivers;			/**< Rivers passing through us */
+	//struct road *roads;				/**< Roads passing through us */
+	struct square_mile *next;
 };
 
 /**
