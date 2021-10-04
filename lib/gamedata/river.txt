@@ -57,10 +57,10 @@ filename:GreaterGelion
 name:Greater Gelion tributary
 filename:GreaterGelion1
 
-name:Northern River of Lammoth 
+name:Southern River of Lammoth 
 filename:Lammoth1
 
-name:Southern River of Lammoth
+name:Northern River of Lammoth
 filename:Lammoth2
 
 name:River Legolin
