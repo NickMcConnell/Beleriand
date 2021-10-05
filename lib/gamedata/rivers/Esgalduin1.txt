@@ -1,0 +1,25 @@
+# file: Esgalduin1.txt
+
+source:1:D:9:19:46
+stretch:1:D:9:20:45
+stretch:1:D:9:21:45
+stretch:1:D:9:22:45
+stretch:1:D:9:23:46
+stretch:1:D:9:23:47
+stretch:1:D:9:23:48
+stretch:1:D:10:24:0
+stretch:1:D:10:24:1
+stretch:1:D:10:25:2
+stretch:1:D:10:26:2
+stretch:1:D:10:27:2
+stretch:1:D:10:28:3
+stretch:1:D:10:29:3
+stretch:1:D:10:30:3
+stretch:1:D:10:31:3
+stretch:1:D:10:32:4
+stretch:1:D:10:33:4
+stretch:1:D:10:34:4
+stretch:1:D:10:35:4
+stretch:1:D:10:36:4
+stretch:1:D:10:37:4
+join:1:D:10:38:5:Esgalduin
