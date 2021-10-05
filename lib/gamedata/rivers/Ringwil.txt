@@ -1,0 +1,24 @@
+# file: Ringwil.txt
+
+source:1:G:5:5:30
+stretch:1:G:5:4:31
+stretch:1:G:5:3:32
+stretch:1:G:5:3:33
+stretch:1:G:5:2:34
+stretch:1:G:5:1:35
+stretch:1:G:5:1:36
+stretch:1:G:5:1:37
+stretch:1:G:5:2:38
+stretch:1:G:5:2:39
+stretch:1:G:5:2:40
+stretch:1:G:5:2:41
+stretch:1:G:5:2:42
+stretch:1:G:5:2:43
+stretch:1:G:5:2:44
+stretch:1:G:5:2:45
+stretch:1:G:5:2:46
+stretch:1:G:5:1:47
+stretch:1:G:5:1:48
+stretch:1:G:6:1:0
+stretch:1:G:6:1:1
+join:1:G:6:1:2:Narog
