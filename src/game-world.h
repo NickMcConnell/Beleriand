@@ -99,6 +99,7 @@ enum river_part {
 	RIVER_JOIN,
 	RIVER_UNDERGROUND,
 	RIVER_EMERGE,
+	RIVER_LAKE,
 	RIVER_SEA
 };
 
