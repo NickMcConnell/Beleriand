@@ -96,7 +96,10 @@ enum river_part {
 	RIVER_SOURCE,
 	RIVER_SPLIT,
 	RIVER_STRETCH,
-	RIVER_JOIN
+	RIVER_JOIN,
+	RIVER_UNDERGROUND,
+	RIVER_EMERGE,
+	RIVER_SEA
 };
 
 struct map_square;
