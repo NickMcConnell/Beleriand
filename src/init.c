@@ -997,10 +997,16 @@ static enum parser_error parse_river_split(struct parser *p)
 		if (current->index == index) break;
 		current = current->next;
 	}
-	current->next = stretch1;
 	current->out1 = stretch1;
-	stretch1->next = stretch2;
 	current->out2 = stretch2;
+
+	/* Now go to the end of the stretch list to tack the new ones on */
+	while (current->next) {
+		current = current->next;
+	}
+	current->next = stretch1;
+	stretch1->next = stretch2;
+
 	stretch1->miles = mem_zalloc(sizeof(struct square_mile));
 	stretch2->miles = mem_zalloc(sizeof(struct square_mile));
 
@@ -1185,6 +1191,43 @@ static enum parser_error parse_river_emerge(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_river_lake(struct parser *p)
+{
+	struct river *river = parser_priv(p);
+	struct river_stretch *stretch = river->stretch;
+	struct square_mile *mile, *new;
+	int index = parser_getint(p, "index");
+	const char *letter = parser_getsym(p, "letter");
+
+	if (!river)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Find the correct stretch and latest mile */
+	while (stretch) {
+		if (stretch->index == index) break;
+		stretch = stretch->next;
+	}
+	assert(stretch);
+	mile = stretch->miles;
+	while (mile) {
+		if (!mile->next) break;
+		mile = mile->next;
+	}
+	assert(mile);
+	new = mem_zalloc(sizeof(struct square_mile));
+
+	/* Set all the data */
+	new->river_type = RIVER_LAKE;
+	assert(strlen(letter) == 1);
+	new->map_square.letter = letter[0];
+	new->map_square.number = parser_getint(p, "number");
+	new->map_square_grid.y = parser_getint(p, "y");
+	new->map_square_grid.x = parser_getint(p, "x");
+	mile->next = new;
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_river_sea(struct parser *p)
 {
 	struct river *river = parser_priv(p);
@@ -1239,6 +1282,8 @@ struct parser *init_parse_river(void)
 			   parse_river_underground);
 	parser_reg(p, "emerge int index sym letter int number int y int x",
 			   parse_river_emerge);
+	parser_reg(p, "lake int index sym letter int number int y int x",
+			   parse_river_lake);
 	parser_reg(p, "sea int index sym letter int number int y int x",
 			   parse_river_sea);
 	return p;

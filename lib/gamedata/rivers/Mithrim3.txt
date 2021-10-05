@@ -1,0 +1,23 @@
+# file: Mithrim3.txt
+
+source:1:B:7:26:2
+stretch:1:B:7:27:1
+stretch:1:B:7:27:0
+stretch:1:B:6:27:48
+stretch:1:B:6:27:47
+stretch:1:B:6:27:46
+stretch:1:B:6:27:45
+stretch:1:B:6:27:44
+stretch:1:B:6:27:43
+stretch:1:B:6:27:42
+stretch:1:B:6:28:41
+stretch:1:B:6:28:40
+stretch:1:B:6:28:39
+stretch:1:B:6:28:38
+stretch:1:B:6:28:37
+stretch:1:B:6:29:36
+stretch:1:B:6:29:35
+stretch:1:B:6:29:34
+stretch:1:B:6:30:33
+stretch:1:B:6:31:32
+lake:1:B:6:32:31
