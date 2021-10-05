@@ -1,0 +1,22 @@
+# file: DryRiver.txt
+
+source:1:D:7:13:21
+stretch:1:D:7:14:22
+stretch:1:D:7:15:23
+stretch:1:D:7:16:23
+stretch:1:D:7:17:23
+stretch:1:D:7:18:23
+stretch:1:D:7:19:23
+stretch:1:D:7:20:24
+stretch:1:D:7:21:23
+stretch:1:D:7:22:22
+stretch:1:D:7:23:22
+stretch:1:D:7:24:22
+stretch:1:D:7:25:23
+stretch:1:D:7:26:23
+stretch:1:D:7:27:23
+stretch:1:D:7:28:23
+stretch:1:D:7:29:23
+stretch:1:D:7:30:24
+stretch:1:D:7:31:24
+join:1:D:7:32:24:Sirion
