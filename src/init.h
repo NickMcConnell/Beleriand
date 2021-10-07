@@ -132,6 +132,7 @@ extern struct angband_constants *z_info;
 extern const char *ANGBAND_SYS;
 
 extern char *ANGBAND_DIR_GAMEDATA;
+extern char *ANGBAND_DIR_RIVERS;
 extern char *ANGBAND_DIR_CUSTOMIZE;
 extern char *ANGBAND_DIR_HELP;
 extern char *ANGBAND_DIR_SCREENS;

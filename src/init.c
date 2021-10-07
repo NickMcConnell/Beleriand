@@ -84,6 +84,7 @@ const char *ANGBAND_SYS = "xxx";
  * Various directories. These are no longer necessarily all subdirs of "lib"
  */
 char *ANGBAND_DIR_GAMEDATA;
+char *ANGBAND_DIR_RIVERS;
 char *ANGBAND_DIR_CUSTOMIZE;
 char *ANGBAND_DIR_HELP;
 char *ANGBAND_DIR_SCREENS;
@@ -317,6 +318,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 	/* Free the sub-paths */
 	string_free(ANGBAND_DIR_GAMEDATA);
+	string_free(ANGBAND_DIR_RIVERS);
 	string_free(ANGBAND_DIR_CUSTOMIZE);
 	string_free(ANGBAND_DIR_HELP);
 	string_free(ANGBAND_DIR_SCREENS);
@@ -340,6 +342,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 	/* Paths generally containing configuration data for Angband. */
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_GAMEDATA, configpath, "gamedata");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_RIVERS, ANGBAND_DIR_GAMEDATA, "rivers");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_CUSTOMIZE, configpath, "customize");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_HELP, libpath, "help");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCREENS, libpath, "screens");
@@ -901,12 +904,6 @@ static enum parser_error parse_river_filename(struct parser *p)
 {
 	struct river *river = parser_priv(p);
 	const char *filename = parser_getstr(p, "name");
-	//char dirpath[80];
-	//errr parse_err;
-	//path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_GAMEDATA, "rivers");
-	//parse_err = parse_file(p, filename, dirpath);
-	//if (parse_err)
-	//	quit(format("Cannot open '%s.txt'", filename));
 	river->filename = string_make(filename);
 	return PARSE_ERROR_NONE;
 }
@@ -4711,6 +4708,7 @@ void cleanup_angband(void)
 	vformat_kill();
 
 	/* Free the directories */
+	string_free(ANGBAND_DIR_RIVERS);
 	string_free(ANGBAND_DIR_GAMEDATA);
 	string_free(ANGBAND_DIR_CUSTOMIZE);
 	string_free(ANGBAND_DIR_HELP);
