@@ -266,11 +266,9 @@ void plain_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 									 6, 5 + randint0(5));
 	}
 
-	/* And some water */
-	form_grids = randint0(20);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, ponds, 1,
-									 5 + randint0(10));
+	/* And an occasional pond */
+	if (one_in_(10)) {
+		make_formation(c, loc(x0, y0), base_feats, 1, ponds, 1, randint0(10));
 	}
 }
 
@@ -328,11 +326,13 @@ void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 									 6, 5 + randint0(5));
 	}
 
-	/* And some water */
-	form_grids = randint0(40);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, ponds, 1,
-									 5 + randint0(10));
+	/* And maybe water */
+	if (one_in_(5)) {
+		form_grids = randint0(20);
+		while (form_grids > 0) {
+			form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, ponds,
+										 1, 5 + randint0(10));
+		}
 	}
 }
 
@@ -395,13 +395,6 @@ void moor_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, form_feats,
 									 5, 5 + randint0(5));
 	}
-
-	/* And some water */
-	form_grids = randint0(10);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, ponds, 1,
-									 5 + randint0(5));
-	}
 }
 
 void mtn_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
@@ -456,18 +449,16 @@ void mtn_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 									 6, 5 + randint0(10));
 	}
 
-	/* Some water */
-	form_grids = randint0(20);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, ponds, 1,
-									 5 + randint0(5));
-	}
-
-	/* And maybe some snow */
-	form_grids = randint0(10);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, snow, 1,
-									 5 + randint0(5));
+	/* Maybe some water or snow (in the north) */
+	if (one_in_(5)) {
+		form_grids = randint0(20);
+		while (form_grids > 0) {
+			/* North is the top three map squares */
+			bool north = ref->x_pos < 3 * 49 * 10;
+			form_grids -= make_formation(c, loc(x0, y0), base_feats, 1,
+										 north ? snow : ponds, 1,
+										 5 + randint0(5));
+		}
 	}
 }
 
@@ -566,11 +557,13 @@ void dark_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 									 6, 5 + randint0(5));
 	}
 
-	/* And some water */
-	form_grids = randint0(40);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, ponds, 1,
-									 5 + randint0(10));
+	/* And maybe water */
+	if (one_in_(5)) {
+		form_grids = randint0(20);
+		while (form_grids > 0) {
+			form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, ponds,
+										 1, 5 + randint0(10));
+		}
 	}
 }
 
