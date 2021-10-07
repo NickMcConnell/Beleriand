@@ -33,6 +33,24 @@
 #define MAX_X_REGION 735
 
 /**
+ * Codes for the different types of wilderness
+ */
+enum wild_type {
+	WILD_PLAIN = 0x2e,			/**< . */
+	WILD_FOREST = 0x2b,			/**< + */
+	WILD_LAKE = 0x2d,			/**< - */
+	WILD_SNOW = 0x2a,			/**< * */
+	WILD_DESERT = 0x2f,			/**< ? */
+	WILD_DARK = 0x7c,			/**< | */
+	WILD_MOUNTAIN = 0x5e,		/**< ^ */
+	WILD_MOOR = 0x2c,			/**< , */
+	WILD_SWAMP = 0x5f,			/**< _ */
+	WILD_IMPASSABLE = 0x58,		/**< X */
+	WILD_TOWN = 0x3d,			/**< = */
+	WILD_OCEAN = 0x7e,			/**< ~ */
+};
+
+/**
  * Information about landmarks
  */
 struct landmark {
@@ -198,6 +216,7 @@ struct connector {
 	struct loc grid;
 	byte feat;
 	bitflag info[SQUARE_SIZE];
+	enum wild_type type;
 	struct connector *next;
 };
 
@@ -242,12 +261,13 @@ struct terrain_change {
  * to be restored if the have aged off from the chunk list.
  */
 struct gen_loc {
-    int x_pos;			/**< x position of the chunk */
-    int y_pos;			/**< y position of the chunk */
-    int z_pos;			/**< Depth of the chunk below ground */
+	enum wild_type type;/**< Wilderness type of the location */
+	int x_pos;			/**< x position of the chunk */
+	int y_pos;			/**< y position of the chunk */
+	int z_pos;			/**< Depth of the chunk below ground */
 	u32b seed;			/**< RNG seed for generating the chunk repeatably */
-    struct terrain_change *change;	/**< Changes made since generation */
-    struct connector *join;	/**< Information for generating adjoining chunks */
+	struct terrain_change *change;	/**< Changes made since generation */
+	struct connector *join;	/**< Information for generating adjoining chunks */
 };
 
 extern u32b seed_randart;

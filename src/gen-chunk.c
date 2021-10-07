@@ -774,6 +774,7 @@ static void connector_copy(struct connector *dest, struct connector *source)
 	dest->grid.x = source->grid.x;
 	dest->feat = source->feat;
 	sqinfo_copy(dest->info, source->info);
+	dest->type = source->type;
 	dest->next = NULL;
 }
 
@@ -1096,62 +1097,62 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 		loc->seed = randint0(0x10000000);
 		Rand_value = loc->seed;
 		switch (terrain) {
-		case '.':
+		case WILD_PLAIN:
 			{
 				plain_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '+':
+		case WILD_FOREST:
 			{
 				forest_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '-':
+		case WILD_LAKE:
 			{
 				lake_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '~':
+		case WILD_OCEAN:
 			{
 				ocean_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case ',':
+		case WILD_MOOR:
 			{
 				moor_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '^':
+		case WILD_MOUNTAIN:
 			{
 				mtn_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '_':
+		case WILD_SWAMP:
 			{
 				swamp_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '|':
+		case WILD_DARK:
 			{
 				dark_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case 'X':
+		case WILD_IMPASSABLE:
 			{
 				impass_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '/':
+		case WILD_DESERT:
 			{
 				desert_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '*':
+		case WILD_SNOW:
 			{
 				snow_gen(c, ref, y_offset, x_offset, first);
 				break;
 			}
-		case '=':
+		case WILD_TOWN:
 			{
 				town_gen(c, ref, y_offset, x_offset, first);
 				break;
@@ -1347,8 +1348,9 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 				new->grid.x = x;
 				new->feat = square(c, grid)->feat;
 				sqinfo_copy(new->info, square(c, grid)->info);
-				new->next = gen_loc_list[upper].join;
-				gen_loc_list[upper].join = new;
+				new->type = location->type;
+				new->next = location->join;
+				location->join = new;
 			}
 			if (north[x].feat == 0) {
 				struct loc grid = loc(x0 + x, y0);
@@ -1357,8 +1359,9 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 				new->grid.x = x;
 				new->feat = square(c, grid)->feat;
 				sqinfo_copy(new->info, square(c, grid)->info);
-				new->next = gen_loc_list[upper].join;
-				gen_loc_list[upper].join = new;
+				new->type = location->type;
+				new->next = location->join;
+				location->join = new;
 			}
 			for (y = 0; y < CHUNK_SIDE; y++) {
 				byte feat = vertical[y][x].feat;
@@ -1371,8 +1374,9 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 						new->grid.x = x;
 						new->feat = square(c, grid)->feat;
 						sqinfo_copy(new->info, square(c, grid)->info);
-						new->next = gen_loc_list[upper].join;
-						gen_loc_list[upper].join = new;
+						new->type = location->type;
+						new->next = location->join;
+						location->join = new;
 					}
 				}
 			}
@@ -1387,8 +1391,9 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 				new->grid.x = 0;
 				new->feat = square(c, grid)->feat;
 				sqinfo_copy(new->info, square(c, grid)->info);
-				new->next = gen_loc_list[upper].join;
-				gen_loc_list[upper].join = new;
+				new->type = location->type;
+				new->next = location->join;
+				location->join = new;
 			}
 			if (east[y].feat == 0) {
 				struct loc grid = loc(x0 + CHUNK_SIDE - 1, y0 + y);
@@ -1397,8 +1402,9 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 				new->grid.x = CHUNK_SIDE - 1;
 				new->feat = square(c, grid)->feat;
 				sqinfo_copy(new->info, square(c, grid)->info);
-				new->next = gen_loc_list[upper].join;
-				gen_loc_list[upper].join = new;
+				new->type = location->type;
+				new->next = location->join;
+				location->join = new;
 			}
 		}
 	}
