@@ -185,6 +185,7 @@ static const struct {
 } change_path_values[] = {
 	{ "scores", &ANGBAND_DIR_SCORES, false },
 	{ "gamedata", &ANGBAND_DIR_GAMEDATA, true },
+	{ "rivers", &ANGBAND_DIR_RIVERS, true },
 	{ "screens", &ANGBAND_DIR_SCREENS, true },
 	{ "help", &ANGBAND_DIR_HELP, true },
 	{ "pref", &ANGBAND_DIR_CUSTOMIZE, true },

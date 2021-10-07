@@ -130,6 +130,7 @@ extern struct angband_constants *z_info;
 extern const char *ANGBAND_SYS;
 
 extern char *ANGBAND_DIR_GAMEDATA;
+extern char *ANGBAND_DIR_RIVERS;
 extern char *ANGBAND_DIR_CUSTOMIZE;
 extern char *ANGBAND_DIR_HELP;
 extern char *ANGBAND_DIR_SCREENS;
@@ -148,8 +149,6 @@ extern struct parser *init_parse_ego(void);
 extern struct parser *init_parse_region(void);
 extern struct parser *init_parse_river(void);
 extern struct parser *init_parse_landmark(void);
-extern struct parser *init_parse_feat(void);
-extern struct parser *init_parse_history(void);
 extern struct parser *init_parse_object(void);
 extern struct parser *init_parse_object_base(void);
 extern struct parser *init_parse_pain(void);
