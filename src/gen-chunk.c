@@ -719,7 +719,7 @@ int find_region(int y_pos, int x_pos)
 {
 	int i;
 
-	for (i = 0; i < z_info->region_max; i++) {
+	for (i = 1; i < z_info->region_max; i++) {
 		struct world_region *region = &region_info[i];
 		size_t entry;
 

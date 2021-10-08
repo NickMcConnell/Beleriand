@@ -1082,9 +1082,12 @@ static bool monster_turn_multiply(struct monster *mon)
 	if (num_repro >= z_info->repro_monster_max) return false;
 
 	/* Count the adjacent monsters */
-	for (y = mon->grid.y - 1; y <= mon->grid.y + 1; y++)
-		for (x = mon->grid.x - 1; x <= mon->grid.x + 1; x++)
+	for (y = mon->grid.y - 1; y <= mon->grid.y + 1; y++) {
+		for (x = mon->grid.x - 1; x <= mon->grid.x + 1; x++) {
+			if (!square_in_bounds(cave, loc(x, y))) continue;
 			if (square(cave, loc(x, y))->mon > 0) k++;
+		}
+	}
 
 	/* Multiply slower in crowded areas */
 	if ((k < 4) && (k == 0 || one_in_(k * z_info->repro_monster_rate))) {
