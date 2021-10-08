@@ -102,20 +102,18 @@ static struct point_set *make_random_point_set(struct chunk *c,
 /**
  * Make a formation - a randomish group of terrain squares. -NRM-
  */
-static int make_formation(struct chunk *c, struct loc top_left, int base_feat[],
-						  int num_base_feats,  int form_feat[],
-						  int num_form_feats, int size)
+static int make_formation(struct chunk *c, struct point_set *big,
+						  int base_feat[], int num_base_feats,
+						  int form_feat[], int num_form_feats, int size)
 {
-	struct point_set *big = make_chunk_point_set(c, top_left);
 	struct loc grid = point_set_random(big);
 	struct point_set *form = make_random_point_set(c, big, size, grid,
 												   base_feat, num_base_feats);
-	int i, num = point_set_size(form);;
+	int i, num = point_set_size(form);
 	for (i = 0; i < num; i++) {
 		square_set_feat(c, form->pts[i], form_feat[randint0(num_form_feats)]);
 	}
 	point_set_dispose(form);
-	point_set_dispose(big);
 	return num;
 }
 
@@ -238,80 +236,73 @@ static bool verify_level(struct chunk *c)
  * ------------------------------------------------------------------------
  * Wilderness level generation
  * ------------------------------------------------------------------------ */
-void plain_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			   int x_offset, struct connector *first)
+void plain_piece(struct chunk *c, struct point_set *piece)
 {
-	int x, y;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
-	int form_grids;
-
+	int i;
 	int base_feats[] = { FEAT_GRASS };
 	int form_feats[] = { FEAT_TREE, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
 						 FEAT_TREE2, FEAT_QUARTZ };
 	int ponds[] = { FEAT_S_WATER };
+	int form_grids = randint0(point_set_size(piece) / 12);
 
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_GRASS);
-		}
+	for (i = 0; i < point_set_size(piece); i++) {
+		square_set_feat(c, piece->pts[i], FEAT_GRASS);
 	}
 
 	/* Place some formations */
-	form_grids = randint0(40);
 	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, form_feats,
-									 6, 5 + randint0(5));
+		form_grids -= make_formation(c, piece, base_feats, 1, form_feats, 6,
+									 5 + randint0(5));
 	}
 
 	/* And an occasional pond */
-	if (one_in_(10)) {
-		make_formation(c, loc(x0, y0), base_feats, 1, ponds, 1, randint0(10));
+	if (one_in_(5000 / point_set_size(piece))) {
+		make_formation(c, piece, base_feats, 1, ponds, 1, 5 + randint0(10));
 	}
 }
 
-void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				int x_offset, struct connector *first)
-{
-	int x, y, clear, j;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
-	int form_grids;
 
+void plain_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
+			   int x_offset, struct connector *first)
+{
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	plain_piece(c, chunk);
+}
+
+void forest_piece(struct chunk *c, struct point_set *piece)
+{
+	int i, clear = 0, size = point_set_size(piece);
 	int base_feats[] = { FEAT_TREE, FEAT_TREE2 };
 	int form_feats[] = { FEAT_GRASS, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
 						 FEAT_GRASS, FEAT_QUARTZ };
 	int ponds[] = { FEAT_S_WATER };
+	int form_grids = randint0(size / 24);
 
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			if (randint0(100) < HIGHLAND_TREE_CHANCE) {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_TREE2);
-			} else {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_TREE);
-			}
+	for (i = 0; i < size; i++) {
+		if (randint0(100) < HIGHLAND_TREE_CHANCE) {
+			square_set_feat(c, piece->pts[i], FEAT_TREE2);
+		} else {
+			square_set_feat(c, piece->pts[i], FEAT_TREE);
 		}
 	}
 
-	/* Make a few clearings */
-	clear = rand_range(1, 2);
+	/* Make clearings */
+	if (one_in_(1000 / size)) clear++;
+	if (one_in_(1000 / size)) clear++;
 
 	/* Try fairly hard */
-	for (j = 0; j < 50 && clear; j++) {
+	for (i = 0; i < 50 && clear; i++) {
 		int a, b;
+		struct loc grid;
 		bool made_clear = false;
 
 		/* Try for a clearing */
 		a = randint0(5) + 2;
 		b = randint0(5) + 2;
-		y = randint0(CHUNK_SIDE - 1) + 1;
-		x = randint0(CHUNK_SIDE - 1) + 1;
-		made_clear = generate_starburst_room(c, y0 + y - b, x0 + x - a,
-											 y0 + y + b, x0 + x + a, false,
+		grid = point_set_random(piece);
+		made_clear = generate_starburst_room(c, grid.y - b, grid.x - a,
+											 grid.y + b, grid.x + a, false,
 											 FEAT_GRASS, true);
 
 		/* Success ? */
@@ -320,122 +311,121 @@ void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	}
 
 	/* Place some formations */
-	form_grids = randint0(20);
 	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, form_feats,
-									 6, 5 + randint0(5));
+		form_grids -= make_formation(c, piece, base_feats, 2, form_feats, 6,
+									 5 + randint0(5));
 	}
 
 	/* And maybe water */
-	if (one_in_(5)) {
-		form_grids = randint0(20);
+	if (one_in_(2500 / size)) {
+		form_grids = randint0(size / 25);
 		while (form_grids > 0) {
-			form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, ponds,
-										 1, 5 + randint0(10));
+			form_grids -= make_formation(c, piece, base_feats, 2, ponds, 1,
+										 5 + randint0(10));
 		}
+	}
+}
+
+void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
+				int x_offset, struct connector *first)
+{
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	forest_piece(c, chunk);
+}
+
+void ocean_piece(struct chunk *c, struct point_set *piece)
+{
+	int i, size = point_set_size(piece);
+
+	for (i = 0; i < size; i++) {
+		square_set_feat(c, piece->pts[i], FEAT_D_WATER);
 	}
 }
 
 void ocean_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 			   int x_offset, struct connector *first)
 {
-	int x, y;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	ocean_piece(c, chunk);
+}
 
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_D_WATER);
-		}
+void lake_piece(struct chunk *c, struct point_set *piece)
+{
+	int i, size = point_set_size(piece);
+
+	for (i = 0; i < size; i++) {
+		square_set_feat(c, piece->pts[i], FEAT_S_WATER);
 	}
 }
 
 void lake_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 			  int x_offset, struct connector *first)
 {
-	int x, y;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	lake_piece(c, chunk);
+}
 
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_S_WATER);
-		}
+void moor_piece(struct chunk *c, struct point_set *piece)
+{
+	int i, size = point_set_size(piece);
+	int base_feats[] = { FEAT_GRASS };
+	int form_feats[] = { FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE, FEAT_SAND,
+						 FEAT_QUARTZ };
+	int form_grids = 5000 / size + randint0(size / 36);
+
+	for (i = 0; i < size; i++) {
+		square_set_feat(c, piece->pts[i], FEAT_GRASS);
+	}
+
+	/* Place some formations */
+	while (form_grids > 0) {
+		form_grids -= make_formation(c, piece, base_feats, 1, form_feats, 5,
+									 5 + randint0(5));
 	}
 }
 
 void moor_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 			  int x_offset, struct connector *first)
 {
-	int x, y;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
-	int form_grids;
-
-	int base_feats[] = { FEAT_GRASS };
-	int form_feats[] = { FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE, FEAT_SAND,
-						 FEAT_QUARTZ };
-	int ponds[] = { FEAT_S_WATER };
-
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_GRASS);
-		}
-	}
-
-	/* Place some formations */
-	form_grids = 10 + randint0(30);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, form_feats,
-									 5, 5 + randint0(5));
-	}
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	moor_piece(c, chunk);
 }
 
-void mtn_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			 int x_offset, struct connector *first)
+void mtn_piece(struct chunk *c, struct point_set *piece, bool north)
 {
-	int x, y, plats, j;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
-	int form_grids;
-
+	int i, plats = 0, size = point_set_size(piece);
 	int base_feats[] = { FEAT_MTN };
 	int form_feats[] = { FEAT_PASS_RUBBLE, FEAT_ROAD, FEAT_GRASS, FEAT_SAND,
 						 FEAT_TREE, FEAT_TREE2 };
 	int ponds[] = { FEAT_S_WATER };
 	int snow[] = { FEAT_SNOW };
+	int form_grids = 5000 / size + randint0(size / 10);
 
-
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_MTN);
-		}
+	for (i = 0; i < size; i++) {
+		square_set_feat(c, piece->pts[i], FEAT_MTN);
 	}
 
 	/* Make a few plateaux */
-	plats = rand_range(1, 2);
+	if (one_in_(1000 / size)) plats++;
+	if (one_in_(1000 / size)) plats++;
 
 	/* Try fairly hard */
-	for (j = 0; j < 50 && plats; j++) {
+	for (i = 0; i < 50 && plats; i++) {
 		int a, b;
+		struct loc grid;
 		bool made_plat = false;
 
 		/* Try for a plateau */
 		a = randint0(5) + 2;
 		b = randint0(5) + 2;
-		y = randint0(CHUNK_SIDE - 1) + 1;
-		x = randint0(CHUNK_SIDE - 1) + 1;
-		made_plat = generate_starburst_room(c, y0 + y - b, x0 + x - a,
-											y0 + y + b, x0 + x + a, false,
-											FEAT_GRASS, true);
+		grid = point_set_random(piece);
+		made_plat = generate_starburst_room(c, grid.y - b, grid.x - a,
+											 grid.y + b, grid.x + a, false,
+											 FEAT_GRASS, true);
 
 		/* Success ? */
 		if (made_plat)
@@ -443,189 +433,103 @@ void mtn_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	}
 
 	/* Place some formations */
-	form_grids = 10 + randint0(50);
 	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, form_feats,
-									 6, 5 + randint0(10));
+		form_grids -= make_formation(c, piece, base_feats, 1, form_feats, 6,
+									 5 + randint0(10));
 	}
 
 	/* Maybe some water or snow (in the north) */
-	if (one_in_(5)) {
-		form_grids = randint0(20);
+	if (one_in_(2500 / size)) {
+		form_grids = randint0(size / 25);
 		while (form_grids > 0) {
-			/* North is the top three map squares */
-			bool north = ref->x_pos < 3 * 49 * 10;
-			form_grids -= make_formation(c, loc(x0, y0), base_feats, 1,
+			form_grids -= make_formation(c, piece, base_feats, 1,
 										 north ? snow : ponds, 1,
 										 5 + randint0(5));
 		}
 	}
 }
 
-void swamp_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			   int x_offset, struct connector *first)
+void mtn_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
+			 int x_offset, struct connector *first)
 {
-	int x, y;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
-	int form_grids;
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	/* North is the top three map squares */
+	bool north = ref->x_pos < 3 * 49 * 10;
+	mtn_piece(c, chunk, north);
+}
 
+void swamp_piece(struct chunk *c, struct point_set *piece)
+{
+	int i, size = point_set_size(piece);
 	int base_feats[] = { FEAT_GRASS, FEAT_S_WATER };
 	int form_feats[] = { FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE, FEAT_SAND,
 						 FEAT_QUARTZ };
 	int clumps[] = { FEAT_REED };
+	int form_grids = randint0(size / 25);
 
-
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			if (one_in_(5)) {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_GRASS);
-			} else {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_S_WATER);
-			}
+	for (i = 0; i < size; i++) {
+		if (one_in_(5)) {
+			square_set_feat(c, piece->pts[i], FEAT_GRASS);
+		} else {
+			square_set_feat(c, piece->pts[i], FEAT_S_WATER);
 		}
 	}
 
 	/* Place some formations */
-	form_grids = randint0(20);
 	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, form_feats,
-									 5, 5 + randint0(10));
+		form_grids -= make_formation(c, piece, base_feats, 2, form_feats, 5,
+									 5 + randint0(10));
 	}
 
 	/* And some reed clumps */
-	form_grids = 30 + randint0(50);
+	form_grids = size / 15 + randint0(size / 10);
 	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, clumps, 1,
+		form_grids -= make_formation(c, piece, base_feats, 2, clumps, 1,
 									 5 + randint0(5));
 	}
 }
 
-void dark_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			  int x_offset, struct connector *first)
+void swamp_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
+			   int x_offset, struct connector *first)
 {
-	int x, y, clear, j;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
-	int form_grids;
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	swamp_piece(c, chunk);
+}
 
+void dark_piece(struct chunk *c, struct point_set *piece)
+{
+	int i, clear = 0, size = point_set_size(piece);
 	int base_feats[] = { FEAT_TREE, FEAT_TREE2 };
 	int form_feats[] = { FEAT_GRASS, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
 						 FEAT_GRASS, FEAT_QUARTZ };
 	int ponds[] = { FEAT_S_WATER };
+	int form_grids = randint0(size / 24);
 
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			if (randint0(50) < HIGHLAND_TREE_CHANCE) {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_TREE2);
-			} else {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_TREE);
-			}
+	for (i = 0; i < size; i++) {
+		if (randint0(100) < HIGHLAND_TREE_CHANCE) {
+			square_set_feat(c, piece->pts[i], FEAT_TREE2);
+		} else {
+			square_set_feat(c, piece->pts[i], FEAT_TREE);
 		}
 	}
 
-	/* Make a few clearings */
-	clear = rand_range(0, 1);
+	/* Make clearings */
+	if (one_in_(1000 / size)) clear++;
 
 	/* Try fairly hard */
-	for (j = 0; j < 50 && clear; j++) {
+	for (i = 0; i < 50 && clear; i++) {
 		int a, b;
+		struct loc grid;
 		bool made_clear = false;
 
 		/* Try for a clearing */
 		a = randint0(5) + 2;
 		b = randint0(5) + 2;
-		y = randint0(CHUNK_SIDE - 1) + 1;
-		x = randint0(CHUNK_SIDE - 1) + 1;
-		made_clear =
-			generate_starburst_room(c, y0 + y - b, x0 + x - a, y0 + y + b,
-									x0 + x + a, false, FEAT_GRASS, true);
-
-		/* Success ? */
-		if (made_clear)
-			clear--;
-	}
-
-	/* Place some formations */
-	form_grids = randint0(20);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, form_feats,
-									 6, 5 + randint0(5));
-	}
-
-	/* And maybe water */
-	if (one_in_(5)) {
-		form_grids = randint0(20);
-		while (form_grids > 0) {
-			form_grids -= make_formation(c, loc(x0, y0), base_feats, 2, ponds,
-										 1, 5 + randint0(10));
-		}
-	}
-}
-
-void impass_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				int x_offset, struct connector *first)
-{
-	int x, y;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
-
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_MTN);
-		}
-	}
-}
-
-void desert_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				int x_offset, struct connector *first)
-{
-	int x, y, clear, j;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
-	int form_grids;
-
-	int base_feats[] = { FEAT_DUNE, FEAT_SAND, FEAT_PASS_RUBBLE, FEAT_MAGMA };
-	int form_feats[] = { FEAT_GRASS, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
-						 FEAT_GRASS, FEAT_QUARTZ };
-
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			if (one_in_(4)) {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_DUNE);
-			} else if (one_in_(3)) {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_SAND);
-			} else if (one_in_(2)) {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_PASS_RUBBLE);
-			} else {
-				square_set_feat(c, loc(x0 + x, y0 + y), FEAT_MAGMA);
-			}
-		}
-	}
-
-	/* Make a few clearings */
-	clear = rand_range(1, 2);
-
-	/* Try fairly hard */
-	for (j = 0; j < 50 && clear; j++) {
-		int a, b;
-		bool made_clear = false;
-
-		/* Try for a clearing */
-		a = randint0(5) + 2;
-		b = randint0(5) + 2;
-		y = randint0(CHUNK_SIDE - 1) + 1;
-		x = randint0(CHUNK_SIDE - 1) + 1;
-		made_clear = generate_starburst_room(c, y0 + y - b, x0 + x - a,
-											 y0 + y + b, x0 + x + a, false,
+		grid = point_set_random(piece);
+		made_clear = generate_starburst_room(c, grid.y - b, grid.x - a,
+											 grid.y + b, grid.x + a, false,
 											 FEAT_GRASS, true);
 
 		/* Success ? */
@@ -634,47 +538,135 @@ void desert_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	}
 
 	/* Place some formations */
-	form_grids = randint0(40);
 	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 4, form_feats,
-									 6, 5 + randint0(5));
+		form_grids -= make_formation(c, piece, base_feats, 2, form_feats, 6,
+									 5 + randint0(5));
+	}
+
+	/* And maybe water */
+	if (one_in_(2500 / size)) {
+		form_grids = randint0(size / 25);
+		while (form_grids > 0) {
+			form_grids -= make_formation(c, piece, base_feats, 2, ponds, 1,
+										 5 + randint0(10));
+		}
+	}
+}
+
+void dark_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
+				int x_offset, struct connector *first)
+{
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	dark_piece(c, chunk);
+}
+
+void impass_piece(struct chunk *c, struct point_set *piece)
+{
+	int i, size = point_set_size(piece);
+
+	for (i = 0; i < size; i++) {
+		square_set_feat(c, piece->pts[i], FEAT_MTN);
+	}
+}
+
+void impass_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
+				int x_offset, struct connector *first)
+{
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	impass_piece(c, chunk);
+}
+
+void desert_piece(struct chunk *c, struct point_set *piece)
+{
+	int i, clear = 0, size = point_set_size(piece);
+	int base_feats[] = { FEAT_DUNE, FEAT_SAND, FEAT_PASS_RUBBLE };
+	int form_feats[] = { FEAT_GRASS, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
+						 FEAT_GRASS, FEAT_QUARTZ };
+	int form_grids = randint0(size / 8);
+
+	for (i = 0; i < size; i++) {
+		if (one_in_(3)) {
+			square_set_feat(c, piece->pts[i], FEAT_DUNE);
+		} else if (one_in_(2)) {
+			square_set_feat(c, piece->pts[i], FEAT_SAND);
+		} else {
+			square_set_feat(c, piece->pts[i], FEAT_PASS_RUBBLE);
+		}
+	}
+
+	/* Make the odd clearing */
+	if (one_in_(size / 100)) clear++;
+	if (one_in_(size / 100)) clear++;
+
+	/* Try fairly hard */
+	for (i = 0; i < 50 && clear; i++) {
+		int a, b;
+		struct loc grid;
+		bool made_clear = false;
+
+		/* Try for a clearing */
+		a = randint0(5) + 2;
+		b = randint0(5) + 2;
+		grid = point_set_random(piece);
+		made_clear = generate_starburst_room(c, grid.y - b, grid.x - a,
+											 grid.y + b, grid.x + a, false,
+											 FEAT_GRASS, true);
+
+		/* Success ? */
+		if (made_clear)
+			clear--;
+	}
+
+	/* Place some formations */
+	while (form_grids > 0) {
+		form_grids -= make_formation(c, piece, base_feats, 4, form_feats, 6,
+									 5 + randint0(5));
+	}
+}
+
+void desert_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
+				int x_offset, struct connector *first)
+{
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	desert_piece(c, chunk);
+}
+
+void snow_piece(struct chunk *c, struct point_set *piece)
+{
+	int i, size = point_set_size(piece);
+	int base_feats[] = { FEAT_SNOW };
+	int form_feats[] = { FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
+						 FEAT_QUARTZ };
+	int ponds[] = { FEAT_ICE };
+	int form_grids = randint0(size / 25);
+
+	for (i = 0; i < size; i++) {
+		square_set_feat(c, piece->pts[i], FEAT_SNOW);
+	}
+
+	/* Place some formations */
+	while (form_grids > 0) {
+		form_grids -= make_formation(c, piece, base_feats, 1, form_feats, 4,
+									 5 + randint0(5));
+	}
+
+	/* And some frozen water */
+	form_grids = randint0(size / 50);
+	while (form_grids > 0) {
+		form_grids -= make_formation(c, piece, base_feats, 1, ponds, 1,
+									 5 + randint0(10));
 	}
 }
 
 void snow_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 			  int x_offset, struct connector *first)
 {
-	int x, y;
-	int y0 = y_offset * CHUNK_SIDE;
-	int x0 = x_offset * CHUNK_SIDE;
-	int form_grids;
-
-	int base_feats[] = { FEAT_SNOW };
-	int form_feats[] = { FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
-						 FEAT_QUARTZ };
-	int ponds[] = { FEAT_ICE };
-
-	/* Write the location stuff */
-	for (y = 0; y < CHUNK_SIDE; y++) {
-		for (x = 0; x < CHUNK_SIDE; x++) {
-			/* Terrain */
-			square_set_feat(c, loc(x0 + x, y0 + y), FEAT_SNOW);
-		}
-	}
-
-	/* Place some formations */
-	form_grids = randint0(20);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, form_feats,
-									 4, 5 + randint0(5));
-	}
-
-	/* And some frozen water */
-	form_grids = randint0(10);
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, loc(x0, y0), base_feats, 1, ponds, 1,
-									 5 + randint0(10));
-	}
+	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	snow_piece(c, chunk);
 }
 
 void town_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
