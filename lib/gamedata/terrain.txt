@@ -304,7 +304,7 @@ flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | ORGANIC | EASY | RUN2 | TRAP
 flags:MTRAP | TORCH
 look-prefix:some
 desc:Open ground that can be crossed easily by all creatures.  It occurs only
-desc: in wilderness.  It may contain traps.
+desc: on the surface.  It may contain traps.
 
 name:road
 graphics:.:W

@@ -1,8 +1,8 @@
 /**
- * \file gen-wilderness.c 
- * \brief Wilderness generation
+ * \file gen-surface.c 
+ * \brief Surface terrain generation
  *
- * Code for creation of wilderness.
+ * Code for creation of the terrain of Beleriand.
  *
  * Copyright (c) 2019
  * Nick McConnell, Leon Marrick, Ben Harrison, James E. Wilson, 
@@ -33,7 +33,7 @@
 
 /**
  * ------------------------------------------------------------------------
- * Various wilderness helper routines
+ * Various surface helper routines
  * ------------------------------------------------------------------------ */
 #define HIGHLAND_TREE_CHANCE 30
 
@@ -119,9 +119,9 @@ static int make_formation(struct chunk *c, struct point_set *big,
 
 /**
  * ------------------------------------------------------------------------
- * Wilderness level generation
+ * Surface generation
  * ------------------------------------------------------------------------ */
-static void make_piece(struct chunk *c, enum wild_type terrain,
+static void make_piece(struct chunk *c, enum top_type terrain,
 					   struct point_set *piece)
 {
 	int i, form_grids, size = point_set_size(piece);
@@ -189,7 +189,7 @@ static void make_piece(struct chunk *c, enum wild_type terrain,
 void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 				 int x_offset, struct connector *first)
 {
-	enum wild_type terrain = region_terrain[ref->y_pos / 10][ref->x_pos / 10];
+	enum top_type terrain = region_terrain[ref->y_pos / 10][ref->x_pos / 10];
 	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
 	struct point_set *piece = make_chunk_point_set(c, top_left);
 	make_piece(c, terrain, piece);

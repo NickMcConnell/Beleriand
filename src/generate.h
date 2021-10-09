@@ -140,7 +140,7 @@ struct surface_profile {
     struct surface_profile *next;
 
     const char *name;
-	enum wild_type code;
+	enum top_type code;
 	char *base_feats;
 	int num_base_feats;
 	struct area_profile *areas;
@@ -372,7 +372,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width);
 bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
 					int y_offset, int x_offset);
 
-/* gen-wilderness.c */
+/* gen-surface.c */
 void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 				 int x_offset, struct connector *first);
 

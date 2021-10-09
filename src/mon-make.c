@@ -1616,7 +1616,7 @@ bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 	struct monster_race *race = get_mon_num(depth, player->depth);
 	struct monster_group_info info = { 0, 0, 0 };
 
-	/* Enforce sleep at nighttime in the wilderness */
+	/* Enforce sleep at nighttime outside */
 	if (is_night()) {
 		sleep = true;
 	}

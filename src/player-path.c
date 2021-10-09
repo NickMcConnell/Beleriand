@@ -500,7 +500,7 @@ static void run_init(int dir)
 	/* Assume running straight */
 	run_old_dir = dir;
 
-	/* If it's wilderness, done -NRM- */
+	/* If it's outside, done -NRM- */
 	if (chunk_list[player->place].z_pos == 0)
 		return;
 

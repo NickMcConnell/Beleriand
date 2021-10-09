@@ -1,6 +1,6 @@
 # File: landmark.txt
 
-# This file holds wilderness landmarks for which terrain is fixed
+# This file holds Beleriand landmarks for which terrain is fixed
 # name: region name
 # map-y: y position (in chunk units) of the top of the landmark
 # map-x: x position (in chunk units) of the left of the landmark

@@ -33,21 +33,21 @@
 #define MAX_X_REGION 735
 
 /**
- * Codes for the different types of wilderness
+ * Codes for the different types of surface topography
  */
-enum wild_type {
-	WILD_PLAIN = 0x2e,			/**< . */
-	WILD_FOREST = 0x2b,			/**< + */
-	WILD_LAKE = 0x2d,			/**< - */
-	WILD_SNOW = 0x2a,			/**< * */
-	WILD_DESERT = 0x2f,			/**< ? */
-	WILD_DARK = 0x7c,			/**< | */
-	WILD_MOUNTAIN = 0x5e,		/**< ^ */
-	WILD_MOOR = 0x2c,			/**< , */
-	WILD_SWAMP = 0x5f,			/**< _ */
-	WILD_IMPASS = 0x58,			/**< X */
-	WILD_TOWN = 0x3d,			/**< = */
-	WILD_OCEAN = 0x7e,			/**< ~ */
+enum top_type {
+	TOP_PLAIN = 0x2e,			/**< . */
+	TOP_FOREST = 0x2b,			/**< + */
+	TOP_LAKE = 0x2d,			/**< - */
+	TOP_SNOW = 0x2a,			/**< * */
+	TOP_DESERT = 0x2f,			/**< ? */
+	TOP_DARK = 0x7c,			/**< | */
+	TOP_MOUNTAIN = 0x5e,		/**< ^ */
+	TOP_MOOR = 0x2c,			/**< , */
+	TOP_SWAMP = 0x5f,			/**< _ */
+	TOP_IMPASS = 0x58,			/**< X */
+	TOP_TOWN = 0x3d,			/**< = */
+	TOP_OCEAN = 0x7e,			/**< ~ */
 };
 
 /**
@@ -216,7 +216,7 @@ struct connector {
 	struct loc grid;
 	byte feat;
 	bitflag info[SQUARE_SIZE];
-	enum wild_type type;
+	enum top_type type;
 	struct connector *next;
 };
 
@@ -261,7 +261,7 @@ struct terrain_change {
  * to be restored if the have aged off from the chunk list.
  */
 struct gen_loc {
-	enum wild_type type;/**< Wilderness type of the location */
+	enum top_type type;	/**< Topographic type of the location */
 	int x_pos;			/**< x position of the chunk */
 	int y_pos;			/**< y position of the chunk */
 	int z_pos;			/**< Depth of the chunk below ground */

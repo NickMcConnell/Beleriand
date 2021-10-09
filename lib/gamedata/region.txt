@@ -1,12 +1,12 @@
 # File: region.txt
 
-# This file holds templates for wilderness regions.
+# This file holds templates for the regions of Beleriand.
 
 # The complete Middle-Earth map is currently 588 miles high by 735 miles wide. 
 # y and x coordinates are for the top left of the region as shown in the D:
 # lines (so in particular, that does include spaces).
 # Each grid represents 1 square mile.
-# Each square mile contains 10x10 portions of wilderness of 22x22 game grids,
+# Each square mile contains 10x10 portions of terrain of 22x22 game grids,
 # called chunks.
 
 # name:region name
