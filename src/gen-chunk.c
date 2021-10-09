@@ -1064,7 +1064,6 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 						   struct connector *first)
 {
 	int n, z_pos = ref->z_pos, y_pos = ref->y_pos, x_pos = ref->x_pos;
-	char terrain;
 
 	/* Check for landmarks */
 	for (n = 0; n < z_info->landmark_max; n++) {
@@ -1089,80 +1088,13 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 	if (n < z_info->landmark_max) {
 		build_landmark(c, n, y_pos, x_pos, y_offset, x_offset);
 	} else {
-		/* ...or generate the chunk */
-		terrain = region_terrain[y_pos / 10][x_pos / 10];
-
-		/* Set the RNG to give reproducible results */
+		/* or set the RNG to give reproducible results... */
 		Rand_quick = true;
 		loc->seed = randint0(0x10000000);
 		Rand_value = loc->seed;
-		switch (terrain) {
-		case WILD_PLAIN:
-			{
-				plain_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_FOREST:
-			{
-				forest_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_LAKE:
-			{
-				lake_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_OCEAN:
-			{
-				ocean_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_MOOR:
-			{
-				moor_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_MOUNTAIN:
-			{
-				mtn_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_SWAMP:
-			{
-				swamp_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_DARK:
-			{
-				dark_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_IMPASSABLE:
-			{
-				impass_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_DESERT:
-			{
-				desert_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_SNOW:
-			{
-				snow_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		case WILD_TOWN:
-			{
-				town_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		default:
-			{
-				ocean_gen(c, ref, y_offset, x_offset, first);
-				break;
-			}
-		}
+
+		/* ...and generate the chunk */
+		surface_gen(c, ref, y_offset, x_offset, first);
 		Rand_quick = false;
 	}
 }

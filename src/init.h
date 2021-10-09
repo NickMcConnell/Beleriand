@@ -44,7 +44,8 @@ struct angband_constants
 	u16b blow_methods_max;	/**< Maximum number of monster blow methods */
 	u16b blow_effects_max;	/**< Maximum number of monster blow effects */
 	u16b equip_slots_max;	/**< Maximum number of player equipment slots */
-	u16b profile_max;	/**< Maximum number of cave_profiles */
+	u16b surface_max;	/**< Maximum number of surface_profiles */
+	u16b dungeon_max;	/**< Maximum number of cave_profiles */
 	u16b quest_max;		/**< Maximum number of quests */
 	u16b projection_max;	/**< Maximum number of projection types */
 	u16b calculation_max;	/**< Maximum number of object power calculations */

@@ -118,6 +118,38 @@ struct pit_profile {
 extern struct pit_profile *pit_info;
 
 
+struct area_profile {
+	struct area_profile *next;
+
+	const char *name;
+	int frequency;
+	int attempts;
+	int feat;
+	random_value size;
+};
+
+struct formation_profile {
+	const char *name;
+	char *feats;
+	int num_feats;
+	int proportion;
+	random_value size;
+};
+
+struct surface_profile {
+    struct surface_profile *next;
+
+    const char *name;
+	enum wild_type code;
+	char *base_feats;
+	int num_base_feats;
+	struct area_profile *areas;
+	struct formation_profile formations;
+	int num_form_types;
+};
+
+extern struct surface_profile *surface_profiles;
+
 /**
  * Structure to hold all "dungeon generation" data
  */
@@ -341,32 +373,8 @@ bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
 					int y_offset, int x_offset);
 
 /* gen-wilderness.c */
-void plain_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			   int x_offset, struct connector *first);
-void forest_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				int x_offset, struct connector *first);
-void ocean_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			   int x_offset, struct connector *first);
-void lake_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			  int x_offset, struct connector *first);
-void moor_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			  int x_offset, struct connector *first);
-void mtn_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			 int x_offset, struct connector *first);
-void swamp_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			   int x_offset, struct connector *first);
-void dark_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			  int x_offset, struct connector *first);
-void impass_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				int x_offset, struct connector *first);
-void desert_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				int x_offset, struct connector *first);
-void snow_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			  int x_offset, struct connector *first);
-void town_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			  int x_offset, struct connector *first);
-void landmk_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				int x_offset, struct connector *first);
+void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
+				 int x_offset, struct connector *first);
 
 /* gen-chunk.c */
 void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,

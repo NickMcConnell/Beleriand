@@ -45,7 +45,7 @@ enum wild_type {
 	WILD_MOUNTAIN = 0x5e,		/**< ^ */
 	WILD_MOOR = 0x2c,			/**< , */
 	WILD_SWAMP = 0x5f,			/**< _ */
-	WILD_IMPASSABLE = 0x58,		/**< X */
+	WILD_IMPASS = 0x58,			/**< X */
 	WILD_TOWN = 0x3d,			/**< = */
 	WILD_OCEAN = 0x7e,			/**< ~ */
 };
