@@ -830,7 +830,9 @@ void chunk_list_cleanup(void)
 	for (i = 0; i < MAX_CHUNKS; i++) {
 		struct chunk_ref *ref = &chunk_list[i];
 		if (ref->chunk) chunk_wipe(ref->chunk);
+		ref->chunk = NULL;
 		if (ref->p_chunk) chunk_wipe(ref->p_chunk);
+		ref->p_chunk = NULL;
 	}
 	mem_free(chunk_list);
 	chunk_list = NULL;

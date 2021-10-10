@@ -33,21 +33,21 @@
 #define MAX_X_REGION 735
 
 /**
- * Codes for the different types of surface topography
+ * Codes for the different surface biomes
  */
-enum top_type {
-	TOP_PLAIN = 0x2e,			/**< . */
-	TOP_FOREST = 0x2b,			/**< + */
-	TOP_LAKE = 0x2d,			/**< - */
-	TOP_SNOW = 0x2a,			/**< * */
-	TOP_DESERT = 0x2f,			/**< ? */
-	TOP_DARK = 0x7c,			/**< | */
-	TOP_MOUNTAIN = 0x5e,		/**< ^ */
-	TOP_MOOR = 0x2c,			/**< , */
-	TOP_SWAMP = 0x5f,			/**< _ */
-	TOP_IMPASS = 0x58,			/**< X */
-	TOP_TOWN = 0x3d,			/**< = */
-	TOP_OCEAN = 0x7e,			/**< ~ */
+enum biome_type {
+	BIOME_PLAIN = 0x2e,			/**< . */
+	BIOME_FOREST = 0x2b,		/**< + */
+	BIOME_LAKE = 0x2d,			/**< - */
+	BIOME_SNOW = 0x2a,			/**< * */
+	BIOME_DESERT = 0x2f,		/**< ? */
+	BIOME_DARK = 0x7c,			/**< | */
+	BIOME_MOUNTAIN = 0x5e,		/**< ^ */
+	BIOME_MOOR = 0x2c,			/**< , */
+	BIOME_SWAMP = 0x5f,			/**< _ */
+	BIOME_IMPASS = 0x58,		/**< X */
+	BIOME_TOWN = 0x3d,			/**< = */
+	BIOME_OCEAN = 0x7e,			/**< ~ */
 };
 
 /**
@@ -111,27 +111,23 @@ struct river_chunk {
 /**
  * Information about a piece of river at a square mile
  */
-//struct river_mile {
-//	struct square_mile *mile;
-//	enum river_part part;
-//	struct river_stretch *in1;
-//	struct river_stretch *in2;
-//	struct river_stretch *out1;
-//	struct river_stretch *out2;
-//	struct river *river;
-//};
+struct river_mile {
+	enum river_part part;
+	struct square_mile *sq_mile;
+	struct river_mile *downstream;
+	struct river_mile *next;
+};
 
 /**
  * Information about river stretches
  */
 struct river_stretch {
 	int index;
-	struct square_mile *miles;
+	struct river_mile *miles;
 	struct river_stretch *in1;
 	struct river_stretch *in2;
 	struct river_stretch *out1;
 	struct river_stretch *out2;
-	//struct river_mile *start;
 	//struct river_mile *end;
 	//struct river *river;
 	//struct river *big;
@@ -194,13 +190,12 @@ struct map_square {
  * as a single grid in region.txt.
  */
 struct square_mile {
+	enum biome_type biome;
+	struct world_region *region;	/**< The region containing us */
 	struct map_square map_square;	/**< The map square containing us */
 	struct loc map_square_grid;		/**< Our position (49x49) in map_square */
-	//struct world_region *region;	/**< Region containing us */
-	enum river_part river_type;		/**< Part of a river, if any */
-	//struct river *rivers;			/**< Rivers passing through us */
+	struct river_mile *river_miles;	/**< River miles we contain */
 	//struct road *roads;				/**< Roads passing through us */
-	struct square_mile *next;
 };
 
 /**
@@ -216,7 +211,7 @@ struct connector {
 	struct loc grid;
 	byte feat;
 	bitflag info[SQUARE_SIZE];
-	enum top_type type;
+	enum biome_type type;
 	struct connector *next;
 };
 
@@ -261,11 +256,11 @@ struct terrain_change {
  * to be restored if the have aged off from the chunk list.
  */
 struct gen_loc {
-	enum top_type type;	/**< Topographic type of the location */
-	int x_pos;			/**< x position of the chunk */
-	int y_pos;			/**< y position of the chunk */
-	int z_pos;			/**< Depth of the chunk below ground */
-	u32b seed;			/**< RNG seed for generating the chunk repeatably */
+	enum biome_type type;	/**< Biome of the location */
+	int x_pos;				/**< x position of the chunk */
+	int y_pos;				/**< y position of the chunk */
+	int z_pos;				/**< Depth of the chunk below ground */
+	u32b seed;				/**< RNG seed for generating the chunk repeatably */
 	struct terrain_change *change;	/**< Changes made since generation */
 	struct connector *join;	/**< Information for generating adjoining chunks */
 };
@@ -277,7 +272,7 @@ extern bool character_generated;
 extern bool character_dungeon;
 extern const byte extract_energy[200];
 extern struct world_region *region_info;
-extern char **region_terrain;
+extern struct square_mile **square_miles;
 extern struct landmark *landmark_info;
 extern struct river *river_info;
 extern u16b chunk_max;
@@ -292,6 +287,7 @@ void gen_loc_list_cleanup(void);
 bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
 void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx);
 bool no_vault(int place);
+struct square_mile *square_mile(char letter, int number, int y, int x);
 bool is_daytime(void);
 bool outside(void);
 bool is_daylight(void);

@@ -44,7 +44,7 @@ s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
 struct world_region *region_info;
-char **region_terrain;
+struct square_mile **square_miles;
 struct landmark *landmark_info;
 struct river *river_info;
 struct gen_loc *gen_loc_list;	/* List of generated locations */
@@ -226,6 +226,9 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
 		gen_loc_max += GEN_LOC_INCR;
 		gen_loc_list = mem_realloc(gen_loc_list,
 								   gen_loc_max * sizeof(struct gen_loc));
+		for (i = gen_loc_max - GEN_LOC_INCR; i < (int) gen_loc_max; i++) {
+			memset(&gen_loc_list[i], 0, sizeof(struct gen_loc));
+		}
 	}
 
 	/* Move everything along one to make space */
@@ -233,7 +236,7 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
 		memcpy(&gen_loc_list[i], &gen_loc_list[i - 1], sizeof(struct gen_loc));
 
 	/* Copy the new data in */
-	gen_loc_list[idx].type = region_terrain[y_pos / 10][x_pos / 10];
+	gen_loc_list[idx].type = square_miles[y_pos / 10][x_pos / 10].biome;
 	gen_loc_list[idx].x_pos = x_pos;
 	gen_loc_list[idx].y_pos = y_pos;
 	gen_loc_list[idx].z_pos = z_pos;
@@ -251,6 +254,11 @@ bool no_vault(int place)
 	return false;
 }
 
+struct square_mile *square_mile(char letter, int number, int y, int x)
+{
+	int letter_trans = letter > 'I' ? letter - 'B' : letter - 'A';
+	return &square_miles[49 * letter_trans + y][49 * (number - 1) + x];
+}
 
 /**
  * ------------------------------------------------------------------------

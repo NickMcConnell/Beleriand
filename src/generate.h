@@ -140,7 +140,7 @@ struct surface_profile {
     struct surface_profile *next;
 
     const char *name;
-	enum top_type code;
+	enum biome_type code;
 	char *base_feats;
 	int num_base_feats;
 	struct area_profile *areas;

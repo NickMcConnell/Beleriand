@@ -135,7 +135,7 @@ static enum parser_error parse_surface_feat(struct parser *p) {
 		a->feat = feat;
 	} else {
 		s->base_feats = mem_realloc(s->base_feats,
-									(s->num_base_feats + 1) * sizeof(char));
+									(s->num_base_feats + 2) * sizeof(char));
 		s->base_feats[s->num_base_feats] = feat;
 		s->num_base_feats++;
 		s->base_feats[s->num_base_feats] = '\0';

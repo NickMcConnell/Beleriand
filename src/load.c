@@ -1650,6 +1650,9 @@ int rd_locations(void)
 			gen_loc_max += GEN_LOC_INCR;
 			gen_loc_list =
 				mem_realloc(gen_loc_list, gen_loc_max * sizeof(struct gen_loc));
+			for (j = gen_loc_max - GEN_LOC_INCR; j < gen_loc_max; j++) {
+				memset(&gen_loc_list[j], 0, sizeof(struct gen_loc));
+			}
 		}
 		location = &gen_loc_list[i];
 

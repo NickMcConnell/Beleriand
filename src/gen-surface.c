@@ -121,7 +121,7 @@ static int make_formation(struct chunk *c, struct point_set *big,
  * ------------------------------------------------------------------------
  * Surface generation
  * ------------------------------------------------------------------------ */
-static void make_piece(struct chunk *c, enum top_type terrain,
+static void make_piece(struct chunk *c, enum biome_type terrain,
 					   struct point_set *piece)
 {
 	int i, form_grids, size = point_set_size(piece);
@@ -189,10 +189,10 @@ static void make_piece(struct chunk *c, enum top_type terrain,
 void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 				 int x_offset, struct connector *first)
 {
-	enum top_type terrain = region_terrain[ref->y_pos / 10][ref->x_pos / 10];
+	enum biome_type bio = square_miles[ref->y_pos / 10][ref->x_pos / 10].biome;
 	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
 	struct point_set *piece = make_chunk_point_set(c, top_left);
-	make_piece(c, terrain, piece);
+	make_piece(c, bio, piece);
 }
 
 #if 0 //B for reference
