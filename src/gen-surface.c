@@ -56,6 +56,156 @@ static struct point_set *make_chunk_point_set(struct chunk *c,
 }
 
 /**
+ * Make a 22-long border between two biomes
+ *
+ * This border can be applied either to a straight edge or a diagonal
+ */
+static void make_biome_border(int edge[])
+{
+	int i;
+
+	/* Start within 2 of straight */
+	edge[0] = 2 - randint0(5);
+	for (i = 1; i < CHUNK_SIDE; i++) {
+		/* Move maximum of 1 in either direction */
+		edge[i] = edge[i - 1] + 1 - randint0(3);
+	}
+	/* If we've veered to far, push everything back until it's OK */
+	if (ABS(edge[CHUNK_SIDE - 1]) > 2) {
+		if (edge[CHUNK_SIDE - 1] > 0) {
+			int change = edge[CHUNK_SIDE - 1] - 2;
+			for (i = CHUNK_SIDE - 1; i > 0; i--) {
+				edge[i] -= change;
+				/* Smooth enough? */
+				if (ABS(edge[i] - edge[i - 1]) < 2) break;
+			}
+		} else {
+			int change = edge[CHUNK_SIDE - 1] + 2;
+			for (i = CHUNK_SIDE - 1; i > 0; i--) {
+				edge[i] += change;
+				/* Smooth enough? */
+				if (ABS(edge[i] - edge[i - 1]) < 2) break;
+			}
+		}
+	}
+}
+
+/**
+ * Make a point set at the given direction corner of a 22x22 chunk
+ */
+static struct point_set *make_corner_point_set(struct chunk *c,
+											   struct loc top_left, int dir)
+{
+	int y, x;
+	int edge[CHUNK_SIDE];
+	struct point_set *new = point_set_new(CHUNK_SIDE * CHUNK_SIDE);
+
+	assert(dir == DIR_NE || dir == DIR_SE || dir == DIR_SW || dir == DIR_NW);
+
+	/* Get border deviations */
+	make_biome_border(edge);
+
+	/* Allocate points */
+	if (dir == DIR_NE) {
+		for (y = 0; y < CHUNK_SIDE; y++) {
+			for (x = y + edge[y]; x < CHUNK_SIDE; x++) {
+				struct loc grid = loc_sum(loc(x, y), top_left);
+				if (x >= 0) add_to_point_set(new, grid);
+			}
+		}
+	} else if (dir == DIR_SE) {
+		for (y = 0; y < CHUNK_SIDE; y++) {
+			for (x = CHUNK_SIDE - (y + edge[y]); x < CHUNK_SIDE; x++) {
+				struct loc grid = loc_sum(loc(x, y), top_left);
+				if (x >= 0) add_to_point_set(new, grid);
+			}
+		}
+	} else if (dir == DIR_SW) {
+		for (y = 0; y < CHUNK_SIDE; y++) {
+			for (x = 0; x < y + edge[y]; x++) {
+				struct loc grid = loc_sum(loc(x, y), top_left);
+				if (x < CHUNK_SIDE) add_to_point_set(new, grid);
+			}
+		}
+	} else {
+		assert(dir == DIR_NW);
+		for (y = 0; y < CHUNK_SIDE; y++) {
+			for (x = 0; x < CHUNK_SIDE - (y + edge[y]); x++) {
+				struct loc grid = loc_sum(loc(x, y), top_left);
+				if (x < CHUNK_SIDE) add_to_point_set(new, grid);
+			}
+		}
+	}
+	return new;
+}
+
+/**
+ * Make a point set at the given direction edge of a 22x22 chunk
+ */
+static struct point_set *make_edge_point_set(struct chunk *c,
+											 struct loc top_left, int dir)
+{
+	int y, x;
+	int edge[CHUNK_SIDE];
+	struct point_set *new = point_set_new(CHUNK_SIDE * CHUNK_SIDE);
+
+	assert(dir == DIR_E || dir == DIR_S || dir == DIR_W || dir == DIR_N);
+
+	/* Get border deviations */
+	make_biome_border(edge);
+
+	/* Allocate points */
+	if (dir == DIR_E) {
+		for (y = 0; y < CHUNK_SIDE; y++) {
+			for (x = CHUNK_SIDE / 2 + edge[y]; x < CHUNK_SIDE; x++) {
+				struct loc grid = loc_sum(loc(x, y), top_left);
+				if (x >= 0) add_to_point_set(new, grid);
+			}
+		}
+	} else if (dir == DIR_S) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			for (y = CHUNK_SIDE / 2 + edge[x]; y < CHUNK_SIDE; y++) {
+				struct loc grid = loc_sum(loc(x, y), top_left);
+				if (y >= 0) add_to_point_set(new, grid);
+			}
+		}
+	} else if (dir == DIR_W) {
+		for (y = 0; y < CHUNK_SIDE; y++) {
+			for (x = 0; x < CHUNK_SIDE / 2 + edge[y]; x++) {
+				struct loc grid = loc_sum(loc(x, y), top_left);
+				if (x < CHUNK_SIDE) add_to_point_set(new, grid);
+			}
+		}
+	} else {
+		assert(dir == DIR_N);
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			for (y = 0; y < CHUNK_SIDE / 2 + edge[y]; y++) {
+				struct loc grid = loc_sum(loc(x, y), top_left);
+				if (y < CHUNK_SIDE) add_to_point_set(new, grid);
+			}
+		}
+	}
+	return new;
+}
+
+/**
+ * Return a point set of points a given point set that aren't in a smaller
+ * point set contained (maybe partially) in the larger one
+ */
+static struct point_set *point_set_subtract(struct point_set *big,
+											struct point_set *small)
+{
+	int i;
+	struct point_set *new = point_set_new(1);
+	for (i = 0; i < point_set_size(big); i++) {
+		if (!point_set_contains(small, big->pts[i])) {
+			add_to_point_set(new, big->pts[i]);
+		}
+	}
+	return new;
+}
+
+/**
  * Make a randomish point_set of grids contained in a given point_set.
  */
 static struct point_set *make_random_point_set(struct chunk *c,
@@ -115,6 +265,148 @@ static int make_formation(struct chunk *c, struct point_set *big,
 	}
 	point_set_dispose(form);
 	return num;
+}
+
+/**
+ * Helper struct for handling where biomes meet
+ */
+struct biome_tweak {
+	int dir1;
+	enum biome_type biome1;
+	int dir2;
+	enum biome_type biome2;
+};
+
+/**
+ * Get the major biome type for a chunk, and edge tweaks
+ * Return false if it's the standard biome with no tweaks, true otherwise
+ */
+static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
+{
+	enum biome_type standard, east, south, west, north;
+	bool right = ((x_pos % 10) == 9);
+	bool bottom = ((y_pos % 10) == 9);
+	bool left = ((x_pos % 10) == 0);
+	bool top = ((y_pos % 10) == 0);
+
+	/* Return if it's not in the edge of the square mile */
+	if (!right && !bottom && !left && !top) return false;
+
+	/* Get the biome for the square mile the chunk is in and its neighbours */
+	standard = square_miles[y_pos / 10][x_pos / 10].biome;
+	east = square_miles[y_pos / 10][x_pos / 10 + 1].biome;
+	south = square_miles[y_pos / 10 + 1][x_pos / 10].biome;
+	west = square_miles[y_pos / 10][x_pos / 10 - 1].biome;
+	north = square_miles[y_pos / 10 - 1][x_pos / 10].biome;
+
+	/* Check each edge and set the other biomes if needed */
+	if (right) {
+		if (east != standard) {
+			tweak->biome1 = east;
+			if (bottom) {
+				if (east == south) {
+					/* Full corner */
+					tweak->dir1 = DIR_NONE;
+				} else {
+					/* Two separate edges */
+					tweak->dir1 = DIR_E;
+					tweak->biome2 = south;
+					tweak->dir2 = DIR_S;
+				}
+			} else if (top) {
+				if (east == north) {
+					/* Full corner */
+					tweak->dir1 = DIR_NONE;
+				} else {
+					/* Two separate edges */
+					tweak->dir1 = DIR_E;
+					tweak->biome2 = north;
+					tweak->dir2 = DIR_N;
+				}
+			} else if ((south == east) && ((y_pos % 10) == 8)) {
+				/* Corner smoothing one away from the corner */
+				tweak->dir1 = DIR_SE;
+			} else if ((north == east) && ((y_pos % 10) == 1)) {
+				/* Corner smoothing one away from the corner */
+				tweak->dir1 = DIR_NE;
+			} else {
+				/* Single edge */
+				tweak->dir1 = DIR_E;
+			}
+			return true;
+		}
+	}
+	if (bottom) {
+		if (south != standard) {
+			tweak->biome1 = south;
+			if (left) {
+				if (west == south) {
+					/* Full corner */
+					tweak->dir1 = DIR_NONE;
+				} else {
+					/* Two separate edges */
+					tweak->dir1 = DIR_S;
+					tweak->biome2 = west;
+					tweak->dir2 = DIR_W;
+				}
+			} else if ((south == east) && ((x_pos % 10) == 8)) {
+				/* Corner smoothing one away from the corner */
+				tweak->dir1 = DIR_SE;
+			} else if ((south == west) && ((x_pos % 10) == 1)) {
+				/* Corner smoothing one away from the corner */
+				tweak->dir1 = DIR_SW;
+			} else {
+				/* Single edge */
+				tweak->dir1 = DIR_S;
+			}
+			return true;
+		}
+	}
+	if (left) {
+		if (west != standard) {
+			tweak->biome1 = west;
+			if (top)
+				if (west == north) {
+					/* Full corner */
+					tweak->dir1 = DIR_NONE;
+				} else {
+					/* Two separate edges */
+					tweak->dir1 = DIR_W;
+					tweak->biome2 = north;
+					tweak->dir2 = DIR_N;
+				} else if ((south == west) && ((y_pos % 10) == 8)) {
+					/* Corner smoothing one away from the corner */
+					tweak->dir1 = DIR_SW;
+				} else if ((north == west) && ((y_pos % 10) == 1)) {
+					/* Corner smoothing one away from the corner */
+					tweak->dir1 = DIR_NW;
+					return true;
+				} else {
+					/* Single edge */
+					tweak->dir1 = DIR_W;
+				}
+			return true;
+		}
+	}
+	if (top) {
+		if (north != standard) {
+			tweak->biome1 = north;
+			if ((north == east) && ((y_pos % 10) == 8)) {
+				/* Corner smoothing one away from the corner */
+				tweak->dir1 = DIR_NE;
+			} else if ((north == west) && ((y_pos % 10) == 1)) {
+				/* Corner smoothing one away from the corner */
+				tweak->dir1 = DIR_NW;
+			} else {
+				/* Single edge */
+				tweak->dir1 = DIR_N;
+			}
+			return true;
+		}
+	}
+
+	/* On an edge, but no change of biome */
+	return false;
 }
 
 /**
@@ -189,10 +481,58 @@ static void make_piece(struct chunk *c, enum biome_type terrain,
 void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 				 int x_offset, struct connector *first)
 {
-	enum biome_type bio = square_miles[ref->y_pos / 10][ref->x_pos / 10].biome;
 	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
-	struct point_set *piece = make_chunk_point_set(c, top_left);
-	make_piece(c, bio, piece);
+	struct point_set *chunk = make_chunk_point_set(c, top_left);
+	enum biome_type standard;
+	struct biome_tweak tweak = { DIR_NONE, 0, DIR_NONE, 0 };
+
+	/* Get the standard biome based on region.txt */
+	standard = square_miles[ref->y_pos / 10][ref->x_pos / 10].biome;
+	tweak.biome1 = standard;
+	tweak.biome2 = standard;
+
+	/* Check for tweaks, and generate accordingly */
+	if (get_biome_tweaks(ref->y_pos, ref->x_pos, &tweak)) {
+		if (tweak.dir1 == DIR_NONE) {
+			/* Whole chunk is the tweaked biome */
+			make_piece(c, tweak.biome1, chunk);
+		} else if ((tweak.dir1 == DIR_NE) || (tweak.dir1 == DIR_SE) ||
+				   (tweak.dir1 == DIR_SW) || (tweak.dir1 == DIR_NW)) {
+			/* Corner effect */
+			struct point_set *tweaked = make_corner_point_set(c, top_left,
+															  tweak.dir1);
+			struct point_set *remainder = point_set_subtract(chunk, tweaked);
+			make_piece(c, tweak.biome1, tweaked);
+			make_piece(c, standard, remainder);
+			point_set_dispose(tweaked);
+			point_set_dispose(remainder);
+		} else {
+			/* An edge effect, or two separate edge effects */
+			struct point_set *first = make_edge_point_set(c, top_left,
+														  tweak.dir1);
+			struct point_set *remainder1 = point_set_subtract(chunk, first);
+			make_piece(c, tweak.biome1, first);
+
+			if (tweak.dir2 != DIR_NONE) {
+				struct point_set *second = make_edge_point_set(c, top_left,
+															   tweak.dir2);
+				struct point_set *remainder2 = point_set_subtract(remainder1,
+																  first);
+				/* Possibly this will overlap first, which I think is OK */
+				make_piece(c, tweak.biome2, second);
+				make_piece(c, standard, remainder2);
+				point_set_dispose(second);
+				point_set_dispose(remainder2);
+			} else {
+				make_piece(c, standard, remainder1);
+			}
+			point_set_dispose(first);
+			point_set_dispose(remainder1);
+		}
+	} else {
+		make_piece(c, standard, chunk);
+	}
+	point_set_dispose(chunk);
 }
 
 #if 0 //B for reference
