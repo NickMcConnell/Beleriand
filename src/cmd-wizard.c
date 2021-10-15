@@ -1439,7 +1439,7 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 
 			/* Store it */
 			(void) chunk_store(y, x, ref.region, ref.z_pos, ref.y_pos,
-							   ref.x_pos, true);
+							   ref.x_pos, ref.gen_loc_idx, true);
 		}
 	}
 

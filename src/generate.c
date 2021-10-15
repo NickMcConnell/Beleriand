@@ -1138,10 +1138,10 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 			struct connector *join;
 
 			/* Get the location data */
-			ref.region = chunk_list[p->last_place].region;
 			ref.z_pos = p->depth;
 			ref.y_pos = chunk_list[p->last_place].y_pos + y0;
 			ref.x_pos = chunk_list[p->last_place].x_pos + x0;
+			ref.region = find_region(ref.y_pos, ref.x_pos);
 
 			/* See if the location up has been generated before */
 			exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1, &lower,
@@ -1405,10 +1405,10 @@ static struct chunk *cave_generate(struct player *p, u32b seed)
 			struct loc grid;
 
 			/* Get the location data */
-			ref.region = chunk_list[p->last_place].region;
 			ref.z_pos = p->depth;
 			ref.y_pos =	chunk_list[p->last_place].y_pos + y0;
 			ref.x_pos =	chunk_list[p->last_place].x_pos + x0;
+			ref.region = find_region(ref.y_pos, ref.x_pos);
 
 			/* Should have been generated before */
 			reload = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos, &lower,
@@ -1541,10 +1541,10 @@ void prepare_next_level(struct player *p)
 					bool reload;
 
 					/* Get the location data */
-					ref.region = chunk_list[p->last_place].region;
 					ref.z_pos = p->depth;
 					ref.y_pos = chunk_list[p->last_place].y_pos + y0;
 					ref.x_pos = chunk_list[p->last_place].x_pos + x0;
+					ref.region = find_region(ref.y_pos, ref.x_pos);
 
 					/* See if we've been generated before */
 					reload = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos,
@@ -1562,8 +1562,9 @@ void prepare_next_level(struct player *p)
 					}
 
 					/* Store the chunk reference */
+					ref.gen_loc_idx = upper;
 					(void) chunk_store(1, 1, ref.region, ref.z_pos, ref.y_pos,
-									   ref.x_pos, false);
+									   ref.x_pos, ref.gen_loc_idx, false);
 
 					/* Is this where the player is? */
 					if ((y0 == 0) && (x0 == 0)) {
@@ -1609,10 +1610,10 @@ void prepare_next_level(struct player *p)
 					struct chunk_ref ref = { 0 };
 
 					/* Get the location data */
-					ref.region = chunk_list[centre].region;
 					ref.z_pos = p->depth;
 					ref.y_pos = chunk_list[centre].y_pos + y - 1;
 					ref.x_pos = chunk_list[centre].x_pos + x - 1;
+					ref.region = find_region(ref.y_pos, ref.x_pos);
 
 					/* Load it */
 					chunk_idx = chunk_find(ref);

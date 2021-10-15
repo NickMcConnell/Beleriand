@@ -136,7 +136,7 @@ bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
 	int idx = gen_loc_cnt / 2;
 
 	/* Special case for before the array is populated */
-	if (gen_loc_cnt <= 1) {
+	if (!gen_loc_cnt) {
 		*upper = *lower = 0;
 		return false;
 	}
@@ -232,8 +232,16 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
 	}
 
 	/* Move everything along one to make space */
-	for (i = gen_loc_cnt; i > idx; i--)
+	for (i = gen_loc_cnt; i > idx; i--) {
 		memcpy(&gen_loc_list[i], &gen_loc_list[i - 1], sizeof(struct gen_loc));
+	}
+
+	/* Relabel any live chunks */
+	for (i = 0; i < MAX_CHUNKS; i++) {
+		if ((int) chunk_list[i].gen_loc_idx >= idx) {
+			chunk_list[i].gen_loc_idx++;
+		}
+	}
 
 	/* Copy the new data in */
 	gen_loc_list[idx].type = square_miles[y_pos / 10][x_pos / 10].biome;

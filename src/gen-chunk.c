@@ -757,11 +757,16 @@ void chunk_adjacent_data(struct chunk_ref *ref, int z_offset, int y_offset,
 		((ref->x_pos >= 10 * MAX_X_REGION - 1) && (x_offset == 2))) {
 		ref->region = 0;
 	} else {
+		int lower, upper;
+		bool find;
 		ref->z_pos += z_offset;
 		ref->y_pos += (y_offset - 1);
 		ref->x_pos += (x_offset - 1);
 		if (z_offset == 0)
 			ref->region = find_region(ref->y_pos, ref->x_pos);
+		find = gen_loc_find(ref->x_pos, ref->y_pos, ref->z_pos, &lower, &upper);
+		if (find)
+			ref->gen_loc_idx = upper;
 	}
 }
 
@@ -977,7 +982,7 @@ static void chunk_fix_all(void)
  * Store a chunk pair from the current playing area into the chunk list
  */
 int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
-				u16b y_pos, u16b x_pos, bool write)
+				u16b y_pos, u16b x_pos, u32b gen_loc_idx, bool write)
 {
 	int i;
 	int max = turn, idx = 0;
@@ -1040,6 +1045,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
 	chunk_list[idx].y_pos = y_pos;
 	chunk_list[idx].x_pos = x_pos;
 	chunk_list[idx].z_pos = z_pos;
+	chunk_list[idx].gen_loc_idx = gen_loc_idx;
 	chunk_list[idx].adjacent[5] = idx;
 
 	/* Write the chunks */
@@ -1131,14 +1137,14 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 
 	/* Access the old place in the gen_loc_list, or make the new one */
 	if (reload) {
-		location = &gen_loc_list[lower];
+		location = &gen_loc_list[upper];
 	} else {
 		gen_loc_make(x_pos, y_pos, z_pos, upper);
 		location = &gen_loc_list[upper];
 	}
 
 	/* Store the chunk reference */
-	idx = chunk_store(1, 1, ref->region, z_pos, y_pos, x_pos, false);
+	idx = chunk_store(1, 1, ref->region, z_pos, y_pos, x_pos, upper, false);
 
 	/* Get adjacent data */
 	for (n = 0; n < DIR_MAX; n++) {
@@ -1395,7 +1401,7 @@ static void arena_realign(int y_offset, int x_offset)
 
 			/* Store it */
 			(void) chunk_store(y, x, ref->region, ref->z_pos, ref->y_pos,
-							   ref->x_pos, true);
+							   ref->x_pos, ref->gen_loc_idx, true);
 
 			/* Feature counts */
 			for (i = 0; i < z_info->f_max + 1; i++) {
@@ -1468,10 +1474,10 @@ static void arena_realign(int y_offset, int x_offset)
 				continue;
 
 			/* Get the location data */
-			ref.region = chunk_list[player->place].region;
 			ref.z_pos = 0;
 			ref.y_pos = chunk_list[player->place].y_pos;
 			ref.x_pos = chunk_list[player->place].x_pos;
+			ref.region = find_region(ref.y_pos, ref.x_pos);
 			chunk_adjacent_data(&ref, 0, y, x);
 
 			/* Load it if it already exists */
@@ -1531,12 +1537,12 @@ static void level_change(int z_offset)
 			struct chunk_ref ref = chunk_list[centre];
 
 			/* Get the location data */
-			chunk_adjacent_data(&ref, 0, y, x);
 			ref.z_pos = player->depth;
+			chunk_adjacent_data(&ref, 0, y, x);
 
 			/* Store it */
 			(void) chunk_store(y, x, ref.region, ref.z_pos, ref.y_pos,
-							   ref.x_pos, true);
+							   ref.x_pos, ref.gen_loc_idx, true);
 		}
 	}
 
