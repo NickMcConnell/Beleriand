@@ -157,21 +157,21 @@ static struct point_set *make_edge_point_set(struct chunk *c,
 	/* Allocate points */
 	if (dir == DIR_E) {
 		for (y = 0; y < CHUNK_SIDE; y++) {
-			for (x = CHUNK_SIDE / 2 + edge[y]; x < CHUNK_SIDE; x++) {
+			for (x = CHUNK_SIDE + edge[y]; x < CHUNK_SIDE; x++) {
 				struct loc grid = loc_sum(loc(x, y), top_left);
-				if (x >= 0) add_to_point_set(new, grid);
+				add_to_point_set(new, grid);
 			}
 		}
 	} else if (dir == DIR_S) {
 		for (x = 0; x < CHUNK_SIDE; x++) {
-			for (y = CHUNK_SIDE / 2 + edge[x]; y < CHUNK_SIDE; y++) {
+			for (y = CHUNK_SIDE + edge[x]; y < CHUNK_SIDE; y++) {
 				struct loc grid = loc_sum(loc(x, y), top_left);
-				if (y >= 0) add_to_point_set(new, grid);
+				add_to_point_set(new, grid);
 			}
 		}
 	} else if (dir == DIR_W) {
 		for (y = 0; y < CHUNK_SIDE; y++) {
-			for (x = 0; x < CHUNK_SIDE / 2 + edge[y]; x++) {
+			for (x = 0; x < edge[y]; x++) {
 				struct loc grid = loc_sum(loc(x, y), top_left);
 				if (x < CHUNK_SIDE) add_to_point_set(new, grid);
 			}
@@ -179,7 +179,7 @@ static struct point_set *make_edge_point_set(struct chunk *c,
 	} else {
 		assert(dir == DIR_N);
 		for (x = 0; x < CHUNK_SIDE; x++) {
-			for (y = 0; y < CHUNK_SIDE / 2 + edge[y]; y++) {
+			for (y = 0; y < edge[y]; y++) {
 				struct loc grid = loc_sum(loc(x, y), top_left);
 				if (y < CHUNK_SIDE) add_to_point_set(new, grid);
 			}
@@ -365,7 +365,7 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 	if (left) {
 		if (west != standard) {
 			tweak->biome1 = west;
-			if (top)
+			if (top) {
 				if (west == north) {
 					/* Full corner */
 					tweak->dir1 = DIR_NONE;
@@ -374,17 +374,18 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 					tweak->dir1 = DIR_W;
 					tweak->biome2 = north;
 					tweak->dir2 = DIR_N;
-				} else if ((south == west) && ((y_pos % 10) == 8)) {
-					/* Corner smoothing one away from the corner */
-					tweak->dir1 = DIR_SW;
-				} else if ((north == west) && ((y_pos % 10) == 1)) {
-					/* Corner smoothing one away from the corner */
-					tweak->dir1 = DIR_NW;
-					return true;
-				} else {
-					/* Single edge */
-					tweak->dir1 = DIR_W;
 				}
+			} else if ((south == west) && ((y_pos % 10) == 8)) {
+				/* Corner smoothing one away from the corner */
+				tweak->dir1 = DIR_SW;
+			} else if ((north == west) && ((y_pos % 10) == 1)) {
+				/* Corner smoothing one away from the corner */
+				tweak->dir1 = DIR_NW;
+				return true;
+			} else {
+				/* Single edge */
+				tweak->dir1 = DIR_W;
+			}
 			return true;
 		}
 	}
