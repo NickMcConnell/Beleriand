@@ -414,9 +414,9 @@ void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag);
 void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat, 
 					int flag, bool overwrite_perm);
 void set_marked_granite(struct chunk *c, struct loc grid, int flag);
-extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2, 
-									int x2, bool light, int feat, 
-									bool special_ok);
+extern bool generate_starburst_room(struct chunk *c, struct point_set *set,
+									int y1, int x1, int y2, int x2,
+									bool light, int feat, bool special_ok);
 void append_entrance(struct loc grid);
 struct vault *random_vault(int depth, const char *typ1, const char *typ2);
 bool build_vault(struct chunk *c, struct loc centre, struct vault *v);
