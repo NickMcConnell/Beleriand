@@ -61,8 +61,8 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/gen-chunk.c
         src/gen-monster.c
         src/gen-room.c
+        src/gen-surface.c
         src/gen-util.c
-        src/gen-wilderness.c
         src/generate.c
         src/grafmode.c
         src/guid.c
