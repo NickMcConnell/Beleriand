@@ -429,6 +429,7 @@ struct chunk *chunk_new(int height, int width)
 void chunk_wipe(struct chunk *c)
 {
 	int y, x, i;
+	struct chunk *p_c = (c == cave && player) ? player->cave : NULL;
 
 	/* Look for orphaned objects and delete them. */
 	for (i = 0; i < c->obj_max; i++) {
@@ -445,7 +446,7 @@ void chunk_wipe(struct chunk *c)
 			if (c->squares[y][x].trap)
 				square_free_trap(c, loc(x, y));
 			if (c->squares[y][x].obj)
-				object_pile_free(c, c->squares[y][x].obj);
+				object_pile_free(c, p_c, c->squares[y][x].obj);
 		}
 		mem_free(c->squares[y]);
 	}

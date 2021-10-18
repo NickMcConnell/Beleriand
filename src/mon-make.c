@@ -658,7 +658,7 @@ void wipe_mon_list(void)
 				}
 				obj = obj->next;
 			}
-			object_pile_free(NULL, held_obj);
+			object_pile_free(NULL, NULL, held_obj);
 		}
 	}
 
