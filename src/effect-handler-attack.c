@@ -1445,6 +1445,9 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 		if (!mon->race) continue;
 		if (monster_is_stored(mon)) continue;
 
+		/* Don't affect the caster */
+		if (loc_eq(mon->grid, origin)) continue;
+
 		/* Require line of sight */
 		if (!los(cave, origin, mon->grid)) continue;
 
