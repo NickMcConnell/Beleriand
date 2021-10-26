@@ -723,18 +723,18 @@ int find_region(int y_pos, int x_pos)
 		struct world_region *region = &region_info[i];
 		size_t entry;
 
-		if ((y_pos / 10 < region->y_offset) ||
-			(y_pos / 10 >= region->y_offset + region->height)) {
+		if ((y_pos / CPM < region->y_offset) ||
+			(y_pos / CPM >= region->y_offset + region->height)) {
 			continue;
 		}
 
-		if ((x_pos / 10 < region->x_offset) ||
-			(x_pos / 10 >= region->x_offset + region->width)) {
+		if ((x_pos / CPM < region->x_offset) ||
+			(x_pos / CPM >= region->x_offset + region->width)) {
 			continue;
 		}
 
-		entry =	region->width * ((y_pos / 10) - region->y_offset) +
-			(x_pos / 10) - region->x_offset;
+		entry =	region->width * ((y_pos / CPM) - region->y_offset) +
+			(x_pos / CPM) - region->x_offset;
 		if ((entry >= strlen(region->text)) || (region->text[entry] == ' ')) {
 			continue;
 		}
@@ -752,9 +752,9 @@ void chunk_adjacent_data(struct chunk_ref *ref, int z_offset, int y_offset,
 						 int x_offset)
 {
 	if (((ref->y_pos == 0) && (y_offset == 0)) ||
-		((ref->y_pos >= 10 * MAX_Y_REGION - 1) && (y_offset == 2)) ||
+		((ref->y_pos >= CPM * MAX_Y_REGION - 1) && (y_offset == 2)) ||
 		((ref->x_pos == 0) && (x_offset == 0)) ||
-		((ref->x_pos >= 10 * MAX_X_REGION - 1) && (x_offset == 2))) {
+		((ref->x_pos >= CPM * MAX_X_REGION - 1) && (x_offset == 2))) {
 		ref->region = 0;
 	} else {
 		int lower, upper;

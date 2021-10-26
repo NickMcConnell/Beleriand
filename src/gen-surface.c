@@ -56,7 +56,7 @@ static struct point_set *make_chunk_point_set(struct chunk *c,
 }
 
 /**
- * Make a 22-long border between two biomes
+ * Make a CHUNK_SIDE-long border between two biomes
  *
  * This border can be applied either to a straight edge or a diagonal
  */
@@ -64,8 +64,8 @@ static void make_biome_border(int edge[])
 {
 	int i;
 
-	/* Start within 2 of straight */
-	edge[0] = 2 - randint0(5);
+	/* Start within CHUNK_SIDE / 10 of straight */
+	edge[0] = CHUNK_SIDE / 10 - randint0(CHUNK_SIDE / 5);
 	for (i = 1; i < CHUNK_SIDE; i++) {
 		/* Move maximum of 1 in either direction */
 		edge[i] = edge[i - 1] + 1 - randint0(3);
@@ -419,21 +419,21 @@ struct biome_tweak {
 static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 {
 	enum biome_type standard, east, south, west, north;
-	bool right = ((x_pos % 10) == 9);
-	bool bottom = ((y_pos % 10) == 9);
-	bool left = ((x_pos % 10) == 0);
-	bool top = ((y_pos % 10) == 0);
+	bool right = ((x_pos % CPM) == CPM - 1);
+	bool bottom = ((y_pos % CPM) == CPM - 1);
+	bool left = ((x_pos % CPM) == 0);
+	bool top = ((y_pos % CPM) == 0);
 	int upper1, lower1, upper2, lower2;
 
 	/* Return if it's not in the edge of the square mile */
 	if (!right && !bottom && !left && !top) return false;
 
 	/* Get the biome for the square mile the chunk is in and its neighbours */
-	standard = square_miles[y_pos / 10][x_pos / 10].biome;
-	east = square_miles[y_pos / 10][x_pos / 10 + 1].biome;
-	south = square_miles[y_pos / 10 + 1][x_pos / 10].biome;
-	west = square_miles[y_pos / 10][x_pos / 10 - 1].biome;
-	north = square_miles[y_pos / 10 - 1][x_pos / 10].biome;
+	standard = square_miles[y_pos / CPM][x_pos / CPM].biome;
+	east = square_miles[y_pos / CPM][x_pos / CPM + 1].biome;
+	south = square_miles[y_pos / CPM + 1][x_pos / CPM].biome;
+	west = square_miles[y_pos / CPM][x_pos / CPM - 1].biome;
+	north = square_miles[y_pos / CPM - 1][x_pos / CPM].biome;
 
 	/* Check each edge and set the other biomes if needed */
 	if (right) {
@@ -468,10 +468,10 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 					tweak->dir2 = DIR_N;
 					tweak->idx2 = gen_n ? upper2 : -1;
 				}
-			} else if ((south == east) && ((y_pos % 10) == 8)) {
+			} else if ((south == east) && ((y_pos % CPM) == CPM - 2)) {
 				/* Corner smoothing one away from the corner */
 				tweak->dir1 = DIR_SE;
-			} else if ((north == east) && ((y_pos % 10) == 1)) {
+			} else if ((north == east) && ((y_pos % CPM) == CPM + 1)) {
 				/* Corner smoothing one away from the corner */
 				tweak->dir1 = DIR_NE;
 			} else {
@@ -500,10 +500,10 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 					tweak->dir2 = DIR_W;
 					tweak->idx2 = gen_w ? upper2 : -1;
 				}
-			} else if ((south == east) && ((x_pos % 10) == 8)) {
+			} else if ((south == east) && ((x_pos % CPM) == CPM - 2)) {
 				/* Corner smoothing one away from the corner */
 				tweak->dir1 = DIR_SE;
-			} else if ((south == west) && ((x_pos % 10) == 1)) {
+			} else if ((south == west) && ((x_pos % CPM) == CPM + 1)) {
 				/* Corner smoothing one away from the corner */
 				tweak->dir1 = DIR_SW;
 			} else {
@@ -531,10 +531,10 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 					tweak->dir2 = DIR_N;
 					tweak->idx2 = gen_n ? upper2 : -1;
 				}
-			} else if ((south == west) && ((y_pos % 10) == 8)) {
+			} else if ((south == west) && ((y_pos % CPM) == CPM - 2)) {
 				/* Corner smoothing one away from the corner */
 				tweak->dir1 = DIR_SW;
-			} else if ((north == west) && ((y_pos % 10) == 1)) {
+			} else if ((north == west) && ((y_pos % CPM) == CPM + 1)) {
 				/* Corner smoothing one away from the corner */
 				tweak->dir1 = DIR_NW;
 				return true;
@@ -550,10 +550,10 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 		bool gen_n = gen_loc_find(x_pos, y_pos - 1, 0, &lower1, &upper1);
 		if (north != standard) {
 			tweak->biome1 = north;
-			if ((north == east) && ((y_pos % 10) == 8)) {
+			if ((north == east) && ((y_pos % CPM) == CPM - 2)) {
 				/* Corner smoothing one away from the corner */
 				tweak->dir1 = DIR_NE;
-			} else if ((north == west) && ((y_pos % 10) == 1)) {
+			} else if ((north == west) && ((y_pos % CPM) == CPM + 1)) {
 				/* Corner smoothing one away from the corner */
 				tweak->dir1 = DIR_NW;
 			} else {
@@ -648,7 +648,7 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	struct biome_tweak tweak = { DIR_NONE, 0, -1, DIR_NONE, 0, -1 };
 
 	/* Get the standard biome based on region.txt */
-	standard = square_miles[ref->y_pos / 10][ref->x_pos / 10].biome;
+	standard = square_miles[ref->y_pos / CPM][ref->x_pos / CPM].biome;
 	tweak.biome1 = standard;
 	tweak.biome2 = standard;
 
@@ -1745,7 +1745,7 @@ struct chunk *old_forest_gen(struct player *p, int height, int width)
 	int plats;
 	int place = p->place;
 	int last_place = p->last_place;
-	int form_grids = 0;
+<	int form_grids = 0;
 
 	int form_feats[] = { FEAT_GRASS, FEAT_PASS_RUBBLE, FEAT_MAGMA, FEAT_GRANITE,
 						 FEAT_GRASS, FEAT_QUARTZ, FEAT_NONE	};

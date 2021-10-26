@@ -244,7 +244,7 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
 	}
 
 	/* Copy the new data in */
-	gen_loc_list[idx].type = square_miles[y_pos / 10][x_pos / 10].biome;
+	gen_loc_list[idx].type = square_miles[y_pos / CPM][x_pos / CPM].biome;
 	gen_loc_list[idx].x_pos = x_pos;
 	gen_loc_list[idx].y_pos = y_pos;
 	gen_loc_list[idx].z_pos = z_pos;
