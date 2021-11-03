@@ -1238,10 +1238,9 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Start on the stairs to Angband, for now */
 	player->place = 0;
-	//chunk_list[0].region = 30;
 	chunk_list[0].z_pos = 0;
-	chunk_list[0].y_pos = 422;
-	chunk_list[0].x_pos = 3965;
+	chunk_list[0].y_pos = 842;
+	chunk_list[0].x_pos = 7926;
 	player->depth = 0;
 
 	/* No locations generated yet */

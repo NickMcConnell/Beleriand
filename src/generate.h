@@ -341,9 +341,9 @@ struct room_template {
 #define SYMTR_FLAG_FORCE_REF (4)
 #define SYMTR_MAX_WEIGHT (32768)
 
-#define CHUNK_SIDE 22
-#define ARENA_SIDE 66
-#define CPM 10
+#define CHUNK_SIDE 44
+#define ARENA_SIDE 132
+#define CPM 20
 #define MAX_CHUNKS 256
 #define CHUNK_TEMP -2
 #define CHUNK_CUR -1
