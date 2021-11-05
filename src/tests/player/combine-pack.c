@@ -27,12 +27,12 @@
 struct in_slot_desc {
 	int tval, sval, num;
 	const char* inscrip;
-	byte origin, origin_depth;
+	byte origin, origin_z;
 	bool known, equipped;
 };
 struct out_slot_desc {
 	int tval, sval, num;
-	byte origin, origin_depth;
+	byte origin, origin_z;
 	bool equipped;
 };
 struct simple_test_case {
@@ -61,7 +61,7 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
-	wipe_mon_list(cave, player);
+	wipe_mon_list();
 	cleanup_angband();
 
 	return 0;
@@ -106,7 +106,7 @@ static bool populate_gear(const struct in_slot_desc *slots) {
 		object_prep(obj, kind, 0, RANDOMISE);
 		obj->number = slots->num;
 		obj->origin = slots->origin;
-		obj->origin_depth = slots->origin_depth;
+		obj->origin_z = slots->origin_z;
 		if (slots->inscrip && slots->inscrip[0] != '\0') {
 			obj->note = quark_add(slots->inscrip);
 		}
@@ -156,7 +156,7 @@ static bool verify_gear(struct player *p, const struct out_slot_desc *slots) {
 		if (obj->kind != kind || obj->number != slots->num
 				|| obj->origin != slots->origin
 				|| (obj->origin != ORIGIN_MIXED
-				&& obj->origin_depth != slots->origin_depth)
+				&& obj->origin_z != slots->origin_z)
 				|| slots->equipped !=
 				object_is_equipped(p->body, obj)) {
 			result = false;
@@ -218,7 +218,7 @@ static int test_combine_pack_only_equipped(void *state) {
 		{
 			{ TV_SWORD, 1, 1, "", ORIGIN_BIRTH, 0, true, true },
 			{ TV_BOW, 2, 1, "", ORIGIN_FLOOR, 5, true, true },
-			{ TV_SHIELD, 1, 1, "", ORIGIN_STORE, 0, true, true },
+			{ TV_SHIELD, 1, 1, "", ORIGIN_PIT, 0, true, true },
 			{ TV_CLOAK, 1, 1, "", ORIGIN_FLOOR, 1, true, true },
 			{ TV_SOFT_ARMOR, 2, 1, "", ORIGIN_BIRTH, 0, true, true },
 			{ -1, -1, -1, NULL, ORIGIN_NONE, 0, false, false, }
@@ -226,7 +226,7 @@ static int test_combine_pack_only_equipped(void *state) {
 		{
 			{ TV_SWORD, 1, 1, ORIGIN_BIRTH, 0, true },
 			{ TV_BOW, 2, 1, ORIGIN_FLOOR, 5, true },
-			{ TV_SHIELD, 1, 1, ORIGIN_STORE, 0, true },
+			{ TV_SHIELD, 1, 1, ORIGIN_PIT, 0, true },
 			{ TV_CLOAK, 1, 1, ORIGIN_FLOOR, 1, true },
 			{ TV_SOFT_ARMOR, 2, 1, ORIGIN_BIRTH, 0, true },
 			{ -1, -1, -1, ORIGIN_NONE, 0, false }
@@ -249,11 +249,11 @@ static int test_combine_pack_mixed(void *state) {
 			{ TV_WAND, 3, 1, "", ORIGIN_CHEST, 4, true, false },
 			{ TV_SWORD, 1, 1, "", ORIGIN_BIRTH, 0, true, true },
 			{ TV_ARROW, 1, 38, "", ORIGIN_BIRTH, 0, true, false },
-			{ TV_FOOD, 2, 4, "", ORIGIN_STORE, 0, true, false },
-			{ TV_SCROLL, 5, 4, "", ORIGIN_STORE, 0, true, false },
-			{ TV_FOOD, 2, 1, "", ORIGIN_STORE, 0, true, false },
-			{ TV_MAGIC_BOOK, 1, 1, "@m1", ORIGIN_STORE, 0, true, false },
-			{ TV_ARROW, 1, 6, "", ORIGIN_STORE, 0, true, false },
+			{ TV_FOOD, 2, 4, "", ORIGIN_PIT, 0, true, false },
+			{ TV_SCROLL, 5, 4, "", ORIGIN_PIT, 0, true, false },
+			{ TV_FOOD, 2, 1, "", ORIGIN_PIT, 0, true, false },
+			{ TV_MAGIC_BOOK, 1, 1, "@m1", ORIGIN_PIT, 0, true, false },
+			{ TV_ARROW, 1, 6, "", ORIGIN_PIT, 0, true, false },
 			{ TV_SWORD, 1, 1, "", ORIGIN_FLOOR, 1, true, false },
 			{ -1, -1, -1, NULL, ORIGIN_NONE, 0, false, false }
 		},
@@ -263,9 +263,9 @@ static int test_combine_pack_mixed(void *state) {
 			{ TV_WAND, 3, 1, ORIGIN_CHEST, 4, false },
 			{ TV_SWORD, 1, 1, ORIGIN_BIRTH, 0, true },
 			{ TV_ARROW, 1, 40, ORIGIN_MIXED, 0, false },
-			{ TV_FOOD, 2, 5, ORIGIN_STORE, 0, false },
-			{ TV_MAGIC_BOOK, 1, 1, ORIGIN_STORE, 0, false },
-			{ TV_ARROW, 1, 4, ORIGIN_STORE, 0, false },
+			{ TV_FOOD, 2, 5, ORIGIN_PIT, 0, false },
+			{ TV_MAGIC_BOOK, 1, 1, ORIGIN_PIT, 0, false },
+			{ TV_ARROW, 1, 4, ORIGIN_PIT, 0, false },
 			{ TV_SWORD, 1, 1, ORIGIN_FLOOR, 1, false },
 			{ -1, -1, -1, ORIGIN_NONE, 0, false }
 		}
@@ -290,7 +290,7 @@ static int test_combine_pack_4_2_3_assertion(void *state) {
 			 * Nine stacks of arrows to fill up all but one slot
 			 * in the quiver
 			 */
-			{ TV_ARROW, 1, 40, "", ORIGIN_STORE, 0, true, false },
+			{ TV_ARROW, 1, 40, "", ORIGIN_PIT, 0, true, false },
 			{ TV_ARROW, 1, 40, "", ORIGIN_FLOOR, 1, true, false },
 			{ TV_ARROW, 1, 40, "", ORIGIN_FLOOR, 2, true, false },
 			{ TV_ARROW, 1, 40, "", ORIGIN_FLOOR, 3, true, false },
@@ -305,7 +305,7 @@ static int test_combine_pack_4_2_3_assertion(void *state) {
 			{ -1, -1, -1, NULL, ORIGIN_NONE, 0, false, false }
 		},
 		{
-			{ TV_ARROW, 1, 40, ORIGIN_STORE, 0, false },
+			{ TV_ARROW, 1, 40, ORIGIN_PIT, 0, false },
 			{ TV_ARROW, 1, 40, ORIGIN_FLOOR, 1, false },
 			{ TV_ARROW, 1, 40, ORIGIN_FLOOR, 2, false },
 			{ TV_ARROW, 1, 40, ORIGIN_FLOOR, 3, false },
