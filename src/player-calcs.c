@@ -1194,11 +1194,7 @@ void calc_inventory(struct player *p)
 
 			if (to_quiver) {
 				p->upkeep->quiver[prefslot] = to_quiver;
-				p->upkeep->quiver_cnt +=
-					to_quiver->number * mult;
-
-				/* In the quiver counts as worn. */
-				object_learn_on_wield(p, to_quiver);
+				p->upkeep->quiver_cnt += to_quiver->number * mult;
 
 				/* That part of the gear has been dealt with. */
 				assigned[j] = true;
@@ -1256,9 +1252,6 @@ void calc_inventory(struct player *p)
 		}
 		p->upkeep->quiver[i] = first;
 		p->upkeep->quiver_cnt += first->number;
-
-		/* In the quiver counts as worn. */
-		object_learn_on_wield(p, first);
 
 		/* That part of the gear has been dealt with. */
 		assigned[jfirst] = true;
