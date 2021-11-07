@@ -513,6 +513,9 @@ struct player_upkeep {
 							 * inventory listings when offering
 							 * a choice.  See obj-ui.c */
 
+	int zoom_level;			/* How far we have zoomed out from the usual
+							 * map.  Only used on the surface. */
+
 	bool light_level;		/* Level is to be lit on creation */
     int path_coord;			/**< Records where the exit path was */
 	int create_stair;		/* Create defined stair on next level */

@@ -996,6 +996,18 @@ static size_t prt_light(int row, int col)
 }
 
 /**
+ * Prints map zoom-out level
+ */
+static size_t prt_zoom(int row, int col)
+{
+	int zoom = player->upkeep->zoom_level;
+
+	c_put_str(COLOUR_L_WHITE, format("Zoom %d ", zoom), row, col);
+
+	return 7 + (zoom > 9 ? 1 : 0);
+}
+
+/**
  * Prints the movement speed of a character.
  */
 static size_t prt_moves(int row, int col)
@@ -1164,7 +1176,7 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_depth, prt_light, prt_moves, prt_unignore, prt_state, prt_study,
+{ prt_depth, prt_light, prt_zoom, prt_moves, prt_unignore, prt_state, prt_study,
   prt_spec, prt_tmd, prt_dtrap, prt_terrain };
 
 
@@ -2584,6 +2596,9 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 {
 	/* Allow big cursor */
 	smlcurs = false;
+
+	/* Initialise zoom level */
+	player->upkeep->zoom_level = 1;
 
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
