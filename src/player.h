@@ -431,6 +431,8 @@ struct player_upkeep {
 	int create_stair;	/* Stair to create on next level */
 	bool create_rubble;	/* Create rubble on next level */
 	bool force_forge;		/* Force the generation of a forge on this level */
+	int zoom_level;			/* How far we have zoomed out from the usual
+							 * map.  Only used on the surface. */
 
 	int smithing;			/* Smithing counter */
 	int resting;			/* Resting counter */

@@ -938,6 +938,18 @@ static size_t prt_light(int row, int col)
 }
 
 /**
+ * Prints map zoom-out level
+ */
+static size_t prt_zoom(int row, int col)
+{
+	int zoom = player->upkeep->zoom_level;
+
+	c_put_str(COLOUR_L_WHITE, format("Zoom %d ", zoom), row, col);
+
+	return 7 + (zoom > 9 ? 1 : 0);
+}
+
+/**
  * Get the longest relevant terrain or trap name for prt_terrain()
  */
 static int longest_terrain_name(void)
@@ -1040,7 +1052,8 @@ static size_t prt_depth(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_light, prt_unignore, prt_state, prt_tmd, prt_terrain, prt_depth };
+{ prt_depth, prt_light, prt_zoom, prt_unignore, prt_state, prt_tmd,
+  prt_terrain };
 
 
 static void update_statusline_aux(int row, int col)
@@ -2664,6 +2677,9 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 {
 	/* Allow big cursor */
 	smlcurs = false;
+
+	/* Initialise zoom level */
+	player->upkeep->zoom_level = 1;
 
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
