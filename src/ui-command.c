@@ -62,10 +62,6 @@
  */
 void do_cmd_redraw(void)
 {
-	int j;
-
-	term *old = Term;
-
 	/* Low level flush */
 	Term_flush();
 
@@ -116,14 +112,7 @@ void do_cmd_redraw(void)
 	}
 
 	/* Redraw every window */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
-		if (!angband_term[j]) continue;
-
-		Term_activate(angband_term[j]);
-		Term_redraw();
-		Term_fresh();
-		Term_activate(old);
-	}
+	(void) Term_redraw_all();
 }
 
 
