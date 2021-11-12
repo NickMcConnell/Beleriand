@@ -1236,7 +1236,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 
 	/* This signals a whole-map redraw. */
 	if (data->point.x == -1 && data->point.y == -1)
-		prt_map();
+		prt_map_zoomed();
 
 	/* Single point to be redrawn */
 	else {
@@ -1247,6 +1247,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		int ky, kx;
 		int vy, vx;
 		int clipy;
+		int level = player->upkeep->zoom_level;
 
 		/* Location relative to panel */
 		ky = data->point.y - t->offset_y;
@@ -1258,8 +1259,8 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 			if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 			/* Location in window */
-			vy = tile_height * ky + ROW_MAP;
-			vx = tile_width * kx + COL_MAP;
+			vy = tile_height * ky / level + ROW_MAP;
+			vx = tile_width * kx / level + COL_MAP;
 
 			/* Protect the status line against modification. */
 			clipy = ROW_MAP + SCREEN_ROWS;
@@ -1287,7 +1288,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 #endif
 
 		if ((tile_width > 1) || (tile_height > 1))
-			Term_big_queue_char(t, vx, vy, clipy, a, c, COLOUR_WHITE, L' ');
+			Term_big_queue_char(t, vx, vy, clipy, a, c,	COLOUR_WHITE, L' ');
 	}
 
 	/* Refresh the main screen unless the map needs to center */

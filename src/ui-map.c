@@ -753,6 +753,129 @@ void prt_map(void)
 		}
 }
 
+void get_zoomed_grid_data(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
+						  wchar_t *tcp, struct loc grid, int level)
+{
+	int y, x, pri = 0, max = 0;
+	bool pgrid = false;
+
+	/* Count array */
+	byte *count = mem_zalloc(z_info->f_max * sizeof(byte));
+
+	/* Get the attr/char at the base location */
+	map_info(grid, g);
+	grid_data_as_text(g, ap, cp, tap, tcp);
+
+	/* Analyse all the grids */
+	for (y = grid.y; y < grid.y + level; y++) {
+		for (x = grid.x; x < grid.x + level; x++) {
+			int a, ta;
+			wchar_t c, tc;
+			int this_pri;
+
+			/* Check bounds */
+			if (!square_in_bounds(cave, loc(x, y))) continue;
+
+			if (square_isplayer(cave, loc(x, y))) {
+				pgrid = true;
+			}
+
+			/* Get the attr/char at that map location */
+			map_info(loc(x, y), g);
+			grid_data_as_text(g, &a, &c, &ta, &tc);
+
+			/* Get the priority of that attr/char */
+			this_pri = f_info[g->f_idx].priority;
+
+			/* Stuff on top of terrain gets higher priority */
+			if ((a != ta) || (c != tc)) this_pri = 20;
+
+			/* Count the feats */
+			count[g->f_idx]++;
+
+			/* Save "best" */
+			if ((count[g->f_idx] > max) || ((max > 0) &&
+											(count[g->f_idx] == max) &&
+											(this_pri > pri))) {
+				max = count[g->f_idx];
+				pri = this_pri;
+				grid_data_as_text(g, ap, cp, tap, tcp);
+			}
+		}
+	}
+
+	if (pgrid) {
+		struct monster_race *race = &r_info[0];
+		/* Get the terrain at the player's spot. */
+		map_info(player->grid, g);
+		grid_data_as_text(g, ap, cp, tap, tcp);
+
+		/* Get the "player" tile */
+		*ap = monster_x_attr[race->ridx];
+		*cp = monster_x_char[race->ridx];
+	}
+
+	mem_free(count);
+}
+
+/**
+ * Redraw (on the screen) the current map panel
+ *
+ * Note the inline use of "light_spot()" for efficiency.
+ *
+ * The main screen will always be at least 24x80 in size.
+ */
+void prt_map_zoomed(void)
+{
+	int a, ta;
+	wchar_t c, tc;
+	struct grid_data g;
+
+	int y, x;
+	int vy, vx;
+	int ty, tx;
+	int clipy;
+	int level = player->upkeep->zoom_level;
+
+	/* Redraw map sub-windows */
+	prt_map_aux();
+
+	/* Assume screen */
+	ty = Term->offset_y + SCREEN_HGT;
+	tx = Term->offset_x + SCREEN_WID;
+
+	/* Avoid overwriting the last row with padding for big tiles. */
+	clipy = ROW_MAP + SCREEN_ROWS;
+
+	/* Dump the map */
+	for (y = Term->offset_y, vy = ROW_MAP; y < ty; y++) {
+		if (y % level) {
+			continue;
+		}
+		for (x = Term->offset_x, vx = COL_MAP; x < tx; x++) {
+			if (x % level) {
+				continue;
+			}
+
+			/* Check bounds */
+			if (!square_in_bounds(cave, loc(x, y))) continue;
+
+			/* Determine what is there */
+			get_zoomed_grid_data(&g, &a, &c, &ta, &tc, loc(x, y), level);
+
+			/* Hack -- Queue it */
+			Term_queue_char(Term, vx, vy, a, c, ta, tc);
+
+			if ((tile_width > 1) || (tile_height > 1)) {
+				Term_big_queue_char(Term, vx, vy, clipy, a, c,COLOUR_WHITE,
+									L' ');
+			}
+			vx += tile_width;
+		}
+		vy += tile_height;
+	}
+}
+
 /**
  * Display a "small-scale" map of the dungeon in the active Term.
  *
