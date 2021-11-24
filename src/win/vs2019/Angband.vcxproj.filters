@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -135,6 +135,9 @@
     <ClCompile Include="src\gen-util.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\gen-surface.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\grafmode.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -207,6 +210,9 @@
     <ClCompile Include="src\obj-desc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\obj-design.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\obj-gear.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -231,13 +237,7 @@
     <ClCompile Include="src\obj-pile.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\obj-power.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\obj-properties.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\obj-randart.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\obj-slays.c">
@@ -322,9 +322,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\source.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\store.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\target.c">
@@ -418,9 +415,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ui-spoil.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ui-store.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ui-target.c">
@@ -644,9 +638,6 @@
     <ClInclude Include="src\list-projections.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\list-randart-properties.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\list-rooms.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -731,6 +722,9 @@
     <ClInclude Include="src\obj-desc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\obj-design.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -758,13 +752,7 @@
     <ClInclude Include="src\obj-pile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\obj-power.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\obj-properties.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\obj-randart.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\obj-slays.h">
@@ -921,6 +909,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-prefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui-recall.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-score.h">
@@ -1291,9 +1282,6 @@
     <Text Include="lib\gamedata\names.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
-    <Text Include="lib\gamedata\negativity.txt">
-      <Filter>Resource Files\gamedata</Filter>
-    </Text>
     <Text Include="lib\gamedata\object.txt">
       <Filter>Resource Files\gamedata</Filter>
     </Text>
@@ -1370,9 +1358,6 @@
       <Filter>Resource Files\gamedata</Filter>
     </Text>
     <Text Include="lib\help\commands.txt">
-      <Filter>Resource Files\help</Filter>
-    </Text>
-    <Text Include="lib\help\debug.txt">
       <Filter>Resource Files\help</Filter>
     </Text>
     <Text Include="lib\help\index.txt">
