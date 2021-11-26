@@ -94,6 +94,7 @@ char *ANGBAND_DIR_SOUNDS;
 char *ANGBAND_DIR_ICONS;
 char *ANGBAND_DIR_USER;
 char *ANGBAND_DIR_SAVE;
+char *ANGBAND_DIR_PANIC;
 char *ANGBAND_DIR_SCORES;
 char *ANGBAND_DIR_INFO;
 char *ANGBAND_DIR_ARCHIVE;
@@ -335,6 +336,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	string_free(ANGBAND_DIR_ICONS);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_SAVE);
+	string_free(ANGBAND_DIR_PANIC);
 	string_free(ANGBAND_DIR_SCORES);
 	string_free(ANGBAND_DIR_INFO);
 	string_free(ANGBAND_DIR_ARCHIVE);
@@ -401,6 +403,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	/* Build the path to the score, save and archive directories */
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCORES, userpath, "scores");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SAVE, userpath, "save");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_PANIC, userpath, "panic");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_ARCHIVE, userpath, "archive");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_BONE, userpath, "bone");
 
@@ -424,6 +427,9 @@ void create_needed_dirs(void)
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_SAVE, "");
+	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
+
+	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_PANIC, "");
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_SCORES, "");
@@ -4742,6 +4748,7 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR_ICONS);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_SAVE);
+	string_free(ANGBAND_DIR_PANIC);
 	string_free(ANGBAND_DIR_SCORES);
 	string_free(ANGBAND_DIR_INFO);
 	string_free(ANGBAND_DIR_ARCHIVE);
