@@ -342,7 +342,8 @@ struct room_template {
 #define SYMTR_MAX_WEIGHT (32768)
 
 #define CHUNK_SIDE 44
-#define ARENA_SIDE 132
+#define ARENA_CHUNKS 3
+#define ARENA_SIDE (CHUNK_SIDE * ARENA_CHUNKS)
 #define CPM 20
 #define MAX_CHUNKS 256
 #define CHUNK_TEMP -2
@@ -371,11 +372,11 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width);
 struct chunk *lair_gen(struct player *p, int min_height, int min_width);
 struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width);
 bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
-					int y_offset, int x_offset);
+					int y_coord, int x_coord);
 
 /* gen-surface.c */
-void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				 int x_offset, struct connector *first);
+void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
+				 int x_coord, struct connector *first);
 
 /* gen-chunk.c */
 void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
@@ -386,20 +387,20 @@ void get_random_symmetry_transform(int height, int width, int flags,
 int calc_default_transpose_weight(int height, int width);
 bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 	 int y0, int x0, int rotate, bool reflect);
-void chunk_read(int idx, int y_offset, int x_offset);
+void chunk_read(int idx, int y_coord, int x_coord);
 void chunk_validate_objects(struct chunk *c);
 int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset);
 int find_region(int y_pos, int x_pos);
-void chunk_adjacent_data(struct chunk_ref *ref, int z_offset, int y_offset,
+void chunk_offset_data(struct chunk_ref *ref, int z_offset, int y_offset,
 						 int x_offset);
 void connectors_free(struct connector *join);
 void chunk_list_init(void);
 void chunk_list_cleanup(void);
 int chunk_find(struct chunk_ref ref);
-int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
+int chunk_store(int y_coord, int x_coord, u16b region, u16b z_pos,
 				u16b y_pos, u16b x_pos, u32b gen_loc_idx, bool write);
-int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
-			   int x_offset);
+int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_coord,
+			   int x_coord);
 int chunk_get_centre(void);
 void chunk_change(int z_offset, int y_offset, int x_offset);
 

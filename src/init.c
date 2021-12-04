@@ -570,9 +570,9 @@ static enum parser_error parse_constants_world(struct parser *p) {
 	else if (streq(label, "day-length"))
 		z->day_length = value;
 	else if (streq(label, "dungeon-hgt"))
-		z->dungeon_hgt = value;
+		z->dungeon_hgt = MAX(value, ARENA_SIDE);
 	else if (streq(label, "dungeon-wid"))
-		z->dungeon_wid = value;
+		z->dungeon_wid = MAX(value, ARENA_SIDE);
 	else if (streq(label, "town-hgt"))
 		z->town_hgt = value;
 	else if (streq(label, "town-wid"))

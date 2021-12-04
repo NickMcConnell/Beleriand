@@ -276,12 +276,12 @@ extern int col_map[SIDEBAR_MAX];
 /**
  * Number of grids in each screen (vertically)
  */
-#define SCREEN_HGT    ((int) (SCREEN_ROWS / tile_height))
+#define SCREEN_HGT    ((int) (SCREEN_ROWS * player->upkeep->zoom_level / tile_height))
 
 /**
  * Number of grids in each screen (horizontally)
  */
-#define SCREEN_WID	((int)((Term->wid - COL_MAP - 1) / tile_width))
+#define SCREEN_WID	((int)(((Term->wid - COL_MAP - 1) * player->upkeep->zoom_level) / tile_width))
 
 /**
  * Definitions for the "actions" of "Term_xtra()"

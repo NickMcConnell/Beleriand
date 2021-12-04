@@ -21,6 +21,7 @@
 #include "cmds.h"
 #include "game-event.h"
 #include "game-world.h"
+#include "generate.h" /* remove when start works properly */
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -1238,8 +1239,9 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Start on the stairs to Angband, for now */
 	player->place = 0;
 	chunk_list[0].z_pos = 0;
-	chunk_list[0].y_pos = 842;
+	chunk_list[0].y_pos = 841;
 	chunk_list[0].x_pos = 7926;
+	chunk_list[0].region = find_region(841, 7926);
 	player->depth = 0;
 
 	/* No locations generated yet */

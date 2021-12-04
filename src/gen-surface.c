@@ -639,10 +639,10 @@ static void make_piece(struct chunk *c, enum biome_type terrain,
 	}
 }
 
-void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				 int x_offset, struct connector *first)
+void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
+				 int x_coord, struct connector *first)
 {
-	struct loc top_left = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct loc top_left = loc(x_coord * CHUNK_SIDE, y_coord * CHUNK_SIDE);
 	struct point_set *chunk = make_chunk_point_set(c, top_left);
 	enum biome_type standard;
 	struct biome_tweak tweak = { DIR_NONE, 0, -1, DIR_NONE, 0, -1 };

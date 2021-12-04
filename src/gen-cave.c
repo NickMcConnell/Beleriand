@@ -3309,10 +3309,10 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
  * Load the appropriate bit of a landmark from the text file
  */
 bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
-					int y_offset, int x_offset)
+					int y_coord, int x_coord)
 {
 	/* Where in the arena the chunk is going */
-	struct loc target = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct loc target = loc(x_coord * CHUNK_SIDE, y_coord * CHUNK_SIDE);
 
 	/* Set all the chunk reading data */
 	struct landmark *landmark = &landmark_info[index];

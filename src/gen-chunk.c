@@ -561,9 +561,9 @@ bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
  * Read a chunk from the chunk list and put it back into the current playing
  * area
  */
-void chunk_read(int idx, int y_offset, int x_offset)
+void chunk_read(int idx, int y_coord, int x_coord)
 {
-	int i, y0 = y_offset * CHUNK_SIDE, x0 = x_offset * CHUNK_SIDE;
+	int i, y0 = y_coord * CHUNK_SIDE, x0 = x_coord * CHUNK_SIDE;
 	struct chunk *chunk = chunk_list[idx].chunk;
 	struct chunk *p_chunk = chunk_list[idx].p_chunk;
 
@@ -579,7 +579,6 @@ void chunk_read(int idx, int y_offset, int x_offset)
 	chunk_validate_objects(cave);
 	chunk_validate_objects(player->cave);
 	object_lists_check_integrity(cave, player->cave);
-
 
 	/* Feature counts */
 	for (i = 0; i < z_info->f_max + 1; i++) {
@@ -599,10 +598,10 @@ void chunk_read(int idx, int y_offset, int x_offset)
 /**
  * Write a pair of chunks to memory and record pointers to them
  */
-static void chunk_write(int idx, int y_offset, int x_offset,
+static void chunk_write(int idx, int y_coord, int x_coord,
 						struct chunk **chunk, struct chunk **p_chunk)
 {
-	struct loc from = loc(x_offset * CHUNK_SIDE, y_offset * CHUNK_SIDE);
+	struct loc from = loc(x_coord * CHUNK_SIDE, y_coord * CHUNK_SIDE);
 	struct chunk *new = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
 	struct chunk *p_new = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
 
@@ -654,9 +653,9 @@ void chunk_validate_objects(struct chunk *c) {
  * ------------------------------------------------------------------------
  * Chunk placement utilities
  *
- * Note that the playing arena is a 3x3 grid of chunks, indexed 0, 1, 2
- * in the x and y directions from the top left, so for example the centre
- * chunk of the arena has x offset 1, y offset 1
+ * Note that offsets are from the current chunk, indexed -1, 0, 1 in the
+ * x and y directions from the top left, so for example the chunk down and to
+ * the right of the current chunk has x offset 1, y offset 1 (keypad 3).
  * ------------------------------------------------------------------------ */
 /**
  * Translate from offsets to adjacent index.  0 is up, 10 is down, 1-9 are 
@@ -668,9 +667,9 @@ int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset)
 		return DIR_UP;
 	} else if (z_offset == 1) {
 		return DIR_DOWN;
-	} else if ((y_offset >= 0) && (y_offset <= 2) &&
-			   (x_offset >= 0) && (x_offset <= 2)) {
-		return (7 - 3 * y_offset + x_offset);
+	} else if ((y_offset >= -1) && (y_offset <= 1) &&
+			   (x_offset >= -1) && (x_offset <= 1)) {
+		return (5 - 3 * y_offset + x_offset);
 	} else {
 		return -1;
 	}
@@ -684,31 +683,58 @@ static void chunk_adjacent_to_offset(int adjacent, int *z_off, int *y_off,
 {
 	if (adjacent == DIR_UP) {
 		*z_off = -1;
-		*y_off = 1;
-		*x_off = 1;
+		*y_off = 0;
+		*x_off = 0;
 	} else if (adjacent == DIR_DOWN) {
 		*z_off = 1;
-		*y_off = 1;
-		*x_off = 1;
+		*y_off = 0;
+		*x_off = 0;
 	} else {
 		*z_off = 0;
-		*y_off = 2 - ((adjacent - 1) / 3);
-		*x_off = (adjacent - 1) % 3;
+		*y_off = 1 - ((adjacent - 1) / 3);
+		*x_off = ((adjacent - 1) % 3) - 1;
 	}
 }
 
 /**
- * Translate offset from current chunk into a chunk_list index
+ * Translate place in current surface arena into a chunk_list index
  */
-static int chunk_get_idx(int z_offset, int y_offset, int x_offset)
+static int chunk_get_idx(int y_coord, int x_coord)
 {
-	int adj_index = chunk_offset_to_adjacent(z_offset, y_offset, x_offset);
+	int y_off = ARENA_CHUNKS / 2, x_off = ARENA_CHUNKS / 2;
+	int idx = player->place;
 
-	if (adj_index == -1) {
-		quit_fmt("No chunk at y offset %d, x offset %d", y_offset, x_offset);
+	/* Move north or south */
+	if (y_coord < y_off) {
+		while (y_coord < y_off) {
+			idx = chunk_list[idx].adjacent[DIR_N];
+			y_off--;
+			if (idx == MAX_CHUNKS) return idx;
+		}
+	} else if (y_coord > y_off) {
+		while (y_coord > y_off) {
+			idx = chunk_list[idx].adjacent[DIR_S];
+			y_off++;
+			if (idx == MAX_CHUNKS) return idx;
+		}
 	}
 
-	return chunk_list[player->place].adjacent[adj_index];
+	/* Move west or east */
+	if (x_coord < x_off) {
+		while (x_coord < x_off) {
+			idx = chunk_list[idx].adjacent[DIR_W];
+			x_off--;
+			if (idx == MAX_CHUNKS) return idx;
+		}
+	} else if (x_coord > x_off) {
+		while (x_coord > x_off) {
+			idx = chunk_list[idx].adjacent[DIR_E];
+			x_off++;
+			if (idx == MAX_CHUNKS) return idx;
+		}
+	}
+
+	return idx;
 }
 
 /**
@@ -746,27 +772,33 @@ int find_region(int y_pos, int x_pos)
 }
 
 /**
- * Get the location data for a chunk
+ * Get the location data for a chunk offset relative to another chunk.
+ * \param ref the chunk reference which will be altered subject to the offsets
+ * \param z_offset offset in the z direction
+ * \param y_offset offset in the y direction
+ * \param x_offset offset in the x direction
  */
-void chunk_adjacent_data(struct chunk_ref *ref, int z_offset, int y_offset,
+void chunk_offset_data(struct chunk_ref *ref, int z_offset, int y_offset,
 						 int x_offset)
 {
-	if (((ref->y_pos == 0) && (y_offset == 0)) ||
-		((ref->y_pos >= CPM * MAX_Y_REGION - 1) && (y_offset == 2)) ||
-		((ref->x_pos == 0) && (x_offset == 0)) ||
-		((ref->x_pos >= CPM * MAX_X_REGION - 1) && (x_offset == 2))) {
+	if (((ref->y_pos == 0) && (y_offset < 0)) ||
+		((ref->y_pos >= CPM * MAX_Y_REGION - 1) && (y_offset > 0)) ||
+		((ref->x_pos == 0) && (x_offset < 0)) ||
+		((ref->x_pos >= CPM * MAX_X_REGION - 1) && (x_offset > 0))) {
 		ref->region = 0;
 	} else {
 		int lower, upper;
 		bool find;
 		ref->z_pos += z_offset;
-		ref->y_pos += (y_offset - 1);
-		ref->x_pos += (x_offset - 1);
-		if (z_offset == 0)
+		ref->y_pos += y_offset;
+		ref->x_pos += x_offset;
+		if (z_offset == 0) {
 			ref->region = find_region(ref->y_pos, ref->x_pos);
+		}
 		find = gen_loc_find(ref->x_pos, ref->y_pos, ref->z_pos, &lower, &upper);
-		if (find)
+		if (find) {
 			ref->gen_loc_idx = upper;
+		}
 	}
 }
 
@@ -968,12 +1000,13 @@ static void chunk_fix_all(void)
 			ref1.y_pos = ref->y_pos;
 			ref1.x_pos = ref->x_pos;
 			ref1.region = ref->region;
-			chunk_adjacent_data(&ref1, z_off, y_off, x_off);
+			chunk_offset_data(&ref1, z_off, y_off, x_off);
 
 			/* Deal with existing chunks */
 			chunk_idx = chunk_find(ref1);
-			if (chunk_idx < MAX_CHUNKS)
+			if (chunk_idx < MAX_CHUNKS) {
 				ref->adjacent[n] = chunk_idx;
+			}
 		}
 	}
 }
@@ -981,7 +1014,7 @@ static void chunk_fix_all(void)
 /**
  * Store a chunk pair from the current playing area into the chunk list
  */
-int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
+int chunk_store(int y_coord, int x_coord, u16b region, u16b z_pos,
 				u16b y_pos, u16b x_pos, u32b gen_loc_idx, bool write)
 {
 	int i;
@@ -1050,7 +1083,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
 
 	/* Write the chunks */
 	if (write) {
-		chunk_write(idx, y_offset, x_offset, &chunk_list[idx].chunk,
+		chunk_write(idx, y_coord, x_coord, &chunk_list[idx].chunk,
 					&chunk_list[idx].p_chunk);
 	}
 
@@ -1068,7 +1101,7 @@ int chunk_store(int y_offset, int x_offset, u16b region, u16b z_pos,
  * Generate a chunk
  */
 static void chunk_generate(struct chunk *c, struct gen_loc *loc,
-						   struct chunk_ref *ref, int y_offset, int x_offset,
+						   struct chunk_ref *ref, int y_coord, int x_coord,
 						   struct connector *first)
 {
 	int n, z_pos = ref->z_pos, y_pos = ref->y_pos, x_pos = ref->x_pos;
@@ -1094,7 +1127,7 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 
 	/* Build the landmark... */
 	if (n < z_info->landmark_max) {
-		build_landmark(c, n, y_pos, x_pos, y_offset, x_offset);
+		build_landmark(c, n, y_pos, x_pos, y_coord, x_coord);
 	} else {
 		/* or set the RNG to give reproducible results... */
 		Rand_quick = true;
@@ -1102,7 +1135,7 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 		Rand_value = loc->seed;
 
 		/* ...and generate the chunk */
-		surface_gen(c, ref, y_offset, x_offset, first);
+		surface_gen(c, ref, y_coord, x_coord, first);
 		Rand_quick = false;
 	}
 }
@@ -1110,12 +1143,11 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 /**
  * Generate a chunk on the surface
  */
-int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
-				int x_offset)
+int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_coord, int x_coord)
 {
 	int n, z_off, y_off, x_off, idx;
 	int z_pos = ref->z_pos, y_pos = ref->y_pos, x_pos = ref->x_pos;
-	int lower, upper;
+	int lower, upper, region;
 	bool reload;
 	struct gen_loc *location;
 	struct connector east[CHUNK_SIDE] = {{{0}}};
@@ -1125,9 +1157,6 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	struct connector vertical[CHUNK_SIDE][CHUNK_SIDE] = {{{{0}}}};
 	struct connector *first = NULL;
 	struct connector *latest = NULL;
-
-	/* If no region, return */
-	if (!ref->region) return MAX_CHUNKS;
 
 	/* If underground, return */
 	if (z_pos) return MAX_CHUNKS;
@@ -1144,7 +1173,8 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	}
 
 	/* Store the chunk reference */
-	idx = chunk_store(1, 1, ref->region, z_pos, y_pos, x_pos, upper, false);
+	region = find_region(y_pos, x_pos);
+	idx = chunk_store(0, 0, region, z_pos, y_pos, x_pos, upper, false);
 
 	/* Get adjacent data */
 	for (n = 0; n < DIR_MAX; n++) {
@@ -1155,7 +1185,7 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 		ref1.x_pos = x_pos;
 		ref1.y_pos = y_pos;
 		ref1.z_pos = z_pos;
-		chunk_adjacent_data(&ref1, z_off, y_off, x_off);
+		chunk_offset_data(&ref1, z_off, y_off, x_off);
 
 		/* Look for old chunks and get connectors */
 		if ((x_off == 0) || (y_off == 0)) {
@@ -1256,7 +1286,7 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 	}
 
 	/* Place chunk */
-	chunk_generate(c, location, ref, y_offset, x_offset, first);
+	chunk_generate(c, location, ref, y_coord, x_coord, first);
 
 	/* Do terrain changes */
 	if (reload) {
@@ -1264,8 +1294,8 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 
 		/* Change any terrain that has changed since first generation */
 		for (change = location->change; change; change = change->next) {
-			int y = y_offset * CHUNK_SIDE + change->grid.y;
-			int x = x_offset * CHUNK_SIDE + change->grid.x;
+			int y = y_coord * CHUNK_SIDE + change->grid.y;
+			int x = x_coord * CHUNK_SIDE + change->grid.x;
 
 			square_set_feat(c, loc(x, y), change->feat);
 		}
@@ -1276,8 +1306,8 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 		 * connection point, as the first generated chunk at a border affects
 		 * the second and not vice versa. */
 		int y, x;
-		int y0 = CHUNK_SIDE * y_offset;
-		int x0 = CHUNK_SIDE * x_offset;
+		int y0 = CHUNK_SIDE * y_coord;
+		int x0 = CHUNK_SIDE * x_coord;
 
 		/* South, north and vertical */
 		for (x = 0; x < CHUNK_SIDE; x++) {
@@ -1359,44 +1389,37 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_offset,
 static void arena_realign(int y_offset, int x_offset)
 {
 	int i, x, y;
-	bool chunk_exists[10] = { 0 };
-	int new_idx;
-	struct chunk *new = chunk_new(CHUNK_SIDE * 3, CHUNK_SIDE * 3);
-	struct chunk *p_new = chunk_new(CHUNK_SIDE * 3, CHUNK_SIDE * 3);
+	bool chunk_exists[ARENA_CHUNKS][ARENA_CHUNKS] = { 0 };
+	int new_dir;
+	struct chunk *new = chunk_new(ARENA_SIDE, ARENA_SIDE);
+	struct chunk *p_new = chunk_new(ARENA_SIDE, ARENA_SIDE);
 	struct loc src_top_left;
 	struct loc dest_top_left;
 	int height, width;
 
-	/* Get the new centre chunk */
-	new_idx = chunk_offset_to_adjacent(0, y_offset, x_offset);
-	assert(new_idx < MAX_CHUNKS);
+	/* Get the direction of the new centre chunk */
+	new_dir = chunk_offset_to_adjacent(0, y_offset, x_offset);
+	assert(new_dir != -1);
 
 	/* Unload chunks no longer required */
-	for (y = 0; y < 3; y++) {
-		for (x = 0; x < 3; x++) {
+	for (y = 0; y < ARENA_CHUNKS; y++) {
+		for (x = 0; x < ARENA_CHUNKS; x++) {
 			struct chunk_ref *ref = NULL;
 			int chunk_idx;
+			int new_y = y - y_offset;
+			int new_x = x - x_offset;
 
-			/* Keep chunks adjacent to the new centre */
-			if ((ABS(x_offset - x) < 2) && (ABS(y_offset - y) < 2)) {
-				int adj_index;
-				int new_y = y + 1 - y_offset;
-				int new_x = x + 1 - x_offset;
-
-				if ((new_y < 0) || (new_x < 0))
-					continue;
+			/* Keep chunks close enough to the new centre */
+			if ((new_x >= 0) && (new_x < ARENA_CHUNKS) &&
+				(new_y >= 0) && (new_y < ARENA_CHUNKS)) {
 
 				/* Record this one as existing */
-				adj_index = chunk_offset_to_adjacent(0, new_y, new_x);
-				if (adj_index == -1)
-					quit_fmt("Bad chunk index at y offset %d, x offset %d",
-							 new_y, new_x);
-				chunk_exists[adj_index] = true;
+				chunk_exists[new_y][new_x] = true;
 				continue;
 			}
 
 			/* Access the chunk's placeholder in chunk_list */
-			chunk_idx = chunk_get_idx(0, y, x);
+			chunk_idx = chunk_get_idx(y, x);
 			ref = &chunk_list[chunk_idx];
 
 			/* Store it */
@@ -1411,31 +1434,31 @@ static void arena_realign(int y_offset, int x_offset)
 	}
 
 	/* Re-align current playing arena */
-	if (y_offset == 0) {
+	if (y_offset == -1) {
 		src_top_left.y = 0;
 		dest_top_left.y = CHUNK_SIDE;
-		height = 2 * CHUNK_SIDE;
-	} else if (y_offset == 1) {
+		height = (ARENA_CHUNKS - 1) * CHUNK_SIDE;
+	} else if (y_offset == 0) {
 		src_top_left.y = 0;
 		dest_top_left.y = 0;
-		height = 3 * CHUNK_SIDE;
-	} else if (y_offset == 2) {
+		height = ARENA_CHUNKS * CHUNK_SIDE;
+	} else if (y_offset == 1) {
 		src_top_left.y = CHUNK_SIDE;
 		dest_top_left.y = 0;
-		height = 2 * CHUNK_SIDE;
+		height = (ARENA_CHUNKS - 1) * CHUNK_SIDE;
 	}
-	if (x_offset == 0) {
+	if (x_offset == -1) {
 		src_top_left.x = 0;
 		dest_top_left.x = CHUNK_SIDE;
-		width = 2 * CHUNK_SIDE;
-	} else if (x_offset == 1) {
+		width = (ARENA_CHUNKS - 1) * CHUNK_SIDE;
+	} else if (x_offset == 0) {
 		src_top_left.x = 0;
 		dest_top_left.x = 0;
-		width = 3 * CHUNK_SIDE;
-	} else if (x_offset == 2) {
+		width = ARENA_CHUNKS * CHUNK_SIDE;
+	} else if (x_offset == 1) {
 		src_top_left.x = CHUNK_SIDE;
 		dest_top_left.x = 0;
-		width = 2 * CHUNK_SIDE;
+		width = (ARENA_CHUNKS - 1) * CHUNK_SIDE;
 	}
 	chunk_copy_grid(player, cave, new, height, width, src_top_left,
 					dest_top_left, CHUNK_CUR, 0, false, true);
@@ -1459,33 +1482,28 @@ static void arena_realign(int y_offset, int x_offset)
 
 	/* Player has moved chunks */
 	player->last_place = player->place;
-	player->place = chunk_list[player->place].adjacent[new_idx];
+	player->place = chunk_list[player->place].adjacent[new_dir];
 
 	/* Reload or generate chunks to fill the playing area. 
 	 * Note that chunk generation needs to write the adjacent[] entries */
-	for (y = 0; y < 3; y++) {
-		for (x = 0; x < 3; x++) {
+	for (y = 0; y < ARENA_CHUNKS; y++) {
+		for (x = 0; x < ARENA_CHUNKS; x++) {
 			int chunk_idx;
-			int adj_index = chunk_offset_to_adjacent(0, y, x);
 			struct chunk_ref ref = { 0 };
 
 			/* Already in the current playing area */
-			if (chunk_exists[adj_index])
-				continue;
+			if (chunk_exists[y][x]) continue;
 
-			/* Get the location data */
-			ref.z_pos = 0;
-			ref.y_pos = chunk_list[player->place].y_pos;
-			ref.x_pos = chunk_list[player->place].x_pos;
-			ref.region = find_region(ref.y_pos, ref.x_pos);
-			chunk_adjacent_data(&ref, 0, y, x);
-
-			/* Load it if it already exists */
-			chunk_idx = chunk_find(ref);
+			/* Load it if it is in the chunk list */
+			chunk_idx = chunk_get_idx(y, x);
 			if ((chunk_idx != MAX_CHUNKS) && chunk_list[chunk_idx].chunk) {
 				chunk_read(chunk_idx, y, x);
 			} else {
 				/* Otherwise generate a new one */
+				ref.y_pos = chunk_list[player->place].y_pos + y
+					- ARENA_CHUNKS / 2;
+				ref.x_pos = chunk_list[player->place].x_pos + x
+					- ARENA_CHUNKS / 2;
 				(void) chunk_fill(cave, &ref, y, x);
 			}
 		}
@@ -1501,24 +1519,35 @@ static void arena_realign(int y_offset, int x_offset)
  */
 int chunk_get_centre(void)
 {
-	int centre = player->place;
+	int idx = -1;
+	int max_y = 0, max_x = 0;
+	int min_y = CPM * MAX_Y_REGION, min_x = CPM * MAX_X_REGION;
 
-	/* Only check if we're not on the surface */
-	if (player->depth) {
-		/* Find the centre */
-		for (centre = 0; centre < MAX_CHUNKS; centre++) {
-			if (chunk_list[centre].turn == chunk_list[player->place].turn) {
-				int j;
-				for (j = 0; j < 9; j++) {
-					if (chunk_list[centre].adjacent[j] == MAX_CHUNKS) break;
-				}
-				if (j == 9)
-					break;
-			}
+	/* Find the min x and y positions */
+	for (idx = 0; idx < MAX_CHUNKS; idx++) {
+		struct chunk_ref ref = chunk_list[idx];
+		if (!ref.chunk) {
+			if (ref.y_pos > max_y) max_y = ref.y_pos;
+			if (ref.x_pos > max_x) max_x = ref.x_pos;
+			if (ref.y_pos < min_y) min_y = ref.y_pos;
+			if (ref.x_pos < min_x) min_x = ref.x_pos;
+			if ((max_y - min_y == ARENA_CHUNKS - 1) &&
+				(max_x - min_x == ARENA_CHUNKS - 1)) break;
 		}
 	}
 
-	return centre;
+	/* Find the centre */
+	for (idx = 0; idx < MAX_CHUNKS; idx++) {
+		struct chunk_ref ref = chunk_list[idx];
+		if (!ref.chunk && (ref.y_pos == min_y + ARENA_CHUNKS / 2) &&
+			(ref.x_pos == min_x + ARENA_CHUNKS / 2))
+			return idx;
+	}
+
+	/* Fail */
+	idx = -1;
+
+	return idx;
 }
 
 /**
@@ -1532,16 +1561,17 @@ static void level_change(int z_offset)
 	int centre = chunk_get_centre();
 
 	/* Unload chunks no longer required */
-	for (y = 0; y < 3; y++) {
-		for (x = 0; x < 3; x++) {
+	for (y = -ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
+		for (x = -ARENA_CHUNKS / 2; x <= ARENA_CHUNKS / 2; x++) {
 			struct chunk_ref ref = chunk_list[centre];
 
 			/* Get the location data */
 			ref.z_pos = player->depth;
-			chunk_adjacent_data(&ref, 0, y, x);
+			chunk_offset_data(&ref, 0, y, x);
 
 			/* Store it */
-			(void) chunk_store(y, x, ref.region, ref.z_pos, ref.y_pos,
+			(void) chunk_store(y + ARENA_CHUNKS / 2, x + ARENA_CHUNKS / 2,
+							   ref.region, ref.z_pos, ref.y_pos,
 							   ref.x_pos, ref.gen_loc_idx, true);
 		}
 	}

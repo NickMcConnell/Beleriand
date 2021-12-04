@@ -611,8 +611,8 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	struct monster *mon;
 	struct loc pgrid = player->grid;
 	int y_offset, x_offset;
-	int old_y_offset = player->grid.y / CHUNK_SIDE;
-	int old_x_offset = player->grid.x / CHUNK_SIDE;
+	int old_y_chunk = player->grid.y / CHUNK_SIDE;
+	int old_x_chunk = player->grid.x / CHUNK_SIDE;
 
 	/* Monsters */
 	m1 = cave->squares[grid1.y][grid1.x].mon;
@@ -721,18 +721,16 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	square_light_spot(cave, grid2);
 
 	/* Deal with change of chunk */
-	y_offset = player->grid.y / CHUNK_SIDE;
-	x_offset = player->grid.x / CHUNK_SIDE;
+	y_offset = player->grid.y / CHUNK_SIDE - old_y_chunk;
+	x_offset = player->grid.x / CHUNK_SIDE - old_x_chunk;
 
 	/* On the surface, re-align */
 	if (player->depth == 0) {
-		if ((y_offset != 1) || (x_offset != 1))
+		if ((y_offset != 0) || (x_offset != 0))
 			chunk_change(0, y_offset, x_offset);
 	} else {
 		/* In the dungeon, change place */
-		int y0 = old_y_offset - y_offset;
-		int x0 = old_x_offset - x_offset;
-		int adj_index = chunk_offset_to_adjacent(0, 1 - y0, 1 - x0);
+		int adj_index = chunk_offset_to_adjacent(0, y_offset, x_offset);
 
 		if (adj_index != DIR_NONE) {
 			player->last_place = player->place;

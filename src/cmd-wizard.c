@@ -1429,17 +1429,18 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 
 	/* Save off the old chunks */
 	centre = chunk_get_centre();
-	for (y = 0; y < 3; y++) {
-		for (x = 0; x < 3; x++) {
+	for (y = -ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
+		for (x = -ARENA_CHUNKS / 2; x < ARENA_CHUNKS / 2; x++) {
 			struct chunk_ref ref = chunk_list[centre];
 
 			/* Get the location data */
-			chunk_adjacent_data(&ref, 0, y, x);
+			chunk_offset_data(&ref, 0, y, x);
 			ref.z_pos = player->depth;
 
 			/* Store it */
-			(void) chunk_store(y, x, ref.region, ref.z_pos, ref.y_pos,
-							   ref.x_pos, ref.gen_loc_idx, true);
+			(void) chunk_store(y + ARENA_CHUNKS / 2, x + ARENA_CHUNKS / 2,
+							   ref.region, ref.z_pos, ref.y_pos, ref.x_pos,
+							   ref.gen_loc_idx, true);
 		}
 	}
 
@@ -1449,8 +1450,8 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	/* Set the chunk */
 	player->last_place = player->place;
 
-	for (y = 0; y < 3; y++) {
-		for (x = 0; x < 3; x++) {
+	for (y = -ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
+		for (x = -ARENA_CHUNKS / 2; x < ARENA_CHUNKS / 2; x++) {
 			struct chunk_ref ref = { 0 };
 			int idx;
 
@@ -1458,11 +1459,11 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 			ref.z_pos = z_pos;
 			ref.y_pos = y_pos;
 			ref.x_pos = x_pos;
-			ref.region = find_region(ref.y_pos, ref.x_pos);
-			chunk_adjacent_data(&ref, 0, y, x);
+			chunk_offset_data(&ref, 0, y, x);
 
 			/* Generate a new chunk */
-			idx = chunk_fill(chunk, &ref, y, x);
+			idx = chunk_fill(chunk, &ref, y + ARENA_CHUNKS / 2,
+							 x + ARENA_CHUNKS / 2);
 			if ((y == 1) && (x == 1)) {
 				square_set_feat(chunk, loc(CHUNK_SIDE / 2, CHUNK_SIDE / 2),
 								FEAT_ROAD);

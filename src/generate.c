@@ -1123,15 +1123,15 @@ static const struct cave_profile *choose_profile(struct player *p)
 static void get_join_info(struct player *p, struct dun_data *dd)
 {
 	int y, x;
-	int y_offset = p->grid.y / CHUNK_SIDE;
-	int x_offset = p->grid.x / CHUNK_SIDE;
+	int y_coord = p->grid.y / CHUNK_SIDE;
+	int x_coord = p->grid.x / CHUNK_SIDE;
 
 	/* Search across all the chunks on the level */
-	for (y = 0; y < 3; y++) {
-		for (x = 0; x < 3; x++) {
+	for (y = 0; y < ARENA_CHUNKS; y++) {
+		for (x = 0; x < ARENA_CHUNKS; x++) {
 			struct chunk_ref ref = { 0 };
-			int y0 = y - y_offset;
-			int x0 = x - x_offset;
+			int y0 = y - y_coord;
+			int x0 = x - x_coord;
 			int lower, upper;
 			bool exists;
 			struct gen_loc *location;
@@ -1238,9 +1238,6 @@ static void cleanup_dun_data(struct dun_data *dd)
 
 	if (!dd) return;
 
-	//connectors_free(dun->join);
-	//connectors_free(dun->one_off_above);
-	//connectors_free(dun->one_off_below);
 	mem_free(dun->cent);
 	mem_free(dun->ent_n);
 	for (i = 0; i < z_info->level_room_max; ++i) {
@@ -1267,14 +1264,14 @@ static void cleanup_dun_data(struct dun_data *dd)
  * Generate a dungeon level.
  *
  * \param p is the current player struct, in practice the global player
- * \param y_offset
- * \param x_offset
+ * \param y_coord
+ * \param x_coord
  * \return a pointer to the new level
  */
 static struct chunk *cave_generate(struct player *p, u32b seed)
 {
 	const char *error = "no generation";
-	int y, x, y_offset, x_offset, tries = 0;
+	int y, x, y_coord, x_coord, tries = 0;
 	struct chunk *chunk = NULL;
 	struct connector *dun_join, *one_off_above, *one_off_below;
 
@@ -1392,13 +1389,13 @@ static struct chunk *cave_generate(struct player *p, u32b seed)
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
 	/* Chunk it */
-	y_offset = p->grid.y / CHUNK_SIDE;
-	x_offset = p->grid.x / CHUNK_SIDE;
-	for (y = 0; y < 3; y++) {
-		for (x = 0; x < 3; x++) {
+	y_coord = p->grid.y / CHUNK_SIDE;
+	x_coord = p->grid.x / CHUNK_SIDE;
+	for (y = 0; y < ARENA_CHUNKS; y++) {
+		for (x = 0; x < ARENA_CHUNKS; x++) {
 			struct chunk_ref ref = { 0 };
-			int y0 = y - y_offset;
-			int x0 = x - x_offset;
+			int y0 = y - y_coord;
+			int x0 = x - x_coord;
 			int lower, upper;
 			bool reload;
 			struct gen_loc *location;
@@ -1492,20 +1489,19 @@ void prepare_next_level(struct player *p)
 		/* Make an arena to build into */
 		chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
 
-		for (y = 0; y < 3; y++) {
-			for (x = 0; x < 3; x++) {
+		for (y = - ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
+			for (x = - ARENA_CHUNKS / 2; x <= ARENA_CHUNKS / 2; x++) {
 				struct chunk_ref ref = { 0 };
 
 				/* Get the location data */
 				ref.z_pos = chunk_list[p->place].z_pos;
 				ref.y_pos = chunk_list[p->place].y_pos;
 				ref.x_pos = chunk_list[p->place].x_pos;
-				ref.region = find_region(ref.y_pos, ref.x_pos);
-				chunk_list[p->place].region = ref.region;
-				chunk_adjacent_data(&ref, 0, y, x);
+				chunk_offset_data(&ref, 0, y, x);
 
 				/* Generate a new chunk */
-				(void) chunk_fill(chunk, &ref, y, x);
+				(void) chunk_fill(chunk, &ref, y + ARENA_CHUNKS / 2,
+								  x + ARENA_CHUNKS / 2);
 			}
 		}
 		player_place(chunk, p, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
@@ -1521,8 +1517,8 @@ void prepare_next_level(struct player *p)
 	} else {
 		/* No existing level */
 		if (p->place == MAX_CHUNKS) {
-			int y_offset = p->grid.y / CHUNK_SIDE;
-			int x_offset = p->grid.x / CHUNK_SIDE;
+			int y_coord = p->grid.y / CHUNK_SIDE;
+			int x_coord = p->grid.x / CHUNK_SIDE;
 			u32b seed;
 
 			/* The assumption here is that dungeon levels are always generated
@@ -1532,11 +1528,11 @@ void prepare_next_level(struct player *p)
 			bool completely_new = false;
 
 			/* Deal with location data */
-			for (y = 0; y < 3; y++) {
-				for (x = 0; x < 3; x++) {
+			for (y = 0; y < ARENA_CHUNKS; y++) {
+				for (x = 0; x < ARENA_CHUNKS; x++) {
 					struct chunk_ref ref = { 0 };
-					int y0 = y - y_offset;
-					int x0 = x - x_offset;
+					int y0 = y - y_coord;
+					int x0 = x - x_coord;
 					int lower, upper;
 					bool reload;
 
@@ -1563,7 +1559,8 @@ void prepare_next_level(struct player *p)
 
 					/* Store the chunk reference */
 					ref.gen_loc_idx = upper;
-					(void) chunk_store(1, 1, ref.region, ref.z_pos, ref.y_pos,
+					(void) chunk_store(ARENA_CHUNKS / 2, ARENA_CHUNKS / 2,
+									   ref.region, ref.z_pos, ref.y_pos,
 									   ref.x_pos, ref.gen_loc_idx, false);
 
 					/* Is this where the player is? */
@@ -1593,8 +1590,8 @@ void prepare_next_level(struct player *p)
 			}
 		} else {
 			/* Otherwise load up the chunks */
-			int centre = chunk_get_centre();
-			assert(centre != MAX_CHUNKS);
+			struct chunk_ref centre = chunk_list[p->place];
+			assert(centre.chunk);
 
 			/* Silly games */
 			chunk_wipe(cave);
@@ -1604,15 +1601,21 @@ void prepare_next_level(struct player *p)
 			p_chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
 			p->cave = p_chunk;
 
-			for (y = 0; y < 3; y++) {
-				for (x = 0; x < 3; x++) {
+			/* Dungeon levels may not be centred on the player */
+			if (p->depth) {
+				centre.y_pos += ARENA_CHUNKS / 2 - player->grid.y / CHUNK_SIDE;
+				centre.x_pos += ARENA_CHUNKS / 2 - player->grid.x / CHUNK_SIDE;
+			}
+
+			for (y = 0; y < ARENA_CHUNKS; y++) {
+				for (x = 0; x < ARENA_CHUNKS; x++) {
 					int chunk_idx;
 					struct chunk_ref ref = { 0 };
 
 					/* Get the location data */
 					ref.z_pos = p->depth;
-					ref.y_pos = chunk_list[centre].y_pos + y - 1;
-					ref.x_pos = chunk_list[centre].x_pos + x - 1;
+					ref.y_pos = centre.y_pos + y - ARENA_CHUNKS / 2;
+					ref.x_pos = centre.x_pos + x - ARENA_CHUNKS / 2;
 					ref.region = find_region(ref.y_pos, ref.x_pos);
 
 					/* Load it */
