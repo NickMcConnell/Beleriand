@@ -65,6 +65,15 @@ static void do_cmd_go_up_aux(void)
 {
 	int change = square_isshaft(cave, player->grid) ? -2 : -1;
 
+	/* Zoom out */
+	if (!player->depth && (player->upkeep->zoom_level < z_info->max_zoom)) {
+		player->upkeep->zoom_level *= 2;
+		player->upkeep->redraw |= (PR_MAP | PR_EXTRA);
+		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW);
+		handle_stuff(player);
+		return;
+	}
+
 	/* Verify stairs */
 	if (!square_isupstairs(cave, player->grid)) {
 		msg("You see no up staircase here.");
@@ -156,6 +165,15 @@ static void do_cmd_go_down_aux(void)
 {
 	int new_depth;
 	int change = square_isshaft(cave, player->grid) ? 2 : 1;
+
+	/* Zoom out */
+	if (!player->depth && (player->upkeep->zoom_level > 1)) {
+		player->upkeep->zoom_level /= 2;
+		player->upkeep->redraw |= (PR_MAP | PR_EXTRA);
+		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW);
+		handle_stuff(player);
+		return;
+	}
 
 	/* Verify stairs */
 	if (!square_isdownstairs(cave, player->grid)) {
@@ -1868,6 +1886,19 @@ void do_cmd_walk(struct command *cmd)
         do_cmd_hold_aux();
         return;
     }
+
+	/* Handle zoomed map */
+	if (player->upkeep->zoom_level > 1) {
+		int steps = player->upkeep->zoom_level;
+		grid = player->grid;
+		while (steps) {
+			grid = loc_sum(grid, ddgrid[dir]);
+			steps--;
+		}
+		cmdq_push(CMD_PATHFIND);
+		cmd_set_arg_point(cmdq_peek(), "point", grid);
+		return;
+	}
 
 	/* Apply confusion if necessary */
 	if (player_confuse_dir(player, &dir, false))

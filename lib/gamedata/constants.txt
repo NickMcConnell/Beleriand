@@ -83,6 +83,9 @@ world:dungeon-hgt:132
 # Max number of grids in each dungeon level (horizontally)
 world:dungeon-wid:132
 
+# Max level of zoom on the surface map
+world:max-zoom:4
+
 # Energy needed by player or monsters to move
 world:move-energy:100
 
@@ -136,7 +139,7 @@ obj-make:self-arts:50
 #---------------------------------------------------------------------
 
 # Maximum visual range
-player:max-sight:20
+player:max-sight:200
 
 # Maximum missile and spell range
 player:max-range:20
