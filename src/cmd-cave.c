@@ -57,6 +57,15 @@ void do_cmd_go_up(struct command *cmd)
 {
 	int feat = square_feat(cave, player->grid)->fidx;
 
+	/* Zoom out */
+	if (!player->depth && (player->upkeep->zoom_level < z_info->max_zoom)) {
+		player->upkeep->zoom_level *= 2;
+		player->upkeep->redraw |= (PR_MAP | PR_EXTRA);
+		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW);
+		handle_stuff(player);
+		return;
+	}
+
 	/* Verify stairs */
 	if (!square_isstairs(cave, player->grid)) {
 		msg("I see no path or staircase here.");
@@ -88,6 +97,15 @@ void do_cmd_go_up(struct command *cmd)
 void do_cmd_go_down(struct command *cmd)
 {
 	int feat = square_feat(cave, player->grid)->fidx;
+
+	/* Zoom out */
+	if (!player->depth && (player->upkeep->zoom_level > 1)) {
+		player->upkeep->zoom_level /= 2;
+		player->upkeep->redraw |= (PR_MAP | PR_EXTRA);
+		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW);
+		handle_stuff(player);
+		return;
+	}
 
 	/* Verify stairs */
 	if (!square_isstairs(cave, player->grid)) {
@@ -1279,6 +1297,20 @@ void do_cmd_walk(struct command *cmd)
 		msg("You clear the web.");
 		square_destroy_trap(cave, player->grid);
 		player->upkeep->energy_use = z_info->move_energy;
+		return;
+	}
+
+
+	/* Handle zoomed map */
+	if (player->upkeep->zoom_level > 1) {
+		int steps = player->upkeep->zoom_level;
+		grid = player->grid;
+		while (steps) {
+			grid = loc_sum(grid, ddgrid[dir]);
+			steps--;
+		}
+		cmdq_push(CMD_PATHFIND);
+		cmd_set_arg_point(cmdq_peek(), "point", grid);
 		return;
 	}
 

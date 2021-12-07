@@ -341,8 +341,13 @@ struct room_template {
 #define SYMTR_FLAG_FORCE_REF (4)
 #define SYMTR_MAX_WEIGHT (32768)
 
+/**
+ * Constants for the map.  Note that MAX_CHUNKS needs to be at leat three times
+ * ARENA_CHUNKS squared to allow proper saving off and reloading of chunks from
+ * the chunk_list
+ */
 #define CHUNK_SIDE 44
-#define ARENA_CHUNKS 3
+#define ARENA_CHUNKS 5
 #define ARENA_SIDE (CHUNK_SIDE * ARENA_CHUNKS)
 #define CPM 20
 #define MAX_CHUNKS 256

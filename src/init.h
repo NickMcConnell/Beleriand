@@ -91,8 +91,7 @@ struct angband_constants
 	u16b day_length;	/* Number of turns from dawn to dawn */
 	u16b dungeon_hgt;	/**< Maximum number of vertical grids on a level */
 	u16b dungeon_wid;	/**< Maximum number of horizontical grids on a level */
-	u16b town_hgt;	/**< Maximum number of vertical grids in the town */
-	u16b town_wid;	/**< Maximum number of horizontical grids in the town */
+	u16b max_zoom;	/**< Maximum level of zoom out on the surface map */
 	u16b move_energy;	/* Energy the player or monster needs to move */
 
 	/* Carrying capacity constants, read from constants.txt */

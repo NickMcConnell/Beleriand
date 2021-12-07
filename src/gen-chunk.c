@@ -1420,6 +1420,7 @@ static void arena_realign(int y_offset, int x_offset)
 
 			/* Access the chunk's placeholder in chunk_list */
 			chunk_idx = chunk_get_idx(y, x);
+			if (chunk_idx == MAX_CHUNKS) continue;
 			ref = &chunk_list[chunk_idx];
 
 			/* Store it */
