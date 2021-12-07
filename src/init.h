@@ -89,6 +89,7 @@ struct angband_constants
 	uint16_t dungeon_wid;	/**< Maximum number of horizontical grids on a level */
 	uint16_t move_energy;	/* Energy the player or monster needs to move */
 	uint16_t flow_max;		/* Maximum distance measured in a flow */
+	uint16_t max_zoom;	/**< Maximum level of zoom out on the surface map */
 
 	/* Carrying capacity constants, read from constants.txt */
 	uint16_t pack_size;		/**< Maximum number of pack slots */
