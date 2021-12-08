@@ -336,6 +336,8 @@ void object_delete(struct chunk *c, struct chunk *p_c,
 		p_c->objects[obj->oidx]) {
 		obj->grid = loc(0, 0);
 		obj->floor = false;
+		obj->prev = NULL;
+		obj->next = NULL;
 		obj->held_m_idx = 0;
 		obj->mimicking_m_idx = 0;
 
