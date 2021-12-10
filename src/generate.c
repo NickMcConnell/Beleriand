@@ -1273,7 +1273,7 @@ static struct chunk *cave_generate(struct player *p, u32b seed)
 	const char *error = "no generation";
 	int y, x, y_coord, x_coord, tries = 0;
 	struct chunk *chunk = NULL;
-	struct connector *dun_join, *one_off_above, *one_off_below;
+	struct connector *dun_join = NULL, *one_off_above = NULL, *one_off_below = NULL;
 
 	for (tries = 0; tries < 100 && error; tries++) {
 		struct dun_data dun_body;
@@ -1398,7 +1398,7 @@ static struct chunk *cave_generate(struct player *p, u32b seed)
 			int x0 = x - x_coord;
 			int lower, upper;
 			bool reload;
-			struct gen_loc *location;
+			struct gen_loc *location = NULL;
 			struct loc grid;
 
 			/* Get the location data */
