@@ -13,4 +13,9 @@ CONFIG = a_cursed.txt a_normal.txt activation.txt artifact.txt body.txt \
  summon.txt surface_profile.txt terrain.txt trap.txt ui_entry.txt \
  ui_entry_base.txt ui_entry_renderer.txt vault.txt visuals.txt w_cursed.txt \
  w_normal.txt
-PACKAGE = gamedata
+
+R1 = $(GAMEDATA_IN_LIB:true=$(FILES))
+DATA = $(R1:false=)
+R2 = $(GAMEDATA_IN_LIB:false=$(FILES))
+CONFIG = $(R2:true=)
+
