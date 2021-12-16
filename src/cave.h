@@ -26,18 +26,18 @@ struct player;
 struct monster;
 struct monster_group;
 
-extern const s16b ddd[9];
-extern const s16b ddx[10];
-extern const s16b ddy[10];
+extern const int16_t ddd[9];
+extern const int16_t ddx[10];
+extern const int16_t ddy[10];
 extern const struct loc ddgrid[10];
-extern const s16b ddx_ddd[9];
-extern const s16b ddy_ddd[9];
+extern const int16_t ddx_ddd[9];
+extern const int16_t ddy_ddd[9];
 extern const struct loc ddgrid_ddd[9];
-extern const s16b clockwise_ddd[9];
+extern const int16_t clockwise_ddd[9];
 extern const struct loc clockwise_grid[9];
 extern const int *dist_offsets_y[10];
 extern const int *dist_offsets_x[10];
-extern const byte side_dirs[20][8];
+extern const uint8_t side_dirs[20][8];
 
 enum {
 	DIR_UNKNOWN = 0,
@@ -116,14 +116,13 @@ struct feature {
 
 	struct feature *next;
 
-	char *mimic;	/**< Name of feature to mimic */
-	byte priority;	/**< Display priority */
-
-	byte dig;      /**< How hard is it to dig through? */
+	char *mimic;		/**< Name of feature to mimic */
+	uint8_t priority;	/**< Display priority */
+	uint8_t dig;		/**< How hard is it to dig through? */
 
 	bitflag flags[TF_SIZE];	/**< Terrain flags */
 
-	byte d_attr;	/**< Default feature attribute */
+	uint8_t d_attr;	/**< Default feature attribute */
 	wchar_t d_char;	/**< Default feature character */
 
 	char *walk_msg;	/**< Message on walking into feature */
@@ -151,8 +150,8 @@ enum grid_light_level
  * Data used to present the player map
  */
 struct grid_data {
-	u32b m_idx;				/* Monster index */
-	u32b f_idx;				/* Feature index */
+	uint32_t m_idx;			/* Monster index */
+	uint32_t f_idx;			/* Feature index */
 	struct object_kind *first_kind;	/* The kind of the first item on the grid */
 	struct trap *trap;		/* Trap */
 	bool multiple_objects;	/* Is there more than one item there? */
@@ -169,10 +168,10 @@ struct grid_data {
  * Complete description of what a game grid contains
  */
 struct square {
-	byte feat;
+	uint8_t feat;
 	bitflag *info;
 	int light;
-	s16b mon;
+	int16_t mon;
 	struct object *obj;
 	struct trap *trap;
 };
@@ -181,7 +180,7 @@ struct square {
  * A structure for assisting monster pathfinding
  */
 struct heatmap {
-    u16b **grids;
+	uint16_t **grids;
 };
 
 /**
@@ -198,7 +197,7 @@ struct chunk {
 	int height;
 	int width;
 	int *feat_count;
-	u16b runes;
+	uint16_t runes;
 
 	struct square **squares;
 	struct heatmap noise;
@@ -206,7 +205,7 @@ struct chunk {
 	struct loc decoy;
 
 	struct object **objects;
-	u16b obj_max;
+	uint16_t obj_max;
 };
 
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/
@@ -482,7 +481,7 @@ int motion_dir(struct loc source, struct loc target);
 struct loc next_grid(struct loc grid, int dir);
 int lookup_feat(const char *name);
 void set_terrain(void);
-u16b **heatmap_new(struct chunk *c);
+uint16_t **heatmap_new(struct chunk *c);
 void heatmap_free(struct chunk *c, struct heatmap map);
 struct chunk *chunk_new(int height, int width);
 void chunk_wipe(struct chunk *c);

@@ -77,11 +77,11 @@ struct world_region {
 	char *message;
 	char *text;
 
-	byte danger;       	           /**< Region danger */
-	u16b height;       	           /**< Region height */
-	u16b width;       	           /**< Region width */
-	u16b y_offset;                 /**< Region y location */
-	u16b x_offset;                 /**< Region x location */
+	uint8_t danger;       	           /**< Region danger */
+	uint16_t height;       	           /**< Region height */
+	uint16_t width;       	           /**< Region width */
+	uint16_t y_offset;                 /**< Region y location */
+	uint16_t x_offset;                 /**< Region x location */
 };
 
 enum river_part {
@@ -105,7 +105,7 @@ struct square_mile;
 struct river_chunk {
 	int map_y;         /**< Map y coordinate of river chunk */
 	int map_x;         /**< Map x coordinate of river chunk */
-	u16b width;        /**< River width */
+	uint16_t width;        /**< River width */
 };
 
 /**
@@ -154,7 +154,7 @@ struct river {
 struct road_chunk {
 	int map_y;         /**< Map y coordinate of road chunk */
 	int map_x;         /**< Map x coordinate of road chunk */
-	u16b width;        /**< Road width */
+	uint16_t width;        /**< Road width */
 };
 
 /**
@@ -209,7 +209,7 @@ struct square_mile {
  */
 struct connector {
 	struct loc grid;
-	byte feat;
+	uint8_t feat;
 	bitflag info[SQUARE_SIZE];
 	enum biome_type type;
 	struct connector *next;
@@ -224,15 +224,15 @@ struct connector {
  * the generated locations list.
  */
 struct chunk_ref {
-	u16b place;			/**< Index of this chunk */
-	s32b turn;			/**< Turn this chunk was created */
-	u16b region;		/**< Region the chunk is from */
-	u16b z_pos;			/**< Depth of the chunk below ground */
-	u16b y_pos;			/**< y position of the chunk */
-	u16b x_pos;			/**< x position of the chunk */
+	uint16_t place;			/**< Index of this chunk */
+	int32_t turn;			/**< Turn this chunk was created */
+	uint16_t region;		/**< Region the chunk is from */
+	uint16_t z_pos;			/**< Depth of the chunk below ground */
+	uint16_t y_pos;			/**< y position of the chunk */
+	uint16_t x_pos;			/**< x position of the chunk */
 	struct chunk *chunk;	/**< The actual chunk */
 	struct chunk *p_chunk;	/**< The player's knowledge of the chunk */
-	u32b gen_loc_idx;	/**< The chunk index in the generated locations list */
+	uint32_t gen_loc_idx;/**< The chunk index in the generated locations list */
 	int adjacent[11];	/**< Adjacent chunks */
 };
 
@@ -260,26 +260,26 @@ struct gen_loc {
 	int x_pos;				/**< x position of the chunk */
 	int y_pos;				/**< y position of the chunk */
 	int z_pos;				/**< Depth of the chunk below ground */
-	u32b seed;				/**< RNG seed for generating the chunk repeatably */
+	uint32_t seed;			/**< RNG seed for generating the chunk repeatably */
 	struct terrain_change *change;	/**< Changes made since generation */
 	struct connector *join;	/**< Information for generating adjoining chunks */
 };
 
-extern u32b seed_randart;
-extern u32b seed_flavor;
-extern s32b turn;
+extern uint32_t seed_randart;
+extern uint32_t seed_flavor;
+extern int32_t turn;
 extern bool character_generated;
 extern bool character_dungeon;
-extern const byte extract_energy[200];
+extern const uint8_t extract_energy[200];
 extern struct world_region *region_info;
 extern struct square_mile **square_miles;
 extern struct landmark *landmark_info;
 extern struct river *river_info;
-extern u16b chunk_max;
-extern u16b chunk_cnt;
+extern uint16_t chunk_max;
+extern uint16_t chunk_cnt;
 extern struct chunk_ref *chunk_list;
-extern u32b gen_loc_max;
-extern u32b gen_loc_cnt;
+extern uint32_t gen_loc_max;
+extern uint32_t gen_loc_cnt;
 extern struct gen_loc *gen_loc_list;
 
 void gen_loc_list_init(void);

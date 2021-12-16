@@ -35,9 +35,9 @@
 #include "obj-util.h"
 #include "trap.h"
 
-u16b chunk_max = 1;				/* Number of allocated chunks */
-u16b chunk_cnt = 0;				/* Number of live chunks */
-u32b gen_loc_cnt = 0;			/* Number of actual generated locations */
+uint16_t chunk_max = 1;				/* Number of allocated chunks */
+uint16_t chunk_cnt = 0;				/* Number of live chunks */
+uint32_t gen_loc_cnt = 0;			/* Number of actual generated locations */
 struct chunk_ref *chunk_list;     /**< list of pointers refs to saved chunks */
 
 
@@ -1014,8 +1014,9 @@ static void chunk_fix_all(void)
 /**
  * Store a chunk pair from the current playing area into the chunk list
  */
-int chunk_store(int y_coord, int x_coord, u16b region, u16b z_pos,
-				u16b y_pos, u16b x_pos, u32b gen_loc_idx, bool write)
+int chunk_store(int y_coord, int x_coord, uint16_t region, uint16_t z_pos,
+				uint16_t y_pos, uint16_t x_pos, uint32_t gen_loc_idx,
+				bool write)
 {
 	int i;
 	int max = turn, idx = 0;
@@ -1334,7 +1335,7 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_coord, int x_coord)
 				location->join = new;
 			}
 			for (y = 0; y < CHUNK_SIDE; y++) {
-				byte feat = vertical[y][x].feat;
+				uint8_t feat = vertical[y][x].feat;
 				struct loc grid = loc(x0 + x, y0 + y);
 				if (feat == 0) {
 					if (feat_is_stair(square(c, grid)->feat) ||

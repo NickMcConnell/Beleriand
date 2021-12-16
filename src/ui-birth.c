@@ -205,7 +205,7 @@ static void birthmenu_display(struct menu *menu, int oid, bool cursor,
 {
 	struct birthmenu_data *data = menu->menu_data;
 
-	byte attr = curs_attrs[CURS_KNOWN][0 != cursor];
+	uint8_t attr = curs_attrs[CURS_KNOWN][0 != cursor];
 	c_put_str(attr, data->items[oid], row, col);
 }
 
@@ -218,7 +218,7 @@ static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL 
 
 static void skill_help(const int r_skills[], const int c_skills[], int mhp, int infra)
 {
-	s16b skills[SKILL_MAX];
+	int16_t skills[SKILL_MAX];
 	unsigned i;
 
 	for (i = 0; i < SKILL_MAX ; ++i)
@@ -273,7 +273,6 @@ static void race_help(int i, void *db, const region *l)
 	
 	text_out_e("\n");
 	skill_help(r->r_skills, NULL, r->r_mhp, r->infra);
-
 	for (ability = player_abilities; ability; ability = ability->next) {
 		if (n_flags >= flag_space) break;
 		if (streq(ability->type, "object") &&
