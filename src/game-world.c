@@ -38,9 +38,9 @@
 #include "target.h"
 #include "trap.h"
 
-u32b seed_randart;		/* Hack -- consistent random artifacts */
-u32b seed_flavor;		/* Hack -- consistent object colors */
-s32b turn;				/* Current game turn */
+uint32_t seed_randart;		/* Hack -- consistent random artifacts */
+uint32_t seed_flavor;		/* Hack -- consistent object colors */
+int32_t turn;			/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
 struct world_region *region_info;
@@ -48,8 +48,8 @@ struct square_mile **square_miles;
 struct landmark *landmark_info;
 struct river *river_info;
 struct gen_loc *gen_loc_list;	/* List of generated locations */
-u32b gen_loc_max = GEN_LOC_INCR;/* Maximum number of generated locations */
-u32b gen_loc_cnt;				/* Current number of generated locations */
+uint32_t gen_loc_max = GEN_LOC_INCR;/* Maximum number of generated locations */
+uint32_t gen_loc_cnt;				/* Current number of generated locations */
 
 /**
  * This table allows quick conversion from "speed" to "energy"
@@ -69,7 +69,7 @@ u32b gen_loc_cnt;				/* Current number of generated locations */
  *
  * Note that currently the fastest monster is "Fast (+30)".
  */
-const byte extract_energy[200] =
+const uint8_t extract_energy[200] =
 {
 	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
 	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
@@ -805,7 +805,7 @@ void process_world(struct chunk *c)
 	/* Handle experience draining */
 	if (player_of_has(player, OF_DRAIN_EXP)) {
 		if ((player->exp > 0) && one_in_(10)) {
-			s32b d = damroll(10, 6) +
+			int32_t d = damroll(10, 6) +
 				(player->exp / 100) * z_info->life_drain_percent;
 			player_exp_lose(player, d / 10, false);
 		}
