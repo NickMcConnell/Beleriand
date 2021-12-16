@@ -44,8 +44,8 @@
  */
 struct monster *monsters;
 struct monster_group **monster_groups;
-u16b mon_max = 1;
-u16b mon_cnt = 0;
+uint16_t mon_max = 1;
+uint16_t mon_cnt = 0;
 int mon_current = -1;
 int num_repro = 0;
 
@@ -64,7 +64,7 @@ int num_repro = 0;
  *         restrictions apply (for example, unique monsters can only appear
  *         once on a given level); prob3 is always either prob2 or 0.
  * ------------------------------------------------------------------------ */
-static s16b alloc_race_size;
+static int16_t alloc_race_size;
 static struct alloc_entry *alloc_race_table;
 
 /**
@@ -74,8 +74,9 @@ static void init_race_allocs(void) {
 	int i;
 	struct monster_race *race;
 	alloc_entry *table;
-	s16b *num = mem_zalloc(z_info->max_depth * sizeof(s16b));
-	s16b *already_counted = mem_zalloc(z_info->max_depth * sizeof(s16b));
+	int16_t *num = mem_zalloc(z_info->max_depth * sizeof(int16_t));
+	int16_t *already_counted =
+		mem_zalloc(z_info->max_depth * sizeof(int16_t));
 
 	/* Size of "alloc_race_table" */
 	alloc_race_size = 0;
@@ -789,7 +790,8 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize,
  *
  * Returns true if anything is created, false if nothing is.
  */
-static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
+static bool mon_create_drop(struct chunk *c, struct monster *mon,
+		uint8_t origin)
 {
 	struct monster_drop *drop;
 	struct monster_lore *lore = get_lore(mon->race);
@@ -1105,10 +1107,10 @@ void set_monster_place_current(void)
  *
  * Returns the m_idx of the newly copied monster, or 0 if the placement fails.
  */
-s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
-				   byte origin)
+int16_t place_monster(struct chunk *c, struct loc grid, struct monster *mon,
+		uint8_t origin)
 {
-	s16b m_idx;
+	int16_t m_idx;
 	struct monster *new_mon;
 	struct monster_group_info *info = mon->group_info;
 	bool loading = mon->midx > 0;
@@ -1186,9 +1188,9 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
  * directly.
  */
 static bool place_new_monster_one(struct chunk *c, struct loc grid,
-								  struct monster_race *race, bool sleep,
-								  struct monster_group_info group_info,
-								  byte origin)
+		struct monster_race *race, bool sleep,
+		struct monster_group_info group_info,
+		uint8_t origin)
 {
 	int i;
 	struct monster *mon;
@@ -1279,7 +1281,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	}
 
 	/* Give a random starting energy */
-	mon->energy = (byte)randint0(50);
+	mon->energy = (uint8_t)randint0(50);
 
 	/* Force monster to wait for player */
 	if (rf_has(race->flags, RF_FORCE_SLEEP))
@@ -1365,9 +1367,9 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
  * ORIGIN_DROP_PIT, etc.)
  */
 static bool place_new_monster_group(struct chunk *c, struct loc grid,
-									struct monster_race *race, bool sleep,
-									struct monster_group_info group_info,
-									int total, byte origin)
+		struct monster_race *race, bool sleep,
+		struct monster_group_info group_info,
+		int total, uint8_t origin)
 {
 	int n, i;
 
@@ -1436,8 +1438,8 @@ static bool place_monster_base_okay(struct monster_race *race)
  * Helper function to place monsters that appear as friends or escorts
  */
 static bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
-					struct monster_race *friends_race, int total, bool sleep,
-					struct monster_group_info group_info, byte origin)
+		struct monster_race *friends_race, int total, bool sleep,
+		struct monster_group_info group_info, uint8_t origin)
 {
 	int extra_chance;
 
@@ -1513,8 +1515,8 @@ static bool place_friends(struct chunk *c, struct loc grid, struct monster_race 
  * ORIGIN_DROP_PIT, etc.)
  */
 bool place_new_monster(struct chunk *c, struct loc grid,
-					   struct monster_race *race, bool sleep, bool group_ok,
-					   struct monster_group_info group_info, byte origin)
+		struct monster_race *race, bool sleep, bool group_ok,
+		struct monster_group_info group_info, uint8_t origin)
 {
 	struct monster_friends *friends;
 	struct monster_friends_base *friends_base;
@@ -1610,7 +1612,7 @@ bool place_new_monster(struct chunk *c, struct loc grid,
  * Returns true if we successfully place a monster.
  */
 bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
-							bool sleep, bool group_okay, byte origin)
+		bool sleep, bool group_okay, uint8_t origin)
 {
 	/* Pick a monster race, no specified group */
 	struct monster_race *race = get_mon_num(depth, player->depth);

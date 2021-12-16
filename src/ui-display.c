@@ -267,7 +267,7 @@ static void prt_equippy(int row, int col)
 {
 	int i;
 
-	byte a;
+	uint8_t a;
 	wchar_t c;
 
 	struct object *obj;
@@ -313,7 +313,7 @@ static void prt_ac(int row, int col)
 static void prt_hp(int row, int col)
 {
 	char cur_hp[32], max_hp[32];
-	byte color = player_hp_attr(player);
+	uint8_t color = player_hp_attr(player);
 
 	put_str("HP ", row, col);
 
@@ -331,7 +331,7 @@ static void prt_hp(int row, int col)
 static void prt_sp(int row, int col)
 {
 	char cur_sp[32], max_sp[32];
-	byte color = player_sp_attr(player);
+	uint8_t color = player_sp_attr(player);
 
 	/* Do not show mana unless we should have some */
 	if (player_has(player, PF_NO_MANA) || 
@@ -352,10 +352,10 @@ static void prt_sp(int row, int col)
 /**
  * Calculate the monster bar color separately, for ports.
  */
-byte monster_health_attr(void)
+uint8_t monster_health_attr(void)
 {
 	struct monster *mon = player->upkeep->health_who;
-	byte attr;
+	uint8_t attr;
 
 	if (!mon) {
 		/* Not tracking */
@@ -414,7 +414,7 @@ byte monster_health_attr(void)
 
 static int prt_health_aux(int row, int col)
 {
-	byte attr = monster_health_attr();
+	uint8_t attr = monster_health_attr();
 	struct monster *mon = player->upkeep->health_who;
 
 	/* Not tracking */
@@ -462,7 +462,7 @@ static void prt_health(int row, int col)
 	prt_health_aux(row, col);
 }
 
-static int prt_speed_aux(char buf[], int max, byte *attr)
+static int prt_speed_aux(char buf[], int max, uint8_t *attr)
 {
 	int i = player->state.speed;
 	const char *type = NULL;
@@ -497,7 +497,7 @@ static int prt_speed_aux(char buf[], int max, byte *attr)
  */
 static void prt_speed(int row, int col)
 {
-	byte attr = COLOUR_WHITE;	
+	uint8_t attr = COLOUR_WHITE;
 	char buf[32] = "";
 
 	prt_speed_aux(buf, sizeof(buf), &attr);
@@ -667,7 +667,7 @@ static int prt_gold_short(int row, int col)
 static int prt_hp_short(int row, int col)
 {
 	char cur_hp[32], max_hp[32];
-	byte color = player_hp_attr(player);	
+	uint8_t color = player_hp_attr(player);
 
 	put_str("HP:", row, col);
 	col += 3;
@@ -686,7 +686,7 @@ static int prt_hp_short(int row, int col)
 static int prt_sp_short(int row, int col)
 {
 	char cur_sp[32], max_sp[32];
-	byte color = player_sp_attr(player);
+	uint8_t color = player_sp_attr(player);
 
 	/* Do not show mana unless we should have some */
 	if (player_has(player, PF_NO_MANA) || 
@@ -720,7 +720,7 @@ static int prt_health_short(int row, int col)
 static int prt_speed_short(int row, int col)
 {
 	char buf[32];
-	byte attr;
+	uint8_t attr;
 
 	int len = prt_speed_aux(buf, sizeof(buf), &attr);	
 	if (len > 0) {
@@ -905,7 +905,7 @@ struct state_info
 	int value;
 	const char *str;
 	size_t len;
-	byte attr;
+	uint8_t attr;
 };
 
 /**
@@ -917,7 +917,7 @@ struct state_info
  */
 static size_t prt_state(int row, int col)
 {
-	byte attr = COLOUR_WHITE;
+	uint8_t attr = COLOUR_WHITE;
 
 	char text[16] = "";
 
@@ -978,6 +978,7 @@ static size_t prt_state(int row, int col)
 
 	return strlen(text);
 }
+
 
 /**
  * Prints player grid light level
@@ -1314,7 +1315,7 @@ static bool animations_allowed = true;
 /**
  * A counter to select the step color from the flicker table.
  */
-static byte flicker = 0;
+static uint8_t flicker = 0;
 
 /**
  * This animates monsters and/or items as necessary.
@@ -1324,7 +1325,7 @@ static void do_animation(void)
 	int i;
 
 	for (i = 1; i < mon_max; i++) {
-		byte attr;
+		uint8_t attr;
 		struct monster *mon = monster(i);
 
 		if (!mon || !mon->race || !monster_is_visible(mon))
@@ -1332,7 +1333,7 @@ static void do_animation(void)
 		else if (rf_has(mon->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);
 		else if (rf_has(mon->race->flags, RF_ATTR_FLICKER)) {
-			byte base_attr = monster_x_attr[mon->race->ridx];
+			uint8_t base_attr = monster_x_attr[mon->race->ridx];
 
 			/* Get the color cycled attribute, if available. */
 			attr = visuals_cycler_get_attr_for_race(mon->race, flicker);
@@ -1408,7 +1409,7 @@ void idle_update(void)
  * It is moving (or has moved) from (x, y) to (nx, ny); if the distance is not
  * "one", we (may) return "*".
  */
-static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a,
+static void bolt_pict(int y, int x, int ny, int nx, int typ, uint8_t *a,
 					  wchar_t *c)
 {
 	int motion;
@@ -1466,7 +1467,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 
 		/* Only do visuals if the player can see the blast */
 		if (player_sees_grid[i]) {
-			byte a;
+			uint8_t a;
 			wchar_t c;
 
 			drawn = true;
@@ -1544,7 +1545,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 
 	/* Only do visuals if the player can "see" the bolt */
 	if (seen) {
-		byte a;
+		uint8_t a;
 		wchar_t c;
 
 		/* Obtain the bolt pict */
@@ -1800,8 +1801,8 @@ static void update_messages_subwindow(game_event_type type,
 
 	/* Dump messages */
 	for (i = 0; i < h; i++) {
-		byte color = message_color(i);
-		u16b count = message_count(i);
+		uint8_t color = message_color(i);
+		uint16_t count = message_count(i);
 		const char *str = message_str(i);
 
 		if (count == 1)
@@ -2056,7 +2057,7 @@ const char *window_flag_desc[32] =
 	NULL
 };
 
-static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
+static void subwindow_flag_changed(int win_idx, uint32_t flag, bool new_state)
 {
 	void (*register_or_deregister)(game_event_type type, game_event_handler *fn,
 								   void *user);
@@ -2211,7 +2212,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
  * that has changed setting so that it can do any housekeeping to do with 
  * displaying the new thing or no longer displaying the old one.
  */
-static void subwindow_set_flags(int win_idx, u32b new_flags)
+static void subwindow_set_flags(int win_idx, uint32_t new_flags)
 {
 	term *old = Term;
 	int i;
@@ -2244,7 +2245,7 @@ static void subwindow_set_flags(int win_idx, u32b new_flags)
  * Called with an array of the new flags for all the subwindows, in order
  * to set them to the new values, with a chance to perform housekeeping.
  */
-void subwindows_set_flags(u32b *new_flags, size_t n_subwindows)
+void subwindows_set_flags(uint32_t *new_flags, size_t n_subwindows)
 {
 	size_t j;
 

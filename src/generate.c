@@ -1268,7 +1268,7 @@ static void cleanup_dun_data(struct dun_data *dd)
  * \param x_coord
  * \return a pointer to the new level
  */
-static struct chunk *cave_generate(struct player *p, u32b seed)
+static struct chunk *cave_generate(struct player *p, uint32_t seed)
 {
 	const char *error = "no generation";
 	int y, x, y_coord, x_coord, tries = 0;
@@ -1519,7 +1519,7 @@ void prepare_next_level(struct player *p)
 		if (p->place == MAX_CHUNKS) {
 			int y_coord = p->grid.y / CHUNK_SIDE;
 			int x_coord = p->grid.x / CHUNK_SIDE;
-			u32b seed;
+			uint32_t seed;
 
 			/* The assumption here is that dungeon levels are always generated
 			 * all at once, and there are no, for example, long tunnels of
