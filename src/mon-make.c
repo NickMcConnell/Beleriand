@@ -1141,7 +1141,7 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	/* Assign monster to its monster group, or update its entry */
 	monster_group_assign(new_mon, info, loading);
 
-	update_mon(player, new_mon, c, true);
+	update_mon(new_mon, c, true);
 
 	/* Count the number of "reproducers" */
 	if (rf_has(new_mon->race->flags, RF_MULTIPLY)) num_repro++;
