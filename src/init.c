@@ -1335,8 +1335,9 @@ static errr finish_parse_river(struct parser *p)
 
 	/* Parse the individual rivers */
 	for (i = 0; i < z_info->river_max; i++) {
-		char path[80];
-		strnfmt(path, sizeof(path), "rivers/%s", river_info[i].filename);
+		char path[200];
+		path_build(path, sizeof(path), ANGBAND_DIR_RIVERS,
+				   river_info[i].filename);
 		parser_setpriv(p, &river_info[i]);
 		parse_file_quit_not_found(p, path);
 		river_info[i].next = NULL;
