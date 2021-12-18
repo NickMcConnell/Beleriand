@@ -123,6 +123,7 @@ ICONFILES = cocoa/$(NAME)_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.
 
 LIBFILES = \
   ../lib/gamedata/*.txt \
+  ../lib/gamedata/rivers/*.txt \
   ../lib/screens/*.txt \
   ../lib/help/*.txt \
   ../lib/customize/*.prf \
@@ -135,6 +136,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@mkdir -p $(APPRES)
 	@mkdir -p $(APPRES)/en.lproj
 	@mkdir -p $(APPRES)/lib/gamedata
+	@mkdir -p $(APPRES)/lib/gamedata/rivers
 	@mkdir -p $(APPRES)/lib/screens
 	@mkdir -p $(APPRES)/lib/help
 	@mkdir -p $(APPRES)/lib/customize
@@ -144,6 +146,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 
 	@echo copying files...
 	@cp ../lib/gamedata/*.txt $(APPRES)/lib/gamedata
+	@cp ../lib/gamedata/rivers/*.txt $(APPRES)/lib/gamedata/rivers
 	@cp ../lib/screens/*.txt $(APPRES)/lib/screens
 	@cp ../lib/help/*.txt $(APPRES)/lib/help
 	@cp ../lib/customize/*.prf $(APPRES)/lib/customize

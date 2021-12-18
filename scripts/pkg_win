@@ -92,6 +92,9 @@ cp_unix2dos ../lib/readme.txt lib/readme.txt
 for f in `find ../lib/gamedata -name '*.txt' -print` ; do
 	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
 done
+for f in `find ../lib/gamedata/rivers -name '*.txt' -print` ; do
+	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
+done
 for f in `find ../lib/screens -name '*.txt' -print` ; do
 	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
 done
