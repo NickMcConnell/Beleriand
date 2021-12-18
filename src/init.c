@@ -1350,7 +1350,7 @@ static errr finish_parse_river(struct parser *p)
 
 	/* Parse the individual rivers */
 	for (i = 0; i < z_info->river_max; i++) {
-		char path[80];
+		char path[200];
 		path_build(path, sizeof(path), ANGBAND_DIR_RIVERS,
 				   river_info[i].filename);
 		parser_setpriv(p, &river_info[i]);
