@@ -99,9 +99,16 @@ errr parse_file(struct parser *p, const char *filename, const char *dir) {
 																filename));
 		fh = file_open(path, MODE_READ, FTYPE_TEXT);
 
-		/* If no custom file, just load the standard one */
+		/* If no custom file, just load the standard one... */
 		if (!fh) {
 			path_build(path, sizeof(path), ANGBAND_DIR_GAMEDATA,
+					   format("%s.txt", filename));
+			fh = file_open(path, MODE_READ, FTYPE_TEXT);
+		}
+
+		/* ...or check for rivers (hackish) */
+		if (!fh) {
+			path_build(path, sizeof(path), ANGBAND_DIR_RIVERS,
 					   format("%s.txt", filename));
 			fh = file_open(path, MODE_READ, FTYPE_TEXT);
 		}
