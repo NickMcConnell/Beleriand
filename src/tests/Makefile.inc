@@ -14,31 +14,19 @@ depgen:
 	done;
 
 # Dependencies
-./artifact/name.o: artifact/name.c unit-test.h unit-test-types.h ../z-util.h \
- ../h-basic.h unit-test-data.h ../angband.h ../z-bitflag.h ../z-form.h \
- ../z-virt.h ../z-color.h ../z-util.h ../z-rand.h ../config.h \
- ../game-event.h ../z-type.h ../message.h ../list-message.h ../player.h \
- ../guid.h ../obj-properties.h ../z-file.h ../list-tvals.h \
- ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../object.h ../z-quark.h ../z-dice.h \
- ../z-expression.h ../list-elements.h ../list-origins.h ../option.h \
- ../list-options.h ../list-player-flags.h ../init.h ../datafile.h \
- ../parser.h ../list-parser-errors.h ../mon-lore.h ../z-textblock.h \
- ../monster.h ../cave.h ../list-square-flags.h ../list-terrain-flags.h \
- ../target.h ../mon-predicate.h ../mon-timed.h ../list-mon-timed.h \
- ../mon-blows.h ../list-mon-temp-flags.h ../list-mon-race-flags.h \
- ../list-mon-spells.h ../monster.h ../obj-tval.h ../player.h \
- ../player-calcs.h ../project.h ../source.h ../list-projections.h \
- ../obj-properties.h ../obj-randart.h ../list-randart-properties.h \
- ../object.h
 ./cave/scatter.o: cave/scatter.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h test-utils.h ../cave.h ../z-type.h ../z-bitflag.h \
  ../z-form.h ../z-virt.h ../list-square-flags.h ../list-terrain-flags.h \
- ../init.h ../z-file.h ../z-rand.h ../datafile.h ../object.h ../z-quark.h \
- ../z-dice.h ../z-expression.h ../obj-properties.h ../list-tvals.h \
- ../list-object-flags.h ../list-kind-flags.h ../list-stats.h \
- ../list-object-modifiers.h ../list-elements.h ../list-origins.h \
- ../parser.h ../list-parser-errors.h
+ ../generate.h ../game-world.h ../cave.h ../monster.h ../z-rand.h \
+ ../target.h ../mon-predicate.h ../mon-timed.h ../list-mon-timed.h \
+ ../mon-blows.h ../player.h ../guid.h ../obj-properties.h ../z-file.h \
+ ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
+ ../list-stats.h ../list-object-modifiers.h ../object.h ../z-quark.h \
+ ../z-dice.h ../z-expression.h ../list-elements.h ../list-origins.h \
+ ../option.h ../list-options.h ../list-player-flags.h \
+ ../list-mon-temp-flags.h ../list-mon-race-flags.h ../list-mon-spells.h \
+ ../list-room-flags.h ../init.h ../datafile.h ../parser.h \
+ ../list-parser-errors.h
 ./command/lookup.o: command/lookup.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../obj-properties.h ../z-file.h ../z-bitflag.h ../z-form.h \
  ../z-virt.h ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
@@ -57,13 +45,14 @@ depgen:
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
  ../list-origins.h ../player-attack.h ../cmd-core.h ../cmds.h ../cave.h \
  ../list-effects.h ../effects-info.h ../z-textblock.h ../game-world.h \
- ../generate.h ../monster.h ../target.h ../mon-predicate.h ../mon-timed.h \
- ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h ../option.h \
- ../list-options.h ../list-player-flags.h ../list-mon-temp-flags.h \
- ../list-mon-race-flags.h ../list-mon-spells.h ../list-room-flags.h \
- ../init.h ../datafile.h ../parser.h ../list-parser-errors.h \
- ../mon-make.h ../player.h ../player-birth.h ../player-calcs.h \
- ../player-timed.h ../list-player-timed.h ../source.h ../z-dice.h
+ ../generate.h ../game-world.h ../monster.h ../target.h \
+ ../mon-predicate.h ../mon-timed.h ../list-mon-timed.h ../mon-blows.h \
+ ../player.h ../guid.h ../option.h ../list-options.h \
+ ../list-player-flags.h ../list-mon-temp-flags.h ../list-mon-race-flags.h \
+ ../list-mon-spells.h ../list-room-flags.h ../init.h ../datafile.h \
+ ../parser.h ../list-parser-errors.h ../mon-make.h ../player.h \
+ ../player-birth.h ../player-calcs.h ../player-timed.h \
+ ../list-player-timed.h ../source.h ../z-dice.h
 ./effects/destruction.o: effects/destruction.c unit-test.h unit-test-types.h \
  ../z-util.h ../h-basic.h test-utils.h ../cave.h ../z-type.h \
  ../z-bitflag.h ../z-form.h ../z-virt.h ../list-square-flags.h \
@@ -93,8 +82,8 @@ depgen:
  ../list-options.h ../list-player-flags.h ../obj-make.h ../obj-pile.h \
  ../obj-util.h ../player-birth.h ../player-util.h
 ./effects/info.o: effects/info.c unit-test.h unit-test-types.h ../z-util.h \
- ../h-basic.h test-utils.h ../effects.h ../source.h ../object.h \
- ../z-type.h ../z-quark.h ../z-bitflag.h ../z-form.h ../z-virt.h \
+ ../h-basic.h test-utils.h ../effects.h ../source.h ../z-type.h \
+ ../object.h ../z-quark.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../z-dice.h ../z-rand.h ../z-expression.h ../obj-properties.h \
  ../z-file.h ../list-tvals.h ../list-object-flags.h ../list-kind-flags.h \
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
@@ -118,8 +107,9 @@ depgen:
  ../list-mon-spells.h ../monster.h ../obj-tval.h ../player.h \
  ../player-calcs.h ../project.h ../source.h ../list-projections.h \
  test-utils.h ../cave.h ../cmd-core.h ../game-event.h ../game-world.h \
- ../generate.h ../list-room-flags.h ../mon-make.h ../savefile.h \
- ../player-birth.h ../cmd-core.h ../player-timed.h ../list-player-timed.h
+ ../generate.h ../game-world.h ../list-room-flags.h ../mon-make.h \
+ ../savefile.h ../player-birth.h ../cmd-core.h ../player-timed.h \
+ ../list-player-timed.h
 ./game/mage.o: game/mage.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h unit-test-data.h ../angband.h ../z-bitflag.h ../z-form.h \
  ../z-virt.h ../z-color.h ../z-util.h ../z-rand.h ../config.h \
@@ -136,8 +126,9 @@ depgen:
  ../list-mon-spells.h ../monster.h ../obj-tval.h ../player.h \
  ../player-calcs.h ../project.h ../source.h ../list-projections.h \
  test-utils.h ../cave.h ../cmd-core.h ../game-event.h ../game-world.h \
- ../generate.h ../list-room-flags.h ../mon-make.h ../savefile.h \
- ../player-birth.h ../cmd-core.h ../player-timed.h ../list-player-timed.h
+ ../generate.h ../game-world.h ../list-room-flags.h ../mon-make.h \
+ ../savefile.h ../player-birth.h ../cmd-core.h ../player-timed.h \
+ ../list-player-timed.h
 ./message/message.o: message/message.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h unit-test-data.h ../angband.h ../z-bitflag.h ../z-form.h \
  ../z-virt.h ../z-color.h ../z-util.h ../z-rand.h ../config.h \
@@ -413,14 +404,6 @@ depgen:
  ../mon-blows.h ../list-mon-temp-flags.h ../list-mon-race-flags.h \
  ../list-mon-spells.h ../monster.h ../obj-tval.h ../player.h \
  ../player-calcs.h ../project.h ../source.h ../list-projections.h
-./parse/readstore.o: parse/readstore.c unit-test.h unit-test-types.h ../z-util.h \
- ../h-basic.h ../object.h ../z-type.h ../z-quark.h ../z-bitflag.h \
- ../z-form.h ../z-virt.h ../z-dice.h ../z-rand.h ../z-expression.h \
- ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
- ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
- ../list-elements.h ../list-origins.h ../store.h ../cave.h \
- ../list-square-flags.h ../list-terrain-flags.h ../cmd-core.h ../object.h \
- ../datafile.h ../parser.h ../list-parser-errors.h ../init.h
 ./parse/v-info.o: parse/v-info.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../init.h ../z-bitflag.h ../z-form.h ../z-virt.h \
  ../z-file.h ../z-rand.h ../datafile.h ../object.h ../z-type.h \
@@ -429,10 +412,11 @@ depgen:
  ../list-stats.h ../list-object-modifiers.h ../list-elements.h \
  ../list-origins.h ../parser.h ../list-parser-errors.h ../cave.h \
  ../list-square-flags.h ../list-terrain-flags.h ../generate.h \
- ../monster.h ../cave.h ../target.h ../mon-predicate.h ../mon-timed.h \
- ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h ../option.h \
- ../list-options.h ../list-player-flags.h ../list-mon-temp-flags.h \
- ../list-mon-race-flags.h ../list-mon-spells.h ../list-room-flags.h
+ ../game-world.h ../cave.h ../monster.h ../target.h ../mon-predicate.h \
+ ../mon-timed.h ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h \
+ ../option.h ../list-options.h ../list-player-flags.h \
+ ../list-mon-temp-flags.h ../list-mon-race-flags.h ../list-mon-spells.h \
+ ../list-room-flags.h
 ./parse/z-info.o: parse/z-info.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h unit-test-data.h ../angband.h ../z-bitflag.h ../z-form.h \
  ../z-virt.h ../z-color.h ../z-util.h ../z-rand.h ../config.h \
@@ -468,8 +452,8 @@ depgen:
  ../z-util.h ../h-basic.h test-utils.h ../cave.h ../z-type.h \
  ../z-bitflag.h ../z-form.h ../z-virt.h ../list-square-flags.h \
  ../list-terrain-flags.h ../game-world.h ../cave.h ../generate.h \
- ../monster.h ../z-rand.h ../target.h ../mon-predicate.h ../mon-timed.h \
- ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h \
+ ../game-world.h ../monster.h ../z-rand.h ../target.h ../mon-predicate.h \
+ ../mon-timed.h ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h \
  ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
  ../object.h ../z-quark.h ../z-dice.h ../z-expression.h \
@@ -486,8 +470,8 @@ depgen:
  ../z-util.h ../h-basic.h test-utils.h ../cave.h ../z-type.h \
  ../z-bitflag.h ../z-form.h ../z-virt.h ../list-square-flags.h \
  ../list-terrain-flags.h ../game-world.h ../cave.h ../generate.h \
- ../monster.h ../z-rand.h ../target.h ../mon-predicate.h ../mon-timed.h \
- ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h \
+ ../game-world.h ../monster.h ../z-rand.h ../target.h ../mon-predicate.h \
+ ../mon-timed.h ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h \
  ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
  ../object.h ../z-quark.h ../z-dice.h ../z-expression.h \
@@ -529,15 +513,16 @@ depgen:
  ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
  ../list-elements.h ../list-origins.h ../player-attack.h ../cmd-core.h \
  ../cmds.h ../cave.h ../list-effects.h ../game-world.h ../generate.h \
- ../monster.h ../target.h ../mon-predicate.h ../mon-timed.h \
- ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h ../option.h \
- ../list-options.h ../list-player-flags.h ../list-mon-temp-flags.h \
- ../list-mon-race-flags.h ../list-mon-spells.h ../list-room-flags.h \
- ../init.h ../datafile.h ../parser.h ../list-parser-errors.h \
- ../mon-make.h ../obj-curse.h ../obj-gear.h ../list-equip-slots.h \
- ../obj-knowledge.h ../angband.h ../z-color.h ../z-util.h ../config.h \
- ../game-event.h ../message.h ../list-message.h ../obj-make.h \
- ../obj-pile.h ../obj-tval.h ../obj-util.h ../player-birth.h ../z-quark.h
+ ../game-world.h ../monster.h ../target.h ../mon-predicate.h \
+ ../mon-timed.h ../list-mon-timed.h ../mon-blows.h ../player.h ../guid.h \
+ ../option.h ../list-options.h ../list-player-flags.h \
+ ../list-mon-temp-flags.h ../list-mon-race-flags.h ../list-mon-spells.h \
+ ../list-room-flags.h ../init.h ../datafile.h ../parser.h \
+ ../list-parser-errors.h ../mon-make.h ../obj-curse.h ../obj-gear.h \
+ ../list-equip-slots.h ../obj-knowledge.h ../angband.h ../z-color.h \
+ ../z-util.h ../config.h ../game-event.h ../message.h ../list-message.h \
+ ../obj-make.h ../obj-pile.h ../obj-tval.h ../obj-util.h \
+ ../player-birth.h ../z-quark.h
 ./player/pathfind.o: player/pathfind.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h ../cave.h ../z-type.h ../z-bitflag.h ../z-form.h \
  ../z-virt.h ../list-square-flags.h ../list-terrain-flags.h \
