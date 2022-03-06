@@ -399,6 +399,9 @@
     <ClCompile Include="src\ui-output.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui-player-properties.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\ui-player.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -903,6 +906,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-output.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui-player-properties.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-player.h">

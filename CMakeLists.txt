@@ -266,6 +266,7 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/ui-object.c
         src/ui-options.c
         src/ui-output.c
+        src/ui-player-properties.c
         src/ui-player.c
         src/ui-prefs.c
         src/ui-score.c
