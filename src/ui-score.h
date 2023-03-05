@@ -19,6 +19,10 @@
 #ifndef INCLUDED_UI_SCORE_H
 #define INCLUDED_UI_SCORE_H
 
+#include "score.h"
+
+void display_single_score(const struct high_score *score, int row, int place,
+						  int attr);
 void show_scores(void);
 void predict_score(bool allow_scrolling);
 

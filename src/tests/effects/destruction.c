@@ -144,7 +144,7 @@ static int test_obj_pile_simple(void *state) {
 	generate_piles(cave, player);
 	effect_simple(EF_DESTRUCTION, source_player(), "0", 0,
 		MAX(cave->width / 2, cave->height / 2), 0, 0, 0, NULL);
-	wiz_light(cave, player, true);
+	wiz_light(cave, player);
 	cave_free(player->cave);
 	player->cave = NULL;
 	cave_free(cave);
@@ -165,7 +165,7 @@ static int test_obj_pile_orphan(void *state) {
 	orphan_piles(cave);
 	effect_simple(EF_DESTRUCTION, source_player(), "0", 0,
 		MAX(cave->width / 2, cave->height / 2), 0, 0, 0, NULL);
-	wiz_light(cave, player, true);
+	wiz_light(cave, player);
 	cave_free(player->cave);
 	player->cave = NULL;
 	cave_free(cave);

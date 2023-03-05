@@ -24,6 +24,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -39,19 +40,13 @@
  *
  * Returns number of items destroyed.
  */
-int inven_damage(struct player *p, int type, int cperc)
+int inven_damage(struct player *p, int type, int perc, int resistance)
 {
-	int j, k, amt;
+	int k = 0;
 	struct object *obj = p->gear;
-	char o_name[80];
-	bool damage;
 
 	/* No chance means no damage */
-	if (cperc <= 0)
-		return 0;
-
-	/* Count the casualties */
-	k = 0;
+	if (perc <= 0) return 0;
 
 	/* Scan through the gear */
 	while (obj) {
@@ -71,63 +66,19 @@ int inven_damage(struct player *p, int type, int cperc)
 		if ((obj->el_info[type].flags & EL_INFO_HATES) &&
 			!(obj->el_info[type].flags & EL_INFO_IGNORE)) {
 			/* Chance to destroy this item */
-			int chance = cperc;
+			int j, amt;
 
-			/* Track if it is damaged instead of destroyed */
-			damage = false;
-
-			/* Analyze the type to see if we just damage it
-			 * - we also check for rods to reduce chance */
-			if (tval_is_weapon(obj) && !tval_is_ammo(obj)) {
-				/* Chance to damage it */
-				if (randint0(10000) < cperc) {
-					/* Damage the item */
-					obj->to_h--;
-					if (p->obj_k->to_h)
-						obj->known->to_h = obj->to_h;
-					obj->to_d--;
-					if (p->obj_k->to_d)
-						obj->known->to_d = obj->to_d;
-
-					/* Damaged! */
-					damage = true;
-				} else {
-					obj = next;
-					continue;
+			/* Count the casualties */
+			for (amt = j = 0; j < obj->number; ++j) {
+				if (percent_chance(perc) &&
+					((resistance < 0) || one_in_(resistance))) {
+					amt++;
 				}
-			} else if (tval_is_armor(obj)) {
-				/* Chance to damage it */
-				if (randint0(10000) < cperc) {
-					/* Damage the item */
-					obj->to_a--;
-					if (p->obj_k->to_a)
-						obj->known->to_a = obj->to_a;
-
-					/* Damaged! */
-					damage = true;
-				} else {
-					obj = next;
-					continue;
-				}
-			} else if (tval_is_rod(obj)) {
-				chance = (chance / 4);
 			}
-
-
-			/* Damage instead of destroy */
-			if (damage) {
-				p->upkeep->update |= (PU_BONUS);
-				p->upkeep->redraw |= (PR_EQUIP);
-
-				/* Casualty count */
-				amt = obj->number;
-			} else
-				/* ... or count the casualties */
-				for (amt = j = 0; j < obj->number; ++j)
-					if (randint0(10000) < chance) amt++;
 
 			/* Some casualities */
 			if (amt) {
+				char o_name[80];
 				struct object *destroyed;
 				bool none_left = false;
 
@@ -136,24 +87,17 @@ int inven_damage(struct player *p, int type, int cperc)
 					ODESC_BASE, p);
 
 				/* Message */
-				msgt(MSG_DESTROY, "%sour %s (%c) %s %s!",
-				           ((obj->number > 1) ?
-				            ((amt == obj->number) ? "All of y" :
-				             (amt > 1 ? "Some of y" : "One of y")) : "Y"),
-				           o_name, gear_to_label(p, obj),
-				           ((amt > 1) ? "were" : "was"),
-					   (damage ? "damaged" : "destroyed"));
-
-				/* Damage already done? */
-				if (damage)
-					continue;
+				msgt(MSG_DESTROY, "%sour %s (%c) %s destroyed!",
+					 ((obj->number > 1) ?
+					  ((amt == obj->number) ? "All of y" :
+					   (amt > 1 ? "Some of y" : "One of y")) : "Y"),
+					 o_name,
+					 gear_to_label(p, obj),
+					 ((amt > 1) ? "were" : "was"));
 
 				/* Destroy "amt" items */
-				destroyed = gear_object_for_use(p, obj, amt,
-					false, &none_left);
-				if (destroyed->known)
-					object_delete(NULL, NULL, &destroyed->known);
-				object_delete(NULL, NULL, &destroyed);
+				destroyed = gear_object_for_use(p, obj, amt, false, &none_left);
+				object_delete(NULL, &destroyed);
 
 				/* Count the casualties */
 				k += amt;
@@ -163,7 +107,7 @@ int inven_damage(struct player *p, int type, int cperc)
 	}
 
 	/* Return the casualty count */
-	return (k);
+	return k;
 }
 
 /**
@@ -172,10 +116,7 @@ int inven_damage(struct player *p, int type, int cperc)
  * ------------------------------------------------------------------------ */
 
 typedef struct project_object_handler_context_s {
-	const struct source origin;
-	const int r;
 	const struct loc grid;
-	const int dam;
 	const int type;
 	const struct object *obj;
 	bool obvious;
@@ -209,18 +150,6 @@ static void project_object_elemental(project_object_handler_context_t *context,
 	}
 }
 
-/* Acid -- Lots of things */
-static void project_object_handler_ACID(project_object_handler_context_t *context)
-{
-	project_object_elemental(context, ELEM_ACID, "melts", "melt");
-}
-
-/* Elec -- Rings and Wands */
-static void project_object_handler_ELEC(project_object_handler_context_t *context)
-{
-	project_object_elemental(context, ELEM_ELEC, "is destroyed", "are destroyed");
-}
-
 /* Fire -- Flammable objects */
 static void project_object_handler_FIRE(project_object_handler_context_t *context)
 {
@@ -237,97 +166,15 @@ static void project_object_handler_POIS(project_object_handler_context_t *contex
 {
 }
 
-static void project_object_handler_LIGHT(project_object_handler_context_t *context)
-{
-}
-
 static void project_object_handler_DARK(project_object_handler_context_t *context)
 {
 }
 
-/* Sound -- potions and flasks */
-static void project_object_handler_SOUND(project_object_handler_context_t *context)
-{
-	project_object_elemental(context, ELEM_SOUND, "shatters", "shatter");
-}
-
-/* Shards -- potions and flasks */
-static void project_object_handler_SHARD(project_object_handler_context_t *context)
-{
-	project_object_elemental(context, ELEM_SHARD, "shatters", "shatter");
-}
-
-static void project_object_handler_NEXUS(project_object_handler_context_t *context)
+static void project_object_handler_NOTHING(project_object_handler_context_t *context)
 {
 }
 
-static void project_object_handler_NETHER(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_CHAOS(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_DISEN(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_WATER(project_object_handler_context_t *context)
-{
-}
-
-/* Ice -- potions and flasks */
-static void project_object_handler_ICE(project_object_handler_context_t *context)
-{
-	project_object_elemental(context, ELEM_ICE, "shatters", "shatter");
-}
-
-static void project_object_handler_GRAVITY(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_INERTIA(project_object_handler_context_t *context)
-{
-}
-
-/* Force -- potions and flasks */
-static void project_object_handler_FORCE(project_object_handler_context_t *context)
-{
-	project_object_elemental(context, ELEM_FORCE, "shatters", "shatter");
-}
-
-static void project_object_handler_TIME(project_object_handler_context_t *context)
-{
-}
-
-/* Fire + Elec */
-static void project_object_handler_PLASMA(project_object_handler_context_t *context)
-{
-	project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
-	project_object_elemental(context, ELEM_ELEC, "is destroyed", "are destroyed");
-}
-
-/* Fire + Cold */
-static void project_object_handler_METEOR(project_object_handler_context_t *context)
-{
-	project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
-	project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
-}
-
-static void project_object_handler_MISSILE(project_object_handler_context_t *context)
-{
-}
-
-/* Mana -- destroys everything */
-static void project_object_handler_MANA(project_object_handler_context_t *context)
-{
-	context->do_kill = true;
-	context->note_kill = VERB_AGREEMENT(context->obj->number, "is destroyed", "are destroyed");
-}
-
-/* Holy Orb  */
-static void project_object_handler_HOLY_ORB(project_object_handler_context_t *context)
+static void project_object_handler_HURT(project_object_handler_context_t *context)
 {
 }
 
@@ -335,11 +182,27 @@ static void project_object_handler_ARROW(project_object_handler_context_t *conte
 {
 }
 
-static void project_object_handler_LIGHT_WEAK(project_object_handler_context_t *context)
+static void project_object_handler_BOULDER(project_object_handler_context_t *context)
 {
 }
 
-static void project_object_handler_DARK_WEAK(project_object_handler_context_t *context)
+/* Acid -- Lots of things */
+static void project_object_handler_ACID(project_object_handler_context_t *context)
+{
+	project_object_elemental(context, ELEM_ACID, "melts", "melt");
+}
+
+/* Sound -- potions and flasks */
+static void project_object_handler_SOUND(project_object_handler_context_t *context)
+{
+	project_object_elemental(context, PROJ_SOUND, "shatters", "shatter");
+}
+
+static void project_object_handler_FORCE(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_LIGHT(project_object_handler_context_t *context)
 {
 }
 
@@ -347,7 +210,51 @@ static void project_object_handler_KILL_WALL(project_object_handler_context_t *c
 {
 }
 
+static void project_object_handler_SLEEP(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_SPEED(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_SLOW(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_CONFUSION(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_FEAR(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_EARTHQUAKE(project_object_handler_context_t *context)
+{
+	project_object_elemental(context, PROJ_SOUND, "shatters", "shatter");
+}
+
+static void project_object_handler_DARK_WEAK(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_KILL_DOOR(project_object_handler_context_t *context)
+{
+	/* Chests are noticed only if trapped or locked */
+	if (is_locked_chest(context->obj)) {
+		/* Disarm or Unlock */
+		unlock_chest((struct object * const)context->obj);
+
+		/* Notice */
+		if (object_is_known(context->obj)) {
+			msg("Click!");
+			context->obvious = true;
+		}
+	}
+}
+
+static void project_object_handler_LOCK_DOOR(project_object_handler_context_t *context)
 {
 }
 
@@ -360,116 +267,14 @@ static void project_object_handler_KILL_TRAP(project_object_handler_context_t *c
 		unlock_chest((struct object * const)context->obj);
 
 		/* Notice */
-		if (context->obj->known
-				&& !ignore_item_ok(player, context->obj)) {
-			context->obj->known->pval = context->obj->pval;
+		if (object_is_known(context->obj)) {
 			msg("Click!");
 			context->obvious = true;
 		}
 	}
 }
 
-static void project_object_handler_MAKE_DOOR(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MAKE_TRAP(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_AWAY_UNDEAD(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_AWAY_EVIL(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_AWAY_SPIRIT(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_AWAY_ALL(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_TURN_UNDEAD(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_TURN_EVIL(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_TURN_LIVING(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_TURN_ALL(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_DISP_UNDEAD(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_DISP_EVIL(project_object_handler_context_t *context)
-{
-}
-
 static void project_object_handler_DISP_ALL(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_SLEEP_UNDEAD(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_SLEEP_EVIL(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_SLEEP_ALL(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_CLONE(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_POLY(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_HEAL(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_SPEED(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_SLOW(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_CONF(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_HOLD(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_STUN(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_DRAIN(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_CRUSH(project_object_handler_context_t *context)
 {
 }
 
@@ -489,11 +294,7 @@ static const project_object_handler_f object_handlers[] = {
  * Called for projections with the PROJECT_ITEM flag set, which includes
  * beam, ball and breath effects.
  *
- * \param origin is the origin of the effect
- * \param r is the distance from the centre of the effect
- * \param y the coordinates of the grid being handled
- * \param x the coordinates of the grid being handled
- * \param dam is the "damage" from the effect at distance r from the centre
+ * \param grid the coordinates of the grid being handled
  * \param typ is the projection (PROJ_) type
  * \param protected_obj is an object that should not be affected by the
  *        projection, typically the object that created it
@@ -504,8 +305,7 @@ static const project_object_handler_f object_handlers[] = {
  *
  * Hack -- effects on objects which are memorized but not in view are also seen.
  */
-bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
-			   const struct object *protected_obj)
+bool project_o(struct loc grid, int typ, const struct object *protected_obj)
 {
 	struct object *obj = square_object(cave, grid);
 	bool obvious = false;
@@ -519,10 +319,7 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 
 		project_object_handler_f object_handler = object_handlers[typ];
 		project_object_handler_context_t context = {
-			origin,
-			r,
 			grid,
-			dam,
 			typ,
 			obj,
 			obvious,
@@ -544,8 +341,8 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 			char o_name[80];
 
 			/* Effect observed */
-			if (obj->known && !ignore_item_ok(player, obj) &&
-				square_isseen(cave, grid)) {
+			if (!ignore_item_ok(player, obj) && square_isseen(cave, grid) &&
+				obj->marked) {
 				obvious = true;
 				object_desc(o_name, sizeof(o_name), obj,
 					ODESC_BASE, player);
@@ -554,20 +351,13 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 			/* Artifacts, and other objects, get to resist */
 			if (obj->artifact || ignore) {
 				/* Observe the resist */
-				if (obvious && obj->known
-						&& !ignore_item_ok(player, obj)) {
+				if (obvious && !ignore_item_ok(player, obj)) {
 					msg("The %s %s unaffected!", o_name,
 						VERB_AGREEMENT(obj->number, "is", "are"));
 				}
-			} else if (obj->mimicking_m_idx) {
-				/* Reveal mimics */
-				if (obvious)
-					become_aware(cave, cave_monster(
-						cave, obj->mimicking_m_idx));
 			} else {
 				/* Describe if needed */
-				if (obvious && obj->known && note_kill
-						&& !ignore_item_ok(player, obj)) {
+				if (obvious && note_kill && !ignore_item_ok(player, obj)) {
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 				}
 
@@ -586,5 +376,5 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 	}
 
 	/* Return "Anything seen?" */
-	return (obvious);
+	return obvious;
 }

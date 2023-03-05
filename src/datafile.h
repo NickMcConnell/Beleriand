@@ -61,5 +61,6 @@ void file_archive(const char *fname, const char *append);
 bool randart_file_exists(void);
 void activate_randart_file(void);
 void deactivate_randart_file(void);
+void write_self_made_artefacts(void);
 
 #endif /* !DATAFILE_H */

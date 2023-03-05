@@ -29,10 +29,9 @@
 #include "player-attack.h"
 #include "player-birth.h"
 #include "player-calcs.h"
-#include "player-spell.h"
+#include "player-skills.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "store.h"
 #include "target.h"
 
 errr (*cmd_get_hook)(cmd_context c);
@@ -58,62 +57,62 @@ static const struct command_info game_cmds[] =
 	{ CMD_BIRTH_INIT, "start the character birth process", do_cmd_birth_init, false, 0 },
 	{ CMD_BIRTH_RESET, "go back to the beginning", do_cmd_birth_reset, false, 0 },
 	{ CMD_CHOOSE_RACE, "select race", do_cmd_choose_race, false, 0 },
-	{ CMD_CHOOSE_CLASS, "select class", do_cmd_choose_class, false, 0 },
+	{ CMD_CHOOSE_HOUSE, "select house", do_cmd_choose_house, false, 0 },
+	{ CMD_CHOOSE_SEX, "select sex", do_cmd_choose_sex, false, 0 },
 	{ CMD_BUY_STAT, "buy points in a stat", do_cmd_buy_stat, false, 0 },
 	{ CMD_SELL_STAT, "sell points in a stat", do_cmd_sell_stat, false, 0 },
 	{ CMD_RESET_STATS, "reset stats", do_cmd_reset_stats, false, 0 },
 	{ CMD_REFRESH_STATS, "refresh stats", do_cmd_refresh_stats, false, 0 },
-	{ CMD_ROLL_STATS, "roll new stats", do_cmd_roll_stats, false, 0 },
-	{ CMD_PREV_STATS, "use previously rolled stats", do_cmd_prev_stats, false, 0 },
+	{ CMD_BUY_SKILL, "buy points in a skill", do_cmd_buy_skill, false, 0 },
+	{ CMD_SELL_SKILL, "sell points in a skill", do_cmd_sell_skill, false, 0 },
+	{ CMD_RESET_SKILLS, "reset skills", do_cmd_reset_skills, false, 0 },
+	{ CMD_REFRESH_SKILLS, "refresh skills", do_cmd_refresh_skills, false, 0 },
 	{ CMD_NAME_CHOICE, "choose name", do_cmd_choose_name, false, 0 },
 	{ CMD_HISTORY_CHOICE, "write history", do_cmd_choose_history, false, 0 },
 	{ CMD_ACCEPT_CHARACTER, "accept character", do_cmd_accept_character, false, 0 },
 
 	{ CMD_GO_UP, "go up stairs", do_cmd_go_up, false, 0 },
 	{ CMD_GO_DOWN, "go down stairs", do_cmd_go_down, false, 0 },
+	{ CMD_SEARCH, "search", do_cmd_search, true, 0 },
+	{ CMD_TOGGLE_STEALTH, "toggle stealth", do_cmd_toggle_stealth, false, 0 },
 	{ CMD_WALK, "walk", do_cmd_walk, true, 0 },
 	{ CMD_RUN, "run", do_cmd_run, true, 0 },
 	{ CMD_JUMP, "jump", do_cmd_jump, false, 0 },
 	{ CMD_OPEN, "open", do_cmd_open, true, 99 },
 	{ CMD_CLOSE, "close", do_cmd_close, true, 99 },
+	{ CMD_BASH, "bash", do_cmd_bash, true, 99 },
+	{ CMD_EXCHANGE, "exchange places", do_cmd_exchange, false, 0 },
 	{ CMD_TUNNEL, "tunnel", do_cmd_tunnel, true, 99 },
 	{ CMD_HOLD, "stay still", do_cmd_hold, true, 0 },
 	{ CMD_DISARM, "disarm", do_cmd_disarm, true, 99 },
 	{ CMD_ALTER, "alter", do_cmd_alter, true, 99 },
-	{ CMD_STEAL, "steal", do_cmd_steal, false, 0 },
 	{ CMD_REST, "rest", do_cmd_rest, false, 0 },
 	{ CMD_SLEEP, "sleep", do_cmd_sleep, false, 0 },
+	{ CMD_SKIP, "skip", do_cmd_skip, false, 0 },
 	{ CMD_PATHFIND, "walk", do_cmd_pathfind, false, 0 },
 	{ CMD_PICKUP, "pickup", do_cmd_pickup, false, 0 },
 	{ CMD_AUTOPICKUP, "autopickup", do_cmd_autopickup, false, 0 },
 	{ CMD_WIELD, "wear or wield", do_cmd_wield, false, 0 },
 	{ CMD_TAKEOFF, "take off", do_cmd_takeoff, false, 0 },
 	{ CMD_DROP, "drop", do_cmd_drop, false, 0 },
+	{ CMD_DESTROY, "destroy", do_cmd_destroy, false, 0 },
 	{ CMD_UNINSCRIBE, "un-inscribe", do_cmd_uninscribe, false, 0 },
 	{ CMD_AUTOINSCRIBE, "autoinscribe", do_cmd_autoinscribe, false, 0 },
 	{ CMD_EAT, "eat", do_cmd_eat_food, false, 0 },
 	{ CMD_QUAFF, "quaff", do_cmd_quaff_potion, false, 0 },
-	{ CMD_USE_ROD, "zap", do_cmd_zap_rod, false, 0 },
+	{ CMD_BLOW_HORN, "blow", do_cmd_blow_horn, false, 0 },
 	{ CMD_USE_STAFF, "use", do_cmd_use_staff, false, 0 },
-	{ CMD_USE_WAND, "aim", do_cmd_aim_wand, false, 0 },
-	{ CMD_READ_SCROLL, "read", do_cmd_read_scroll, false, 0 },
-	{ CMD_ACTIVATE, "activate", do_cmd_activate, false, 0 },
-	{ CMD_REFILL, "refuel with", do_cmd_refill, false, 0 },
+	{ CMD_REFUEL, "refuel with", do_cmd_refuel, false, 0 },
 	{ CMD_FIRE, "fire", do_cmd_fire, false, 0 },
 	{ CMD_THROW, "throw", do_cmd_throw, false, 0 },
+	{ CMD_SMITH, "smith", do_cmd_smith, false, 0 },
+	{ CMD_SING, "change song", do_cmd_change_song, false, 0 },
 	{ CMD_INSCRIBE, "inscribe", do_cmd_inscribe, false, 0 },
-	{ CMD_STUDY, "study", do_cmd_study, false, 0 },
-	{ CMD_CAST, "cast", do_cmd_cast, false, 0 },
-	{ CMD_SELL, "sell", do_cmd_sell, false, 0 },
-	{ CMD_STASH, "stash", do_cmd_stash, false, 0 },
-	{ CMD_BUY, "buy", do_cmd_buy, false, 0 },
-	{ CMD_RETRIEVE, "retrieve", do_cmd_retrieve, false, 0 },
 	{ CMD_USE, "use", do_cmd_use, false, 0 },
 	{ CMD_SUICIDE, "kill character", do_cmd_suicide, false, 0 },
 	{ CMD_HELP, "help", NULL, false, 0 },
 	{ CMD_REPEAT, "repeat", NULL, false, 0 },
 
-	{ CMD_COMMAND_MONSTER, "make a monster act", do_cmd_mon_command, false, 0 },
 
 	{ CMD_SPOIL_ARTIFACT, "generate spoiler file for artifacts", do_cmd_spoil_artifact, false, 0 },
 	{ CMD_SPOIL_MON, "generate spoiler file for monsters", do_cmd_spoil_monster, false, 0 },
@@ -126,7 +125,6 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_CHANGE_ITEM_QUANTITY, "change number of an item", do_cmd_wiz_change_item_quantity, false, 0 },
 	{ CMD_WIZ_COLLECT_DISCONNECT_STATS, "collect statistics about disconnected levels", do_cmd_wiz_collect_disconnect_stats, false, 0 },
 	{ CMD_WIZ_COLLECT_OBJ_MON_STATS, "collect object/monster statistics", do_cmd_wiz_collect_obj_mon_stats, false, 0 },
-	{ CMD_WIZ_COLLECT_PIT_STATS, "collect pit statistics", do_cmd_wiz_collect_pit_stats, false, 0 },
 	{ CMD_WIZ_CREATE_ALL_ARTIFACT, "create all artifacts", do_cmd_wiz_create_all_artifact, false, 0 },
 	{ CMD_WIZ_CREATE_ALL_ARTIFACT_FROM_TVAL, "create all artifacts of a tval", do_cmd_wiz_create_all_artifact_from_tval, false, 0 },
 	{ CMD_WIZ_CREATE_ALL_OBJ, "create all objects", do_cmd_wiz_create_all_obj, false, 0 },
@@ -135,13 +133,11 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_CREATE_OBJ, "create object", do_cmd_wiz_create_obj, false, 0 },
 	{ CMD_WIZ_CREATE_TRAP, "create trap", do_cmd_wiz_create_trap, false, 0 },
 	{ CMD_WIZ_CURE_ALL, "cure everything", do_cmd_wiz_cure_all, false, 0 },
-	{ CMD_WIZ_CURSE_ITEM, "change a curse on an item", do_cmd_wiz_curse_item, false, 0 },
 	{ CMD_WIZ_DETECT_ALL_LOCAL, "detect everything nearby", do_cmd_wiz_detect_all_local, false, 0 },
 	{ CMD_WIZ_DETECT_ALL_MONSTERS, "detect all monsters", do_cmd_wiz_detect_all_monsters, false, 0 },
 	{ CMD_WIZ_DISPLAY_KEYLOG, "display keystroke log", do_cmd_wiz_display_keylog, false, 0 },
 	{ CMD_WIZ_DUMP_LEVEL_MAP, "write map of level", do_cmd_wiz_dump_level_map, false, 0 },
 	{ CMD_WIZ_EDIT_PLAYER_EXP, "change the player's experience", do_cmd_wiz_edit_player_exp, false, 0 },
-	{ CMD_WIZ_EDIT_PLAYER_GOLD, "change the player's gold", do_cmd_wiz_edit_player_gold, false, 0 },
 	{ CMD_WIZ_EDIT_PLAYER_START, "start editing the player", do_cmd_wiz_edit_player_start, false, 0 },
 	{ CMD_WIZ_EDIT_PLAYER_STAT, "edit one of the player's stats", do_cmd_wiz_edit_player_stat, false, 0 },
 	{ CMD_WIZ_HIT_ALL_LOS, "hit all monsters in LOS", do_cmd_wiz_hit_all_los, false, 0 },
@@ -157,12 +153,10 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_QUERY_SQUARE_FLAG, "query square flag", do_cmd_wiz_query_square_flag, false, 0 },
 	{ CMD_WIZ_QUIT_NO_SAVE, "quit without saving", do_cmd_wiz_quit_no_save, false, 0 },
 	{ CMD_WIZ_RECALL_MONSTER, "recall monster", do_cmd_wiz_recall_monster, false, 0 },
-	{ CMD_WIZ_RERATE, "rerate hitpoints", do_cmd_wiz_rerate, false, 0 },
 	{ CMD_WIZ_REROLL_ITEM, "reroll an item", do_cmd_wiz_reroll_item, false, 0 },
 	{ CMD_WIZ_STAT_ITEM, "get statistics for an item", do_cmd_wiz_stat_item, false, 0 },
 	{ CMD_WIZ_SUMMON_NAMED, "summon specific monster", do_cmd_wiz_summon_named, false, 0 },
 	{ CMD_WIZ_SUMMON_RANDOM, "summon random monsters", do_cmd_wiz_summon_random, false, 0 },
-	{ CMD_WIZ_TELEPORT_RANDOM, "teleport", do_cmd_wiz_teleport_random, false, 0 },
 	{ CMD_WIZ_TELEPORT_TO, "teleport to location", do_cmd_wiz_teleport_to, false, 0 },
 	{ CMD_WIZ_TWEAK_ITEM, "modify item attributes", do_cmd_wiz_tweak_item, false, 0 },
 	{ CMD_WIZ_WIPE_RECALL, "erase monster recall", do_cmd_wiz_wipe_recall, false, 0 },
@@ -254,9 +248,7 @@ errr cmdq_push_copy(struct command *cmd)
 static void process_command(cmd_context ctx, struct command *cmd)
 {
 	int oldrepeats = cmd->nrepeats;
-	/* Hack - command a monster */
-	int idx = cmd_idx(player->timed[TMD_COMMAND] ?
-		CMD_COMMAND_MONSTER : cmd->code);
+	int idx = cmd_idx(cmd->code);
 
 	/* Reset so that when selecting items, we look in the default location */
 	player->upkeep->command_wrk = 0;
@@ -281,10 +273,6 @@ static void process_command(cmd_context ctx, struct command *cmd)
 
 	/* Actually execute the command function */
 	if (game_cmds[idx].fn) {
-		/* Occasional attack instead for bloodlust-affected characters */
-		if (randint0(200) < player->timed[TMD_BLOODLUST]) {
-			if (player_attack_random_monster(player)) return;
-		}
 		game_cmds[idx].fn(cmd);
 	}
 
@@ -507,7 +495,7 @@ static int cmd_get_arg(struct command *cmd, const char *arg,
 	}
 
 	return CMD_ARG_NOT_PRESENT;
- }
+}
 
  
 
@@ -789,15 +777,17 @@ int cmd_get_arg_target(struct command *cmd, const char *arg, int *target)
 /**
  * Get a target, first from command or prompt otherwise
  */
-int cmd_get_target(struct command *cmd, const char *arg, int *target)
+int cmd_get_target(struct command *cmd, const char *arg, int *target, int range,
+				   bool allow_vertical)
 {
 	if (cmd_get_arg_target(cmd, arg, target) == CMD_OK) {
 		if (*target != DIR_UNKNOWN &&
-				(*target != DIR_TARGET || target_okay()))
+			(*target != DIR_TARGET || target_okay(range)))
 			return CMD_OK;
 	}
 
-	if (get_aim_dir(target)) {
+	if (get_aim_dir(target, range) &&
+		(((*target != DIR_UP) && (*target != DIR_DOWN)) || allow_vertical)) {
 		cmd_set_arg_target(cmd, arg, *target);
 		return CMD_OK;
 	}
@@ -873,11 +863,6 @@ int cmd_get_item(struct command *cmd, const char *arg, struct object **obj,
 {
 	if ((cmd_get_arg_item(cmd, arg, obj) == CMD_OK) && (!filter|| filter(*obj)))
 		return CMD_OK;
-
-	/* Shapechanged players can only access the floor */
-	if (player_is_shapechanged(player)) {
-		mode &= ~(USE_EQUIP | USE_INVEN | USE_QUIVER);
-	}
 
 	if (get_item(obj, prompt, reject, cmd->code, filter, mode)) {
 		cmd_set_arg_item(cmd, arg, *obj);

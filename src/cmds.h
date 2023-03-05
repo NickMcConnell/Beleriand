@@ -26,28 +26,32 @@
 /* cmd-cave.c */
 void do_cmd_go_up(struct command *cmd);
 void do_cmd_go_down(struct command *cmd);
+void do_cmd_search(struct command *cmd);
+void do_cmd_toggle_stealth(struct command *cmd);
 void do_cmd_open(struct command *cmd);
 void do_cmd_close(struct command *cmd);
+void do_cmd_exchange(struct command *cmd);
 void do_cmd_tunnel(struct command *cmd);
 void do_cmd_disarm(struct command *cmd);
+void do_cmd_bash(struct command *cmd);
 void do_cmd_alter(struct command *cmd);
+void do_cmd_hold(struct command *cmd);
 void do_cmd_steal(struct command *cmd);
 void move_player(int dir, bool disarm);
 void do_cmd_walk(struct command *cmd);
 void do_cmd_jump(struct command *cmd);
 void do_cmd_run(struct command *cmd);
 void do_cmd_pathfind(struct command *cmd);
-void do_cmd_hold(struct command *cmd);
+void do_cmd_change_song(struct command *cmd);
 void do_cmd_rest(struct command *cmd);
 void do_cmd_sleep(struct command *cmd);
-void display_feeling(bool obj_only);
-void do_cmd_feeling(void);
-void do_cmd_mon_command(struct command *cmd);
+void do_cmd_skip(struct command *cmd);
 
 /* cmd-misc.c */
 void do_cmd_wizard(void);
 void do_cmd_suicide(struct command *cmd);
 void do_cmd_note(void);
+void do_cmd_escape(void);
 
 /* cmd-obj.c */
 void do_cmd_uninscribe(struct command *cmd);
@@ -56,22 +60,17 @@ void do_cmd_autoinscribe(struct command *cmd);
 void do_cmd_takeoff(struct command *cmd);
 void do_cmd_wield(struct command *cmd);
 void do_cmd_drop(struct command *cmd);
-void do_cmd_read_scroll(struct command *cmd);
+void do_cmd_destroy(struct command *cmd);
 void do_cmd_use_staff(struct command *cmd);
-void do_cmd_aim_wand(struct command *cmd);
-void do_cmd_zap_rod(struct command *cmd);
-void do_cmd_activate(struct command *cmd);
+void do_cmd_blow_horn(struct command *cmd);
 void do_cmd_eat_food(struct command *cmd);
 void do_cmd_quaff_potion(struct command *cmd);
 void do_cmd_use(struct command *cmd);
-void do_cmd_refill(struct command *cmd);
-void do_cmd_cast(struct command *cmd);
-void do_cmd_study_spell(struct command *cmd);
-void do_cmd_study_book(struct command *cmd);
-void do_cmd_study(struct command *cmd);
+void do_cmd_refuel(struct command *cmd);
 
 /* cmd-pickup.c */
-int do_autopickup(struct player *p);
+void do_autopickup(struct player *p);
+void player_pickup_item(struct player *p, struct object *obj, bool menu);
 void do_cmd_pickup(struct command *cmd);
 void do_cmd_autopickup(struct command *cmd);
 
@@ -88,7 +87,6 @@ void do_cmd_wiz_banish(struct command *cmd);
 void do_cmd_wiz_change_item_quantity(struct command *cmd);
 void do_cmd_wiz_collect_disconnect_stats(struct command *cmd);
 void do_cmd_wiz_collect_obj_mon_stats(struct command *cmd);
-void do_cmd_wiz_collect_pit_stats(struct command *cmd);
 void do_cmd_wiz_create_all_artifact(struct command *cmd);
 void do_cmd_wiz_create_all_artifact_from_tval(struct command *cmd);
 void do_cmd_wiz_create_all_obj(struct command *cmd);
@@ -119,12 +117,10 @@ void do_cmd_wiz_query_feature(struct command *cmd);
 void do_cmd_wiz_query_square_flag(struct command *cmd);
 void do_cmd_wiz_quit_no_save(struct command *cmd);
 void do_cmd_wiz_recall_monster(struct command *cmd);
-void do_cmd_wiz_rerate(struct command *cmd);
 void do_cmd_wiz_reroll_item(struct command *cmd);
 void do_cmd_wiz_stat_item(struct command *cmd);
 void do_cmd_wiz_summon_named(struct command *cmd);
 void do_cmd_wiz_summon_random(struct command *cmd);
-void do_cmd_wiz_teleport_random(struct command *cmd);
 void do_cmd_wiz_teleport_to(struct command *cmd);
 void do_cmd_wiz_tweak_item(struct command *cmd);
 void do_cmd_wiz_wipe_recall(struct command *cmd);

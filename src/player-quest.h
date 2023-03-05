@@ -19,15 +19,14 @@
 #ifndef QUEST_H
 #define QUEST_H
 
-/* Quest list */
-extern struct quest *quests;
-
 /* Functions */
-bool is_quest(struct player *p, int level);
-void player_quests_reset(struct player *p);
-void player_quests_free(struct player *p);
-bool quest_check(struct player *p, const struct monster *m);
-extern struct file_parser quests_parser;
+void drop_iron_crown(struct monster *mon, const char *message);
+void shatter_weapon(struct player *p, int silnum);
+void break_truce(struct player *p, bool obvious);
+void check_truce(struct player *p);
+void wake_all_monsters(struct player *p);
+void prise_silmaril(struct player *p);
+int silmarils_possessed(struct player *p);
 
 
 #endif /* QUEST_H */

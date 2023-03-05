@@ -23,6 +23,7 @@
 #include "datafile.h"
 #include "game-world.h"
 #include "init.h"
+#include "obj-util.h"
 #include "parser.h"
 
 /**
@@ -583,4 +584,25 @@ void deactivate_randart_file(void)
 	char buf[10];
 	strnfmt(buf, 9, "%08x", seed_randart);
 	file_archive("randart", buf);
+}
+
+void write_self_made_artefacts(void)
+{
+	ang_file *log_file;
+	char fname[1024];
+
+	/* Open the file, write a header */
+	path_build(fname, sizeof(fname), ANGBAND_DIR_USER, "randart.txt");
+	log_file = file_open(fname, MODE_WRITE, FTYPE_TEXT);
+	file_putf(log_file,
+			  "# Artifact file for self-made artifacts with label %08x\n\n\n",
+			  seed_randart);
+
+	/* Write the data */
+	write_self_made_artefact_entries(log_file);
+
+	/* Close the file */
+	if (!file_close(log_file)) {
+		quit_fmt("Error - can't close %s.", fname);
+	}
 }

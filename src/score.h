@@ -40,18 +40,19 @@ struct player;
 struct high_score {
 	char what[8];		/* Version info (string) */
 	char pts[10];		/* Total Score (number) */
-	char gold[10];		/* Total Gold (number) */
 	char turns[10];		/* Turns Taken (number) */
 	char day[10];		/* Time stamp (string) */
 	char who[16];		/* Player Name (string) */
 	char uid[8];		/* Player UID (number) */
+	char p_s[3];		/* Player Sex (number) */
 	char p_r[3];		/* Player Race (number) */
-	char p_c[3];		/* Player Class (number) */
-	char cur_lev[4];	/* Current Player Level (number) */
+	char p_h[3];		/* Player House (number) */
 	char cur_dun[4];	/* Current Dungeon Level (number) */
-	char max_lev[4];	/* Max Player Level (number) */
 	char max_dun[4];	/* Max Dungeon Level (number) */
-	char how[32];		/* Method of death (string) */
+	char how[50];		/* Method of death (string) */
+	char silmarils[2];		/* Number of Silmarils (number) */
+	char morgoth_slain[2];	/* Has player slain Morgoth (t/f) */
+	char escaped[2];		/* Has player escaped (t/f) */
 };
 
 

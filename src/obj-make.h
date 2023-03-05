@@ -27,19 +27,23 @@
  */
 #define NO_MINIMUM 	255
 
-void ego_apply_magic(struct object *obj, int level);
+/**
+ * Define a value to be a placeholder for a random expression used in the 
+ * generation of some jewellery.
+ */
+#define SPECIAL_VALUE 99
+
+void ego_apply_magic(struct object *obj, bool smithing);
 void copy_artifact_data(struct object *obj, const struct artifact *art);
 bool make_fake_artifact(struct object *obj, const struct artifact *artifact);
 void object_prep(struct object *obj, struct object_kind *kind, int lev,
 				 aspect rand_aspect);
-int apply_magic(struct object *obj, int lev, bool okay, bool good,
-				bool great, bool extra_roll);
+struct drop *lookup_drop(char *name);
+void apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
+				 bool great);
 bool kind_is_good(const struct object_kind *kind);
-struct object_kind *get_obj_num(int level, bool good, int tval);
+struct object_kind *get_obj_num(int level);
 struct object *make_object(struct chunk *c, int lev, bool good, bool great,
-	bool extra_roll, int32_t *value, int tval);
-void acquirement(struct loc grid, int level, int num, bool great);
-struct object_kind *money_kind(const char *name, int value);
-struct object *make_gold(int lev, const char *coin_type);
+		struct drop *drop);
 
 #endif /* OBJECT_MAKE_H */

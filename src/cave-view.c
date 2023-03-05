@@ -22,6 +22,9 @@
 #include "init.h"
 #include "game-world.h"
 #include "monster.h"
+#include "obj-util.h"
+#include "obj-tval.h"
+#include "player-abilities.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "trap.h"
@@ -624,6 +627,12 @@ static void add_light(struct chunk *c, struct player *p, struct loc sgrid,
 		int radius, int inten)
 {
 	int y;
+	int bonus_light = 0;
+
+	/* Handle Inner Light */
+	if (loc_eq(sgrid, p->grid) && player_active_ability(p, "Inner Light")) {
+		bonus_light = 1;
+	}
 
 	for (y = -radius; y <= radius; y++) {
 		int x;
@@ -645,11 +654,11 @@ static void add_light(struct chunk *c, struct player *p, struct loc sgrid,
 			if (inten > 0) {
 				/* Light getting less further away */
 				c->squares[grid.y][grid.x].light +=
-					inten - dist;
+					radius + 1 - dist + bonus_light;
 			} else {
 				/* Light getting greater further away */
-				c->squares[grid.y][grid.x].light +=
-					inten + dist;
+				c->squares[grid.y][grid.x].light -=
+					radius + 1 - dist + bonus_light;
 			}
 		}
 	}
@@ -660,8 +669,8 @@ static void add_light(struct chunk *c, struct player *p, struct loc sgrid,
  */
 static void calc_lighting(struct chunk *c, struct player *p)
 {
-	int dir, k, x, y;
-	int light = p->state.cur_light, radius = ABS(light) - 1;
+	int k, x, y;
+	int light = p->upkeep->cur_light, radius = ABS(light);
 	int old_light = square_light(c, p->grid);
 	bool sunlit = (c->depth == 0) && is_daytime();
 
@@ -677,25 +686,6 @@ static void calc_lighting(struct chunk *c, struct player *p)
 			} else {
 				c->squares[y][x].light = 0;
 			}
-
-			/* Squares with bright terrain have intensity 2 */
-			if (square_isbright(c, grid)) {
-				c->squares[y][x].light += 2;
-				for (dir = 0; dir < 8; dir++) {
-					struct loc adj_grid = loc_sum(grid, ddgrid_ddd[dir]);
-					if (!square_in_bounds(c, adj_grid)) continue;
-					/*
-					 * Only brighten a wall if the player
-					 * is in position to view the face
-					 * that's lit up.
-					 */
-					if (!square_allowslos(c, adj_grid) &&
-							!source_can_light_wall(
-							c, p, grid, adj_grid))
-							continue;
-					c->squares[adj_grid.y][adj_grid.x].light += 1;
-				}
-			}
 		}
 	}
 
@@ -710,12 +700,9 @@ static void calc_lighting(struct chunk *c, struct player *p)
 		/* Skip dead monsters */
 		if (!mon->race) continue;
 
-		/* Skip if the monster is hidden */
-		if (monster_is_camouflaged(mon)) continue;
-
 		/* Get light info for this monster */
 		light = mon->race->light;
-		radius = ABS(light) - 1;
+		radius = ABS(light);
 
 		/* Skip monsters not affecting light */
 		if (!light) continue;
@@ -725,6 +712,56 @@ static void calc_lighting(struct chunk *c, struct player *p)
 			continue;
 
 		add_light(c, p, mon->grid, radius, light);
+
+		/* Glowing monsters lighten their own square */
+		if (rf_has(mon->race->flags, RF_GLOW)) {
+			c->squares[mon->grid.y][mon->grid.x].light += 1;
+		}
+	}
+
+	/* Scan object list and add object light or darkness */
+	for (k = 1; k < c->obj_max; k++) {
+		/* Check the k'th object */
+		struct object *obj = c->objects[k];
+		if (!obj || !obj->kind) continue;
+		if (loc_is_zero(obj->grid)) continue;
+
+		light = 0;
+
+		/* Objects with the Light flag glow on the ground unless they
+		 * are torches or lanterns */
+		if (of_has(obj->flags, OF_LIGHT) &&
+			!(of_has(obj->flags, OF_TAKES_FUEL) ||
+			  of_has(obj->flags, OF_BURNS_OUT))) {
+			light++;
+		}
+
+		/* Is it a glowing weapon? */
+		if (weapon_glows(obj)) {
+			light++;
+		}
+
+		/* Does this item create darkness? */
+		if (of_has(obj->flags, OF_DARKNESS) && !tval_is_light(obj)) {
+			light--;
+		}
+
+		/* Some items provide permanent, bright, light */
+		if (tval_is_light(obj) && of_has(obj->flags, OF_NO_FUEL)) {
+			light += obj->pval;
+		}
+
+		/* The Iron Crown also glows */
+		if (obj->artifact) {
+			const struct artifact *crown = lookup_artifact_name("of Morgoth");
+			if (obj->artifact == crown) {
+				light += obj->pval;
+			}
+		}
+
+		/* Do darkness or light for this object */
+		radius = ABS(light);
+		if (radius > 0) add_light(c, p, obj->grid, radius, light);
 	}
 
 	/* Update light level indicator */
@@ -777,15 +814,10 @@ static void update_view_one(struct chunk *c, struct loc grid, struct player *p)
 	int xc = x, yc = y;
 
 	int d = distance(grid, p->grid);
-	bool close = d < p->state.cur_light;
+	bool close = d < p->upkeep->cur_light;
 
 	/* Too far away */
 	if (d > z_info->max_sight) return;
-
-	/* UNLIGHT players have a special radius of view */
-	if (player_has(p, PF_UNLIGHT) && (p->state.cur_light <= 1)) {
-		close = d < (2 + p->lev / 6 - p->state.cur_light);
-	}
 
 	/* Special case for wall lighting. If we are a wall and the square in
 	 * the direction of the player is in LOS, we are in LOS. This avoids
@@ -852,17 +884,6 @@ static void update_one(struct chunk *c, struct loc grid, struct player *p)
 
 	/* Square went from unseen -> seen */
 	if (square_isseen(c, grid) && !square_wasseen(c, grid)) {
-		if (square_isfeel(c, grid)) {
-			c->feeling_squares++;
-			sqinfo_off(square(c, grid)->info, SQUARE_FEEL);
-			/* Don't display feeling if it will display for the new level */
-			if ((c->feeling_squares == z_info->feeling_need) &&
-				!p->upkeep->only_partial) {
-				display_feeling(true);
-				p->upkeep->redraw |= PR_FEELING;
-			}
-		}
-
 		square_note_spot(c, grid);
 		square_light_spot(c, grid);
 	}
@@ -889,8 +910,7 @@ void update_view(struct chunk *c, struct player *p)
 
 	/* Assume we can view the player grid */
 	sqinfo_on(square(c, p->grid)->info, SQUARE_VIEW);
-	if (p->state.cur_light > 0 || square_islit(c, p->grid) ||
-		player_has(p, PF_UNLIGHT)) {
+	if (p->upkeep->cur_light > 0 || square_islit(c, p->grid)) {
 		sqinfo_on(square(c, p->grid)->info, SQUARE_SEEN);
 		sqinfo_on(square(c, p->grid)->info, SQUARE_CLOSE_PLAYER);
 	}
@@ -904,6 +924,9 @@ void update_view(struct chunk *c, struct player *p)
 	for (y = 0; y < c->height; y++)
 		for (x = 0; x < c->width; x++)
 			update_one(c, loc(x, y), p);
+
+	/* Update field-of-fire (using the old view algorithm for now - NRM) */
+	update_fire(c, p);
 }
 
 

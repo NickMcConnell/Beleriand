@@ -98,7 +98,7 @@ static int test_chain1_execute(void *state) {
 	if (ec) {
 		restore_to_full_health();
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -119,7 +119,7 @@ static int test_chain2_execute(void *state) {
 	if (ec) {
 		restore_to_full_health();
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -141,7 +141,7 @@ static int test_chain3_execute(void *state) {
 	if (ec) {
 		restore_to_full_health();
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -164,7 +164,7 @@ static int test_randomneg_execute(void *state) {
 
 	if (ec) {
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -183,7 +183,7 @@ static int test_random0_execute(void *state) {
 
 	if (ec) {
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -203,7 +203,7 @@ static int test_random1_execute(void *state) {
 	if (ec) {
 		restore_to_full_health();
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -226,7 +226,7 @@ static int test_random2_execute(void *state) {
 		restore_to_full_health();
 		player_clear_timed(player, TMD_BOLD, false);
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -250,7 +250,7 @@ static int test_randomover_execute(void *state) {
 
 	if (ec) {
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -281,7 +281,7 @@ static int test_random_stats(void *state) {
 			restore_to_full_health();
 			player_clear_timed(player, TMD_BOLD, false);
 			completed = effect_do(ec, source_player(), NULL,
-				&ident, true, 0, 0, false, NULL);
+				&ident, true, 0, NULL);
 			if (!completed) break;
 			if (player->mhp - player->chp == 1) {
 				++bins[0];
@@ -326,7 +326,7 @@ static int test_nested_random_execute(void *state) {
 		restore_to_full_health();
 		player_clear_timed(player, TMD_BOLD, false);
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -351,7 +351,7 @@ static int test_selectneg_execute(void *state) {
 
 	if (ec) {
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -370,7 +370,7 @@ static int test_select0_execute(void *state) {
 
 	if (ec) {
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -394,7 +394,7 @@ static int test_select1_execute(void *state) {
 	if (ec) {
 		restore_to_full_health();
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -426,7 +426,7 @@ static int test_select2_execute(void *state) {
 		memset(&cmd, 0, sizeof(cmd));
 		cmd_set_arg_choice(&cmd, "list_index", choice);
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, &cmd);
+			false, &cmd);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -460,7 +460,7 @@ static int test_selectover_execute(void *state) {
 		memset(&cmd, 0, sizeof(cmd));
 		cmd_set_arg_choice(&cmd, "list_index", choice);
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, &cmd);
+			false, &cmd);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);
@@ -489,7 +489,7 @@ static int test_nested_select_execute(void *state) {
 		restore_to_full_health();
 		player_clear_timed(player, TMD_BOLD, false);
 		completed = effect_do(ec, source_player(), NULL, &ident, true,
-			0, 0, false, NULL);
+			0, NULL);
 		free_effect(ec);
 	}
 	noteq(ec, NULL);

@@ -301,82 +301,6 @@ static bool summon_specific_okay(struct monster_race *race)
 }
 
 /**
- * Check to see if you can call the monster
- */
-static bool can_call_monster(struct loc grid, struct monster *mon)
-{
-	/* Skip dead monsters */
-	if (!mon->race) return (false);
-
-	/* Only consider callable monsters */
-	if (!summon_specific_okay(mon->race)) return (false);
-
-	/* Make sure the summoned monster is not in LOS of the summoner */
-	if (los(cave, grid, mon->grid)) return (false);
-
-	return (true);
-}
-
-
-/**
- * Calls a monster from the level and moves it to the desired spot
- */
-static int call_monster(struct loc grid)
-{
-	int i, mon_count, choice;
-	int *mon_indices;
-	struct monster *mon;
-
-	mon_count = 0;
-
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		mon = cave_monster(cave, i);
-
-		/* Figure out how many good monsters there are */
-		if (can_call_monster(grid, mon)) mon_count++;
-	}
-
-	/* There were no good monsters on the level */
-	if (mon_count == 0) return (0);
-
-	/* Make the array */
-	mon_indices = mem_zalloc(mon_count * sizeof(int));
-
-	/* Reset mon_count */
-	mon_count = 0;
-
-	/* Now go through a second time and store the indices */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		mon = cave_monster(cave, i);
-		
-		/* Save the values of the good monster */
-		if (can_call_monster(grid, mon)){
-			mon_indices[mon_count] = i;
-			mon_count++;
-		}
-	}
-
-	/* Pick one */
-	choice = randint0(mon_count - 1);
-
-	/* Get the lucky monster */
-	mon = cave_monster(cave, mon_indices[choice]);
-	mem_free(mon_indices);
-
-	/* Swap the monster */
-	monster_swap(mon->grid, grid);
-
-	/* Wake it up, make it aware */
-	monster_wake(mon, false, 100);
-
-	/* Set it's energy to 0 */
-	mon->energy = 0;
-
-	return (mon->race->level);
-}
-
-
-/**
  * Places a monster (of the specified "type") near the given
  * location.  Return the siummoned monster's level iff a monster was
  * actually summoned.
@@ -397,11 +321,10 @@ static int call_monster(struct loc grid)
  *
  * Note that this function may not succeed, though this is very rare.
  */
-int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
+int summon_specific(struct loc grid, int lev, int type)
 {
 	int d;
 	struct loc near = grid;
-	struct monster *mon;
 	struct monster_race *race;
 	struct monster_group_info info = { 0, 0 };
 
@@ -418,72 +341,25 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	/* Save the "summon" type */
 	summon_specific_type = type;
 
-	/* Use the new calling scheme if requested */
-	if (call && (type != summon_name_to_idx("UNIQUE")) &&
-		(type != summon_name_to_idx("WRAITH"))) {
-		return (call_monster(near));
-	}
-
 	/* Prepare allocation table */
 	get_mon_num_prep(summon_specific_okay);
 
 	/* Pick a monster, using the level calculation */
-	race = get_mon_num((player->depth + lev) / 2 + 5, player->depth);
+	race = get_mon_num((player->depth + lev) / 2 + 5, false, true,
+					   player->depth);
 
 	/* Prepare allocation table */
 	get_mon_num_prep(NULL);
 
 	/* Handle failure */
-	if (!race) return (0);
-
-	/* Put summons in the group of any summoner */
-	if (cave->mon_current > 0) {
-		struct monster_group *group = summon_group(cave, cave->mon_current);
-		info.index = group->index;
-		info.role = MON_GROUP_SUMMON;
-	}
+	if (!race) return 0;
 
 	/* Attempt to place the monster (awake, don't allow groups) */
 	if (!place_new_monster(cave, near, race, false, false, info,
 						   ORIGIN_DROP_SUMMON)) {
-		return (0);
+		return 0;
 	}
 
-	/* Success, return the level of the monster */
-	mon = square_monster(cave, near);
-
-	/* If delay, try to let the player act before the summoned monsters,
-	 * including holding faster monsters for the required number of turns */
-	if (delay) {
-		int turns = (mon->race->speed + 9 - player->state.speed) / 10;
-		mon->energy = 0;
-		if (turns) {
-			/* Set timer directly to avoid resistance */
-			mon->m_timed[MON_TMD_HOLD] = turns;
-		}
-	}
-
-	return (mon->race->level);
-}
-
-/**
- * Select a race for a monster shapechange from its possible summons
- */
-struct monster_race *select_shape(struct monster *mon, int type)
-{
-	struct monster_race *race = NULL;
-
-	/* Save the "summon" type */
-	summon_specific_type = type;
-
-	/* Prepare allocation table */
-	get_mon_num_prep(summon_specific_okay);
-
-	/* Pick a monster */
-	race = get_mon_num(player->depth + 5, player->depth);
-
-	/* Prepare allocation table */
-	get_mon_num_prep(NULL);
-
-	return race;
+	/* Success, return the number of monsters */
+	return 1;
 }

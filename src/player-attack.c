@@ -18,15 +18,19 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "combat.h"
 #include "cmds.h"
 #include "effects.h"
 #include "game-event.h"
 #include "game-input.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-attack.h"
+#include "mon-calcs.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-move.h"
 #include "mon-msg.h"
 #include "mon-predicate.h"
 #include "mon-timed.h"
@@ -39,16 +43,635 @@
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-abilities.h"
 #include "player-attack.h"
 #include "player-calcs.h"
+#include "player-quest.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "songs.h"
 #include "target.h"
 
 /**
  * ------------------------------------------------------------------------
- * Hit and breakage calculations
+ * Ability-based attack functions
+ * ------------------------------------------------------------------------ */
+/**
+ *  Determines whether an attack is a charge attack
+ */
+static bool valid_charge(struct player *p, struct loc grid, int attack_type)
+{
+	int d, i;
+	
+	int delta_y = grid.y - p->grid.y;
+	int delta_x = grid.x - p->grid.x;
+	
+	if (player_active_ability(p, "Charge") && (p->state.speed > 1) &&
+	    ((attack_type == ATT_MAIN) || (attack_type == ATT_FLANKING) ||
+		 (attack_type == ATT_CONTROLLED_RETREAT))) { 
+		/* Try all three directions */
+		for (i = -1; i <= 1; i++) {
+			d = cycle[chome[dir_from_delta(delta_y, delta_x)] + i];
+						
+			if (p->previous_action[1] == d) {
+				return true;
+			}		
+		}
+	}
+	
+	return false;
+}
+
+/**
+ * Attacks a new monster with 'follow through' if applicable
+ */
+void possible_follow_through(struct player *p, struct loc grid, int attack_type)
+{
+	int d, i;
+	struct loc new_grid;
+	int delta_y = grid.y - p->grid.y;
+	int delta_x = grid.x - p->grid.x;
+	
+	if (player_active_ability(p, "Follow Through") && !p->timed[TMD_CONFUSED] &&
+		((attack_type == ATT_MAIN) || (attack_type == ATT_FLANKING) || 
+		 (attack_type == ATT_CONTROLLED_RETREAT) ||
+		 (attack_type == ATT_FOLLOW_THROUGH))) {
+        /* Look through adjacent squares in an anticlockwise direction */
+        for (i = 1; i < 8; i++) {
+			struct monster *mon;
+            d = cycle[chome[dir_from_delta(delta_y, delta_x)] + i];
+            new_grid = loc_sum(p->grid, ddgrid[d]);
+			mon = square_monster(cave, new_grid);
+            
+            if (mon && monster_is_visible(mon) &&
+				(!OPT(p, forgo_attacking_unwary) ||
+				 (mon->alertness >= ALERTNESS_ALERT))) {
+                    msg("You continue your attack!");
+                    py_attack_real(p, grid, ATT_FOLLOW_THROUGH);
+                    return;
+			}
+		}
+	}
+}
+
+
+/**
+ * Cruel blow ability
+ */
+static void cruel_blow(int crit_bonus_dice, struct monster *mon)
+{
+	char m_name[80];
+
+	if (player_active_ability(player, "Cruel Blow")) {
+		/* Must be a damaging critical hit */
+		if (crit_bonus_dice <= 0) return;
+
+		/* Monster must not resist */
+		if (rf_has(mon->race->flags, RF_RES_CRIT)) return;
+
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
+		if (skill_check(source_player(), crit_bonus_dice * 4,
+						monster_skill(mon, SKILL_WILL),
+						source_monster(mon->midx)) > 0) {
+			msg("%s reels in pain!", m_name);
+
+			/* Confuse the monster (if possible)
+			 * The +1 is needed as a turn of this wears off immediately */
+			mon_inc_timed(mon, MON_TMD_CONF, crit_bonus_dice + 1, 0);
+
+			/* Cause a temporary morale penalty */
+			scare_onlooking_friends(mon, -20);
+		}
+	}
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Attack calculations
+ * ------------------------------------------------------------------------ */
+/**
+ * Determines the protection percentage
+ */
+int prt_after_sharpness(struct player *p, const struct object *obj, int *flag)
+{
+	int protection = 100;
+	struct song *sharp = lookup_song("Sharpness");
+
+	if (!obj) return 0;
+
+	/* Sharpness */
+	if (of_has(obj->flags, OF_SHARPNESS)) {
+		*flag = OF_SHARPNESS;
+		protection = 50;
+	}
+
+	/* Sharpness 2 */
+	if (of_has(obj->flags, OF_SHARPNESS2)) {
+		*flag = OF_SHARPNESS2;
+		protection = 0;
+	}
+
+	/* Song of sharpness */
+	if (player_is_singing(p, sharp)) {
+		if (tval_is_sharp(obj)) {
+			protection -= song_bonus(p, p->state.skill_use[SKILL_SONG], sharp);
+		}
+	}
+
+	return MAX(protection, 0);
+}
+
+void attack_punctuation(char *punctuation, int net_dam, int crit_bonus_dice)
+{
+	if (net_dam == 0) {
+		my_strcpy(punctuation, "...", sizeof(punctuation));
+	} else if (crit_bonus_dice == 0) {
+		my_strcpy(punctuation, ".", sizeof(punctuation));
+	} else {
+		int i;
+		for (i = 0; (i < crit_bonus_dice) && (i < 20); i++) {
+			punctuation[i] = '!';
+		}
+		punctuation[i] = '\0';
+	}
+}
+/**
+ * ------------------------------------------------------------------------
+ * Melee attack
+ * ------------------------------------------------------------------------ */
+/**
+ * A whirlwind attack is possible
+ */
+bool whirlwind_possible(struct player *p)
+{
+	int d, dir;
+	struct loc grid;
+
+	if (p->timed[TMD_RAGE]) return true;
+	
+	if (!player_active_ability(p, "Whirlwind Attack")) {
+		return false;
+	}
+
+	/* Check adjacent squares for impassable squares */
+	 for (d = 0; d < 8; d++) {
+		 dir = cycle[d];
+		 grid = loc_sum(p->grid, ddgrid[dir]);
+
+		 if (!square_isfloor(cave, grid)) {
+			 return false;
+		 }
+	 }
+	 
+	return true;
+}
+
+/**
+ * A whirlwind attack
+ */
+void whirlwind(struct player *p, struct loc grid)
+{
+	int i, dir, dir0;
+	bool clockwise = one_in_(2);
+
+	/* Message only for rage (too annoying otherwise) */
+	if (p->timed[TMD_RAGE]) {
+		msg("You strike out at everything around you!");
+	}
+	
+	dir = dir_from_delta(grid.y - p->grid.y, grid.x - p->grid.x);
+
+	/* Extract cycle index */
+	dir0 = chome[dir];
+
+	/* Attack the adjacent squares in sequence */
+	for (i = 0; i < 8; i++) {
+		struct loc adj_grid;
+		struct monster *mon;
+		if (clockwise) {
+			dir = cycle[dir0 + i];
+		} else {
+			dir = cycle[dir0 - i];
+		}
+
+		adj_grid = loc_sum(p->grid, ddgrid[dir]);
+		mon = square_monster(cave, adj_grid);
+
+		if (mon) {
+			if (p->timed[TMD_RAGE]) {
+				py_attack_real(p, adj_grid, ATT_RAGE);
+			} else if ((i == 0) || !OPT(player, forgo_attacking_unwary) ||
+					   (mon->alertness >= ALERTNESS_ALERT)) {
+				py_attack_real(p, adj_grid, ATT_WHIRLWIND);
+			}
+		}
+	}
+}
+
+/**
+ * Attack the monster at the given location with a single blow.
+ */
+void py_attack_real(struct player *p, struct loc grid, int attack_type)
+{
+	/* Information about the target of the attack */
+	struct monster *mon = square_monster(cave, grid);
+	struct monster_race *race = mon ? mon->race : NULL;
+	char m_name[80];
+	char name[80];
+
+	/* The weapon used */
+	struct object *obj = equipped_item_by_slot_name(p, "weapon");
+
+	/* Information about the attack */
+	int blows = 1;
+	int num = 0;
+	int attack_mod = 0, total_attack_mod = 0, total_evasion_mod = 0;
+	int hit_result = 0;
+	int dam = 0, prt = 0;
+	int net_dam = 0;
+	int prt_percent = 100;
+	int stealth_bonus = 0;
+	int hits = 0;
+	int mdd, mds;
+    bool monster_riposte = false;
+    bool abort_attack = false;
+	bool charge = false;
+	bool rapid_attack = false;
+
+	char verb[20];
+	char punctuation[20];
+	int weight;
+	const struct artifact *crown = lookup_artifact_name("of Morgoth");
+
+	/* Default to punching */
+	my_strcpy(verb, "punch", sizeof(verb));
+
+	/* Extract monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
+
+	/* Auto-Recall and track if possible and visible */
+	if (monster_is_visible(mon)) {
+		monster_race_track(p->upkeep, mon->race);
+		health_track(p->upkeep, mon);
+	}
+
+	/* Handle player fear (only for invisible monsters) */
+	if (p->state.flags[OF_AFRAID]) {
+		ident_flag(p, OF_AFRAID);
+		msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
+		return;
+	}
+
+    /* Inscribing an object with "!a" produces prompts to confirm that you wish
+	 * to attack with it; idea from MarvinPA */
+    if (obj && check_for_inscrip(obj, "!a") && !p->truce) {
+		if (!get_check("Are you sure you wish to attack? ")) {
+			abort_attack = true;
+		}
+    }
+
+ 	/* Warning about breaking the truce */
+	if (p->truce && !get_check("Are you sure you wish to attack? ")) {
+        abort_attack = true;
+	}
+
+    /* Warn about fighting with fists */
+    if (!obj &&	!get_check("Are you sure you wish to attack with no weapon? ")){
+        abort_attack = true;
+    }
+
+    /* Warn about fighting with shovel */
+	if (obj) { 
+		object_short_name(name, sizeof(name), obj->kind->name);
+		if (tval_is_digger(obj) && streq(name, "Shovel") &&
+			!get_check("Are you sure you wish to attack with your shovel? ")) {
+			abort_attack = true;
+		}
+    }
+
+    /* Cancel the attack if needed */
+    if (abort_attack) {
+        if (!p->attacked) {
+            /* Reset the action type */
+            p->previous_action[0] = ACTION_NOTHING;
+
+            /* Don't take a turn */
+            p->upkeep->energy_use = 0;
+        }
+
+        /* Done */
+        return;
+    }
+
+	if (obj) {
+		/* Handle normal weapon */
+		weight = obj->weight;
+		my_strcpy(verb, "hit", sizeof(verb));
+	} else {
+		/* Fighting with fists is equivalent to a 4 lb weapon for the purpose
+		 * of criticals */
+		weight = 0;
+	}
+
+	mdd = p->state.mdd;
+	mds = p->state.mds;
+
+	/* Determine the base for the attack_mod */
+	attack_mod = p->state.skill_use[SKILL_MELEE];
+		
+	/* Monsters might notice */
+	p->attacked = true;
+		
+	/* Determine the number of attacks */
+	if (player_active_ability(p, "Rapid Attack")) {
+		blows++;
+		rapid_attack = true;
+	}
+	if (p->state.mds2 > 0) {
+		blows++;
+	}
+
+	/* Attack types that take place in the opponents' turns only allow a
+	 * single attack */
+	if ((attack_type != ATT_MAIN) && (attack_type != ATT_FLANKING) &&
+		(attack_type != ATT_CONTROLLED_RETREAT)) {
+		blows = 1;
+		
+		/* Undo strength adjustment to the attack (if any) */
+		mds = total_mds(p, &p->state, obj, 0);
+		
+		/* Undo the dexterity adjustment to the attack (if any) */
+		if (rapid_attack) { 
+			rapid_attack = false;
+			attack_mod += 3;
+		}
+	}
+
+	/* Attack once for each legal blow */
+	while (num++ < blows) {
+		bool do_knock_back = false;
+		bool knocked = false;
+		bool off_hand_blow = false;
+
+		/* If the previous blow was a charge, undo the charge effects for
+		 * later blows */
+		if (charge) {
+			charge = false;
+			attack_mod -= 3;
+			mds = p->state.mds;
+		}
+
+		/* Adjust for off-hand weapon if it is being used */
+		if ((num == blows) && (num != 1) && (p->state.mds2 > 0)) {
+			off_hand_blow = true;
+			rapid_attack = false;
+			
+			attack_mod += p->state.offhand_mel_mod;
+			mdd = p->state.mdd2;
+			mds = p->state.mds2;
+			obj = equipped_item_by_slot_name(p, "shield");
+			weight = obj->weight;
+		}
+
+		/* +3 Str/Dex on first blow when charging */
+		if ((num == 1) && valid_charge(p, grid, attack_type)) {
+			int str_adjustment = 3;
+			
+			if (rapid_attack) str_adjustment -= 3;
+			
+			charge = true;
+			attack_mod += 3;
+
+			/* Undo strength adjustment to the attack (if any) */
+			mds = total_mds(p, &p->state, obj, str_adjustment);
+		}
+
+		/* Reward melee attacks on sleeping monsters by characters with the
+		 * asssassination ability (only when a main, flanking, or controlled
+		 * retreat attack, and not charging) */
+		if (((attack_type == ATT_MAIN) || (attack_type == ATT_FLANKING) ||
+			 (attack_type == ATT_CONTROLLED_RETREAT)) && !charge) {
+			stealth_bonus = stealth_melee_bonus(mon);
+		}
+
+		/* Determine the player's attack score after all modifiers */
+		total_attack_mod = total_player_attack(p, mon,
+											   attack_mod + stealth_bonus);
+
+		/* Determine the monster's evasion score after all modifiers */
+		total_evasion_mod = total_monster_evasion(p, mon, false);
+
+		/* Test for hit */
+		hit_result = hit_roll(total_attack_mod, total_evasion_mod,
+							  source_player(), source_monster(mon->midx), true);
+
+		/* If the attack connects... */
+		if (hit_result > 0) {
+			int crit_bonus_dice = 0, slay_bonus_dice = 0, total_dice = 0;
+			int effective_strength = p->state.stat_use[STAT_STR];
+			bool fatal_blow = false;
+			int slay = 0, brand = 0, flag = 0;
+
+			hits++;
+
+			/* Mark the monster as attacked */
+			mflag_on(mon->mflag, MFLAG_HIT_BY_MELEE);
+
+			/* Mark the monster as charged */
+			if (charge) mflag_on(mon->mflag, MFLAG_CHARGED);
+
+			/* Calculate the damage */
+			crit_bonus_dice = crit_bonus(p, hit_result, weight, race,
+										 SKILL_MELEE, false);
+			slay_bonus_dice = slay_bonus(p, obj, mon, &slay, &brand);
+			total_dice = mdd + slay_bonus_dice + crit_bonus_dice;
+
+			dam = damroll(total_dice, mds);
+			prt = damroll(race->pd, race->ps);
+
+			prt_percent = prt_after_sharpness(p, obj, &flag);
+			prt = (prt * prt_percent) / 100;
+
+			/* No negative damage */
+			net_dam = MAX(dam - prt, 0);
+
+			/* determine the punctuation for the attack ("...", ".", "!" etc) */
+			attack_punctuation(punctuation, net_dam, crit_bonus_dice);
+
+			/* Special message for visible unalert creatures */
+			if (stealth_bonus) {
+				msgt(MSG_HIT, "You stealthily attack %s%s", m_name,
+					 punctuation);
+			} else if (charge) {
+					msgt(MSG_HIT, "You charge %s%s", m_name, punctuation);
+			} else {
+				msgt(MSG_HIT, "You hit %s%s", m_name, punctuation);
+			}
+
+			event_signal_combat_damage(EVENT_COMBAT_DAMAGE, total_dice, mds,
+									   dam, race->pd, race->ps, prt,
+									   prt_percent, PROJ_HURT, true);
+
+			/* Determine the player's score for knocking an opponent backwards
+			 * if they have the ability */
+            /* First calculate their strength including modifiers for this
+			 * attack */
+            effective_strength = p->state.stat_use[STAT_STR];
+			if (charge) effective_strength += 3;
+			if (rapid_attack) effective_strength -= 3;
+			if (off_hand_blow) effective_strength -= 3;
+
+            /* Cap the value by the weapon weight */
+			if (effective_strength > weight / 10) {
+				effective_strength = weight / 10;
+			} else if ((effective_strength < 0) &&
+					   (-effective_strength > weight / 10)) {
+				effective_strength = -(weight / 10);
+            }
+
+            /* Give an extra +2 bonus for using a weapon two-handed */
+            if (two_handed_melee(p)) {
+				effective_strength += 2;
+			}
+
+			/* Check whether the effect triggers */
+			if (player_active_ability(p, "Knock Back") &&
+				(attack_type != ATT_OPPORTUNIST) &&
+				!rf_has(race->flags, RF_NEVER_MOVE) &&
+			    (skill_check(source_player(), effective_strength * 2,
+							 monster_stat(mon, STAT_CON) * 2,
+							 source_monster(mon->midx)) > 0)) {
+				do_knock_back = true;
+			}
+
+			/* Damage, check for death */
+			fatal_blow = mon_take_hit(mon, p, net_dam, NULL);
+
+			/* Display depending on whether knock back triggered */
+			if (do_knock_back) {
+				event_signal_hit(EVENT_HIT, net_dam, PROJ_SOUND, fatal_blow,
+								 grid);
+			} else {
+				event_signal_hit(EVENT_HIT, net_dam, PROJ_HURT, fatal_blow,
+								 grid);
+			}
+
+			/* If a slay, brand or flag was noticed, then identify the weapon */
+			if (slay || brand || flag) {
+				ident_weapon_by_use(obj, mon, flag, brand, slay, p);
+			}
+
+			/* Deal with killing blows */
+			if (fatal_blow) {
+				/* Heal with a vampiric weapon */
+				if (obj && of_has(obj->flags, OF_VAMPIRIC) &&
+					monster_is_living(mon)) {
+					if (p->chp < p->mhp) {
+						bool dummy;
+						effect_simple(EF_HEAL_HP, source_player(), "m7", 0, 0,
+									  0, &dummy);
+						ident_weapon_by_use(obj, mon, OF_VAMPIRIC, 0, 0, p);
+					}
+				}
+
+				/* Gain wrath if singing song of slaying */
+				if (player_is_singing(p, lookup_song("Slaying"))) {
+					p->wrath += 100;
+					p->upkeep->update |= PU_BONUS;
+					p->upkeep->redraw |= PR_SONG;
+				}
+
+				/* Deal with 'follow_through' ability */
+				possible_follow_through(p, grid, attack_type);
+				
+				/* Stop attacking */
+				break;
+			} else {
+				/* deal with knock back ability if it triggered */
+				if (do_knock_back) {
+                    knocked = knock_back(p->grid, grid);
+ 				}
+
+				/* Morgoth drops his iron crown if he is hit for 10 or more
+				 * net damage twice */
+				if (rf_has(mon->race->flags, RF_QUESTOR) &&
+					!is_artifact_created(crown)) {
+					if (net_dam >= 10) {
+						if (p->morgoth_hits == 0) {
+							msg("The force of your blow knocks the Iron Crown off balance.");
+							p->morgoth_hits++;
+						} else if (p->morgoth_hits == 1) {
+							drop_iron_crown(mon, "You knock his crown from off his brow, and it falls to the ground nearby.");
+							p->morgoth_hits++;
+						}
+					}
+				}
+
+				if (net_dam) {
+					cruel_blow(crit_bonus_dice, mon);
+				}
+			}
+		} else {
+			/* Player misses */
+			msgt(MSG_MISS, "You miss %s.", m_name);
+
+			/* Occasional warning about fighting from within a pit */
+			if (square_ispit(cave, p->grid) && one_in_(3)) {
+				msg("(It is very hard to dodge or attack from within a pit.)");
+			}
+
+			/* Occasional warning about fighting from within a web */
+			if (square_iswebbed(cave, p->grid) && one_in_(3)) {
+				msg("(It is very hard to dodge or attack from within a web.)");
+			}
+
+            /* Allow for ripostes - treats attack as a weapon weighing 2 pounds
+			 * per damage die */
+            if (rf_has(race->flags, RF_RIPOSTE) &&
+                !monster_riposte &&
+                !mon->m_timed[MON_TMD_CONF] &&
+                (mon->stance != STANCE_FLEEING) &&
+                !mon->skip_this_turn &&
+                !mon->skip_next_turn &&
+                (hit_result <= -10 - (2 * race->blow[0].dice.dice))) {
+                msg("%s ripostes!", m_name);
+                make_attack_normal(mon, p);
+                monster_riposte = true;
+            }
+		}
+
+		/* Alert the monster, even if no damage was done or the player missed */
+		make_alert(mon, 0);
+
+		/* Stop attacking if you displace the creature */
+		if (knocked) break;
+	}
+
+	/* Break the truce if creatures see */
+	break_truce(p, false);
+}
+
+
+/**
+ * Attack the monster at the given location
+ */
+void py_attack(struct player *p, struct loc grid, int attack_type)
+{
+	/* Store the action type */
+	p->previous_action[0] = ACTION_MISC;
+
+	if (whirlwind_possible(p) && (adj_mon_count(p->grid) > 1) &&
+		!p->timed[TMD_AFRAID]) {
+		whirlwind(p, grid);
+	} else {
+		py_attack_real(p, grid, attack_type);
+	}
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Ranged attacks
  * ------------------------------------------------------------------------ */
 /**
  * Returns percent chance of an object breaking after throwing or shooting.
@@ -64,951 +687,407 @@
  * hit-breakage chance gives a 25% miss-breakage chance, and a 10% hit breakage
  * chance gives a 1% miss-breakage chance.
  */
-int breakage_chance(const struct object *obj, bool hit_target) {
+int breakage_chance(const struct object *obj, bool hit_wall) {
 	int perc = obj->kind->base->break_perc;
 
 	if (obj->artifact) return 0;
-	if (of_has(obj->flags, OF_THROWING) &&
-		!of_has(obj->flags, OF_EXPLODE) &&
-		!tval_is_ammo(obj)) {
-		perc = 1;
+	if (tval_is_light(obj)) {
+		/* Jewels don't break */
+		if (of_has(obj->flags, OF_NO_FUEL)) {
+			if (obj->pval == 1) {
+				/* Lesser Jewel */
+				perc = 0;
+			} else if (obj->pval == 7) {
+				/* Silmaril */
+				perc = 0;
+			}
+		}
+	} else if (tval_is_ammo(obj)) {
+		if (player_active_ability(player, "Careful Shot")) perc /= 2;
+		if (player_active_ability(player, "Flaming Arrows")) perc = 100;
+	} else if ((perc != 100) && player_active_ability(player, "Throwing")) {
+		perc = 0;
 	}
-	if (!hit_target) return (perc * perc) / 100;
+
+	/* Double breakage chance if it hit a wall */
+	if (hit_wall) {
+		perc *= 2;
+		perc = MIN(perc, 100);
+	}
+
+	/* Unless they hit a wall, items designed for throwing won't break */
+	if (of_has(obj->flags, OF_THROWING)) {
+		if (hit_wall) {
+			perc /= 4;
+		} else {
+			perc = 0;
+		}
+	}
+
 	return perc;
 }
 
 /**
- * Calculate the player's base melee to-hit value without regard to a specific
- * monster.
- * See also: chance_of_missile_hit_base
- *
- * \param p The player
- * \param weapon The player's weapon
+ * Maximum shooting range with a given bow
  */
-int chance_of_melee_hit_base(const struct player *p,
-		const struct object *weapon)
+int archery_range(const struct object *bow)
 {
-	int bonus = p->state.to_h + (weapon ? weapon->to_h : 0);
-	return p->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
+	int range;
+
+	range = (bow->dd * total_ads(player, &player->state, bow, false) * 3) / 2;
+	return MIN(range, z_info->max_range);
+}
+
+
+/**
+ * Maximum throwing range with a given object
+ */
+int throwing_range(const struct object *obj)
+{
+	/* The divisor is the weight + 2lb */
+	int div = obj->weight + 20;
+	int range = (weight_limit(player->state) / 5) / div;
+
+	/* Min distance of 1 */
+	if (range < 1) range = 1;
+
+	return MIN(range, z_info->max_range);
 }
 
 /**
- * Calculate the player's melee to-hit value against a specific monster.
- * See also: chance_of_missile_hit
- *
- * \param p The player
- * \param weapon The player's weapon
- * \param mon The monster
+ * Determines if a bow shoots radiant arrows and lights the current grid if so
  */
-static int chance_of_melee_hit(const struct player *p,
-		const struct object *weapon, const struct monster *mon)
-{
-	int chance = chance_of_melee_hit_base(p, weapon);
-	/* Non-visible targets have a to-hit penalty of 50% */
-	return monster_is_visible(mon) ? chance : chance / 2;
+bool do_radiance(struct player *p, struct loc grid) {
+	/* Nothing to do */
+	if (square_isglow(cave, grid)) return false;
+
+	/* Give it light */
+	sqinfo_on(square(cave, grid)->info, SQUARE_GLOW);
+	
+	/* Remember the grid */
+	sqinfo_on(square(cave, grid)->info, SQUARE_MARK);
+
+	/* Fully update the visuals */
+	p->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Update stuff */
+	update_stuff(p);
+	
+	return true;
 }
 
 /**
- * Calculate the player's base missile to-hit value without regard to a specific
- * monster.
- * See also: chance_of_melee_hit_base
- *
- * \param p The player
- * \param missile The missile to launch
- * \param launcher The launcher to use (optional)
+ * Handle special effects of throwing certain potions
  */
-static int chance_of_missile_hit_base(const struct player *p,
-								 const struct object *missile,
-								 const struct object *launcher)
+static bool thrown_potion_effects(struct object *obj, bool *is_dead,
+								  struct monster *mon)
 {
-	int bonus = missile->to_h;
-	int chance;
+	struct loc grid = mon->grid;
 
-	if (!launcher) {
-		/* Other thrown objects are easier to use, but only throwing weapons 
-		 * take advantage of bonuses to Skill and Deadliness from other 
-		 * equipped items. */
-		if (of_has(missile->flags, OF_THROWING)) {
-			bonus += p->state.to_h;
-			chance = p->state.skills[SKILL_TO_HIT_THROW] + bonus * BTH_PLUS_ADJ;
-		} else {
-			chance = 3 * p->state.skills[SKILL_TO_HIT_THROW] / 2
-				+ bonus * BTH_PLUS_ADJ;
-		}
-	} else {
-		bonus += p->state.to_h + launcher->to_h;
-		chance = p->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
-	}
+	bool ident = false;
+	bool used = true;
+	bool aware = object_flavor_is_aware(obj);
 
-	return chance;
-}
-
-/**
- * Calculate the player's missile to-hit value against a specific monster.
- * See also: chance_of_melee_hit
- *
- * \param p The player
- * \param missile The missile to launch
- * \param launcher Optional launcher to use (thrown weapons use no launcher)
- * \param mon The monster
- */
-static int chance_of_missile_hit(const struct player *p,
-	const struct object *missile, const struct object *launcher,
-	const struct monster *mon)
-{
-	int chance = chance_of_missile_hit_base(p, missile, launcher);
-	/* Penalize for distance */
-	chance -= distance(p->grid, mon->grid);
-	/* Non-visible targets have a to-hit penalty of 50% */
-	return monster_is_obvious(mon) ? chance : chance / 2;
-}
-
-/**
- * Determine if a hit roll is successful against the target AC.
- * See also: hit_chance
- *
- * \param to_hit To total to-hit value to use
- * \param ac The AC to roll against
- */
-bool test_hit(int to_hit, int ac)
-{
-	random_chance c;
-	hit_chance(&c, to_hit, ac);
-	return random_chance_check(c);
-}
-
-/**
- * Return a random_chance by reference, which represents the likelihood of a
- * hit roll succeeding for the given to_hit and ac values. The hit calculation
- * will:
- *
- * Always hit 12% of the time
- * Always miss 5% of the time
- * Put a floor of 9 on the to-hit value
- * Roll between 0 and the to-hit value
- * The outcome must be >= AC*2/3 to be considered a hit
- *
- * \param chance The random_chance to return-by-reference
- * \param to_hit The to-hit value to use
- * \param ac The AC to roll against
- */
-void hit_chance(random_chance *chance, int to_hit, int ac)
-{
-	/* Percentages scaled to 10,000 to avoid rounding error */
-	const int HUNDRED_PCT = 10000;
-	const int ALWAYS_HIT = 1200;
-	const int ALWAYS_MISS = 500;
-
-	/* Put a floor on the to_hit */
-	to_hit = MAX(9, to_hit);
-
-	/* Calculate the hit percentage */
-	chance->numerator = MAX(0, to_hit - ac * 2 / 3);
-	chance->denominator = to_hit;
-
-	/* Convert the ratio to a scaled percentage */
-	chance->numerator = HUNDRED_PCT * chance->numerator / chance->denominator;
-	chance->denominator = HUNDRED_PCT;
-
-	/* The calculated rate only applies when the guaranteed hit/miss don't */
-	chance->numerator = chance->numerator *
-			(HUNDRED_PCT - ALWAYS_MISS - ALWAYS_HIT) / HUNDRED_PCT;
-
-	/* Add in the guaranteed hit */
-	chance->numerator += ALWAYS_HIT;
-}
-
-/**
- * ------------------------------------------------------------------------
- * Damage calculations
- * ------------------------------------------------------------------------ */
-/**
- * Conversion of plusses to Deadliness to a percentage added to damage.
- * Much of this table is not intended ever to be used, and is included
- * only to handle possible inflation elsewhere. -LM-
- */
-uint8_t deadliness_conversion[151] =
-  {
-    0,
-    5,  10,  14,  18,  22,  26,  30,  33,  36,  39,
-    42,  45,  48,  51,  54,  57,  60,  63,  66,  69,
-    72,  75,  78,  81,  84,  87,  90,  93,  96,  99,
-    102, 104, 107, 109, 112, 114, 117, 119, 122, 124,
-    127, 129, 132, 134, 137, 139, 142, 144, 147, 149,
-    152, 154, 157, 159, 162, 164, 167, 169, 172, 174,
-    176, 178, 180, 182, 184, 186, 188, 190, 192, 194,
-    196, 198, 200, 202, 204, 206, 208, 210, 212, 214,
-    216, 218, 220, 222, 224, 226, 228, 230, 232, 234,
-    236, 238, 240, 242, 244, 246, 248, 250, 251, 253,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255
-  };
-
-/**
- * Deadliness multiplies the damage done by a percentage, which varies 
- * from 0% (no damage done at all) to at most 355% (damage is multiplied 
- * by more than three and a half times!).
- *
- * We use the table "deadliness_conversion" to translate internal plusses 
- * to deadliness to percentage values.
- *
- * This function multiplies damage by 100.
- */
-void apply_deadliness(int *die_average, int deadliness)
-{
-	int i;
-
-	/* Paranoia - ensure legal table access. */
-	if (deadliness > 150)
-		deadliness = 150;
-	if (deadliness < -150)
-		deadliness = -150;
-
-	/* Deadliness is positive - damage is increased */
-	if (deadliness >= 0) {
-		i = deadliness_conversion[deadliness];
-
-		*die_average *= (100 + i);
-	}
-
-	/* Deadliness is negative - damage is decreased */
-	else {
-		i = deadliness_conversion[ABS(deadliness)];
-
-		if (i >= 100)
-			*die_average = 0;
-		else
-			*die_average *= (100 - i);
-	}
-}
-
-/**
- * Check if a monster is debuffed in such a way as to make a critical
- * hit more likely.
- */
-static bool is_debuffed(const struct monster *monster)
-{
-	return monster->m_timed[MON_TMD_CONF] > 0 ||
-			monster->m_timed[MON_TMD_HOLD] > 0 ||
-			monster->m_timed[MON_TMD_FEAR] > 0 ||
-			monster->m_timed[MON_TMD_STUN] > 0;
-}
-
-/**
- * Determine damage for critical hits from shooting.
- *
- * Factor in item weight, total plusses, and player level.
- */
-static int critical_shot(const struct player *p,
-		const struct monster *monster,
-		int weight, int plus,
-		int dam, uint32_t *msg_type)
-{
-	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 4 + p->lev * 2;
-	int power = weight + randint1(500);
-	int new_dam = dam;
-
-	if (randint1(5000) > chance) {
-		*msg_type = MSG_SHOOT_HIT;
-	} else if (power < 500) {
-		*msg_type = MSG_HIT_GOOD;
-		new_dam = 2 * dam + 5;
-	} else if (power < 1000) {
-		*msg_type = MSG_HIT_GREAT;
-		new_dam = 2 * dam + 10;
-	} else {
-		*msg_type = MSG_HIT_SUPERB;
-		new_dam = 3 * dam + 15;
-	}
-
-	return new_dam;
-}
-
-/**
- * Determine O-combat damage for critical hits from shooting.
- *
- * Factor in item weight, total plusses, and player level.
- */
-static int o_critical_shot(const struct player *p,
-		const struct monster *monster,
-		const struct object *missile,
-		const struct object *launcher,
-		uint32_t *msg_type)
-{
-	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = chance_of_missile_hit_base(p, missile, launcher)
-		+ debuff_to_hit;
-	int add_dice = 0;
-
-	/* Thrown weapons get lots of critical hits. */
-	if (!launcher) {
-		power = power * 3 / 2;
-	}
-
-	/* Test for critical hit - chance power / (power + 360) */
-	if (randint1(power + 360) <= power) {
-		/* Determine level of critical hit. */
-		if (one_in_(50)) {
-			*msg_type = MSG_HIT_SUPERB;
-			add_dice = 3;
-		} else if (one_in_(10)) {
-			*msg_type = MSG_HIT_GREAT;
-			add_dice = 2;
-		} else {
-			*msg_type = MSG_HIT_GOOD;
-			add_dice = 1;
-		}
-	} else {
-		*msg_type = MSG_SHOOT_HIT;
-	}
-
-	return add_dice;
-}
-
-/**
- * Determine damage for critical hits from melee.
- *
- * Factor in weapon weight, total plusses, player level.
- */
-static int critical_melee(const struct player *p,
-		const struct monster *monster,
-		int weight, int plus,
-		int dam, uint32_t *msg_type)
-{
-	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = weight + randint1(650);
-	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 5
-		+ (p->state.skills[SKILL_TO_HIT_MELEE] - 60);
-	int new_dam = dam;
-
-	if (randint1(5000) > chance) {
-		*msg_type = MSG_HIT;
-	} else if (power < 400) {
-		*msg_type = MSG_HIT_GOOD;
-		new_dam = 2 * dam + 5;
-	} else if (power < 700) {
-		*msg_type = MSG_HIT_GREAT;
-		new_dam = 2 * dam + 10;
-	} else if (power < 900) {
-		*msg_type = MSG_HIT_SUPERB;
-		new_dam = 3 * dam + 15;
-	} else if (power < 1300) {
-		*msg_type = MSG_HIT_HI_GREAT;
-		new_dam = 3 * dam + 20;
-	} else {
-		*msg_type = MSG_HIT_HI_SUPERB;
-		new_dam = 4 * dam + 20;
-	}
-
-	return new_dam;
-}
-
-/**
- * Determine O-combat damage for critical hits from melee.
- *
- * Factor in weapon weight, total plusses, player level.
- */
-static int o_critical_melee(const struct player *p,
-		const struct monster *monster,
-		const struct object *obj, uint32_t *msg_type)
-{
-	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = (chance_of_melee_hit_base(p, obj) + debuff_to_hit) / 3;
-	int add_dice = 0;
-
-	/* Test for critical hit - chance power / (power + 240) */
-	if (randint1(power + 240) <= power) {
-		/* Determine level of critical hit. */
-		if (one_in_(40)) {
-			*msg_type = MSG_HIT_HI_SUPERB;
-			add_dice = 5;
-		} else if (one_in_(12)) {
-			*msg_type = MSG_HIT_HI_GREAT;
-			add_dice = 4;
-		} else if (one_in_(3)) {
-			*msg_type = MSG_HIT_SUPERB;
-			add_dice = 3;
-		} else if (one_in_(2)) {
-			*msg_type = MSG_HIT_GREAT;
-			add_dice = 2;
-		} else {
-			*msg_type = MSG_HIT_GOOD;
-			add_dice = 1;
-		}
-	} else {
-		*msg_type = MSG_HIT;
-	}
-
-	return add_dice;
-}
-
-/**
- * Determine standard melee damage.
- *
- * Factor in damage dice, to-dam and any brand or slay.
- */
-static int melee_damage(const struct monster *mon, struct object *obj, int b, int s)
-{
-	int dmg = (obj) ? damroll(obj->dd, obj->ds) : 1;
-
-	if (s) {
-		dmg *= slays[s].multiplier;
-	} else if (b) {
-		dmg *= get_monster_brand_multiplier(mon, &brands[b], false);
-	}
-
-	if (obj) dmg += obj->to_d;
-
-	return dmg;
-}
-
-/**
- * Determine O-combat melee damage.
- *
- * Deadliness and any brand or slay add extra sides to the damage dice,
- * criticals add extra dice.
- */
-static int o_melee_damage(struct player *p, const struct monster *mon,
-		struct object *obj, int b, int s, uint32_t *msg_type)
-{
-	int dice = (obj) ? obj->dd : 1;
-	int sides, dmg, add = 0;
-	bool extra;
-
-	/* Get the average value of a single damage die. (x10) */
-	int die_average = (10 * (((obj) ? obj->ds : 1) + 1)) / 2;
-
-	/* Adjust the average for slays and brands. (10x inflation) */
-	if (s) {
-		die_average *= slays[s].o_multiplier;
-		add = slays[s].o_multiplier - 10;
-	} else if (b) {
-		int bmult = get_monster_brand_multiplier(mon, &brands[b], true);
-
-		die_average *= bmult;
-		add = bmult - 10;
-	} else {
-		die_average *= 10;
-	}
-
-	/* Apply deadliness to average. (100x inflation) */
-	apply_deadliness(&die_average,
-		MIN(((obj) ? obj->to_d : 0) + p->state.to_d, 150));
-
-	/* Calculate the actual number of sides to each die. */
-	sides = (2 * die_average) - 10000;
-	extra = randint0(10000) < (sides % 10000);
-	sides /= 10000;
-	sides += (extra ? 1 : 0);
-
-	/*
-	 * Get number of critical dice; for now, excluding criticals for
-	 * unarmed combat
-	 */
-	if (obj) dice += o_critical_melee(p, mon, obj, msg_type);
-
-	/* Roll out the damage. */
-	dmg = damroll(dice, sides);
-
-	/* Apply any special additions to damage. */
-	dmg += add;
-
-	return dmg;
-}
-
-/**
- * Determine standard ranged damage.
- *
- * Factor in damage dice, to-dam, multiplier and any brand or slay.
- */
-static int ranged_damage(struct player *p, const struct monster *mon,
-						 struct object *missile, struct object *launcher,
-						 int b, int s)
-{
-	int dmg;
-	int mult = (launcher ? p->state.ammo_mult : 1);
-
-	/* If we have a slay or brand, modify the multiplier appropriately */
-	if (b) {
-		mult += get_monster_brand_multiplier(mon, &brands[b], false);
-	} else if (s) {
-		mult += slays[s].multiplier;
-	}
-
-	/* Apply damage: multiplier, slays, bonuses */
-	dmg = damroll(missile->dd, missile->ds);
-	dmg += missile->to_d;
-	if (launcher) {
-		dmg += launcher->to_d;
-	} else if (of_has(missile->flags, OF_THROWING)) {
-		/* Adjust damage for throwing weapons.
-		 * This is not the prettiest equation, but it does at least try to
-		 * keep throwing weapons competitive. */
-		dmg *= 2 + missile->weight / 12;
-	}
-	dmg *= mult;
-
-	return dmg;
-}
-
-/**
- * Determine O-combat ranged damage.
- *
- * Deadliness, launcher multiplier and any brand or slay add extra sides to the
- * damage dice, criticals add extra dice.
- */
-static int o_ranged_damage(struct player *p, const struct monster *mon,
-		struct object *missile, struct object *launcher,
-		int b, int s, uint32_t *msg_type)
-{
-	int mult = (launcher ? p->state.ammo_mult : 1);
-	int dice = missile->dd;
-	int sides, deadliness, dmg, add = 0;
-	bool extra;
-
-	/* Get the average value of a single damage die. (x10) */
-	int die_average = (10 * (missile->ds + 1)) / 2;
-
-	/* Apply the launcher multiplier. */
-	die_average *= mult;
-
-	/* Adjust the average for slays and brands. (10x inflation) */
-	if (b) {
-		int bmult = get_monster_brand_multiplier(mon, &brands[b], true);
-
-		die_average *= bmult;
-		add = bmult - 10;
-	} else if (s) {
-		die_average *= slays[s].o_multiplier;
-		add = slays[s].o_multiplier - 10;
-	} else {
-		die_average *= 10;
-	}
-
-	/* Apply deadliness to average. (100x inflation) */
-	if (launcher) {
-		deadliness = missile->to_d + launcher->to_d + p->state.to_d;
-	} else if (of_has(missile->flags, OF_THROWING)) {
-		deadliness = missile->to_d + p->state.to_d;
-	} else {
-		deadliness = missile->to_d;
-	}
-	apply_deadliness(&die_average, MIN(deadliness, 150));
-
-	/* Calculate the actual number of sides to each die. */
-	sides = (2 * die_average) - 10000;
-	extra = randint0(10000) < (sides % 10000);
-	sides /= 10000;
-	sides += (extra ? 1 : 0);
-
-	/* Get number of critical dice - only for suitable objects */
-	if (launcher) {
-		dice += o_critical_shot(p, mon, missile, launcher, msg_type);
-	} else if (of_has(missile->flags, OF_THROWING)) {
-		dice += o_critical_shot(p, mon, missile, NULL, msg_type);
-
-		/* Multiply the number of damage dice by the throwing weapon
-		 * multiplier.  This is not the prettiest equation,
-		 * but it does at least try to keep throwing weapons competitive. */
-		dice *= 2 + missile->weight / 12;
-	}
-
-	/* Roll out the damage. */
-	dmg = damroll(dice, sides);
-
-	/* Apply any special additions to damage. */
-	dmg += add;
-
-	return dmg;
-}
-
-/**
- * Apply the player damage bonuses
- */
-static int player_damage_bonus(struct player_state *state)
-{
-	return state->to_d;
-}
-
-/**
- * ------------------------------------------------------------------------
- * Non-damage melee blow effects
- * ------------------------------------------------------------------------ */
-/**
- * Apply blow side effects
- */
-static void blow_side_effects(struct player *p, struct monster *mon)
-{
-	/* Confusion attack */
-	if (p->timed[TMD_ATT_CONF]) {
-		player_clear_timed(p, TMD_ATT_CONF, true);
-
-		mon_inc_timed(mon, MON_TMD_CONF, (10 + randint0(p->lev) / 10),
-					  MON_TMD_FLG_NOTIFY);
-	}
-}
-
-/**
- * Apply blow after effects
- */
-static bool blow_after_effects(struct loc grid, int dmg, int splash,
-							   bool *fear, bool quake)
-{
-	/* Apply earthquake brand */
-	if (quake) {
-		effect_simple(EF_EARTHQUAKE, source_player(), "0", 0, 10, 0, 0, 0,
-					  NULL);
-
-		/* Monster may be dead or moved */
-		if (!square_monster(cave, grid))
-			return true;
-	}
-
-	return false;
-}
-
-/**
- * ------------------------------------------------------------------------
- * Melee attack
- * ------------------------------------------------------------------------ */
-/* Melee and throwing hit types */
-static const struct hit_types melee_hit_types[] = {
-	{ MSG_MISS, NULL },
-	{ MSG_HIT, NULL },
-	{ MSG_HIT_GOOD, "It was a good hit!" },
-	{ MSG_HIT_GREAT, "It was a great hit!" },
-	{ MSG_HIT_SUPERB, "It was a superb hit!" },
-	{ MSG_HIT_HI_GREAT, "It was a *GREAT* hit!" },
-	{ MSG_HIT_HI_SUPERB, "It was a *SUPERB* hit!" },
-};
-
-/**
- * Attack the monster at the given location with a single blow.
- */
-bool py_attack_real(struct player *p, struct loc grid, bool *fear)
-{
-	size_t i;
-
-	/* Information about the target of the attack */
-	struct monster *mon = square_monster(cave, grid);
+	/* Hold the monster name */
 	char m_name[80];
-	bool stop = false;
+	char m_poss[80];
 
-	/* The weapon used */
-	struct object *obj = equipped_item_by_slot_name(p, "weapon");
+	/* Get the monster name*/
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
-	/* Information about the attack */
-	int drain = 0;
-	int splash = 0;
-	bool do_quake = false;
-	bool success = false;
+	/* Get the monster possessive ("his"/"her"/"its") */
+	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
 
-	char verb[20];
-	uint32_t msg_type = MSG_HIT;
-	int j, b, s, weight, dmg;
-
-	/* Default to punching */
-	my_strcpy(verb, "punch", sizeof(verb));
-
-	/* Extract monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
-
-	/* Auto-Recall and track if possible and visible */
-	if (monster_is_visible(mon)) {
-		monster_race_track(p->upkeep, mon->race);
-		health_track(p->upkeep, mon);
-	}
-
-	/* Handle player fear (only for invisible monsters) */
-	if (player_of_has(p, OF_AFRAID)) {
-		equip_learn_flag(p, OF_AFRAID);
-		msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
-		return false;
-	}
-
-	/* Disturb the monster */
-	monster_wake(mon, false, 100);
-	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY);
-
-	/* See if the player hit */
-	success = test_hit(chance_of_melee_hit(p, obj, mon), mon->race->ac);
-
-	/* If a miss, skip this hit */
-	if (!success) {
-		msgt(MSG_MISS, "You miss %s.", m_name);
-
-		/* Small chance of bloodlust side-effects */
-		if (p->timed[TMD_BLOODLUST] && one_in_(50)) {
-			msg("You feel strange...");
-			player_over_exert(p, PY_EXERT_SCRAMBLE, 20, 20);
-		}
-
-		return false;
-	}
-
-	if (obj) {
-		/* Handle normal weapon */
-		weight = obj->weight;
-		my_strcpy(verb, "hit", sizeof(verb));
+	/* Do the effect, if any */
+	if (obj->kind->thrown_effect) {
+		used = effect_do(obj->kind->thrown_effect,
+						 source_monster(mon->midx),
+						 obj,
+						 &ident,
+						 aware,
+						 DIR_NONE,
+						 NULL);
 	} else {
-		weight = 0;
+		used = false;
 	}
 
-	/* Best attack from all slays or brands on all non-launcher equipment */
-	b = 0;
-	s = 0;
-	for (j = 2; j < p->body.count; j++) {
-		struct object *obj_local = slot_object(p, j);
-		if (obj_local)
-			improve_attack_modifier(p, obj_local, mon, &b, &s,
-				verb, false);
+	/* Monster is now dead, skip messages below*/
+	if (!square_monster(cave, grid)) {
+		*is_dead = true;
 	}
 
-	/* Get the best attack from all slays or brands - weapon or temporary */
-	if (obj) {
-		improve_attack_modifier(p, obj, mon, &b, &s, verb, false);
-	}
-	improve_attack_modifier(p, NULL, mon, &b, &s, verb, false);
+	/* Inform them of the potion, mark it as known */
+	if (ident && !aware) {
+		char o_name[80];
 
-	/* Get the damage */
-	if (!OPT(p, birth_percent_damage)) {
-		dmg = melee_damage(mon, obj, b, s);
-		/* For now, exclude criticals on unarmed combat */
-		if (obj) dmg = critical_melee(p, mon, weight, obj->to_h,
-			dmg, &msg_type);
-	} else {
-		dmg = o_melee_damage(p, mon, obj, b, s, &msg_type);
-	}
+		/* Identify it fully */
+		object_flavor_aware(player, obj);
+		object_know(obj);
 
-	/* Splash damage and earthquakes */
-	splash = (weight * dmg) / 100;
-	if (player_of_has(p, OF_IMPACT) && dmg > 50) {
-		do_quake = true;
-		equip_learn_flag(p, OF_IMPACT);
+		/* Description */
+		object_desc(o_name, sizeof(o_name), obj, ODESC_FULL, player);
+
+		/* Describe the potion */
+		msg("You threw %s.", o_name);
+
+		/* Combine / Reorder the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
+
+		/* Window stuff */
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
-	/* Learn by use */
-	equip_learn_on_melee_attack(p);
-	learn_brand_slay_from_melee(p, obj, mon);
+	/* Redraw if necessary*/
+	if (used) player->upkeep->redraw |= (PR_HEALTH);
 
-	/* Apply the player damage bonuses */
-	if (!OPT(p, birth_percent_damage)) {
-		dmg += player_damage_bonus(&p->state);
-	}
+	/* Handle stuff */
+	handle_stuff(player);
 
-	/* Substitute shape-specific blows for shapechanged players */
-	if (player_is_shapechanged(p)) {
-		int choice = randint0(p->shape->num_blows);
-		struct player_blow *blow = p->shape->blows;
-		while (choice--) {
-			blow = blow->next;
-		}
-		my_strcpy(verb, blow->name, sizeof(verb));
-	}
+	return used;
 
-	/* No negative damage; change verb if no damage done */
-	if (dmg <= 0) {
-		dmg = 0;
-		msg_type = MSG_MISS;
-		my_strcpy(verb, "fail to harm", sizeof(verb));
-	}
+}
 
-	for (i = 0; i < N_ELEMENTS(melee_hit_types); i++) {
-		const char *dmg_text = "";
+/**
+ * Give all adjacent, alert, non-mindless opponents (except one whose
+ * coordinates are supplied) a free attack on the player.
+ */
+void attacks_of_opportunity(struct player *p, struct loc safe)
+{
+    int i;
+    int start = randint0(8);
+	int opportunity_attacks = 0;
+	
+    /* Look for adjacent monsters */
+    for (i = start; i < 8 + start; i++) {
+        struct loc grid = loc_sum(p->grid, ddgrid_ddd[i % 8]);
+		struct monster *mon = square_monster(cave, grid);
 
-		if (msg_type != melee_hit_types[i].msg_type)
+        /* Check Bounds */
+        if (!square_in_bounds(cave, grid)) continue;
+
+        /* 'Point blank archery' avoids attacks of opportunity from the monster
+		 * shot at */
+        if (player_active_ability(p, "Point Blank Archery") &&
+			loc_eq(safe, grid)) {
 			continue;
+        }
 
-		if (OPT(p, show_damage))
-			dmg_text = format(" (%d)", dmg);
+        /* If it is occupied by a monster */
+        if (mon) {
+            /* The monster must be alert, not confused, and not mindless */
+            if ((mon->alertness >= ALERTNESS_ALERT) &&
+				!mon->m_timed[MON_TMD_CONF] &&
+				(mon->stance != STANCE_FLEEING) &&
+				!rf_has(mon->race->flags, RF_MINDLESS) &&
+				!mon->skip_next_turn && !mon->skip_this_turn) {
+                opportunity_attacks++;
 
-		if (melee_hit_types[i].text)
-			msgt(msg_type, "You %s %s%s. %s", verb, m_name, dmg_text,
-					melee_hit_types[i].text);
-		else
-			msgt(msg_type, "You %s %s%s.", verb, m_name, dmg_text);
+                if (opportunity_attacks == 1) {
+                    msg("You provoke attacks of opportunity from adjacent enemies!");
+                }
+                make_attack_normal(mon, p);
+            }
+        }
+    }
+
+    return;
+}
+
+/**
+ * Helper function used with ranged_helper by do_cmd_fire.
+ */
+static struct attack_result make_ranged_shot(struct player *p,
+											 struct object *ammo,
+											 struct monster *mon,
+											 bool undo_rapid,
+											 bool attack_penalty, bool one_shot)
+{
+	struct attack_result result = {0, 0, 0, false};
+	struct object *bow = equipped_item_by_slot_name(p, "shooting");
+	struct monster_race *race = mon->race;
+	int attack_mod = p->state.skill_use[SKILL_ARCHERY] + ammo->att;
+	int total_attack_mod, total_evasion_mod;
+	int prt_percent;
+	int slay_bonus_dice;
+	int total_dd, total_ds;
+	int dam, prt;
+	int arrow_slay = 0, arrow_brand = 0, arrow_flag = 0;
+	int bow_slay = 0, bow_brand = 0;
+
+	/* Remove the rapid fire penalty to attack if necessary */
+	if (undo_rapid) {
+		attack_mod += 3;
 	}
 
-	/* Pre-damage side effects */
-	blow_side_effects(p, mon);
-
-	/* Damage, check for hp drain, fear and death */
-	drain = MIN(mon->hp, dmg);
-	stop = mon_take_hit(mon, p, dmg, fear, NULL);
-
-	/* Small chance of bloodlust side-effects */
-	if (p->timed[TMD_BLOODLUST] && one_in_(50)) {
-		msg("You feel something give way!");
-		player_over_exert(p, PY_EXERT_CON, 20, 0);
+	/* Determine the player's attack score after all modifiers */
+	total_attack_mod = total_player_attack(p, mon, attack_mod);
+	if (attack_penalty) {
+		total_attack_mod = 0;
 	}
 
-	if (!stop) {
-		if (p->timed[TMD_ATT_VAMP] && monster_is_living(mon)) {
-			effect_simple(EF_HEAL_HP, source_player(), format("%d", drain),
-						  0, 0, 0, 0, 0, NULL);
+	/* Determine the monster's evasion after all modifiers */
+	total_evasion_mod = total_monster_evasion(p, mon, false);
+
+	/* Did we hit it */
+	result.hit = hit_roll(total_attack_mod, total_evasion_mod,
+						  source_player(), source_monster(mon->midx), true);
+	if (result.hit <= 0) {
+		return result;
+	}
+
+	/* Handle sharpness (which can change 'hit' message) */
+	prt_percent = prt_after_sharpness(p, ammo, &arrow_flag);
+	if (percent_chance(100 - prt_percent)) {
+		result.pierce = true;
+	}
+
+	/* Add 'critical hit' dice based on bow weight */
+	result.crit_dice = crit_bonus(p, result.hit, bow->weight, race,
+								  SKILL_ARCHERY, false);
+
+	/* Add slay (or brand) dice based on both arrow and bow */
+	slay_bonus_dice = slay_bonus(p, ammo, mon, &arrow_slay, &arrow_brand);
+	slay_bonus_dice += slay_bonus(p, bow, mon, &bow_slay, &bow_brand);
+
+	/* Bonus for flaming arrows */
+	if (player_active_ability(p, "Flaming Arrows")) {
+		struct monster_lore *lore = get_lore(race);
+
+		/* Notice immunity */
+		if (rf_has(race->flags, RF_RES_FIRE)) {
+			if (monster_is_visible(mon)) {
+				rf_on(lore->flags, RF_RES_FIRE);
+			}
+		} else {
+			/* Otherwise, take the damage */
+			slay_bonus_dice += 1;
+
+			/* Extra bonus against vulnerable creatures */
+			if (rf_has(race->flags, RF_HURT_FIRE)) {
+				slay_bonus_dice += 1;
+
+				/* Memorize the effects */
+				rf_on(lore->flags, RF_RES_FIRE);
+
+				/* Cause a temporary morale penalty */
+				scare_onlooking_friends(mon, -20);
+			}
 		}
 	}
 
-	if (stop)
-		(*fear) = false;
+	/* Calculate the damage done */
+	total_dd = bow->dd + result.crit_dice + slay_bonus_dice;
 
-	/* Post-damage effects */
-	if (blow_after_effects(grid, dmg, splash, fear, do_quake))
-		stop = true;
+	/* Note that this is recalculated in case the player has rapid shots but
+	 * only one arrow */
+	total_ds = MAX(total_ads(p, &p->state, bow, one_shot), 0);
 
-	return stop;
+	/* Calculate damage */
+	dam = damroll(total_dd, total_ds);
+	prt = damroll(race->pd, race->ps);
+	prt = (prt * prt_percent) / 100;
+	result.dmg = MAX(0, dam - prt);
+
+	ident_bow_arrow_by_use(bow, ammo, mon, bow_brand, bow_slay, arrow_flag,
+						   arrow_brand, arrow_slay,	p);
+
+	event_signal_combat_damage(EVENT_COMBAT_DAMAGE, total_dd, total_ds,
+							   result.dmg, race->pd, race->ps, prt, prt_percent,
+							   PROJ_HURT, false);
+	return result;
 }
 
 
 /**
- * Attempt a shield bash; return true if the monster dies
+ * Helper function used with ranged_helper by do_cmd_throw.
  */
-static bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear)
+static struct attack_result make_ranged_throw(struct player *p,
+											  struct object *obj,
+											  struct monster *mon,
+											  bool undo_rapid,
+											  bool attack_penalty,
+											  bool one_shot)
 {
-	struct object *weapon = slot_object(p, slot_by_name(p, "weapon"));
-	struct object *shield = slot_object(p, slot_by_name(p, "arm"));
-	int nblows = p->state.num_blows / 100;
-	int bash_quality, bash_dam, energy_lost;
+	struct attack_result result = {0, 0, 0, false};
+	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
+	struct monster_race *race = mon->race;
+	int attack_mod = p->state.skill_use[SKILL_MELEE] + obj->att;
+	int total_attack_mod, total_evasion_mod;
+	int prt_percent;
+	int slay_bonus_dice;
+	int total_dd, total_ds;
+	int dam, prt;
+	int slay = 0, brand = 0, flag = 0;
 
-	/* Bashing chance depends on melee skill, DEX, and a level bonus. */
-	int bash_chance = p->state.skills[SKILL_TO_HIT_MELEE] / 8 +
-		adj_dex_th[p->state.stat_ind[STAT_DEX]] / 2;
+	/* Subtract the melee weapon's bonus (as we had already accounted for it) */
+	attack_mod -= weapon->att;
+	attack_mod -= blade_bonus(p, weapon);
+	attack_mod -= axe_bonus(p, weapon);
+	attack_mod -= polearm_bonus(p, weapon);
 
-	/* No shield, no bash */
-	if (!shield) return false;
-
-	/* Monster is too pathetic, don't bother */
-	if (mon->race->level < p->lev / 2) return false;
-
-	/* Players bash more often when they see a real need: */
-	if (!equipped_item_by_slot_name(p, "weapon")) {
-		/* Unarmed... */
-		bash_chance *= 4;
-	} else if (weapon->dd * weapon->ds * nblows < shield->dd * shield->ds * 3) {
-		/* ... or armed with a puny weapon */
-		bash_chance *= 2;
+	/* Weapons that are not good for throwing are much less accurate */
+	if (!of_has(obj->flags, OF_THROWING)) {
+		attack_mod -= 5;
 	}
 
-	/* Try to get in a shield bash. */
-	if (bash_chance <= randint0(200 + mon->race->level)) {
-		return false;
+	/* Give people their weapon affinity bonuses if the weapon is thrown */
+	attack_mod += blade_bonus(p, obj);
+	attack_mod += axe_bonus(p, obj);
+	attack_mod += polearm_bonus(p, obj);
+
+	/* Bonus for throwing proficiency ability */
+	if (player_active_ability(p, "Throwing")) attack_mod += 5;
+
+	/* Determine the player's attack score after all modifiers */
+	total_attack_mod = total_player_attack(p, mon, attack_mod);
+	if (attack_penalty) {
+		total_attack_mod = 0;
 	}
 
-	/* Calculate attack quality, a mix of momentum and accuracy. */
-	bash_quality = p->state.skills[SKILL_TO_HIT_MELEE] / 4 + p->wt / 8 +
-		p->upkeep->total_weight / 80 + shield->weight / 2;
+	/* Determine the monster's evasion after all modifiers */
+	total_evasion_mod = total_monster_evasion(p, mon, false);
 
-	/* Calculate damage.  Big shields are deadly. */
-	bash_dam = damroll(shield->dd, shield->ds);
-
-	/* Multiply by quality and experience factors */
-	bash_dam *= bash_quality / 40 + p->lev / 14;
-
-	/* Strength bonus. */
-	bash_dam += adj_str_td[p->state.stat_ind[STAT_STR]];
-
-	/* Paranoia. */
-	bash_dam = MIN(bash_dam, 125);
-
-	if (OPT(p, show_damage)) {
-		msgt(MSG_HIT, "You get in a shield bash! (%d)", bash_dam);
-	} else {
-		msgt(MSG_HIT, "You get in a shield bash!");
+	/* Did we hit it */
+	result.hit = hit_roll(total_attack_mod, total_evasion_mod,
+						  source_player(), source_monster(mon->midx), true);
+	if (result.hit <= 0) {
+		return result;
 	}
 
-	/* Encourage the player to keep wearing that heavy shield. */
-	if (randint1(bash_dam) > 30 + randint1(bash_dam / 2)) {
-		msgt(MSG_HIT_HI_SUPERB, "WHAMM!");
+	/* Handle sharpness */
+	prt_percent = prt_after_sharpness(p, obj, &flag);
+
+	/* Add 'critical hit' dice based on bow weight */
+	result.crit_dice = crit_bonus(p, result.hit, obj->weight, mon->race,
+								  SKILL_MELEE, false);
+
+	/* Add slay (or brand) dice based on both arrow and bow */
+	slay_bonus_dice = slay_bonus(p, obj, mon, &slay, &brand);
+
+	/* Calculate the damage done */
+	total_dd = obj->dd + result.crit_dice + slay_bonus_dice;
+	total_ds = MAX(total_mds(p, &p->state, obj, 0), 0);
+
+	/* Penalise items that aren't made to be thrown */
+	if (!of_has(obj->flags, OF_THROWING)) total_ds /= 2;
+
+	/* Calculate damage */
+	dam = damroll(total_dd, total_ds);
+	prt = damroll(race->pd, race->ps);
+	prt = (prt * prt_percent) / 100;
+	result.dmg = MAX(0, dam - prt);
+
+	/* If a slay, brand or flag was noticed, then identify the weapon */
+	if (slay || brand || flag) {
+		ident_weapon_by_use(obj, mon, flag, brand, slay, p);
 	}
 
-	/* Damage, check for fear and death. */
-	if (mon_take_hit(mon, p, bash_dam, fear, NULL)) return true;
-
-	/* Stunning. */
-	if (bash_quality + p->lev > randint1(200 + mon->race->level * 8)) {
-		mon_inc_timed(mon, MON_TMD_STUN, randint0(p->lev / 5) + 4, 0);
-	}
-
-	/* Confusion. */
-	if (bash_quality + p->lev > randint1(300 + mon->race->level * 12)) {
-		mon_inc_timed(mon, MON_TMD_CONF, randint0(p->lev / 5) + 4, 0);
-	}
-
-	/* The player will sometimes stumble. */
-	if (35 + adj_dex_th[p->state.stat_ind[STAT_DEX]] < randint1(60)) {
-		energy_lost = randint1(50) + 25;
-		/* Lose 26-75% of a turn due to stumbling after shield bash. */
-		msgt(MSG_GENERIC, "You stumble!");
-		p->upkeep->energy_use += energy_lost * z_info->move_energy / 100;
-	}
-
-	return false;
+	event_signal_combat_damage(EVENT_COMBAT_DAMAGE, total_dd, total_ds,
+							   result.dmg, race->pd, race->ps, prt, prt_percent,
+							   PROJ_HURT, false);
+	return result;
 }
 
-/**
- * Attack the monster at the given location
- *
- * We get blows until energy drops below that required for another blow, or
- * until the target monster dies. Each blow is handled by py_attack_real().
- * We don't allow @ to spend more than 1 turn's worth of energy,
- * to avoid slower monsters getting double moves.
- */
-void py_attack(struct player *p, struct loc grid)
-{
-	int avail_energy = MIN(p->energy, z_info->move_energy);
-	int blow_energy = 100 * z_info->move_energy / p->state.num_blows;
-	bool slain = false, fear = false;
-	struct monster *mon = square_monster(cave, grid);
-
-	/* Disturb the player */
-	disturb(p);
-
-	/* Initialize the energy used */
-	p->upkeep->energy_use = 0;
-
-	/* Reward BGs with 5% of max SPs, min 1/2 point */
-	if (player_has(p, PF_COMBAT_REGEN)) {
-		int32_t sp_gain = (int32_t)(MAX(p->msp, 10) << 16) / 20;
-		player_adjust_mana_precise(p, sp_gain);
-	}
-
-	/* Player attempts a shield bash if they can, and if monster is visible
-	 * and not too pathetic */
-	if (player_has(p, PF_SHIELD_BASH) && monster_is_visible(mon)) {
-		/* Monster may die */
-		if (attempt_shield_bash(p, mon, &fear)) return;
-	}
-
-	/* Attack until the next attack would exceed energy available or
-	 * a full turn or until the enemy dies. We limit energy use
-	 * to avoid giving monsters a possible double move. */
-	while (avail_energy - p->upkeep->energy_use >= blow_energy && !slain) {
-		slain = py_attack_real(p, grid, &fear);
-		p->upkeep->energy_use += blow_energy;
-	}
-
-	/* Hack - delay fear messages */
-	if (fear && monster_is_visible(mon)) {
-		add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
-	}
-}
-
-/**
- * ------------------------------------------------------------------------
- * Ranged attacks
- * ------------------------------------------------------------------------ */
-/* Shooting hit types */
-static const struct hit_types ranged_hit_types[] = {
-	{ MSG_MISS, NULL },
-	{ MSG_SHOOT_HIT, NULL },
-	{ MSG_HIT_GOOD, "It was a good hit!" },
-	{ MSG_HIT_GREAT, "It was a great hit!" },
-	{ MSG_HIT_SUPERB, "It was a superb hit!" }
-};
 
 /**
  * This is a helper function used by do_cmd_throw and do_cmd_fire.
@@ -1018,11 +1097,10 @@ static const struct hit_types ranged_hit_types[] = {
  * kind of attack.
  */
 static void ranged_helper(struct player *p,	struct object *obj, int dir,
-						  int range, int shots, ranged_attack attack,
-						  const struct hit_types *hit_types, int num_types)
+						  int range, int shots, bool archery, bool radiance)
 {
-	int i, j;
-
+	int i;
+	ranged_attack attack;
 	int path_n;
 	struct loc path_g[256];
 
@@ -1031,244 +1109,338 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 
 	/* Predict the "target" location */
 	struct loc target = loc_sum(grid, loc(99 * ddx[dir], 99 * ddy[dir]));
+	struct loc first = loc(0, 0);
 
-	bool hit_target = false;
 	bool none_left = false;
+	bool noticed_radiance = false;
+	bool targets_remaining = false;
+	bool rapid_fire = player_active_ability(p, "Rapid Fire");
+	bool hit_body = false;
 
+	struct object *bow = equipped_item_by_slot_name(p, "shooting");
 	struct object *missile;
-	int pierce = 1;
+	int shot;
+	const struct artifact *crown = lookup_artifact_name("of Morgoth");
 
 	/* Check for target validity */
-	if ((dir == DIR_TARGET) && target_okay()) {
-		int taim;
+	if ((dir == DIR_TARGET) && target_okay(range)) {
 		target_get(&target);
-		taim = distance(grid, target);
-		if (taim > range) {
-			char msg[80];
-			strnfmt(msg, sizeof(msg),
-					"Target out of range by %d squares. Fire anyway? ",
-				taim - range);
-			if (!get_check(msg)) return;
-		}
+	}
+
+	/* Handle player fear */
+	if (p->timed[TMD_AFRAID]) {
+		/* Message */
+		msg("You are too afraid to aim properly!");
+		
+		/* Done */
+		return;
 	}
 
 	/* Sound */
 	sound(MSG_SHOOT);
 
-	/* Actually "fire" the object -- Take a partial turn */
-	p->upkeep->energy_use = (z_info->move_energy * 10 / shots);
+	/* Set the attack type and other specifics */
+	if (archery) {
+		attack = make_ranged_shot;
+		if (rapid_fire && obj->number > 1) {
+			shots = 2;
+		}
+	} else {
+		attack = make_ranged_throw;
+	}
+
+	/* Actually "fire" the object */
+	p->upkeep->energy_use = z_info->move_energy;
+
+	/* Store the action type */
+	p->previous_action[0] = ACTION_MISC;
 
 	/* Calculate the path */
-	path_n = project_path(cave, path_g, range, grid, target, 0);
-
-	/* Calculate potenital piercing */
-	if (p->timed[TMD_POWERSHOT] && tval_is_sharp_missile(obj)) {
-		pierce = p->state.ammo_mult;
-	}
+	path_n = project_path(cave, path_g, range, grid, &target, 0);
 
 	/* Hack -- Handle stuff */
 	handle_stuff(p);
 
-	/* Project along the path */
-	for (i = 0; i < path_n; ++i) {
-		struct monster *mon = NULL;
-		bool see = square_isseen(cave, path_g[i]);
+	/* If the bow has 'radiance', then light the starting square */
+	noticed_radiance = radiance && do_radiance(p, grid);
 
-		/* Stop before hitting walls */
-		if (!(square_ispassable(cave, path_g[i])) &&
-			!(square_isprojectable(cave, path_g[i])))
-			break;
+	for (shot = 0; shot < shots; shot++) {
+		bool hit_wall = false;
+		bool ghost_arrow = false;
+		int missed_monsters = 0;
+		struct loc final_grid = path_g[path_n - 1];
 
-		/* Advance */
-		grid = path_g[i];
+		/* Abort any later shot(s) if there is no target on the trajectory */
+		if ((shot > 0) && !targets_remaining) break;
+		targets_remaining = false;
 
-		/* Tell the UI to display the missile */
-		event_signal_missile(EVENT_MISSILE, obj, see, grid.y, grid.x);
+		/* Project along the path */
+		for (i = 0; i < path_n; ++i) {
+			struct monster *mon = NULL;
+			bool see = square_isseen(cave, path_g[i]);
 
-		/* Try the attack on the monster at (x, y) if any */
-		mon = square_monster(cave, path_g[i]);
-		if (mon) {
-			int visible = monster_is_obvious(mon);
+			/* Stop before hitting walls */
+			if (!(square_ispassable(cave, path_g[i])) &&
+				!(square_isprojectable(cave, path_g[i]))) {
+				/* If the arrow hasn't already stopped, do some things... */
+				if (!ghost_arrow) {
+					hit_wall = true;
+					final_grid = grid;
 
-			bool fear = false;
-			const char *note_dies = monster_is_destroyed(mon) ? 
-				" is destroyed." : " dies.";
+					/* Only do visuals if the player can "see" the missile */
+					if (panel_contains(grid.y, grid.x)) {
+						bool sees[1] = { square_isview(cave, grid) };
+						int dist[1] = { 0 };
+						struct loc blast_grid[1] = { grid };
+						event_signal_blast(EVENT_EXPLOSION, PROJ_ARROW, 1, dist,
+										   true, sees, blast_grid, grid);
+					}
+				}
+				break;
+			}
 
-			struct attack_result result = attack(p, obj, grid);
-			int dmg = result.dmg;
-			uint32_t msg_type = result.msg_type;
-			char hit_verb[20];
-			my_strcpy(hit_verb, result.hit_verb, sizeof(hit_verb));
-			mem_free(result.hit_verb);
+			/* Advance */
+			grid = path_g[i];
 
-			if (result.success) {
-				char o_name[80];
+			/* Check for monster */
+			mon = square_monster(cave, grid);
 
-				hit_target = true;
+			/* After an arrow has stopped, keep looking along the path, but
+			 * don't attempt to hit creatures, or display graphics etc */
+			if (ghost_arrow) {
+				if (mon && (!OPT(p, forgo_attacking_unwary) ||
+							(mon->alertness >= ALERTNESS_ALERT))) {
+					targets_remaining = true;
+				}
+				continue;
+			}
 
-				missile_learn_on_ranged_attack(p, obj);
+			/* If the bow has 'radiance', light the square being passed over */
+			noticed_radiance = radiance && do_radiance(p, grid);
 
-				/* Learn by use for other equipped items */
-				equip_learn_on_ranged_attack(p);
+			/* Tell the UI to display the missile */
+			event_signal_missile(EVENT_MISSILE, obj, see, grid.y, grid.x);
 
-				/*
-				 * Describe the object (have most up-to-date
-				 * knowledge now).
-				 */
-				object_desc(o_name, sizeof(o_name), obj,
-					ODESC_FULL | ODESC_SINGULAR, p);
+			/* Try the attack on the monster if any */
+			if (mon) {
+				bool potion_effect = false;
+				bool attack_penalty = false;
+				int visible = monster_is_visible(mon);
+				const char *note_dies = monster_is_nonliving(mon) ? 
+					" is destroyed." : " dies.";
+				struct attack_result result;
+				int pdam = 0;
 
-				/* No negative damage; change verb if no damage done */
-				if (dmg <= 0) {
-					dmg = 0;
-					msg_type = MSG_MISS;
-					my_strcpy(hit_verb, "fails to harm", sizeof(hit_verb));
+                /* Record the grid of the first monster in line of fire */
+				first = grid;
+
+				/* Monsters might notice */
+				p->attacked = true;
+
+				/* Modifications for shots that go past the target or strike
+				 * things before the target... */
+				if ((dir == DIR_TARGET) && target_okay(range)) {
+					/* If there is a specific target and this is not it, then
+					 * massively penalise */
+					if (!loc_eq(grid, target)) {
+						attack_penalty = true;
+					}
+				} else if (missed_monsters > 0) {
+					/* If it is just a shot in a direction and has already
+					 * missed something, then massively penalise */
+					attack_penalty = true;
+				} else {
+					/* If it is a shot in a direction and this is the first
+					 * monster */
+					if (monster_is_visible(mon)) {
+						monster_race_track(p->upkeep, mon->race);
+						health_track(p->upkeep, mon);
+						target_set_monster(mon);
+					}
 				}
 
-				if (!visible) {
-					/* Invisible monster */
-					msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
-				} else {
-					for (j = 0; j < num_types; j++) {
+				/* Perform the attack */
+				result = attack(p, obj, mon, rapid_fire, attack_penalty,
+								shots == 1);
+				if (result.hit) {
+					char o_name[80];
+					bool fatal_blow = false;
+
+					/* Note the collision */
+					hit_body = true;
+
+					/* Mark the monster as attacked by the player */
+					mflag_on(mon->mflag, MFLAG_HIT_BY_RANGED);
+
+					if (!visible) {
+						/* Invisible monster */
+						msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
+					} else {
 						char m_name[80];
-						const char *dmg_text = "";
+						char punct[20];
 
-						if (msg_type != hit_types[j].msg_type) {
-							continue;
-						}
-
-						if (OPT(p, show_damage)) {
-							dmg_text = format(" (%d)", dmg);
-						}
+						/* Determine the punctuation for the attack
+						 * ("...", ".", "!" etc) */
+						attack_punctuation(punct, result.dmg, result.crit_dice);
 
 						monster_desc(m_name, sizeof(m_name), mon, MDESC_OBJE);
 
-						if (hit_types[j].text) {
-							msgt(msg_type, "Your %s %s %s%s. %s", o_name, 
-								 hit_verb, m_name, dmg_text, hit_types[j].text);
+						if (result.pierce) {
+							msgt(MSG_SHOOT_HIT, "The %s pierces %s%s", o_name,
+								 m_name, punct);
 						} else {
-							msgt(msg_type, "Your %s %s %s%s.", o_name, hit_verb,
-								 m_name, dmg_text);
+							msgt(MSG_SHOOT_HIT, "The %s hits %s%s", o_name,
+								 m_name, punct);
 						}
 					}
 
-					/* Track this monster */
-					if (monster_is_obvious(mon)) {
-						monster_race_track(p->upkeep, mon->race);
-						health_track(p->upkeep, mon);
+					/* Special effects sometimes reveal the kind of potion*/
+					if (tval_is_potion(obj)) {
+						/* Record monster hit points*/
+						pdam = mon->hp;
+
+						msg("The bottle breaks.");
+					
+						/* Returns true if damage has already been handled */
+						potion_effect = thrown_potion_effects(obj, &fatal_blow,
+															  mon);
+
+						/* Check the change in monster hp*/
+						pdam -= mon->hp;
+
+						/* Monster could have been healed*/
+						if (pdam < 0) pdam = 0;
 					}
+
+					/* Hit the monster, unless there's a potion effect */
+					if (!potion_effect) {
+						fatal_blow = mon_take_hit(mon, p, result.dmg,
+												  note_dies);
+
+						event_signal_hit(EVENT_HIT, result.dmg, PROJ_HURT,
+										 fatal_blow, grid);
+
+						/* If this was the killing shot */
+						if (fatal_blow) {
+							/* Gain wrath if singing song of slaying */
+							if (player_is_singing(p, lookup_song("Slaying"))) {
+								p->wrath += 100;
+								p->upkeep->update |= PU_BONUS;
+								p->upkeep->redraw |= PR_SONG;
+							}
+						}
+					}
+
+					if (!fatal_blow) {
+						/* If it is still alive, then there is at least
+						 * one target left on the trajectory*/
+						targets_remaining = true;
+
+						/* Alert the monster, even if no damage was done
+						 * (if damage was done, then it was alerted by
+						 * mon_take_hit() ) */
+						if (result.dmg == 0) {
+							make_alert(mon, 0);
+						}
+						
+						/* Morgoth drops his iron crown if he is hit for 10 or
+						 * more net damage twice */
+						if (rf_has(mon->race->flags, RF_QUESTOR) &&
+							!is_artifact_created(crown)) {
+							if (result.dmg >= 10) {
+								if (p->morgoth_hits == 0) {
+									msg("The force of your %s knocks the Iron Crown off balance.", archery ? "shot" : "blow");
+									p->morgoth_hits++;
+								} else if (player->morgoth_hits == 1) {
+									drop_iron_crown(mon, "You knock his crown from off his brow, and it falls to the ground nearby.");
+									p->morgoth_hits++;
+								}
+							}
+						}
+
+						/* Message if applicable */
+						if (!potion_effect || (pdam > 0)) {
+							message_pain(mon, pdam ? pdam : result.dmg);
+						}
+
+						/* Deal with crippling shot ability */
+						if (archery
+							&& player_active_ability(p, "Crippling Shot")
+							&& (result.crit_dice >= 1) && (result.dmg > 0)
+							&& !rf_has(mon->race->flags, RF_RES_CRIT)) {
+							if (skill_check(source_player(),
+											result.crit_dice * 4,
+											monster_skill(mon, SKILL_WILL),
+											source_monster(mon->midx)) > 0) {
+								msg("Your shot cripples %^s!", mon);
+								
+								/* Slow the monster - the +1 is needed as a
+								 * turn of this wears off immediately */
+								mon_inc_timed(mon, result.crit_dice + 1,
+											  MON_TMD_SLOW, false);
+							}							
+						}
+					}
+					/* Stop looking if a monster was hit but not pierced */
+					if (!result.pierce) {
+						/* Continue checking trajectory, but without effect */
+						ghost_arrow = true;
+
+						/* Record resting place of arrow */
+						final_grid = grid;
+					}
+				} else {
+					/* There is at least one target left on the trajectory */
+					targets_remaining = true;
 				}
 
-				/* Hit the monster, check for death */
-				if (!mon_take_hit(mon, p, dmg, &fear, note_dies)) {
-					message_pain(mon, dmg);
-					if (fear && monster_is_obvious(mon)) {
-						add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
-					}
-				}
+				/* We have missed a target, but could still hit something
+				 * (with a penalty) */
+				missed_monsters++;
 			}
-			/* Stop the missile, or reduce its piercing effect */
-			pierce--;
-			if (pierce) continue;
-			else break;
 		}
 
-		/* Stop if non-projectable but passable */
-		if (!(square_isprojectable(cave, path_g[i]))) 
-			break;
+		if (bow && !object_is_known(bow) && noticed_radiance) {
+			char o_full_name[80];
+			char o_short_name[80];
+			object_desc(o_short_name, sizeof(o_short_name), obj, ODESC_BASE, p);
+			object_know(bow);
+			object_desc(o_full_name, sizeof(o_full_name), obj, ODESC_FULL, p);
+			msg("The arrow leaves behind a trail of light!");
+			msg("You recognize your %s to be %s", o_short_name, o_full_name);
+		}
+
+		/* Break the truce if creatures see */
+		break_truce(p, false);
+
+		/* Get the missile */
+		if (object_is_carried(p, obj)) {
+			missile = gear_object_for_use(p, obj, 1, true, &none_left);
+		} else {
+			missile = floor_object_for_use(p, obj, 1, true, &none_left);
+		}
+
+		/* Drop (or break) near that location */
+		drop_near(cave, &missile, breakage_chance(missile, hit_wall),
+				  final_grid, true, false);
 	}
 
-	/* Get the missile */
-	if (object_is_carried(p, obj)) {
-		missile = gear_object_for_use(p, obj, 1, true, &none_left);
-	} else {
-		missile = floor_object_for_use(p, obj, 1, true, &none_left);
+	/* Need to print this message even if the potion missed */
+	if (!hit_body && tval_is_potion(obj)) {
+		msg("The bottle breaks.");
 	}
 
-	/* Terminate piercing */
-	if (p->timed[TMD_POWERSHOT]) {
-		player_clear_timed(p, TMD_POWERSHOT, true);
+	/* Have to set this here as well, just in case... */
+	p->attacked = true;
+
+    /* Provoke attacks of opportunity */
+	if (archery) {
+		if (player_active_ability(p, "Point Blank Archery")) {
+			attacks_of_opportunity(p, first);
+		} else {
+			attacks_of_opportunity(p, loc(0, 0));
+		}
 	}
-
-	/* Drop (or break) near that location */
-	drop_near(cave, &missile, breakage_chance(missile, hit_target), grid, true, false);
-}
-
-
-/**
- * Helper function used with ranged_helper by do_cmd_fire.
- */
-static struct attack_result make_ranged_shot(struct player *p,
-		struct object *ammo, struct loc grid)
-{
-	char *hit_verb = mem_alloc(20 * sizeof(char));
-	struct attack_result result = {false, 0, 0, hit_verb};
-	struct object *bow = equipped_item_by_slot_name(p, "shooting");
-	struct monster *mon = square_monster(cave, grid);
-	int b = 0, s = 0;
-
-	my_strcpy(hit_verb, "hits", 20);
-
-	/* Did we hit it */
-	if (!test_hit(chance_of_missile_hit(p, ammo, bow, mon), mon->race->ac))
-		return result;
-
-	result.success = true;
-
-	improve_attack_modifier(p, ammo, mon, &b, &s, result.hit_verb, true);
-	improve_attack_modifier(p, bow, mon, &b, &s, result.hit_verb, true);
-
-	if (!OPT(p, birth_percent_damage)) {
-		result.dmg = ranged_damage(p, mon, ammo, bow, b, s);
-		result.dmg = critical_shot(p, mon, ammo->weight, ammo->to_h,
-								   result.dmg, &result.msg_type);
-	} else {
-		result.dmg = o_ranged_damage(p, mon, ammo, bow, b, s, &result.msg_type);
-	}
-
-	missile_learn_on_ranged_attack(p, bow);
-	learn_brand_slay_from_launch(p, ammo, bow, mon);
-
-	return result;
-}
-
-
-/**
- * Helper function used with ranged_helper by do_cmd_throw.
- */
-static struct attack_result make_ranged_throw(struct player *p,
-	struct object *obj, struct loc grid)
-{
-	char *hit_verb = mem_alloc(20 * sizeof(char));
-	struct attack_result result = {false, 0, 0, hit_verb};
-	struct monster *mon = square_monster(cave, grid);
-	int b = 0, s = 0;
-
-	my_strcpy(hit_verb, "hits", 20);
-
-	/* If we missed then we're done */
-	if (!test_hit(chance_of_missile_hit(p, obj, NULL, mon), mon->race->ac))
-		return result;
-
-	result.success = true;
-
-	improve_attack_modifier(p, obj, mon, &b, &s, result.hit_verb, true);
-
-	if (!OPT(p, birth_percent_damage)) {
-		result.dmg = ranged_damage(p, mon, obj, NULL, b, s);
-		result.dmg = critical_shot(p, mon, obj->weight, obj->to_h,
-								   result.dmg, &result.msg_type);
-	} else {
-		result.dmg = o_ranged_damage(p, mon, obj, NULL, b, s, &result.msg_type);
-	}
-
-	/* Direct adjustment for exploding things (flasks of oil) */
-	if (of_has(obj->flags, OF_EXPLODE))
-		result.dmg *= 3;
-
-	learn_brand_slay_from_throw(p, obj, mon);
-
-	return result;
 }
 
 
@@ -1287,15 +1459,16 @@ static bool restrict_for_throwing(const struct object *obj)
  */
 void do_cmd_fire(struct command *cmd) {
 	int dir;
-	int range = MIN(6 + 2 * player->state.ammo_mult, z_info->max_range);
-	int shots = player->state.num_shots;
-
-	ranged_attack attack = make_ranged_shot;
+	int shots = 1;
 
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	struct object *obj;
+	bool radiance;
+	int range = archery_range(bow);
 
-	if (!player_get_resume_normal_shape(player, cmd)) {
+	/* Require a usable launcher */
+	if (!bow || !player->state.ammo_tval) {
+		msg("You have nothing to fire with.");
 		return;
 	}
 
@@ -1307,12 +1480,6 @@ void do_cmd_fire(struct command *cmd) {
 			/* Choice */ USE_INVEN | USE_QUIVER | USE_FLOOR | QUIVER_TAGS)
 		!= CMD_OK)
 		return;
-
-	/* Require a usable launcher */
-	if (!bow || !player->state.ammo_tval) {
-		msg("You have nothing to fire with.");
-		return;
-	}
 
 	/* Check the item being fired is usable by the player. */
 	if (!item_is_available(obj)) {
@@ -1326,13 +1493,15 @@ void do_cmd_fire(struct command *cmd) {
 		return;
 	}
 
-	if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
+	if (cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK)
 		player_confuse_dir(player, &dir, false);
 	else
 		return;
 
-	ranged_helper(player, obj, dir, range, shots, attack, ranged_hit_types,
-				  (int) N_ELEMENTS(ranged_hit_types));
+	/* Determine if the bow has 'radiance' */
+	radiance = of_has(bow->flags, OF_RADIANCE);
+
+	ranged_helper(player, obj, dir, range, shots, true, radiance);
 }
 
 
@@ -1342,17 +1511,11 @@ void do_cmd_fire(struct command *cmd) {
  */
 void do_cmd_throw(struct command *cmd) {
 	int dir;
-	int shots = 10;
-	int str = adj_str_blow[player->state.stat_ind[STAT_STR]];
-	ranged_attack attack = make_ranged_throw;
-
-	int weight;
+	int shots = 1;
 	int range;
 	struct object *obj;
 
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
+	//TODO automatic throwing
 
 	/*
 	 * Get arguments.  Never default to showing the equipment as the first
@@ -1369,7 +1532,9 @@ void do_cmd_throw(struct command *cmd) {
 		!= CMD_OK)
 		return;
 
-	if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
+	range = throwing_range(obj);
+
+	if (cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK)
 		player_confuse_dir(player, &dir, false);
 	else
 		return;
@@ -1379,20 +1544,18 @@ void do_cmd_throw(struct command *cmd) {
 		inven_takeoff(obj);
 	}
 
-	weight = MAX(obj->weight, 10);
-	range = MIN(((str + 20) * 10) / weight, 10);
-
-	ranged_helper(player, obj, dir, range, shots, attack, ranged_hit_types,
-				  (int) N_ELEMENTS(ranged_hit_types));
+	ranged_helper(player, obj, dir, range, shots, false, false);
 }
 
 /**
  * Front-end command which fires at the nearest target with default ammo.
  */
 void do_cmd_fire_at_nearest(void) {
-	int i, dir = DIR_TARGET;
+	int dir = DIR_TARGET;
 	struct object *ammo = NULL;
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
+	struct object *ammo1 = equipped_item_by_slot_name(player, "first quiver");
+	struct object *ammo2 = equipped_item_by_slot_name(player, "second quiver");
 
 	/* Require a usable launcher */
 	if (!bow || !player->state.ammo_tval) {
@@ -1401,13 +1564,10 @@ void do_cmd_fire_at_nearest(void) {
 	}
 
 	/* Find first eligible ammo in the quiver */
-	for (i = 0; i < z_info->quiver_size; i++) {
-		if (!player->upkeep->quiver[i])
-			continue;
-		if (player->upkeep->quiver[i]->tval != player->state.ammo_tval)
-			continue;
-		ammo = player->upkeep->quiver[i];
-		break;
+	if (ammo1) {
+		ammo = ammo1;
+	} else if (ammo2) {
+		ammo = ammo2;
 	}
 
 	/* Require usable ammo */

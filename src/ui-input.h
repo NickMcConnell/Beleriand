@@ -44,7 +44,7 @@
 struct cmd_info
 {
 	const char *desc;
-	keycode_t key[2];
+	keycode_t key[4];
 	cmd_code cmd;
 	void (*hook)(void);
 	bool (*prereq)(void);

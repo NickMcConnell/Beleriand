@@ -67,6 +67,9 @@ enum {
 	#define STAT(a) OBJ_MOD_##a,
     #include "list-stats.h"
     #undef STAT
+	#define SKILL(a, b) OBJ_MOD_##a,
+	#include "list-skills.h"
+	#undef SKILL
     #define OBJ_MOD(a) OBJ_MOD_##a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
@@ -109,12 +112,14 @@ enum object_flag_id {
 enum obj_property_type {
 	OBJ_PROPERTY_NONE = 0,
 	OBJ_PROPERTY_STAT,
+	OBJ_PROPERTY_SKILL,
 	OBJ_PROPERTY_MOD,
 	OBJ_PROPERTY_FLAG,
+	OBJ_PROPERTY_SLAY,
+	OBJ_PROPERTY_BRAND,
 	OBJ_PROPERTY_IGNORE,
 	OBJ_PROPERTY_RESIST,
 	OBJ_PROPERTY_VULN,
-	OBJ_PROPERTY_IMM,
 	OBJ_PROPERTY_MAX
 };
 
@@ -172,13 +177,15 @@ struct obj_property {
 	int subtype;			/* subtype of property */
 	int id_type;			/* how the property is identified (flags only?) */
 	int index;				/* index of the property for its type */
-	int power;				/* base power rating */
-	int mult;				/* relative weight rating */
-	int type_mult[TV_MAX];	/* relative weight rating specific to object type */
+	int smith_cat;			/* category for smithing */
+	int smith_diff;			/* difficulty for smithing */
+	int smith_cost_type;	/* cost type for smithing (XP, stats, etc) */
+	int smith_cost;			/* cost for smithing */
 	char *name;				/* property name */
 	char *adjective;		/* adjective for property */
 	char *neg_adj;			/* adjective for negative of property */
 	char *msg;				/* message on noticing property */
+	char *slay_msg;			/* message on noticing property for "slays" */
 	char *desc;				/* extra text for object info */
 };
 
@@ -190,7 +197,10 @@ extern struct obj_property *obj_properties;
  * ------------------------------------------------------------------------ */
 struct obj_property *lookup_obj_property(int type, int index);
 void create_obj_flag_mask(bitflag *f, int id, ...);
+void insert_name(char *buf, size_t size, char *msg, char *name);
 void flag_message(int flag, char *name);
+void flag_slay_message(int flag, char *name, char *message, int len);
+void element_message(int elem, char *name, bool vuln);
 int sustain_flag(int stat);
 
 #endif /* !INCLUDED_OBJPROPERTIES_H */

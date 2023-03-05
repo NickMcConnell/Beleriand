@@ -1,22 +1,12 @@
 
-{mud}                                       ^                        {/}
-{mud}                                      ^^^                       {/}
-{mud}                ^                    ^^^^^                   ^  {/}
-{mud}               ^^^                  ^^^^^^^                 ^^^ {/}
-{mud}              ^^^^^                ^^^^^^^^^               ^^^^^{/}
-{mud}             ^^^^  {/}{red}_{/}{mud}              ^ {/}{red}_{/}{mud}  ^^^^^^             {/}{red}_{/}{mud}  ^^^^{/}
-{mud}            ^^^^ {/}{red} / \   _ __   __ _| |__   __ _ _ __   __| | {/}{mud}^^^^^   {/}
-{mud}           ^^^^ {/}{red} / _ \ | '_ \ / _` | '_ \ / _` | '_ \ / _` | {/}{mud}^^^^^^  {/}
-{mud}          ^^^^  {/}{red}/ ___ \| | | | (_| | |_) | (_| | | | | (_| | {/}{mud}^^^^^^^ {/}
-{mud}         ^^^^  {/}{red}/_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_| {/}{mud}^^^^^^^^{/}
-{mud}        ^^^^^                {/}{red} |___/{/}  $VERSION
-{mud}       ^^^^^^^^^^^^^^^^^^                     ^^^^  ^^^^^^^^^^^^^^^^^^^ {/}
-{light slate}         "When the world is old and the Powers grow weary, then Morgoth,{/}
-{light slate}          seeing that the guard sleepeth, shall come back through the   {/}
-{light slate}          Door of Night out of the Timeless Void.  Then shall the Last  {/}
-{light slate}          Battle be gathered..."                                        {/}
+{light blue}                The world was young, the mountains green,{/}
+{light blue}                   No stain yet on the moon was seen...{/}
 
-{light slate}                         Website: http://rephial.org/           {/}
-{light slate}                     Forums: http://angband.oook.cz/forum/      {/}
-              
-                           For help press '?' in-game
+
+              Welcome to Sil, a game of adventure set
+                in the First Age of Middle-earth,
+                  when the world still rang with elven song
+                    and gleamed with dwarven mail.
+              Walk the dark halls of Angband.
+                Slay creatures black and fell.
+                  Wrest a shining Silmaril from Morgoth's iron crown.

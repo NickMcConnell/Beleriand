@@ -31,7 +31,6 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "store.h"
 #include "target.h"
 #include "ui-command.h"
 #include "ui-display.h"
@@ -102,8 +101,7 @@ void do_cmd_redraw(void)
 		handle_stuff(player);
 
 		/* Place the cursor on the player */
-		if ((0 != character_dungeon) && OPT(player, show_target) &&
-			target_sighted()) {
+		if ((0 != character_dungeon) && target_sighted()) {
 			struct loc target;
 			target_get(&target);
 			move_cursor_relative(target.y, target.x);
@@ -161,26 +159,20 @@ void do_cmd_version(void)
  */
 void textui_cmd_suicide(void)
 {
+	struct keypress ch;
+
 	/* Flush input */
 	event_signal(EVENT_INPUT_FLUSH);
 
 	/* Verify */
-	if (player->total_winner) {
-		if (!get_check("Do you want to retire? "))
-			return;
-	} else {
-		struct keypress ch;
+	if (!get_check("Do you really want to kill this character? ")) return;
 
-		if (!get_check("Do you really want to kill this character? "))
-			return;
-
-		/* Special Verification for suicide */
-		prt("Please verify KILLING THIS CHARACTER by typing the '@' sign: ", 0, 0);
-		event_signal(EVENT_INPUT_FLUSH);
-		ch = inkey();
-		prt("", 0, 0);
-		if (ch.code != '@') return;
-	}
+	/* Special Verification for suicide */
+	prt("Please verify KILLING THIS CHARACTER by typing the '@' sign: ", 0, 0);
+	event_signal(EVENT_INPUT_FLUSH);
+	ch = inkey();
+	prt("", 0, 0);
+	if (ch.code != '@') return;
 
 	cmdq_push(CMD_SUICIDE);
 }

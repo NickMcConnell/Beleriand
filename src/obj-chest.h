@@ -29,6 +29,18 @@ enum chest_query {
 	CHEST_TRAPPED
 };
 
+/**
+ * Chest trap flags (see "obj-chest.c")
+ */
+enum {
+	CHEST_GAS_CONF = 0x01,
+	CHEST_GAS_STUN = 0x02,
+	CHEST_GAS_POISON = 0x04,
+	CHEST_NEEDLE_HALLU = 0x08,
+	CHEST_NEEDLE_ENTRANCE = 0x10,
+	CHEST_NEEDLE_LOSE_STR = 0x20
+};
+
 extern struct file_parser chest_trap_parser;
 
 const char *chest_trap_name(const struct object *obj);

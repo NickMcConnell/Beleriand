@@ -32,7 +32,6 @@
 #include "player-attack.h"
 #include "player-calcs.h"
 #include "player-path.h"
-#include "player-properties.h"
 #include "player-util.h"
 #include "savefile.h"
 #include "target.h"
@@ -53,11 +52,10 @@
 #include "ui-output.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
-#include "ui-spell.h"
 #include "ui-score.h"
 #include "ui-signals.h"
+#include "ui-skills.h"
 #include "ui-spoil.h"
-#include "ui-store.h"
 #include "ui-target.h"
 #include "ui-wizard.h"
 #include "z-file.h"
@@ -114,19 +112,18 @@ struct cmd_info cmd_item[] =
 	{ "Inscribe an object", { '{' }, CMD_INSCRIBE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Uninscribe an object", { '}' }, CMD_UNINSCRIBE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Wear/wield an item", { 'w' }, CMD_WIELD, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Take off/unwield an item", { 't', 'T'}, CMD_TAKEOFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Examine an item", { 'I' }, CMD_NULL, textui_obj_examine, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Take off/unwield an item", { 'r', 'r', 't', 't' }, CMD_TAKEOFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Examine an item", { 'x', 'x', 'I', 'I' }, CMD_NULL, textui_obj_examine, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Drop an item", { 'd' }, CMD_DROP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Fire your missile weapon", { 'f', 't' }, CMD_FIRE, NULL, player_can_fire_prereq, 0, NULL, NULL, NULL, 0 },
-	{ "Use a staff", { 'u', 'Z' }, CMD_USE_STAFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Aim a wand", {'a', 'z'}, CMD_USE_WAND, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Zap a rod", {'z', 'a'}, CMD_USE_ROD, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Activate an object", {'A' }, CMD_ACTIVATE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Destroy an item", { 'k', KTRL('K'),  'k', KTRL('K') }, CMD_DESTROY, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Fire your missile weapon", { 'f' }, CMD_FIRE, NULL, player_can_fire_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Use a staff", { 'a', 'a', 'u', 'u' }, CMD_USE_STAFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Blow a horn", { 'p' }, CMD_BLOW_HORN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Eat some food", { 'E' }, CMD_EAT, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Quaff a potion", { 'q' }, CMD_QUAFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Read a scroll", { 'r' }, CMD_READ_SCROLL, NULL, player_can_read_prereq, 0, NULL, NULL, NULL, 0 },
-	{ "Fuel your light source", { 'F' }, CMD_REFILL, NULL, player_can_refuel_prereq, 0, NULL, NULL, NULL, 0 },
-	{ "Use an item", { 'U', 'X' }, CMD_USE, NULL, NULL, 0, NULL, NULL, NULL, 0 }
+	{ "Fuel your light source", { 'F' }, CMD_REFUEL, NULL, player_can_refuel_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Use an item", { 'u', KTRL('U'), 'U', KTRL('U') }, CMD_USE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Smith an item", { '0' }, CMD_SMITH, NULL, NULL, 0, NULL, NULL, NULL, 0 }
 };
 
 /**
@@ -135,18 +132,22 @@ struct cmd_info cmd_item[] =
 struct cmd_info cmd_action[] =
 {
 	{ "Disarm a trap or chest", { 'D' }, CMD_DISARM, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Rest for a while", { 'R' }, CMD_NULL, textui_cmd_rest, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Look around", { 'l', 'x' }, CMD_NULL, do_cmd_look, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Rest for a while", { 'Z', 'Z', 'R', 'R' }, CMD_NULL, textui_cmd_rest, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Look around", { 'l', KTRL('L'),  'l', KTRL('L') }, CMD_NULL, do_cmd_look, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Target monster or location", { '*' }, CMD_NULL, textui_target, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Target closest monster", { '\'' }, CMD_NULL, textui_target_closest, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Dig a tunnel", { 'T', KTRL('T') }, CMD_TUNNEL, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Dig a tunnel", { 'T', KTRL('T'), 'T', KTRL('T') }, CMD_TUNNEL, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Go up staircase", {'<' }, CMD_GO_UP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Go down staircase", { '>' }, CMD_GO_DOWN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Open a door or a chest", { 'o' }, CMD_OPEN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Close a door", { 'c' }, CMD_CLOSE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Fire at nearest target", { 'h', KC_TAB }, CMD_NULL, do_cmd_fire_at_nearest, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Throw an item", { 'v' }, CMD_THROW, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Walk into a trap", { 'W', '-' }, CMD_JUMP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Bash a door", { 'b', KTRL('B'), 'B', KTRL('B') }, CMD_BASH, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Fire at nearest target", { 'h' }, CMD_NULL, do_cmd_fire_at_nearest, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Throw an item", { 't', 't', 'v', 'v' }, CMD_THROW, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Change song", { 's', 's', 'a', 'a' }, CMD_SING, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Toggle stealth mode", { 'S' }, CMD_TOGGLE_STEALTH, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Walk into a trap", { '_' }, CMD_JUMP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Exchange places", { 'X' }, CMD_EXCHANGE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 };
 
 /**
@@ -156,9 +157,8 @@ struct cmd_info cmd_item_manage[] =
 {
 	{ "Display equipment listing", { 'e' }, CMD_NULL, do_cmd_equip, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Display inventory listing", { 'i' }, CMD_NULL, do_cmd_inven, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Display quiver listing", { '|' }, CMD_NULL, do_cmd_quiver, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Pick up objects", { 'g' }, CMD_PICKUP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Ignore an item", { 'k', KTRL('D') }, CMD_IGNORE, textui_cmd_ignore, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Ignore an item", { KTRL('D') }, CMD_IGNORE, textui_cmd_ignore, NULL, 0, NULL, NULL, NULL, 0 },
 };
 
 /**
@@ -166,20 +166,14 @@ struct cmd_info cmd_item_manage[] =
  */
 struct cmd_info cmd_info[] =
 {
-	{ "Browse a book", { 'b', 'P' }, CMD_BROWSE_SPELL, textui_spell_browse, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Gain new spells", { 'G' }, CMD_STUDY, NULL, player_can_study_prereq, 0, NULL, NULL, NULL, 0 },
-	{ "View abilities", { 'S' }, CMD_NULL, do_cmd_abilities, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Cast a spell", { 'm' }, CMD_CAST, NULL, player_can_cast_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Toggle ignoring of items", { 'K', 'O' }, CMD_NULL, textui_cmd_toggle_ignore, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Toggle ignoring of items", { 'K' }, CMD_NULL, textui_cmd_toggle_ignore, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Display visible monster list", { '[' }, CMD_NULL, do_cmd_monlist, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Locate player on map", { 'L', 'W' }, CMD_NULL, do_cmd_locate, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Locate player on map", { 'L', 'W', 'L', 'W' }, CMD_NULL, do_cmd_locate, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Help", { '?' }, CMD_NULL, do_cmd_help, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Identify symbol", { '/' }, CMD_NULL, do_cmd_query_symbol, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Character description", { 'C' }, CMD_NULL, do_cmd_change_name, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Character description", { '@', '@', 'C', 'C' }, CMD_NULL, do_cmd_change_name, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL, 0, NULL, NULL, NULL, 0 }
 };
@@ -189,7 +183,7 @@ struct cmd_info cmd_info[] =
  */
 struct cmd_info cmd_util[] =
 {
-	{ "Interact with options", { '=' }, CMD_NULL, do_cmd_xxx_options, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Interact with options", { 'O', 'O', '=', '=' }, CMD_NULL, do_cmd_xxx_options, NULL, 0, NULL, NULL, NULL, 0 },
 
 	{ "Save and don't quit", { KTRL('S') }, CMD_NULL, save_game, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Save and quit", { KTRL('X') }, CMD_NULL, textui_quit, NULL, 0, NULL, NULL, NULL, 0 },
@@ -208,14 +202,13 @@ struct cmd_info cmd_hidden[] =
 	{ "Version info", { 'V' }, CMD_NULL, do_cmd_version, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Load a single pref line", { '"' }, CMD_NULL, do_cmd_pref, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip, NULL, 0, NULL, NULL, NULL, 0 }, /* XXX */
-	{ "Alter a grid", { '+' }, CMD_ALTER, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Steal from a monster", { 's' }, CMD_STEAL, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Alter a grid", { '/', '/', '+', '+' }, CMD_ALTER, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Walk", { ';' }, CMD_WALK, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Start running", { '.', ',' }, CMD_RUN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Center map", { KTRL('L'), '@' }, CMD_NULL, do_cmd_center_map, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Start running", { '.', ',', '.', ',' }, CMD_RUN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Stand still", { 'z' }, CMD_HOLD, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Center map", { KTRL('L') }, CMD_NULL, do_cmd_center_map, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Repeat previous command", { 'n', KTRL('N'), 'n', KTRL('N') }, CMD_REPEAT, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, NULL, NULL, 1, "Debug Command: ", "That is not a valid debug command.", "Debug", -1 },
 };
@@ -261,8 +254,6 @@ struct cmd_info cmd_debug_player[] =
 struct cmd_info cmd_debug_tele[] =
 {
 	{ "To location", { 'b' }, CMD_WIZ_TELEPORT_TO, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
-	{ "Random near", { 'p' }, CMD_NULL, wiz_phase_door, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
-	{ "Random far", { 't' }, CMD_NULL, wiz_teleport, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Jump to a level", { 'j' }, CMD_WIZ_JUMP_LEVEL, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 };
 
@@ -322,7 +313,7 @@ struct command_list cmds_all[] =
 {
 	{ "Items",           cmd_item,        N_ELEMENTS(cmd_item), 0, 0 },
 	{ "Action commands", cmd_action,      N_ELEMENTS(cmd_action), 0, 0 },
-	{ "Manage items",    cmd_item_manage, N_ELEMENTS(cmd_item_manage), 0, false },
+	{ "Manage items",    cmd_item_manage, N_ELEMENTS(cmd_item_manage), 0, 0 },
 	{ "Information",     cmd_info,        N_ELEMENTS(cmd_info), 0, 0 },
 	{ "Utility",         cmd_util,        N_ELEMENTS(cmd_util), 0, 0 },
 	{ "Hidden",          cmd_hidden,      N_ELEMENTS(cmd_hidden), 0, 0 },
@@ -341,14 +332,14 @@ struct command_list cmds_all[] =
 	{ "DbgStat", cmd_debug_stats, N_ELEMENTS(cmd_debug_stats), 2, 1 },
 	{ "DbgQuery", cmd_debug_query, N_ELEMENTS(cmd_debug_query), 2, 1 },
 	{ "DbgMisc", cmd_debug_misc, N_ELEMENTS(cmd_debug_misc), 2, 1 },
-	{ NULL,              NULL,            0, 0, false }
+	{ NULL,              NULL,            0, 0, 0 }
 };
 
 
 
 /*** Exported functions ***/
 
-#define KEYMAP_MAX 2
+#define KEYMAP_MAX 4
 
 /* List of directly accessible commands indexed by char */
 static struct cmd_info *converted_list[KEYMAP_MAX][UCHAR_MAX+1];
@@ -385,7 +376,7 @@ void cmd_init(void)
 		nested_lists = mem_zalloc(n_nested * sizeof(*nested_lists));
 		for (j = 0; j < (size_t)n_nested; j++) {
 			nested_lists[j] = mem_zalloc((UCHAR_MAX + 1) *
-				sizeof(*(nested_lists[j])));
+										 sizeof(*(nested_lists[j])));
 		}
 	}
 
@@ -397,17 +388,26 @@ void cmd_init(void)
 		/* Fill everything in */
 		if (cmds_all[j].keymap == 0) {
 			for (i = 0; i < cmds_all[j].len; i++) {
-				/* If a roguelike key isn't set, use default */
+				/* If a key for a set isn't given, use the first */
+				if (!commands[i].key[3])
+					commands[i].key[3] = commands[i].key[0];
+				if (!commands[i].key[2])
+					commands[i].key[2] = commands[i].key[0];
 				if (!commands[i].key[1])
 					commands[i].key[1] = commands[i].key[0];
 
 				/* Skip entries that don't have a valid key. */
-				if (!commands[i].key[0] || !commands[i].key[1])
+				if (!commands[i].key[0] || !commands[i].key[1] ||
+					!commands[i].key[2] || !commands[i].key[3])
 					continue;
 
 				converted_list[0][commands[i].key[0]] =
 					&commands[i];
 				converted_list[1][commands[i].key[1]] =
+					&commands[i];
+				converted_list[2][commands[i].key[2]] =
+					&commands[i];
+				converted_list[3][commands[i].key[3]] =
 					&commands[i];
 			}
 		} else if (cmds_all[j].keymap > 0) {
@@ -417,8 +417,10 @@ void cmd_init(void)
 			for (i = 0; i < cmds_all[j].len; i++) {
 				/*
 				 * Nested commands don't go through a keymap;
-				 * use the default for the roguelike key.
+				 * use the default for all keys.
 				 */
+				commands[i].key[3] = commands[i].key[0];
+				commands[i].key[2] = commands[i].key[0];
 				commands[i].key[1] = commands[i].key[0];
 
 				/*
@@ -438,7 +440,7 @@ unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode)
 {
 	unsigned int i;
 
-	assert(mode == KEYMAP_MODE_ROGUE || mode == KEYMAP_MODE_ORIG);
+	assert(mode >= KEYMAP_MODE_ORIG || mode < KEYMAP_MODE_MAX);
 
 	for (i = 0; i < N_ELEMENTS(converted_list[mode]); i++) {
 		struct cmd_info *cmd = converted_list[mode][i];
@@ -462,7 +464,7 @@ unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode)
 
 cmd_code cmd_lookup(unsigned char key, int mode)
 {
-	assert(mode == KEYMAP_MODE_ROGUE || mode == KEYMAP_MODE_ORIG);
+	assert(mode >= KEYMAP_MODE_ORIG || mode < KEYMAP_MODE_MAX);
 
 	if (!converted_list[mode][key])
 		return CMD_NULL;
@@ -507,7 +509,11 @@ void textui_process_command(void)
 	ui_event e = textui_get_command(&count);
 	struct cmd_info *cmd = NULL;
 	unsigned char key = '\0';
-	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, angband_keyset) ? KEYMAP_MODE_ANGBAND : KEYMAP_MODE_ORIG;
+
+	if (OPT(player, hjkl_movement)) {
+		mode |= KEYMAP_MODE_ROGUE;
+	}
 
 	switch (e.type) {
 		case EVT_RESIZE: do_cmd_redraw(); return;
@@ -609,7 +615,7 @@ void check_for_player_interrupt(game_event_type type, game_event_data *data,
 		if (e.type != EVT_NONE) {
 			/* Flush and disturb */
 			event_signal(EVENT_INPUT_FLUSH);
-			disturb(player);
+			disturb(player, false);
 			msg("Cancelled.");
 		}
 	}
@@ -625,13 +631,7 @@ static void pre_turn_refresh(void)
 		player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 		handle_stuff(player);
 
-		if (OPT(player, show_target) && target_sighted()) {
-			struct loc target;
-			target_get(&target);
-			move_cursor_relative(target.y, target.x);
-		} else {
-			move_cursor_relative(player->grid.y, player->grid.x);
-		}
+		move_cursor_relative(player->grid.y, player->grid.x);
 
 		for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 			if (!angband_term[j]) continue;
@@ -688,12 +688,6 @@ static bool start_game(bool new_game)
 	if (player->is_dead || new_game) {
 		character_generated = false;
 		textui_do_birth();
-	} else {
-		/*
-		 * Bring the stock curse objects up-to-date with what the
-		 * player knows.
-		 */
-		update_player_object_knowledge(player);
 	}
 
 	/* Tell the UI we've started. */
@@ -995,7 +989,7 @@ bool save_game_checked(void)
 	bool result;
 
 	/* Disturb the player */
-	disturb(player);
+	disturb(player, true);
 
 	/* Clear messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
@@ -1053,7 +1047,6 @@ bool save_game_checked(void)
 	return result;
 }
 
-
 /**
  * Close up the current game (player may or may not be dead).
  *
@@ -1088,9 +1081,8 @@ void close_game(bool prompt_failed_save)
 	screen_save_depth++;
 
 	/* Deal with the randarts file */
-	if (OPT(player, birth_randarts)) {
-		deactivate_randart_file();
-	}
+	write_self_made_artefacts();
+	deactivate_randart_file();
 
 	/* Handle death or life */
 	if (player->is_dead) {

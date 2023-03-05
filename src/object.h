@@ -47,14 +47,22 @@ enum {
 /*** Structures ***/
 
 /**
+ * Structure for possible object kinds for an ability or special item
+ */
+struct poss_item {
+	uint32_t kidx;
+	struct poss_item *next;
+};
+
+#define MAX_PREREQS 10
+
+/**
  * Effect
  */
 struct effect {
 	struct effect *next;
 	uint16_t index;	/**< The effect index */
 	dice_t *dice;	/**< Dice expression used in the effect */
-	int y;			/**< Y coordinate or distance */
-	int x;			/**< X coordinate or distance */
 	int subtype;	/**< Projection type, timed effect type, etc. */
 	int radius;		/**< Radius of the effect (if it has one) */
 	int other;		/**< Extra parameter to be passed to the handler */
@@ -68,12 +76,13 @@ struct chest_trap {
 	struct chest_trap *next;
 	char *name;
 	char *code;
-	int level;
+	int index;
 	struct effect *effect;
 	int pval;
 	bool destroy;
-	bool magic;
 	char *msg;
+	char *msg_save;
+	char *msg_bad;
 	char *msg_death;
 };
 
@@ -83,12 +92,12 @@ struct chest_trap {
 struct brand {
 	char *code;
 	char *name;
-	char *verb;
+	char *desc;
 	int resist_flag;
 	int vuln_flag;
-	int multiplier;
-	int o_multiplier;
-	int power;
+	int dice;
+	int vuln_dice;
+	int smith_difficulty;
 	struct brand *next;
 };
 
@@ -98,13 +107,9 @@ struct brand {
 struct slay {
 	char *code;
 	char *name;
-	char *base;
-	char *melee_verb;
-	char *range_verb;
 	int race_flag;
-	int multiplier;
-	int o_multiplier;
-	int power;
+	int dice;
+	int smith_difficulty;
 	struct slay *next;
 };
 
@@ -136,17 +141,12 @@ struct element_info {
 };
 
 /**
- * Activation structure
+ * Allocation structure
  */
-struct activation {
-	struct activation *next;
-	char *name;
-	int index;
-	bool aim;
-	int power;
-	struct effect *effect;
-	char *message;
-	char *desc;
+struct allocation {
+	struct allocation *next;
+	uint8_t locale;
+	uint8_t chance;
 };
 
 extern struct activation *activations;
@@ -165,6 +165,15 @@ struct object_base {
 	bitflag flags[OF_SIZE];
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 	struct element_info el_info[ELEM_MAX];
+
+	bool smith_attack_valid;
+	int smith_attack_artistry;
+	int smith_attack_artefact;
+	bitflag smith_flags[OF_SIZE];
+	struct element_info smith_el_info[ELEM_MAX];
+    int smith_modifiers[OBJ_MOD_MAX];
+	bool *smith_slays;
+	bool *smith_brands;
 
 	int break_perc;
 	int max_stack;
@@ -191,16 +200,17 @@ struct object_kind {
 	int tval;					/**< General object type (see TV_ macros) */
 	int sval;					/**< Object sub-type  */
 
-	random_value pval;			/* Item extra-parameter */
+	int pval;					/* Item extra-parameter */
+	random_value special1;		/* Special parameter 1 */
+	int special2;				/* Special parameter 1 */
 
-	random_value to_h;			/**< Bonus to hit */
-	random_value to_d;			/**< Bonus to damage */
-	random_value to_a;			/**< Bonus to armor */
-	int ac;					/**< Base armor */
-
-	int dd;					/**< Damage dice */
-	int ds;					/**< Damage sides */
-	int weight;				/**< Weight, in 1/10lbs */
+	int att;					/**< Bonus to hit */
+	int evn;					/**< Base armor */
+	int dd;						/**< Damage dice */
+	int ds;						/**< Damage sides */
+	int pd;						/**< Damage dice */
+	int ps;						/**< Damage sides */
+	int weight;					/**< Weight, in 1/10lbs */
 
 	int cost;					/**< Object base cost */
 
@@ -212,22 +222,19 @@ struct object_kind {
 
 	bool *brands;
 	bool *slays;
-	int *curses;			/**< Array of curse powers */
 
 	uint8_t d_attr;			/**< Default object attribute */
 	wchar_t d_char;			/**< Default object character */
 
-	int alloc_prob;			/**< Allocation: commonness */
-	int alloc_min;			/**< Highest normal dungeon level */
-	int alloc_max;			/**< Lowest normal dungeon level */
+	struct allocation *alloc;	/**< Allocation levels and chances */
+
+	struct effect *effect;	/**< Effect this item produces (effects.c) */
+	char *effect_msg;
+	struct effect *thrown_effect;/**< Effect for thrown potions */
+	struct ability *abilities;	    /* Abilities */
+
 	int level;				/**< Level (difficulty of activation) */
 
-	struct activation *activation;	/**< Artifact-like activation */
-	struct effect *effect;	/**< Effect this item produces (effects.c) */
-	int power;				/**< Power of the item's effect */
-	char *effect_msg;
-	char *vis_msg;
-	random_value time;		/**< Recharge time (rods/activation) */
 	random_value charge;	/**< Number of charges (staves/wands) */
 
 	int gen_mult_prob;		/**< Probability of generating more than one */
@@ -253,6 +260,13 @@ extern struct object_kind *unknown_gold_kind;
 extern struct object_kind *pile_kind;
 extern struct object_kind *curse_object_kind;
 
+enum artifact_category {
+	ARTIFACT_NORMAL,
+	ARTIFACT_SELF_MADE,
+	ARTIFACT_ULTIMATE,
+	ARTIFACT_CATEGORY_MAX
+};
+
 /**
  * Unchanging information about artifacts.
  */
@@ -261,19 +275,20 @@ struct artifact {
 	char *text;
 
 	uint32_t aidx;
+	enum artifact_category category;
 
 	struct artifact *next;
 
 	int tval;		/**< General artifact type (see TV_ macros) */
 	int sval;		/**< Artifact sub-type  */
+	int pval;		/**< Artifact power value  */
 
-	int to_h;		/**< Bonus to hit */
-	int to_d;		/**< Bonus to damage */
-	int to_a;		/**< Bonus to armor */
-	int ac;		/**< Base armor */
-
-	int dd;		/**< Base damage dice */
-	int ds;		/**< Base damage sides */
+	int16_t att;			/* Bonus to attack */
+	int16_t evn;			/* Bonus to evasion */
+	uint8_t dd;		/**< Number of damage dice */
+	uint8_t ds;		/**< Number of sides on each damage die */
+	uint8_t pd;		/**< Number of protection dice */
+	uint8_t ps;		/**< Number of sides on each protection die */
 
 	int weight;	/**< Weight in 1/10lbs */
 
@@ -286,18 +301,11 @@ struct artifact {
 
 	bool *brands;
 	bool *slays;
-	int *curses;		/**< Array of curse powers */
 
-	int level;			/** Difficulty level for activation */
+	struct ability *abilities;	    /* Abilities */
 
-	int alloc_prob;		/** Chance of being generated (i.e. rarity) */
-	int alloc_min;		/** Minimum depth (can appear earlier) */
-	int alloc_max;		/** Maximum depth (will NEVER appear deeper) */
-
-	struct activation *activation;	/**< Artifact activation */
-	char *alt_msg;
-
-	random_value time;	/**< Recharge time (if appropriate) */
+	uint8_t level;			/* Artefact level */
+	uint8_t rarity;		/* Artefact rarity */
 };
 
 /**
@@ -319,15 +327,7 @@ extern struct artifact_upkeep *aup_info;
 
 
 /**
- * Structure for possible object kinds for an ego item
- */
-struct poss_item {
-	uint32_t kidx;
-	struct poss_item *next;
-};
-
-/**
- * Information about ego-items.
+ * Information about special items.
  */
 struct ego_item {
 	struct ego_item *next;
@@ -340,57 +340,83 @@ struct ego_item {
 	int cost;						/* Ego-item "cost" */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
-	bitflag flags_off[OF_SIZE];		/**< Flags to remove */
 	bitflag kind_flags[KF_SIZE];	/**< Kind flags */
 
-	random_value modifiers[OBJ_MOD_MAX];
+	int modifiers[OBJ_MOD_MAX];
 	int min_modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
 
 	bool *brands;
 	bool *slays;
-	int *curses;			/**< Array of curse powers */
 
-	int rating;			/* Level rating boost */
-	int alloc_prob; 		/** Chance of being generated (i.e. rarity) */
-	int alloc_min;			/** Minimum depth (can appear earlier) */
+	int rarity; 		/** Chance of being generated (i.e. rarity) */
+	int level;			/** Minimum depth (can appear earlier) */
 	int alloc_max;			/** Maximum depth (will NEVER appear deeper) */
 
 	struct poss_item *poss_items;
 
-	random_value to_h;		/* Extra to-hit bonus */
-	random_value to_d;		/* Extra to-dam bonus */
-	random_value to_a;		/* Extra to-ac bonus */
+	struct ability *abilities;	    /* Abilities */
+	
+	uint8_t att;		/* Maximum to-hit bonus */
+	uint8_t dd;			/* bonus damge dice */
+	uint8_t ds;			/* bonus damage sides */
+	uint8_t evn;		/* Maximum to-e bonus */
+	uint8_t pd;			/* bonus protection dice */
+	uint8_t ps;			/* bonus protection sides */
+	uint8_t pval;		/* Maximum pval */
 
-	int min_to_h;			/* Minimum to-hit value */
-	int min_to_d;			/* Minimum to-dam value */
-	int min_to_a;			/* Minimum to-ac value */
-
-	struct effect *effect;	/**< Effect this item produces (effects.c) */
-	char *effect_msg;
-	random_value time;		/**< Recharge time (rods/activation) */
-
+	bool aware;				/* Has its type been detected this game? */
 	bool everseen;			/* Do not spoil ignore menus */
 };
 
-/*
- * The ego-item arrays
+/**
+ * The ego-item array
  */
 extern struct ego_item *e_info;
+
+/**
+ * Object drop types
+ */
+struct drop {
+	struct drop *next;
+	char *name;
+	int idx;
+	bool chest;
+	struct poss_item *poss;
+	struct poss_item *imposs;
+};
+
+/**
+ * The drop array
+ */
+extern struct drop *drops;
 
 /**
  * Flags for the obj->notice field
  */
 enum {
-	OBJ_NOTICE_WORN = 0x01,
-	OBJ_NOTICE_ASSESSED = 0x02,
-	OBJ_NOTICE_IGNORE = 0x04,
-	OBJ_NOTICE_IMAGINED = 0x08,
+	OBJ_NOTICE_SENSE = 0x01,
+	OBJ_NOTICE_EMPTY = 0x02,
+	OBJ_NOTICE_KNOWN = 0x04,
+	OBJ_NOTICE_CURSED = 0x08,
+	OBJ_NOTICE_BROKEN = 0x10,
+	OBJ_NOTICE_SPOIL = 0x20,
+	OBJ_NOTICE_IGNORE = 0x40,
 };
 
-struct curse_data {
-	int power;
-	int timeout;
+/**
+ * Values for the obj->pseudo field
+ */
+enum {
+	OBJ_PSEUDO_NONE = 0,
+	OBJ_PSEUDO_AVERAGE,
+	OBJ_PSEUDO_TERRIBLE,
+	OBJ_PSEUDO_WORTHLESS,
+	OBJ_PSEUDO_CURSED,
+	OBJ_PSEUDO_BROKEN,
+	OBJ_PSEUDO_EXCELLENT,
+	OBJ_PSEUDO_SPECIAL,
+	OBJ_PSEUDO_MAX,
 };
 
 /**
@@ -421,12 +447,12 @@ struct curse_data {
  */
 struct object {
 	struct object_kind *kind;	/**< Kind of the object */
+	struct object_kind *image_kind;	/**< Hallucination kind of the object */
 	struct ego_item *ego;		/**< Ego item info of the object, if any */
-	const struct artifact *artifact;	/**< Artifact info of the object, if any */
+	const struct artifact *artifact; /**< Artifact info of the object, if any */
 
 	struct object *prev;	/**< Previous object in a pile */
 	struct object *next;	/**< Next object in a pile */
-	struct object *known;	/**< Known version of this object */
 
 	uint16_t oidx;		/**< Item list index, if any */
 
@@ -439,37 +465,37 @@ struct object {
 
 	int16_t weight;		/**< Item weight */
 
+	int16_t att;			/* Bonus to attack */
+	int16_t evn;			/* Bonus to evasion */
 	uint8_t dd;		/**< Number of damage dice */
 	uint8_t ds;		/**< Number of sides on each damage die */
-	int16_t ac;		/**< Normal AC */
-	int16_t to_a;		/**< Plusses to AC */
-	int16_t to_h;		/**< Plusses to hit */
-	int16_t to_d;		/**< Plusses to damage */
+	uint8_t pd;		/**< Number of protection dice */
+	uint8_t ps;		/**< Number of sides on each protection die */
 
 	bitflag flags[OF_SIZE];	/**< Object flags */
 	int16_t modifiers[OBJ_MOD_MAX];	/**< Object modifiers*/
 	struct element_info el_info[ELEM_MAX];	/**< Object element info */
 	bool *brands;			/**< Flag absence/presence of each brand */
 	bool *slays;			/**< Flag absence/presence of each slay */
-	struct curse_data *curses;	/**< Array of curse powers and timeouts */
 
-	struct effect *effect;	/**< Effect this item produces (effects.c) */
-	char *effect_msg;		/**< Message on use */
-	struct activation *activation;	/**< Artifact activation, if applicable */
-	random_value time;		/**< Recharge time (rods/activation) */
 	int16_t timeout;		/**< Timeout Counter */
+	int16_t used;			/**< Times used (for staffs) */
 
 	uint8_t number;			/**< Number of items */
-	bitflag notice;			/**< Attention paid to the object */
+	bitflag notice;			/**< Sil - ID status */
+	uint8_t pseudo;			/**< Sil - pseudo-id status */
 
 	int16_t held_m_idx;		/**< Monster holding us (if any) */
-	int16_t mimicking_m_idx;	/**< Monster mimicking us (if any) */
+
+	bool marked;			/**< Object is marked */
 
 	uint8_t origin;			/**< How this item was found */
 	uint8_t origin_depth;		/**< What depth the item was found at */
 	struct monster_race *origin_race;	/**< Monster race that dropped it */
 
 	quark_t note; 			/**< Inscription index */
+
+	struct ability *abilities;	    /**< Object abilities */
 };
 
 /**
@@ -477,42 +503,38 @@ struct object {
  */
 static struct object const OBJECT_NULL = {
 	.kind = NULL,
+	.image_kind = NULL,
 	.ego = NULL,
 	.artifact = NULL,
 	.prev = NULL,
 	.next = NULL,
-	.known = NULL,
 	.oidx = 0,
 	.grid = { 0, 0 },
 	.tval = 0,
 	.sval = 0,
 	.pval = 0,
 	.weight = 0,
+	.att = 0,
+	.evn = 0,
 	.dd = 0,
 	.ds = 0,
-	.ac = 0,
-	.to_a = 0,
-	.to_h = 0,
-	.to_d = 0,
+	.pd = 0,
+	.ps = 0,
 	.flags = { 0 },
 	.modifiers = { 0 },
 	.el_info = { { 0, 0 } },
 	.brands = NULL,
 	.slays = NULL,
-	.curses = NULL,
-	.effect = NULL,
-	.effect_msg = NULL,
-	.activation = NULL,
-	.time = { 0, 0, 0, 0 },
 	.timeout = 0,
+	.used = 0,
 	.number = 0,
 	.notice = 0,
 	.held_m_idx = 0,
-	.mimicking_m_idx = 0,
 	.origin = 0,
 	.origin_depth = 0,
 	.origin_race = NULL,
 	.note = 0,
+	.abilities = NULL,
 };
 
 struct flavor

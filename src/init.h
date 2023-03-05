@@ -30,11 +30,15 @@ struct angband_constants
 	uint16_t f_max;		/**< Maximum number of terrain features */
 	uint16_t trap_max;	/**< Maximum number of trap kinds */
 	uint16_t k_max;		/**< Maximum number of object base kinds */
+	uint16_t drop_max;	/**< Maximum number of object drop types */
 	uint16_t a_max;		/**< Maximum number of artifact kinds */
 	uint16_t e_max;		/**< Maximum number of ego-item kinds */
 	uint16_t r_max;		/**< Maximum number of monster races */
-	uint16_t mp_max;	/**< Maximum number of monster pain message sets */
+	uint16_t pain_max;	/**< Maximum number of monster pain message sets */
+	uint16_t pursuit_max;/**< Maximum number of monster pursuit message sets */
+	uint16_t warning_max;/**< Maximum number of monster warning message sets */
 	uint16_t s_max;		/**< Maximum number of magic spells */
+	uint16_t v_max;		/**< Maximum number of vault templates */
 	uint16_t pit_max;	/**< Maximum number of monster pit types */
 	uint16_t act_max;	/**< Maximum number of activations for randarts */
 	uint8_t curse_max;	/**< Maximum number of curses */
@@ -49,8 +53,8 @@ struct angband_constants
 	uint16_t projection_max;	/**< Maximum number of projection types */
 	uint16_t calculation_max;	/**< Maximum number of object power calculations */
 	uint16_t property_max;	/**< Maximum number of object properties */
-	uint16_t ordinary_kind_max;	/**< Maximum number of objects in object.txt */
-	uint16_t shape_max;	/**< Maximum number of player shapes */
+	uint16_t ordinary_kind_max;	/**< Maximum number of ordinary object kinds */
+	uint16_t obj_alloc_max;	/**< Maximum number of object allocations */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	uint16_t level_monster_max;	/**< Maximum number of monsters on a given level */
@@ -69,31 +73,29 @@ struct angband_constants
 	/* Monster gameplay constants, read from constants.txt */
 	uint16_t glyph_hardness;	/**< How hard for a monster to break a glyph */
 	uint16_t repro_monster_rate;	/**< Monster reproduction rate-slower */
-	uint16_t life_drain_percent;	/**< Percent of player life drained */
+	uint16_t mana_cost;			/**< Mana it costs a monster to cast a  spell */
+	uint16_t mana_max;			/**< Maximum amount of mana a monster can have*/
 	uint16_t flee_range;		/**< Monsters run this many grids out of view */
 	uint16_t turn_range;		/**< Monsters turn to fight closer than this */
+	uint16_t hide_range;		/**< Monsters look for safety this far away */
+	uint16_t wander_range;		/**< Monsters wander this far */
+	uint16_t mon_regen_hp_period;/**< Monster turns for complete regeneration */
+	uint16_t mon_regen_sp_period;/**< Monster turns for complete regeneration */
 
 	/* Dungeon generation constants, read from constants.txt */
 	uint16_t level_room_max;	/**< Maximum number of rooms on a level */
-	uint16_t level_door_max;	/**< Maximum number of potential doors on a level */
-	uint16_t wall_pierce_max;	/**< Maximum number of potential wall piercings */
-	uint16_t tunn_grid_max;		/**< Maximum number of tunnel grids */
-	uint16_t room_item_av;		/**< Average number of items in rooms */
-	uint16_t both_item_av;		/**< Average number of items in random places */
-	uint16_t both_gold_av;		/**< Average number of money items */
-	uint16_t level_pit_max;		/**< Maximum number of pits on a level */
+	uint16_t level_room_min;	/**< Minimum number of rooms on a level */
+	uint16_t block_hgt;			/**< Height of each dungeon block */
+	uint16_t block_wid;			/**< Width of each dungeon block */
 
 	/* World shape constants, read from constants.txt */
-	uint16_t max_depth;	/* Maximum dungeon level */
+	uint16_t dun_depth;	/* Maximum dungeon level */
+	uint16_t max_depth;	/* Maximum generation level */
 	uint16_t day_length;	/* Number of turns from dawn to dawn */
 	uint16_t dungeon_hgt;	/**< Maximum number of vertical grids on a level */
 	uint16_t dungeon_wid;	/**< Maximum number of horizontical grids on a level */
-	uint16_t town_hgt;	/**< Maximum number of vertical grids in the town */
-	uint16_t town_wid;	/**< Maximum number of horizontical grids in the town */
-	uint16_t feeling_total;	/* Total number of feeling squares per level */
-	uint16_t feeling_need;	/* Squares needed to see to get first feeling */
-	uint16_t stair_skip;	/* Number of levels to skip for each down stair */
 	uint16_t move_energy;	/* Energy the player or monster needs to move */
+	uint16_t flow_max;		/* Maximum distance measured in a flow */
 
 	/* Carrying capacity constants, read from constants.txt */
 	uint16_t pack_size;		/**< Maximum number of pack slots */
@@ -101,12 +103,6 @@ struct angband_constants
 	uint16_t quiver_slot_size;	/**< Maximum number of missiles per quiver slot */
 	uint16_t thrown_quiver_mult;	/**< Size multiplier for non-ammo in quiver */
 	uint16_t floor_size;		/**< Maximum number of items per floor grid */
-
-	/* Store parameters, read from constants.txt */
-	uint16_t store_inven_max;	/**< Maximum number of objects in store inventory */
-	uint16_t store_turns;		/**< Number of turns between turnovers */
-	uint16_t store_shuffle;		/**< 1/per-day-chance of owner changing */
-	uint16_t store_magic_level;	/**< Level for apply_magic() in normal stores */
 
 	/* Object creation constants, read from constants.txt */
 	uint16_t max_obj_depth;	/* Maximum depth used in object allocation */
@@ -119,8 +115,10 @@ struct angband_constants
 	/* Player constants, read from constants.txt */
 	uint16_t max_sight;	/* Maximum visual range */
 	uint16_t max_range;	/* Maximum missile and spell range */
-	uint16_t start_gold;	/* Amount of gold the player starts with */
-	uint16_t food_value;	/* Number of turns 1% of food lasts */
+	uint16_t start_exp;	/* Amount of experience the player starts with */
+	uint16_t ability_cost;	/* Base experience cost of an ability */
+	uint16_t stealth_bonus;	/* Bonus to stealth in stealth mode */
+	uint16_t player_regen_period;	/* Player turns for complete regeneration */
 };
 
 struct init_module {

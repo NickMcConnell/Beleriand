@@ -51,8 +51,6 @@ bool effect_do(struct effect *effect,
 	bool *ident,
 	bool aware,
 	int dir,
-	int beam,
-	int boost,
 	struct command *cmd);
 void effect_simple(int index,
 	struct source origin,
@@ -60,8 +58,6 @@ void effect_simple(int index,
 	int subtype,
 	int radius,
 	int other,
-	int y,
-	int x,
 	bool *ident);
 int recharge_failure_chance(const struct object *obj, int strength);
 

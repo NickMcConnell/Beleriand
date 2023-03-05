@@ -1,0 +1,9 @@
+# sex.txt
+
+name:Male
+possess:his
+poetry:male_entry_poetry
+
+name:Female
+possess:her
+poetry:female_entry_poetry

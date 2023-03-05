@@ -36,10 +36,8 @@ typedef struct effect_handler_context_s {
 	const struct object *obj;
 	const bool aware;
 	const int dir;
-	const int beam;
-	const int boost;
 	const random_value value;
-	const int subtype, radius, other, y, x;
+	const int subtype, radius, other;
 	const char *msg;
 	bool ident;
 	struct command *cmd;
@@ -64,7 +62,7 @@ struct effect_kind {
 #include "list-effects.h"
 #undef EFFECT
 
-int effect_calculate_value(effect_handler_context_t *context, bool use_boost);
+int effect_calculate_value(effect_handler_context_t *context);
 struct monster *monster_target_monster(effect_handler_context_t *context);
 
 #endif /* INCLUDED_EFFECT_HANDLER_H */

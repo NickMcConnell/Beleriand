@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "cmds.h"
+#include "combat.h"
 #include "effects.h"
 #include "game-input.h"
 #include "init.h"
@@ -33,9 +34,10 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-abilities.h"
 #include "player-attack.h"
 #include "player-calcs.h"
-#include "player-spell.h"
+#include "player-quest.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "target.h"
@@ -46,94 +48,42 @@
  * Utility bits and bobs
  * ------------------------------------------------------------------------
  */
-
 /**
- * Check to see if the player can use a rod/wand/staff/activatable object.
+ * Check to see if the player can use a staff.
  */
 static int check_devices(struct object *obj)
 {
-	int fail;
-	const char *action;
-	const char *what = NULL;
-	bool activated = false;
+	/* Base chance of success */
+	int score = player->state.skill_use[SKILL_WILL];
 
-	/* Get the right string */
-	if (tval_is_rod(obj)) {
-		action = "zap the rod";
-	} else if (tval_is_wand(obj)) {
-		action = "use the wand";
-		what = "wand";
-	} else if (tval_is_staff(obj)) {
-		action = "use the staff";
-		what = "staff";
-	} else {
-		action = "activate it";
-		activated = true;
+	/* Base difficulty */
+	int difficulty = obj->kind->level / 2;
+
+	/* Bonus to roll for 'channeling' ability */
+	if (player_active_ability(player, "Channeling")) {
+		score += 5;
 	}
 
-	/* Figure out how hard the item is to use */
-	fail = get_use_device_chance(obj);
+	/* Confusion hurts skill */
+	if (player->timed[TMD_CONFUSED]) difficulty += 5;
 
 	/* Roll for usage */
-	if (randint1(1000) < fail) {
+	if (skill_check(source_player(), score, difficulty, source_none()) <= 0) {
 		event_signal(EVENT_INPUT_FLUSH);
-		msg("You failed to %s properly.", action);
+		msg("You failed to use the staff properly.");
 		return false;
 	}
 
 	/* Notice empty staffs */
-	if (what && obj->pval <= 0) {
+	if (!obj_has_charges(obj)) {
 		event_signal(EVENT_INPUT_FLUSH);
-		msg("The %s has no charges left.", what);
+		msg("That staff has no charges left.");
+		obj->notice |= (OBJ_NOTICE_EMPTY);
 		return false;
-	}
-
-	/* Notice activations */
-	if (activated) {
-		if (obj->effect)
-			obj->known->effect = obj->effect;
-		else if (obj->activation)
-			obj->known->activation = obj->activation;
 	}
 
 	return true;
 }
-
-
-/**
- * Return the chance of an effect beaming, given a tval.
- */
-static int beam_chance(int tval)
-{
-	switch (tval)
-	{
-		case TV_WAND: return 20;
-		case TV_ROD:  return 10;
-	}
-
-	return 0;
-}
-
-
-/**
- * Print an artifact activation message.
- */
-static void activation_message(struct object *obj, const struct player *p)
-{
-	const char *message;
-
-	/* See if we have a message, then print it */
-	if (!obj->activation) return;
-	if (!obj->activation->message) return;
-	if (obj->artifact && obj->artifact->alt_msg) {
-		message = obj->artifact->alt_msg;
-	} else {
-		message = obj->activation->message;
-	}
-	print_custom_message(obj, message, MSG_GENERIC, p);
-}
-
-
 
 /**
  * ------------------------------------------------------------------------
@@ -147,10 +97,6 @@ static void activation_message(struct object *obj, const struct player *p)
 void do_cmd_uninscribe(struct command *cmd)
 {
 	struct object *obj;
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
 
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -177,10 +123,6 @@ void do_cmd_inscribe(struct command *cmd)
 
 	char prompt[1024];
 	char o_name[80];
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
 
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -213,8 +155,6 @@ void do_cmd_inscribe(struct command *cmd)
  */
 void do_cmd_autoinscribe(struct command *cmd)
 {
-	if (player_is_shapechanged(player)) return;
-
 	autoinscribe_ground(player);
 	autoinscribe_pack(player);
 
@@ -235,10 +175,6 @@ void do_cmd_takeoff(struct command *cmd)
 {
 	struct object *obj;
 
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
-
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
 			/* Prompt */ "Take off or unwield which item?",
@@ -250,7 +186,10 @@ void do_cmd_takeoff(struct command *cmd)
 	inven_takeoff(obj);
 	combine_pack(player);
 	pack_overflow(obj);
-	player->upkeep->energy_use = z_info->move_energy / 2;
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Store the action type */
+	player->previous_action[0] = ACTION_MISC;
 }
 
 
@@ -267,10 +206,8 @@ void do_cmd_wield(struct command *cmd)
 
 	int slot;
 	struct object *obj;
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
+	struct ability *ability;
+	bool two_weapon = false;
 
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -279,6 +216,19 @@ void do_cmd_wield(struct command *cmd)
 			/* Filter */ obj_can_wear,
 			/* Choice */ USE_INVEN | USE_FLOOR | USE_QUIVER) != CMD_OK)
 		return;
+
+	/* Check whether it would be too heavy */
+	if (!object_is_carried(player, obj) &&
+		(player->upkeep->total_weight + obj->weight >
+		 weight_limit(player->state)* 3 / 2)) {
+		/* Describe it */
+		object_desc(o_name, sizeof(o_name), obj, ODESC_FULL, player);
+
+		if (obj->kind) msg("You cannot lift %s.", o_name);
+
+		/* Abort */
+		return;
+	}
 
 	/* Get the slot the object wants to go in, and the item currently there */
 	slot = wield_slot(obj);
@@ -303,6 +253,24 @@ void do_cmd_wield(struct command *cmd)
 
 		/* Change slot if necessary */
 		slot = equipped_item_slot(player->body, equip_obj);
+	}
+
+	/* Ask about two weapon fighting if necessary */
+	for (ability = obj->abilities; ability; ability = ability->next) {
+		if (streq(ability->name, "Two Weapon Fighting") &&
+			object_is_known(obj)) {
+			two_weapon = true;
+		}
+	}
+	if ((player_active_ability(player, "Two Weapon Fighting") || two_weapon) && 
+	    tval_is_melee_weapon(obj)) {
+		if (!of_has(obj->flags, OF_TWO_HANDED) &&
+			!of_has(obj->flags, OF_HAND_AND_A_HALF)) {
+			if (get_check("Do you wish to wield it in your off-hand? ")) {
+				slot = slot_by_name(player, "arm");
+				equip_obj = slot_object(player, slot);
+			}
+		}
 	}
 
 	/* Prevent wielding into a stickied slot */
@@ -357,10 +325,6 @@ void do_cmd_drop(struct command *cmd)
 	int amt;
 	struct object *obj;
 
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
-
 	/* Get arguments */
 	if (cmd_get_item(cmd, "item", &obj,
 			/* Prompt */ "Drop which item?",
@@ -371,15 +335,27 @@ void do_cmd_drop(struct command *cmd)
 
 	/* Cannot remove stickied items */
 	if (object_is_equipped(player->body, obj) && !obj_can_takeoff(obj)) {
-		msg("Hmmm, it seems to be stuck.");
-		return;
+		if (player_active_ability(player, "Curse Breaking")) {
+			/* Message */
+			msg("With a great strength of will, you break the curse!");
+
+			/* Uncurse the object */
+			uncurse_object(obj);
+		} else {
+			/* Oops */
+			msg("You cannot bear to part with it.");
+			return;
+		}
 	}
 
 	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
 		return;
 
 	inven_drop(obj, amt);
-	player->upkeep->energy_use = z_info->move_energy / 2;
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Store the action type */
+	player->previous_action[0] = ACTION_MISC;
 }
 
 /**
@@ -389,8 +365,8 @@ void do_cmd_drop(struct command *cmd)
  */
 
 enum use {
-	USE_TIMEOUT,
 	USE_CHARGE,
+	USE_VOICE,
 	USE_SINGLE
 };
 
@@ -398,7 +374,7 @@ enum use {
  * Use an object the right way.
  */
 static void use_aux(struct command *cmd, struct object *obj, enum use use,
-					int snd)
+					int snd, bool allow_vertical)
 {
 	struct effect *effect = object_effect(obj);
 	bool can_use = true;
@@ -414,9 +390,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	was_aware = object_flavor_is_aware(obj);
 
 	/* Determine whether we know an item needs to be be aimed */
-	if (tval_is_wand(obj) || tval_is_rod(obj) || was_aware ||
-		(obj->effect && (obj->known->effect == obj->effect)) ||
-		(obj->activation && (obj->known->activation == obj->activation))) {
+	if (tval_is_horn(obj) || was_aware) {
 		known_aim = true;
 	}
 
@@ -424,7 +398,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		/* Unknown things with no obvious aim get a random direction */
 		if (!known_aim) {
 			dir = ddd[randint0(8)];
-		} else if (cmd_get_target(cmd, "target", &dir) != CMD_OK) {
+		} else if (cmd_get_target(cmd, "target", &dir, 0, allow_vertical)
+				   != CMD_OK) {
 			return;
 		}
 
@@ -432,48 +407,45 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		player_confuse_dir(player, &dir, false);
 	}
 
-	/* track the object used */
+	/* Track the object used */
 	track_object(player->upkeep, obj);
 
 	/* Verify effect */
 	assert(effect);
 
+	/* Check voice */
+	if (use == USE_VOICE) {
+		int voice_cost = player_active_ability(player, "Channeling") ? 10 : 20;
+
+		if (player->csp < voice_cost) {
+			event_signal(EVENT_INPUT_FLUSH);
+			msg("You are out of breath.");
+			return;
+		}
+
+		msg("You sound a loud note on the horn.");
+	}
+
 	/* Check for use if necessary */
-	if ((use == USE_CHARGE) || (use == USE_TIMEOUT)) {
+	if (use == USE_CHARGE) {
 		can_use = check_devices(obj);
 	}
 
 	/* Execute the effect */
 	if (can_use) {
-		int beam = beam_chance(obj->tval);
-		int boost, level, charges = 0;
+		int charges = 0;
 		uint16_t number = 0;
 		bool ident = false, used;
 		struct object *work_obj;
 		struct object *first_remainder = NULL;
-		char label = '\0';
-
-		/* Get the level */
-		if (obj->artifact)
-			level = obj->artifact->level;
-		else
-			level = obj->kind->level;
 
 		/* Sound and/or message */
-		if (obj->activation) {
-			msgt(snd, "You activate it.");
-			activation_message(obj, player);
-		} else if (obj->kind->effect_msg) {
+		if (obj->kind->effect_msg) {
 			msgt(snd, "%s", obj->kind->effect_msg);
-		} else if (obj->kind->vis_msg && !player->timed[TMD_BLIND]) {
-			msgt(snd, "%s", obj->kind->vis_msg);
 		} else {
 			/* Make a noise! */
 			sound(snd);
 		}
-
-		/* Boost damage effects if skill > difficulty */
-		boost = MAX((player->state.skills[SKILL_DEVICE] - level) / 2, 0);
 
 		/*
 		 * Tentatively deduct the amount used - the effect could leave
@@ -487,14 +459,12 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			 * use.
 			 */
 			if (object_is_carried(player, obj)) {
-				label = gear_to_label(player, obj);
 				work_obj = gear_object_for_use(player, obj, 1,
 					false, &none_left);
 				from_floor = false;
 				number = object_pack_total(player, work_obj,
 					false, &first_remainder);
-				if (first_remainder
-						&& first_remainder->number == number) {
+				if (first_remainder	&& first_remainder->number == number) {
 					first_remainder = NULL;
 				}
 			} else {
@@ -508,32 +478,22 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				charges = obj->pval;
 				/* Use a single charge */
 				obj->pval--;
-			} else if (use == USE_TIMEOUT) {
-				charges = obj->timeout;
-				obj->timeout += randcalc(obj->time, 0, RANDOMISE);
 			}
 			work_obj = object_new();
 			object_copy(work_obj, obj);
 			work_obj->oidx = 0;
-			if (obj->known) {
-				work_obj->known = object_new();
-				object_copy(work_obj->known, obj->known);
-				work_obj->known->oidx = 0;
-			}
 			from_floor = !object_is_carried(player, obj);
 		}
 
 		/* Do effect; use original not copy (proj. effect handling) */
 		target_fix();
 		used = effect_do(effect,
-							source_player(),
-							obj,
-							&ident,
-							was_aware,
-							dir,
-							beam,
-							boost,
-							cmd);
+						 source_player(),
+						 obj,
+						 &ident,
+						 was_aware,
+						 dir,
+						 cmd);
 		target_release();
 
 		if (!used) {
@@ -543,10 +503,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				struct object *dropped = object_new();
 
 				object_copy(dropped, work_obj);
-				if (work_obj->known) {
-					dropped->known = object_new();
-					object_copy(dropped->known, work_obj->known);
-				}
 				if (from_floor) {
 					drop_near(cave, &dropped, 0, player->grid, false, true);
 				} else {
@@ -554,8 +510,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				}
 			} else if (use == USE_CHARGE) {
 				obj->pval = charges;
-			} else if (use == USE_TIMEOUT) {
-				obj->timeout = charges;
 			}
 
 			/*
@@ -563,10 +517,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			 * gained
 			 */
 			if (was_aware || !ident) {
-				if (work_obj->known) {
-					object_delete(player->cave, NULL, &work_obj->known);
-				}
-				object_delete(cave, player->cave, &work_obj);
+				object_delete(cave, &work_obj);
 				/*
 				 * Selection of effect's target may have
 				 * triggered update to windows while tentative
@@ -580,38 +531,13 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		}
 
 		/* Increase knowledge */
-		if (use == USE_SINGLE) {
-			char name[80];
-
-			/* Single use items are automatically learned */
-			if (!was_aware) {
-				object_learn_on_use(player, work_obj);
-			}
-			/* Get a description */
-			object_desc(name, sizeof(name), work_obj,
-				ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM |
-				((number + ((used) ? 0 : 1)) << 16), player);
-			if (from_floor) {
-				/* Print a message */
-				msg("You see %s.", name);
-			} else if (first_remainder) {
-				label = gear_to_label(player, first_remainder);
-				msg("You have %s (1st %c).", name, label);
-			} else {
-				msg("You have %s (%c).", name, label);
-			}
+		if (!was_aware && ident) {
+			object_flavor_aware(player, work_obj);
 		} else {
-			/* Wearables may need update, other things become known or tried */
-			if (tval_is_wearable(work_obj)) {
-				update_player_object_knowledge(player);
-			} else if (!was_aware && ident) {
-				object_learn_on_use(player, work_obj);
-			} else {
-				object_flavor_tried(work_obj);
-			}
+			object_flavor_tried(work_obj);
 		}
 
-		if (used && use == USE_CHARGE) {
+		if (used && use == USE_CHARGE && object_is_known(work_obj)) {
 			/* Describe charges */
 			if (from_floor)
 				floor_item_charges(work_obj);
@@ -620,9 +546,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		}
 
 		/* Clean up created copy. */
-		if (work_obj->known)
-			object_delete(player->cave, NULL, &work_obj->known);
-		object_delete(cave, player->cave, &work_obj);
+		object_delete(cave, &work_obj);
 	} else {
 		from_floor = !object_is_carried(player, obj);
 	}
@@ -630,6 +554,9 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* Use the turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
+	/* Store the action type */
+	player->previous_action[0] = ACTION_MISC;
+	
 	/* Autoinscribe if we are guaranteed to still have any */
 	if (!none_left && !from_floor)
 		apply_autoinscription(player, obj);
@@ -648,40 +575,11 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 
 
 /**
- * Read a scroll
- */
-void do_cmd_read_scroll(struct command *cmd)
-{
-	struct object *obj;
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
-
-	/* Check player can use scroll */
-	if (!player_can_read(player, true))
-		return;
-
-	/* Get the scroll */
-	if (cmd_get_item(cmd, "item", &obj,
-			"Read which scroll? ",
-			"You have no scrolls to read.",
-			tval_is_scroll,
-			USE_INVEN | USE_FLOOR) != CMD_OK) return;
-
-	use_aux(cmd, obj, USE_SINGLE, MSG_GENERIC);
-}
-
-/**
  * Use a staff 
  */
 void do_cmd_use_staff(struct command *cmd)
 {
 	struct object *obj;
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
 
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -690,90 +588,28 @@ void do_cmd_use_staff(struct command *cmd)
 			tval_is_staff,
 			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
 
-	if (!obj_has_charges(obj)) {
-		msg("That staff has no charges.");
-		return;
-	}
-
-	use_aux(cmd, obj, USE_CHARGE, MSG_USE_STAFF);
+	use_aux(cmd, obj, USE_CHARGE, MSG_USE_STAFF, false);
 }
 
 /**
- * Aim a wand 
+ * Blow a horn 
  */
-void do_cmd_aim_wand(struct command *cmd)
+void do_cmd_blow_horn(struct command *cmd)
 {
 	struct object *obj;
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
+	bool blasting;
 
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
-			"Aim which wand? ",
-			"You have no wands to aim.",
-			tval_is_wand,
+			"Blow which horn? ",
+			"You have no horns to blow.",
+			tval_is_horn,
 			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
 
-	if (!obj_has_charges(obj)) {
-		msg("That wand has no charges.");
-		return;
-	}
+	/* Special case */
+	blasting = streq(obj->kind->name, "Blasting");
 
-	use_aux(cmd, obj, USE_CHARGE, MSG_ZAP_ROD);
-}
-
-/**
- * Zap a rod 
- */
-void do_cmd_zap_rod(struct command *cmd)
-{
-	struct object *obj;
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
-
-	/* Get an item */
-	if (cmd_get_item(cmd, "item", &obj,
-			"Zap which rod? ",
-			"You have no rods to zap.",
-			tval_is_rod,
-			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
-
-	if (!obj_can_zap(obj)) {
-		msg("That rod is still charging.");
-		return;
-	}
-
-	use_aux(cmd, obj, USE_TIMEOUT, MSG_ZAP_ROD);
-}
-
-/**
- * Activate an object 
- */
-void do_cmd_activate(struct command *cmd)
-{
-	struct object *obj;
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
-
-	/* Get an item */
-	if (cmd_get_item(cmd, "item", &obj,
-			"Activate which item? ",
-			"You have no items to activate.",
-			obj_is_activatable,
-			USE_EQUIP | SHOW_FAIL) != CMD_OK) return;
-
-	if (!obj_can_activate(obj)) {
-		msg("That item is still charging.");
-		return;
-	}
-
-	use_aux(cmd, obj, USE_TIMEOUT, MSG_ACT_ARTIFACT);
+	use_aux(cmd, obj, USE_VOICE, MSG_ZAP_ROD, blasting);
 }
 
 /**
@@ -790,7 +626,13 @@ void do_cmd_eat_food(struct command *cmd)
 			tval_is_edible,
 			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
-	use_aux(cmd, obj, USE_SINGLE, MSG_EAT);
+	/* If gorged, you cannot eat food */
+	if ((player->timed[TMD_FOOD] >= PY_FOOD_MAX) && obj_nourishes(obj)) {
+		msg("You are too full to eat it.");
+		return;
+	}
+
+	use_aux(cmd, obj, USE_SINGLE, MSG_EAT, false);
 }
 
 /**
@@ -800,10 +642,6 @@ void do_cmd_quaff_potion(struct command *cmd)
 {
 	struct object *obj;
 
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
-
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
 			"Quaff which potion? ",
@@ -811,7 +649,13 @@ void do_cmd_quaff_potion(struct command *cmd)
 			tval_is_potion,
 			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
-	use_aux(cmd, obj, USE_SINGLE, MSG_QUAFF);
+	/* If gorged, you cannot quaff nourishing potions */
+	if ((player->timed[TMD_FOOD] >= PY_FOOD_MAX) && obj_nourishes(obj)) {
+		msg("You are too full to drink it.");
+		return;
+	}
+
+	use_aux(cmd, obj, USE_SINGLE, MSG_QUAFF, false);
 }
 
 /**
@@ -820,10 +664,6 @@ void do_cmd_quaff_potion(struct command *cmd)
 void do_cmd_use(struct command *cmd)
 {
 	struct object *obj;
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
 
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
@@ -836,18 +676,10 @@ void do_cmd_use(struct command *cmd)
 	if (tval_is_ammo(obj))				do_cmd_fire(cmd);
 	else if (tval_is_potion(obj))		do_cmd_quaff_potion(cmd);
 	else if (tval_is_edible(obj))		do_cmd_eat_food(cmd);
-	else if (tval_is_rod(obj))			do_cmd_zap_rod(cmd);
-	else if (tval_is_wand(obj))			do_cmd_aim_wand(cmd);
+	else if (tval_is_horn(obj))			do_cmd_blow_horn(cmd);
 	else if (tval_is_staff(obj))		do_cmd_use_staff(cmd);
-	else if (tval_is_scroll(obj))		do_cmd_read_scroll(cmd);
-	else if (obj_can_refill(obj))		do_cmd_refill(cmd);
-	else if (obj_is_activatable(obj)) {
-		if (object_is_equipped(player->body, obj)) {
-			do_cmd_activate(cmd);
-		} else {
-			msg("Equip the item to use it.");
-		}
-	} else
+	else if (obj_can_refuel(obj))		do_cmd_refuel(cmd);
+	else
 		msg("The item cannot be used at the moment");
 }
 
@@ -902,15 +734,11 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 
 		/* Decrease the item from the pack or the floor */
 		if (object_is_carried(player, obj)) {
-			used = gear_object_for_use(player, obj, 1, true,
-				&none_left);
+			used = gear_object_for_use(player, obj, 1, true, &none_left);
 		} else {
-			used = floor_object_for_use(player, obj, 1, true,
-				&none_left);
+			used = floor_object_for_use(player, obj, 1, true, &none_left);
 		}
-		if (used->known)
-			object_delete(player->cave, NULL, &used->known);
-		object_delete(cave, player->cave, &used);
+		object_delete(cave, &used);
 	}
 
 	/* Recalculate torch */
@@ -920,22 +748,54 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 	player->upkeep->redraw |= (PR_EQUIP);
 }
 
+static void combine_torches(struct object *torch, struct object *obj)
+{
+	struct object *used;
+	bool none_left = false;
 
-void do_cmd_refill(struct command *cmd)
+	/* Refuel */
+	torch->timeout += obj->timeout + 5;
+
+	/* Message */
+	msg("You combine the torches.");
+
+	/* Comment */
+	if (torch->timeout >= z_info->fuel_torch) {
+		torch->timeout = z_info->fuel_torch;
+		msg("Your torch is fully fueled.");
+	} else {
+		msg("Your torch glows more brightly.");
+	}
+
+	/* Decrease the item from the pack or the floor */
+	if (object_is_carried(player, obj)) {
+		used = gear_object_for_use(player, obj, 1, true, &none_left);
+	} else {
+		used = floor_object_for_use(player, obj, 1, true, &none_left);
+	}
+	object_delete(cave, &used);
+
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE);
+
+	/* Recalculate torch */
+	player->upkeep->update |= (PU_TORCH);
+
+	/* Redraw stuff */
+	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
+}
+
+
+void do_cmd_refuel(struct command *cmd)
 {
 	struct object *light = equipped_item_by_slot_name(player, "light");
 	struct object *obj;
-
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
 
 	/* Check what we're wielding. */
 	if (!light || !tval_is_light(light)) {
 		msg("You are not wielding a light.");
 		return;
-	} else if (of_has(light->flags, OF_NO_FUEL)
-			|| !of_has(light->flags, OF_TAKES_FUEL)) {
+	} else if (of_has(light->flags, OF_NO_FUEL)) {
 		msg("Your light cannot be refilled.");
 		return;
 	}
@@ -944,162 +804,101 @@ void do_cmd_refill(struct command *cmd)
 	if (cmd_get_item(cmd, "item", &obj,
 			"Refuel with with fuel source? ",
 			"You have nothing you can refuel with.",
-			obj_can_refill,
+			obj_can_refuel,
 			USE_INVEN | USE_FLOOR | USE_QUIVER) != CMD_OK) return;
 
-	refill_lamp(light, obj);
+	if (of_has(light->flags, OF_TAKES_FUEL)) {
+		refill_lamp(light, obj);
+	} else if (of_has(light->flags, OF_BURNS_OUT)) {
+		combine_torches(light, obj);
+	} else {
+		return;
+	}
 
-	player->upkeep->energy_use = z_info->move_energy / 2;
+	/* Take a turn */
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Store the action type */
+	player->previous_action[0] = ACTION_MISC;
 }
 
-
-
-/**
- * ------------------------------------------------------------------------
- * Spell casting
- * ------------------------------------------------------------------------
+/*
+ * Destroy an item
  */
-
-/**
- * Cast a spell from a book
- */
-void do_cmd_cast(struct command *cmd)
+void do_cmd_destroy(struct command *cmd)
 {
-	int spell_index, dir = 0;
-	const struct class_spell *spell;
+	int amt;
+	struct object *obj;
+	struct object *weapon = equipped_item_by_slot_name(player, "weapon");
 
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
-	}
-
-	/* Check the player can cast spells at all */
-	if (!player_can_cast(player, true))
-		return;
-
-	/* Get arguments */
-	if (cmd_get_spell(cmd, "spell", player, &spell_index,
-			/* Verb */   "cast",
-			/* Book */   obj_can_cast_from,
-			/* Error */  "There are no spells you can cast.",
-			/* Filter */ spell_okay_to_cast) != CMD_OK)
-		return;
-
-	/* Get the spell */
-	spell = spell_by_index(player, spell_index);
-
-	/* Verify "dangerous" spells */
-	if (spell->smana > player->csp) {
-		const char *verb = spell->realm->verb;
-		const char *noun = spell->realm->spell_noun;
-
-		/* Warning */
-		msg("You do not have enough mana to %s this %s.", verb, noun);
-
-		/* Flush input */
-		event_signal(EVENT_INPUT_FLUSH);
-
-		/* Verify */
-		if (!get_check("Attempt it anyway? ")) return;
-	}
-
-	if (spell_needs_aim(spell_index)) {
-		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
-			player_confuse_dir(player, &dir, false);
-		else
-			return;
-	}
-
-	/* Cast a spell */
-	target_fix();
-	if (spell_cast(spell_index, dir, cmd)) {
-		if (player->timed[TMD_FASTCAST]) {
-			player->upkeep->energy_use = (z_info->move_energy * 3) / 4;
+	/* Special case for prising Silmarils from the Iron Crown of Morgoth */
+	obj = square_object(cave, player->grid);
+	if (obj && (obj->artifact == lookup_artifact_name("of Morgoth")) &&
+		obj->pval) {
+		/* No weapon */
+		if (!weapon) {
+			msg("To prise a Silmaril from the crown, you would need to wield a weapon.");
 		} else {
-			player->upkeep->energy_use = z_info->move_energy;
+			/* Wielding a weapon */
+			if (get_check("Will you try to prise a Silmaril from the Iron Crown? ")) {
+				prise_silmaril(player);
+
+				/* Take a turn */
+				player->upkeep->energy_use = z_info->move_energy;
+
+				/* Store the action type */
+				player->previous_action[0] = ACTION_MISC;
+
+				return;
+			}
 		}
 	}
-	target_release();
-}
 
 
-/**
- * Gain a specific spell, specified by spell number (for mages).
- */
-void do_cmd_study_spell(struct command *cmd)
-{
-	int spell_index;
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Destroy which item? ",
+			"You have nothing to destroy.",
+			NULL,
+			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
-	/* Check the player can study at all atm */
-	if (!player_can_study(player, true))
-		return;
+	/* Special case for Iron Crown of Morgoth, if it has Silmarils left */
+	if ((obj->artifact == lookup_artifact_name("of Morgoth")) && obj->pval) {
+		if (object_is_carried(player, obj)) {
+			msg("You would have to put it down first.");
+		} else {
+			/* No weapon */
+			if (!weapon) {
+				msg("To prise a Silmaril from the crown, you would need to wield a weapon.");
+			} else {
+				msg("You decide to try to prise out a Silmaril after all.");
+				prise_silmaril(player);
 
-	if (cmd_get_spell(cmd, "spell", player, &spell_index,
-			/* Verb */   "study",
-			/* Book */   obj_can_study,
-			/* Error  */ "You cannot learn any new spells from the books you have.",
-			/* Filter */ spell_okay_to_study) != CMD_OK)
-		return;
+				/* Take a turn */
+				player->upkeep->energy_use = z_info->move_energy;
 
-	spell_learn(spell_index);
-	player->upkeep->energy_use = z_info->move_energy;
-}
+				/* Store the action type */
+				player->previous_action[0] = ACTION_MISC;
 
-/**
- * Gain a random spell from the given book (for priests)
- */
-void do_cmd_study_book(struct command *cmd)
-{
-	struct object *book_obj;
-	const struct class_book *book;
-	int spell_index = -1;
-	struct class_spell *spell;
-	int i, k = 0;
-
-	/* Check the player can study at all atm */
-	if (!player_can_study(player, true))
-		return;
-
-	if (cmd_get_item(cmd, "item", &book_obj,
-			/* Prompt */ "Study which book? ",
-			/* Error  */ "You cannot learn any new spells from the books you have.",
-			/* Filter */ obj_can_study,
-			/* Choice */ USE_INVEN | USE_FLOOR) != CMD_OK)
-		return;
-
-	book = player_object_to_book(player, book_obj);
-	track_object(player->upkeep, book_obj);
-	handle_stuff(player);
-
-	for (i = 0; i < book->num_spells; i++) {
-		spell = &book->spells[i];
-		if (!spell_okay_to_study(player, spell->sidx))
-			continue;
-		if ((++k > 1) && (randint0(k) != 0))
-			continue;
-		spell_index = spell->sidx;
+				return;
+			}
+		}
 	}
 
-	if (spell_index < 0) {
-		msg("You cannot learn any %ss in that book.", book->realm->spell_noun);
+	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
+		return;
+
+	if (object_is_carried(player, obj)) {
+		if (!inven_destroy(obj, amt)) return;
 	} else {
-		spell_learn(spell_index);
-		player->upkeep->energy_use = z_info->move_energy;
-	}
-}
-
-/**
- * Choose the way to study.  Choose life.  Choose a career.  Choose family.
- * Choose a fucking big monster, choose orc shamans, kobolds, dark elven
- * druids, and Mim, Betrayer of Turin.
- */
-void do_cmd_study(struct command *cmd)
-{
-	if (!player_get_resume_normal_shape(player, cmd)) {
-		return;
+		if (!floor_destroy(obj, amt)) return;
 	}
 
-	if (player_has(player, PF_CHOOSE_SPELLS))
-		do_cmd_study_spell(cmd);
-	else
-		do_cmd_study_book(cmd);
+	/* Take a turn */
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Store the action type */
+	player->previous_action[0] = ACTION_MISC;
 }
+
+

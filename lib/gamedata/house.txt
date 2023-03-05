@@ -1,0 +1,146 @@
+# File: house.txt
+#
+# This file is used to initialize the "player house" information for Sil.
+#
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+#
+#
+# === Understanding house.txt ===
+#
+# name: house name
+# alt-name: alternate house name
+# short-name: short house name
+# player-flags: house flag
+# stats: str : dex : con : gra
+# skills: melee: archery: evasion: stealth: perception: will: smithing: song
+# desc:description
+#
+# 'name' indicates the beginning of an entry. The serial number must
+#     increase for each new house.
+#
+# 'alt-name' is the alternate house name, so it can be used in the form:
+#     Caranthir of <house name>
+#
+# 'short-name' is the short house name when it needs to be displayed in
+#     a small space.
+#
+# 'stats' is for the stat modifiers - strength, dexterity, constitution, grace.
+#
+# 'skills' is for the skill modifiers: melee, archery, evasion, stealth,
+# perception, will, smithing, song.
+#
+# 'desc' is a text description of the house.
+
+
+name:House of Feanor
+alt-name:Feanor's House
+short-name:Feanor
+race:Noldor
+stats:0:1:0:0
+skills:0:0:0:0:0:0:1:0
+desc:Feanor was the greatest of the Noldor, though proud and
+desc: unyielding. He created the Silmarils which Morgoth later
+desc: stole, and he led his house across the sea to Beleriand
+desc: in pursuit. Those of Feanor's house are fiery in temper,
+desc: but capable of great works of beauty.
+
+name:House of Fingolfin
+alt-name:Fingolfin's House
+short-name:Fingolfin
+race:Noldor
+stats:0:0:1:0
+skills:0:0:0:0:0:1:0:0
+desc:Fingolfin led his house into Beleriand to protect its
+desc: peoples from the shadow of Morgoth. Betrayed by the
+desc: Feanorians, they had to come through the icy wastes of the north.
+desc: Their people are the most hardy and valiant, most
+desc: feared by the orcs and hated by Morgoth.
+
+name:House of Finarfin
+alt-name:Finarfin's House
+short-name:Finarfin
+race:Noldor
+stats:0:0:0:1
+skills:0:0:0:0:1:0:0:0
+desc:Finarfin himself did not come to Beleriand, but many of his house
+desc: made the journey under Fingolfin's banner. They are the
+desc: fairest and wisest of the Noldor. All have golden hair as
+desc: a mark of their Vanyarin ancestry.
+
+name:Of Doriath
+alt-name:Doriath
+short-name:Doriath
+race:Sindar
+stats:0:0:0:1
+skills:0:0:0:0:0:0:0:1
+desc:Most Sindar dwell in the forests of Doriath. Thingol is their
+desc: king, and rules from Menegroth with Melian at his side.
+desc: Her power hides Doriath from the servants of Morgoth, allowing
+desc: the Sindar to hunt and feast as in the days before his shadow grew.
+
+name:Of the Falas
+alt-name:the Falas
+short-name:Falathrim
+race:Sindar
+stats:0:1:0:0
+skills:0:1:0:0:0:0:0:0
+desc:When Thingol met with Melian under the wheeling stars, many of his folk
+desc: despaired of finding him again and journeyed to the shore, the Falas,
+desc: to set sail to Valinor. Some tarried there and dwelt in the havens on the
+desc: edge of Middle-Earth with their lord, Cirdan, the shipbuilder.
+
+name:House of Nogrod
+alt-name:Nogrod
+short-name:Nogrod
+race:Naugrim
+stats:0:1:0:0
+skills:0:0:0:0:0:0:1:0
+desc:Nogrod, the 'Hollowbold', is a dwarven stronghold beneath the
+desc: Blue Mountains. The forges burn brightly in its deep mansions
+desc: and the smiths of Nogrod are matchless in all Beleriand.
+
+name:House of Belegost
+alt-name:Belegost
+short-name:Belegost
+race:Naugrim
+stats:1:0:0:0
+skills:0:0:0:0:0:1:0:0
+desc:Belegost, the 'Great Fortress', is a dwarven citadel in the
+desc: northern ranges of the Blue Mountains. Its stout warriors
+desc: are legendary for their strength and for the fearsome
+desc: iron masks they wear to battle.
+
+name:House of Beor
+alt-name:Beor's House
+short-name:Beor
+race:Edain
+stats:0:0:0:1
+skills:0:0:1:0:0:0:0:0
+desc:Those of Beor's house are steadfast in endurance of hardship
+desc: and sorrow, slow to tears and to laughter; their fortitude needs
+desc: no hope to sustain it. For the most part they have brown hair
+desc: with brown or grey eyes.
+
+name:People of Haleth
+alt-name:Haleth's People
+short-name:Haleth
+race:Edain
+stats:0:1:0:0
+skills:0:0:0:1:0:0:0:0
+desc:The people of Haleth are not eager for lore, and use few words;
+desc: for they do not love great concourse of men, and many among them
+desc: delight in solitude, wandering free in the greenwoods. For the most
+desc: part they are small in stature, with dark hair and dark eyes.
+
+name:House of Hador
+alt-name:Hador's House
+short-name:Hador
+race:Edain
+stats:1:0:0:0
+skills:1:0:0:0:0:0:0:0
+desc:Those of Hador's house are quick to wrath and laughter,
+desc: fierce in battle, generous to friend and foe, swift in resolve,
+desc: fast in loyalty and joyous in heart. For the most part they are
+desc: tall, with flaxen or golden hair, blue-grey eyes and fair skin.
+

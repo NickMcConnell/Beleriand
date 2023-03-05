@@ -27,6 +27,7 @@
 #include "obj-util.h"
 #include "player-timed.h"
 #include "trap.h"
+#include "ui-display.h"
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-object.h"
@@ -36,22 +37,25 @@
 
 
 /**
+ * Graphics in a mini-screenshot array
+ */
+static wchar_t mini_screenshot_char[7][7];
+static uint8_t mini_screenshot_attr[7][7];
+
+/**
  * Hack -- Hallucinatory monster
  */
-static void hallucinatory_monster(int *a, wchar_t *c)
+static void hallucinatory_monster(int midx, int *a, wchar_t *c)
 {
-	while (1) {
-		/* Select a random monster */
-		struct monster_race *race = &r_info[randint0(z_info->r_max)];
-		
-		/* Skip non-entries */
-		if (!race->name) continue;
-		
-		/* Retrieve attr/char */
-		*a = monster_x_attr[race->ridx];
-		*c = monster_x_char[race->ridx];
-		return;
-	}
+	/* Get the image monster */
+	struct monster_race *race = cave_monster(cave, midx)->image_race;
+
+	/* Skip non-entries */
+	if (!race->name) return;
+
+	/* Retrieve attr/char */
+	*a = monster_x_attr[race->ridx];
+	*c = monster_x_char[race->ridx];
 }
 
 
@@ -85,21 +89,17 @@ static void hallucinatory_object(int *a, wchar_t *c)
  *
  * We should probably have better handling of stacked traps, but that can
  * wait until we do, in fact, have stacked traps under normal conditions.
- * Return true if it's a web
  */
-static bool get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
+static void get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
 							  wchar_t *w)
 {
     /* Trap is visible */
     if (trf_has(g->trap->flags, TRF_VISIBLE) ||
-		trf_has(g->trap->flags, TRF_GLYPH) ||
-		trf_has(g->trap->flags, TRF_WEB)) {
+		trf_has(g->trap->flags, TRF_GLYPH)) {
 		/* Get the graphics */
 		*a = trap_x_attr[g->lighting][g->trap->kind->tidx];
 		*w = trap_x_char[g->lighting][g->trap->kind->tidx];
     }
-
-	return trf_has(g->trap->flags, TRF_WEB);
 }
 
 /**
@@ -179,7 +179,6 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 	int a = feat_x_attr[g->lighting][feat->fidx];
 	wchar_t c = feat_x_char[g->lighting][feat->fidx];
-	bool skip_objects = false;
 
 	/* Get the colour for ASCII */
 	if (use_graphics == GRAPHICS_NONE)
@@ -191,37 +190,23 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 	/* There is a trap in this grid, and we are not hallucinating */
 	if (g->trap && (!g->hallucinate)) {
-	    /* Change graphics to indicate visible traps, skip objects if a web */
-	    skip_objects = get_trap_graphics(cave, g, &a, &c);
+	    /* Change graphics to indicate visible traps */
+	    get_trap_graphics(cave, g, &a, &c);
 	}
 
-	if (!skip_objects) {
-		/* If there's an object, deal with that. */
-		if (g->unseen_money) {
-
-			/* $$$ gets an orange star*/
-			a = object_kind_attr(unknown_gold_kind);
-			c = object_kind_char(unknown_gold_kind);
-
-		} else if (g->unseen_object) {
-
-			/* Everything else gets a red star */
-			a = object_kind_attr(unknown_item_kind);
-			c = object_kind_char(unknown_item_kind);
-
-		} else if (g->first_kind) {
-			if (g->hallucinate) {
-				/* Just pick a random object to display. */
-				hallucinatory_object(&a, &c);
-			} else if (g->multiple_objects) {
-				/* Get the "pile" feature instead */
-				a = object_kind_attr(pile_kind);
-				c = object_kind_char(pile_kind);
-			} else {
-				/* Normal attr and char */
-				a = object_kind_attr(g->first_kind);
-				c = object_kind_char(g->first_kind);
-			}
+	/* If there's an object, deal with that. */
+	if (g->first_kind) {
+		if (g->hallucinate) {
+			/* Just pick a random object to display. */
+			hallucinatory_object(&a, &c);
+		} else if (g->multiple_objects) {
+			/* Get the "pile" feature instead */
+			a = object_kind_attr(pile_kind);
+			c = object_kind_char(pile_kind);
+		} else {
+			/* Normal attr and char */
+			a = object_kind_attr(g->first_kind);
+			c = object_kind_char(g->first_kind);
 		}
 	}
 
@@ -229,8 +214,12 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	if (g->m_idx > 0) {
 		if (g->hallucinate) {
 			/* Just pick a random monster to display. */
-			hallucinatory_monster(&a, &c);
-		} else if (!monster_is_mimicking(cave_monster(cave, g->m_idx)))	{
+			hallucinatory_monster(g->m_idx, &a, &c);
+		} else if (monster_is_listened(cave_monster(cave, g->m_idx))) {
+			/* Simplest possible hack - NRM */
+			a = COLOUR_SLATE;
+			c = '*';
+		} else {
 			struct monster *mon = cave_monster(cave, g->m_idx);
 
 			uint8_t da;
@@ -245,19 +234,13 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				/* Special attr/char codes */
 				a = da;
 				c = dc;
-			} else if (OPT(player, purple_uniques) && 
-					   rf_has(mon->race->flags, RF_UNIQUE)) {
-				/* Turn uniques purple if desired (violet, actually) */
-				a = COLOUR_VIOLET;
-				c = dc;
 			} else if (rf_has(mon->race->flags, RF_ATTR_MULTI) ||
-					   rf_has(mon->race->flags, RF_ATTR_FLICKER) ||
-					   rf_has(mon->race->flags, RF_ATTR_RAND)) {
+					   rf_has(mon->race->flags, RF_ATTR_FLICKER)) {
 				/* Multi-hued monster */
 				a = mon->attr ? mon->attr : da;
 				c = dc;
-			} else if (!flags_test(mon->race->flags, RF_SIZE,
-								   RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END)) {
+			} else if (!flags_test(mon->race->flags, RF_SIZE, RF_CHAR_CLEAR,
+								   FLAG_END)) {
 				/* Normal monster (not "clear" in any way) */
 				a = da;
 				/* Desired attr & char. da is not used, should a be set to it?*/
@@ -271,9 +254,6 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 			} else if (!rf_has(mon->race->flags, RF_CHAR_CLEAR)) {
 				/* Normal char, Clear attr, monster */
 				c = dc;
-			} else if (!rf_has(mon->race->flags, RF_ATTR_CLEAR)) {
-				/* Normal attr, Clear char, monster */
-				a = da;
 			}
 
 			/* Store the drawing attr so we can use it elsewhere */
@@ -284,46 +264,8 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 		/* Get the "player" attr */
 		a = monster_x_attr[race->ridx];
-		if ((OPT(player, hp_changes_color)) && !(a & 0x80)) {
-			switch(player->chp * 10 / player->mhp)
-			{
-			case 10:
-			case  9: 
-			{
-				a = COLOUR_WHITE; 
-				break;
-			}
-			case  8:
-			case  7:
-			{
-				a = COLOUR_YELLOW;
-				break;
-			}
-			case  6:
-			case  5:
-			{
-				a = COLOUR_ORANGE;
-				break;
-			}
-			case  4:
-			case  3:
-			{
-				a = COLOUR_L_RED;
-				break;
-			}
-			case  2:
-			case  1:
-			case  0:
-			{
-				a = COLOUR_RED;
-				break;
-			}
-			default:
-			{
-				a = COLOUR_WHITE;
-				break;
-			}
-			}
+		if (!(a & 0x80)) {
+			a = health_attr(player->chp, player->mhp);
 		}
 
 		/* Get the "player" char */
@@ -937,6 +879,99 @@ void do_cmd_view_map(void)
 
 	/* Load screen */
 	screen_load();
+}
+
+
+/**
+ * Record a mini screenshot
+ */
+void mini_screenshot(game_event_type type, game_event_data *data, void *user)
+{
+	int x, y;
+	
+	/* Populate the arrays */
+	if (!player->escaped) { 
+		for (y = player->grid.y - 3; y <= player->grid.y + 3; y++) {
+			for (x = player->grid.x - 3; x <= player->grid.x + 3; x++) {
+				struct grid_data g;
+				int a, ta;
+				wchar_t c, tc;
+				struct loc grid = loc(x, y);
+				if (square_in_bounds(cave, grid)) {
+					map_info(grid, &g);
+					grid_data_as_text(&g, &a, &c, &ta, &tc);
+					mini_screenshot_char[y][x] = c;
+					mini_screenshot_attr[y][x] = a;
+				} else {
+					mini_screenshot_char[y][x] = ' ';
+					mini_screenshot_attr[y][x] = COLOUR_DARK;
+				}
+			}
+		}
+	} else {
+		for (y = player->grid.y - 3; y <= player->grid.y + 3; y++) {
+			for (x = player->grid.x - 3; x <= player->grid.x + 3; x++) {
+				/* Grass */
+				mini_screenshot_char[y][x] = '.';
+				mini_screenshot_attr[y][x] = COLOUR_L_GREEN;
+			}
+		}
+
+		/* River */
+		mini_screenshot_char[0][1] = '~';
+		mini_screenshot_attr[0][1] = COLOUR_BLUE;
+		mini_screenshot_char[0][2] = '~';
+		mini_screenshot_attr[0][2] = COLOUR_BLUE;
+		mini_screenshot_char[1][2] = '~';
+		mini_screenshot_attr[1][2] = COLOUR_L_BLUE;
+		mini_screenshot_char[1][3] = '~';
+		mini_screenshot_attr[1][3] = COLOUR_BLUE;
+		mini_screenshot_char[1][4] = '~';
+		mini_screenshot_attr[1][4] = COLOUR_L_BLUE;
+		mini_screenshot_char[2][4] = '~';
+		mini_screenshot_attr[2][4] = COLOUR_BLUE;
+		mini_screenshot_char[2][5] = '~';
+		mini_screenshot_attr[2][5] = COLOUR_BLUE;
+		mini_screenshot_char[3][5] = '~';
+		mini_screenshot_attr[3][5] = COLOUR_L_BLUE;
+		mini_screenshot_char[3][6] = '~';
+		mini_screenshot_attr[3][6] = COLOUR_BLUE;
+
+		/* Trees */
+		mini_screenshot_char[4][1] = '+';
+		mini_screenshot_attr[4][1] = COLOUR_GREEN;
+		mini_screenshot_char[6][4] = '+';
+		mini_screenshot_attr[6][4] = COLOUR_GREEN;
+		
+		/* Player */
+		mini_screenshot_char[3][3] = '@';
+		mini_screenshot_attr[3][3] = COLOUR_WHITE;
+	}
+}
+
+void prt_mini_screenshot(int col, int row)
+{
+	int x, y;
+
+	for (y = 0; y <= 6; y++) {
+		for (x = 0; x <= 6; x++) {
+			Term_putch(col + x, row + y, mini_screenshot_attr[y][x],
+					   mini_screenshot_char[y][x]);
+		}
+	}
+}
+
+void file_mini_screenshot(ang_file *fff)
+{
+	int x, y;
+
+	for (y = 0; y <= 6; y++) {
+		file_putf(fff, "  ");
+		for (x = 0; x <= 6; x++) {
+			file_putf(fff, "%c", mini_screenshot_char[y][x]);
+		}
+		file_putf(fff, "\n");
+	}
 }
 
 

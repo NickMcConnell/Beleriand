@@ -31,6 +31,8 @@ enum mon_messages {
 };
 
 void message_pain(struct monster *m, int dam);
+void message_pursuit(struct monster *m);
+void message_warning(struct monster *m);
 bool add_monster_message(struct monster *m, int msg_code, bool delay);
 void show_monster_messages(void);
 

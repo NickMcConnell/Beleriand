@@ -1,6 +1,6 @@
 /**
  * \file player-quest.c
- * \brief All quest-related code
+ * \brief All throne room-related code
  *
  * Copyright (c) 2013 Angband developers
  *
@@ -16,236 +16,397 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "combat.h"
 #include "datafile.h"
+#include "game-input.h"
+#include "game-world.h"
+#include "generate.h"
 #include "init.h"
+#include "mon-calcs.h"
+#include "mon-desc.h"
+#include "mon-move.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-desc.h"
+#include "obj-gear.h"
+#include "obj-make.h"
 #include "obj-pile.h"
+#include "obj-tval.h"
 #include "obj-util.h"
+#include "player-abilities.h"
+#include "player-attack.h"
 #include "player-calcs.h"
+#include "player-history.h"
 #include "player-quest.h"
+#include "project.h"
 
 /**
- * Array of quests
+ * Makes Morgoth drop his Iron Crown with an appropriate message.
  */
-struct quest *quests;
-
-/**
- * Parsing functions for quest.txt
- */
-static enum parser_error parse_quest_name(struct parser *p) {
-	const char *name = parser_getstr(p, "name");
-	struct quest *h = parser_priv(p);
-
-	struct quest *q = mem_zalloc(sizeof(*q));
-	q->next = h;
-	parser_setpriv(p, q);
-	q->name = string_make(name);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_quest_level(struct parser *p) {
-	struct quest *q = parser_priv(p);
-	assert(q);
-
-	q->level = parser_getuint(p, "level");
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_quest_race(struct parser *p) {
-	struct quest *q = parser_priv(p);
-	const char *name = parser_getstr(p, "race");
-	assert(q);
-
-	q->race = lookup_monster(name);
-	if (!q->race)
-		return PARSE_ERROR_INVALID_MONSTER;
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_quest_number(struct parser *p) {
-	struct quest *q = parser_priv(p);
-	assert(q);
-
-	q->max_num = parser_getuint(p, "number");
-	return PARSE_ERROR_NONE;
-}
-
-struct parser *init_parse_quest(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-	parser_reg(p, "name str name", parse_quest_name);
-	parser_reg(p, "level uint level", parse_quest_level);
-	parser_reg(p, "race str race", parse_quest_race);
-	parser_reg(p, "number uint number", parse_quest_number);
-	return p;
-}
-
-static errr run_parse_quest(struct parser *p) {
-	return parse_file_quit_not_found(p, "quest");
-}
-
-static errr finish_parse_quest(struct parser *p) {
-	struct quest *quest, *next = NULL;
-	int count;
-
-	/* Count the entries */
-	z_info->quest_max = 0;
-	quest = parser_priv(p);
-	while (quest) {
-		z_info->quest_max++;
-		quest = quest->next;
-	}
-
-	/* Allocate the direct access list and copy the data to it */
-	quests = mem_zalloc(z_info->quest_max * sizeof(*quest));
-	count = z_info->quest_max - 1;
-	for (quest = parser_priv(p); quest; quest = next, count--) {
-		memcpy(&quests[count], quest, sizeof(*quest));
-		quests[count].index = count;
-		next = quest->next;
-		if (count < z_info->quest_max - 1)
-			quests[count].next = &quests[count + 1];
-		else
-			quests[count].next = NULL;
-
-		mem_free(quest);
-	}
-
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_quest(void)
+void drop_iron_crown(struct monster *mon, const char *message)
 {
-	int idx;
-	for (idx = 0; idx < z_info->quest_max; idx++)
-		string_free(quests[idx].name);
-	mem_free(quests);
-}
+	int i;
+	struct loc grid;
+	struct monster_race *race = mon->race;
+	const struct artifact *crown = lookup_artifact_name("of Morgoth");
+	bool note;
 
-struct file_parser quests_parser = {
-	"quest",
-	init_parse_quest,
-	run_parse_quest,
-	finish_parse_quest,
-	cleanup_quest
-};
+	if (!is_artifact_created(crown)) {
+		struct object *obj;
+		struct object_kind *kind;
+		msg(message);
 
-/**
- * Check if the given level is a quest level.
- */
-bool is_quest(struct player *p, int level)
-{
-	size_t i;
-
-	/* Town is never a quest */
-	if (!level) return false;
-
-	for (i = 0; i < z_info->quest_max; i++)
-		if (p->quests[i].level == level)
-			return true;
-
-	return false;
-}
-
-/**
- * Copy all the standard quests to the player quest history
- */
-void player_quests_reset(struct player *p)
-{
-	size_t i;
-
-	if (p->quests)
-		player_quests_free(p);
-	p->quests = mem_zalloc(z_info->quest_max * sizeof(struct quest));
-
-	for (i = 0; i < z_info->quest_max; i++) {
-		p->quests[i].name = string_make(quests[i].name);
-		p->quests[i].level = quests[i].level;
-		p->quests[i].race = quests[i].race;
-		p->quests[i].max_num = quests[i].max_num;
-	}
-}
-
-/**
- * Free the player quests
- */
-void player_quests_free(struct player *p)
-{
-	size_t i;
-
-	for (i = 0; i < z_info->quest_max; i++)
-		string_free(p->quests[i].name);
-	mem_free(p->quests);
-}
-
-/**
- * Creates magical stairs after finishing a quest monster.
- */
-static void build_quest_stairs(struct player *p, struct loc grid)
-{
-	struct loc new_grid = p->grid;
-
-	/* Stagger around */
-	while (!square_changeable(cave, grid) &&
-		   square_ispassable(cave, grid) &&
-		   !square_isdoor(cave, grid)) {
-		/* Pick a location */
-		scatter(cave, &new_grid, grid, 1, false);
-
-		/* Stagger */
-		grid = new_grid;
-	}
-
-	/* Push any objects */
-	push_object(grid);
-
-	/* Explain the staircase */
-	msg("A magical staircase appears...");
-
-	/* Create stairs down */
-	square_set_feat(cave, grid, FEAT_MORE);
-
-	/* Update the visuals */
-	p->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-}
-
-/**
- * Check if this (now dead) monster is a quest monster, and act appropriately
- */
-bool quest_check(struct player *p, const struct monster *m)
-{
-	int i, total = 0;
-
-	/* Don't bother with non-questors */
-	if (!rf_has(m->race->flags, RF_QUESTOR)) return false;
-
-	/* Mark quests as complete */
-	for (i = 0; i < z_info->quest_max; i++) {
-		/* Note completed quests */
-		if (p->quests[i].level == m->race->level) {
-			p->quests[i].level = 0;
-			p->quests[i].cur_num++;
+		/* Choose a nearby location, but not his own square */
+		find_nearby_grid(cave, &grid, mon->grid, 1, 1);
+		for (i = 0; i < 1000; i++) {
+			find_nearby_grid(cave, &grid, mon->grid, 1, 1);
+			if (!loc_eq(grid, mon->grid) && square_isfloor(cave, grid)) break;
 		}
 
-		/* Count incomplete quests */
-		if (p->quests[i].level) total++;
+		/* Allocate by hand, prep, apply magic */
+		obj = mem_zalloc(sizeof(*obj));
+		kind = lookup_kind(crown->tval, crown->sval);
+		object_prep(obj, kind, z_info->dun_depth, RANDOMISE);
+		obj->artifact = crown;
+		copy_artifact_data(obj, obj->artifact);
+		mark_artifact_created(crown, true);
+
+		/* Set origin details */
+		obj->origin = ORIGIN_DROP;
+		obj->origin_depth = convert_depth_to_origin(cave->depth);
+		obj->origin_race = race;
+		obj->number = 1;
+
+		/* Drop it there */
+		floor_carry(cave, grid, obj, &note);
+
+		/* Lower Morgoth's protection, remove his light source, increase his
+		 * will and perception */
+		race->pd -= 1;
+		race->light = 0;
+		race->wil += 5;
+		race->per += 5;
+	}
+}
+
+/**
+ * Shatter the player's wielded weapon.
+ */
+void shatter_weapon(struct player *p, int silnum)
+{
+	int i;
+	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
+	struct object *destroyed;
+	char w_name[80];
+	bool dummy = false;
+
+	p->crown_shatter = true;
+
+	/* Get the basic name of the object */
+	object_desc(w_name, sizeof(w_name), weapon, false, 0);
+	
+	if (silnum == 2) {
+		msg("You strive to free a second Silmaril, but it is not fated to be.");
+	} else {
+		msg("You strive to free a third Silmaril, but it is not fated to be.");
+	}	
+	msg("As you strike the crown, your %s shatters into innumerable pieces.",
+		w_name);
+
+	/* Make more noise */
+	p->stealth_score -= 5;
+
+	destroyed = gear_object_for_use(player, weapon, 1, false, &dummy);
+	object_delete(cave, &destroyed);
+
+	/* Process monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		/* If Morgoth, then anger him */
+		if (rf_has(mon->race->flags, RF_QUESTOR)) {
+			if ((mon->cdis <= 5) && los(cave, p->grid, mon->grid)) {
+				msg("A shard strikes Morgoth upon his cheek.");
+				set_alertness(mon, ALERTNESS_VERY_ALERT);
+			}
+		}
+	}
+}
+
+/**
+ * Break the truce in Morgoth's throne room
+ */
+void break_truce(struct player *p, bool obvious)
+{
+	int i;
+	struct monster *mon = NULL;
+	char m_name[80];
+	
+	if (p->truce) {
+		/* Scan all other monsters */
+		for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+			/* Access the monster */
+			mon = cave_monster(cave, i);
+			
+			/* Ignore dead monsters */
+			if (!mon->race) continue;
+			
+			/* Ignore monsters out of line of sight */
+			if (!los(cave, mon->grid, p->grid)) continue;
+			
+			/* Ignore unalert monsters */
+			if (mon->alertness < ALERTNESS_ALERT) continue;
+			
+			/* Get the monster name (using 'something' for hidden creatures) */
+			monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+			
+			p->truce = false;
+		}
+		
+		if (obvious) p->truce = false;
+		
+		if (!p->truce) {
+			if (!obvious) {
+				msg("%s lets out a cry! The tension is broken.", m_name);
+
+				/* Make a lot of noise */
+				update_flow(cave, &cave->monster_noise, NULL);
+				monsters_hear(false, false, -10);
+			} else {
+				msg("The tension is broken.");
+			}
+			
+			/* Scan all other monsters */
+			for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+				/* Access the monster */
+				mon = cave_monster(cave, i);
+				
+				/* Ignore dead monsters */
+				if (!mon->race) continue;
+				
+				/* Mark minimum desired range for recalculation */
+				mon->min_range = 0;
+			}
+		}
+	}
+}
+
+/**
+ * Check whether to break the truce in Morgoth's throne room
+ */
+void check_truce(struct player *p)
+{
+	int d;
+
+	/* Check around the character */
+	for (d = 0; d < 8; d++) {
+		struct loc grid = loc_sum(p->grid, ddgrid_ddd[d]);
+		struct monster *mon = square_monster(cave, grid);
+
+		if ((mon->race == lookup_monster("Morgoth, Lord of Darkness")) &&
+			(mon->alertness >= ALERTNESS_ALERT)) {
+			msg("With a voice as of rolling thunder, Morgoth, Lord of Darkness, speaks:");
+			msg("'You dare challenge me in mine own hall? Now is your death upon you!'");
+
+			/* Break the truce (always) */
+			break_truce(p, true);
+			return;
+		}
+	}
+}
+
+/**
+ * Wake up all monsters, and speed up "los" monsters.
+ */
+void wake_all_monsters(struct player *p)
+{
+	int i;
+
+	/* Aggravate everyone */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+		/* Paranoia -- Skip dead monsters */
+		if (!mon->race) continue;
+
+		/* Alert it */
+		set_alertness(mon, MAX(mon->alertness, ALERTNESS_VERY_ALERT));
+
+		/* Possibly update the monster health bar*/
+		if (p->upkeep->health_who == mon) p->upkeep->redraw |= (PR_HEALTH);
+	}
+}
+
+void prise_silmaril(struct player *p)
+{
+	struct object *obj, *weapon;
+	char *freed_msg = NULL;
+	bool freed = false;
+	int net_dam = 0;
+	int hit_result = 0;
+	int pd = 0;
+	int noise = 0;
+	int mds = p->state.mds;
+	int attack_mod = p->state.skill_use[SKILL_MELEE];
+	char o_name[80];
+	struct monster_race *race = lookup_monster("Morgoth, Lord of Darkness");
+
+	/* The Crown is on the ground */
+	obj = square_object(cave, p->grid);
+
+	switch (obj->pval) {
+		case 3: {
+			pd = 15;
+			noise = 5;
+			freed_msg = "You have freed a Silmaril!";
+			break;
+		}
+		case 2: {
+			pd = 25;
+			noise = 10;
+			if (p->crown_shatter) {
+				freed_msg = "The fates be damned! You free a second Silmaril.";
+			} else {
+				freed_msg = "You free a second Silmaril.";
+			}
+			break;
+		}
+		case 1: {
+			pd = 30;
+			noise = 15;
+			freed_msg = "You free the final Silmaril. You have a very bad feeling about this.";
+			msg("Looking into the hallowed light of the final Silmaril, you are filled with a strange dread.");
+			if (!get_check("Are you sure you wish to proceed? ")) return;
+			
+			break;
+		}
 	}
 
-	/* Build magical stairs */
-	build_quest_stairs(p, m->grid);
+	/* Get the weapon */
+	weapon = equipped_item_by_slot_name(p, "weapon");
 
-	/* Nothing left, game over... */
-	if (total == 0) {
-		p->total_winner = true;
-		p->upkeep->redraw |= (PR_TITLE);
-		msg("*** CONGRATULATIONS ***");
-		msg("You have won the game!");
-		msg("You may retire (commit suicide) when you are ready.");
+	/* Undo rapid attack penalties */
+	if (player_active_ability(p, "Rapid Attack")) {
+		/* Undo strength adjustment to the attack */
+		mds = total_mds(p, &p->state, weapon, 0);
+		
+		/* Undo the dexterity adjustment to the attack */
+		attack_mod += 3;
+	}
+	
+	/* Test for hit */
+	hit_result = hit_roll(attack_mod, 0, source_player(), source_none(), true);
+	
+	/* Make some noise */
+	p->stealth_score -= noise;
+	
+	/* Determine damage */
+	if (hit_result > 0) {
+		int dummy;
+		int crit_bonus_dice = crit_bonus(p, hit_result, weapon->weight, race,
+										 SKILL_MELEE, false);
+		int dam = damroll(p->state.mdd + crit_bonus_dice, mds);
+		int prt = damroll(pd, 4);
+		int prt_percent = prt_after_sharpness(p, weapon, &dummy);
+		prt = (prt * prt_percent) / 100;
+		net_dam = MAX(dam - prt, 0);
+		
+		event_signal_combat_damage(EVENT_COMBAT_DAMAGE,
+								   p->state.mdd + crit_bonus_dice, mds, dam,
+								   pd, 4, prt, prt_percent, PROJ_HURT, true);
 	}
 
-	return true;
+
+	/* If you succeed in prising out a Silmaril... */
+	if (net_dam > 0) {
+		freed = true;
+		
+		switch (obj->pval) {
+			case 3: {
+				break;
+			}
+			case 2: {
+				if (!p->crown_shatter && one_in_(2)) {
+					shatter_weapon(p, 2);
+					freed = false;
+				}
+				break;
+			}
+			case 1: {
+				if (!p->crown_shatter) {
+					shatter_weapon(p, 3);
+					freed = false;
+				} else {
+					p->cursed = true;
+				}
+				break;
+			}
+		}
+		
+		if (freed) {
+			struct object *sil = object_new();
+			struct object_kind *kind = lookup_kind(TV_LIGHT,
+												   lookup_sval(TV_LIGHT, "Silmaril"));
+
+			/* Crown has one less silmaril */
+			obj->pval--;
+
+			/* Report success */
+			msg(freed_msg);
+
+			/* Make Silmaril */
+			object_prep(sil, kind, z_info->dun_depth, RANDOMISE);
+
+			/* Get it */
+			inven_carry(p, sil, true, true);
+
+			/* Describe the object */
+			object_desc(o_name, sizeof(o_name), sil, true, p);
+
+			/* Break the truce (always) */
+			break_truce(p, true);
+
+			/* Add a note to the notes file */
+			history_add(p, "Cut a Silmaril from Morgoth's crown.",
+						HIST_SILMARIL);
+		}
+	} else {
+		/* If you fail to prise out a Silmaril... */
+		msg("Try though you might, you were unable to free a Silmaril.");
+		msg("Perhaps you should try again or use a different weapon.");
+
+		if (pd == 15) {
+			msg("(The combat rolls window shows what is happening.)");
+		}
+
+		/* Break the truce if creatures see */
+		break_truce(p, false);
+	}
+
+	/* Check for taking of final Silmaril */
+	if ((pd == 30) && freed) {
+		msg("Until you escape you must now roll twice for every skill check, taking the worse result each time.");
+		msg("You hear a cry of veangance echo through the iron hells.");
+		wake_all_monsters(p);
+	}
+}
+
+/**
+ * Counts the player's silmarils
+ */
+int silmarils_possessed(struct player *p)
+{
+	int silmarils = 0;
+	struct object *obj;
+
+	for (obj = p->gear; obj; obj = obj->next) {
+		if (tval_is_light(obj) && of_has(obj->flags, OF_NO_FUEL) &&
+			(obj->pval == 7)) {
+			silmarils += obj->number;
+		}
+		if (obj->artifact && streq(obj->artifact->name, "of Morgoth")) {
+			silmarils += obj->pval;
+		}
+	}
+
+	return silmarils;
 }

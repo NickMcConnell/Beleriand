@@ -147,10 +147,11 @@ ENDIF()
 
 ADD_LIBRARY(OurCoreLib OBJECT
         src/buildid.c
+        src/cave.c
+        src/cave-fire.c
         src/cave-map.c
         src/cave-square.c
         src/cave-view.c
-        src/cave.c
         src/cmd-cave.c
         src/cmd-core.c
         src/cmd-misc.c
@@ -158,6 +159,7 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/cmd-pickup.c
         src/cmd-spoil.c
         src/cmd-wizard.c
+        src/combat.c
         src/datafile.c
         src/debug.c
         src/effect-handler-attack.c
@@ -168,18 +170,29 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/game-input.c
         src/game-world.c
         src/gen-cave.c
-        src/gen-chunk.c
-        src/gen-monster.c
+        src/generate.c
         src/gen-room.c
         src/gen-util.c
-        src/generate.c
         src/grafmode.c
         src/guid.c
         src/init.c
         src/load.c
+        src/main.c
+        src/main-gcu.c
+        src/main-nds-arm7.c
+        src/main-nds.c
+        src/main-sdl2.c
+        src/main-sdl.c
+        src/main-spoil.c
+        src/main-stats.c
+        src/main-test.c
+        src/main-win.c
+        src/main-x11.c
+        src/main-xxx.c
         src/message.c
         src/mon-attack.c
         src/mon-blows.c
+        src/mon-calcs.c
         src/mon-desc.c
         src/mon-group.c
         src/mon-init.c
@@ -194,7 +207,6 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/mon-timed.c
         src/mon-util.c
         src/obj-chest.c
-        src/obj-curse.c
         src/obj-desc.c
         src/obj-gear.c
         src/obj-ignore.c
@@ -204,53 +216,48 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/obj-list.c
         src/obj-make.c
         src/obj-pile.c
-        src/obj-power.c
         src/obj-properties.c
-        src/obj-randart.c
         src/obj-slays.c
+        src/obj-smith.c
         src/obj-tval.c
         src/obj-util.c
         src/option.c
         src/parser.c
+        src/player-abilities.c
         src/player-attack.c
         src/player-birth.c
+        src/player.c
         src/player-calcs.c
-        src/player-class.c
         src/player-history.c
         src/player-path.c
-        src/player-properties.c
         src/player-quest.c
-        src/player-race.c
-        src/player-spell.c
+        src/player-skills.c
         src/player-timed.c
         src/player-util.c
-        src/player.c
+        src/project.c
         src/project-feat.c
         src/project-mon.c
         src/project-obj.c
         src/project-player.c
-        src/project.c
         src/randname.c
         src/save.c
         src/save-charoutput.c
         src/savefile.c
         src/score.c
+        src/snd-sdl.c
+        src/songs.c
         src/sound-core.c
         src/source.c
-        src/store.c
         src/target.c
         src/trap.c
+        src/ui-abilities.c
         src/ui-birth.c
+        src/ui-combat.c
         src/ui-command.c
         src/ui-context.c
-        src/ui-curse.c
         src/ui-death.c
         src/ui-display.c
         src/ui-effect.c
-        src/ui-entry-combiner.c
-        src/ui-entry-renderers.c
-        src/ui-entry.c
-        src/ui-equip-cmp.c
         src/ui-event.c
         src/ui-game.c
         src/ui-help.c
@@ -263,18 +270,18 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/ui-menu.c
         src/ui-mon-list.c
         src/ui-mon-lore.c
-        src/ui-obj-list.c
         src/ui-object.c
+        src/ui-obj-list.c
         src/ui-options.c
         src/ui-output.c
-        src/ui-player-properties.c
         src/ui-player.c
         src/ui-prefs.c
         src/ui-score.c
         src/ui-signals.c
-        src/ui-spell.c
+        src/ui-skills.c
+        src/ui-smith.c
+        src/ui-songs.c
         src/ui-spoil.c
-        src/ui-store.c
         src/ui-target.c
         src/ui-term.c
         src/ui-visuals.c

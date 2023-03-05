@@ -51,9 +51,11 @@ enum monster_flag_type {
 	RFT_GEN,		/* related to generation */
 	RFT_NOTE,		/* especially noteworthy for lore */
 	RFT_BEHAV,		/* behaviour-related */
+	RFT_GROUP,		/* group behaviour-related */
 	RFT_DROP,		/* drop details */
-	RFT_DET,		/* detection properties */
-	RFT_ALTER,		/* environment shaping */
+	RFT_MIND,		/* mind properties */
+	RFT_ABIL,		/* abilities */
+	RFT_MOVE,		/* movement-related */
 	RFT_RACE_N,		/* types of monster (noun) */
 	RFT_RACE_A,		/* types of monster (adjective) */
 	RFT_VULN,		/* vulnerabilities with no corresponding resistance */
@@ -156,10 +158,35 @@ struct monster_blow {
  * Monster pain messages
  */
 struct monster_pain {
-	const char *messages[7];
+	const char *messages[3];
 	int pain_idx;
-	
+
 	struct monster_pain *next;
+};
+
+/**
+ * Monster pursuit messages
+ */
+struct monster_pursuit {
+	int idx;
+	const char *msg_vis;
+	const char *msg_close;
+	const char *msg_far;
+
+	struct monster_pursuit *next;
+};
+
+/**
+ * Monster warning messages
+ */
+struct monster_warning {
+	int idx;
+	const char *msg_vis;
+	const char *msg_invis;
+	const char *msg_vis_silence;
+	const char *msg_invis_silence;
+
+	struct monster_warning *next;
 };
 
 
@@ -171,13 +198,16 @@ struct monster_spell_level {
 
 	int power;				/* Spell power at which this level starts */
 	char *lore_desc;		/* Description of the attack used in lore text */
-	uint8_t lore_attr;		/* Color of the attack used in lore text */
-	uint8_t lore_attr_resist;	/* Color used in lore text when resisted */
-	uint8_t lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	char *message;			/* Description of the attack */
 	char *blind_message;	/* Description of the attack if unseen */
-	char *miss_message;		/* Description of a missed attack */
+	char *silence_message;			/* Description of the attack */
+	char *blind_silence_message;	/* Description of the attack if unseen */
+	char *smart_message;			/* Description of the attack */
+	char *smart_blind_message;	/* Description of the attack if unseen */
+	char *smart_silence_message;			/* Description of the attack */
+	char *smart_blind_silence_message;/* Description of the attack if unseen */
 	char *save_message;		/* Message on passing saving throw, if any */
+	char *no_save_message;	/* Message on failing saving throw, if any */
 };
 
 /**
@@ -189,6 +219,12 @@ struct monster_spell {
 	uint16_t index;				/* Numerical index (RSF_FOO) */
 	int msgt;				/* Flag for message colouring */
 	int hit;				/* To-hit level for the attack */
+	int mana;
+	int best_range;
+	int max_range;
+	int desire;
+	int use_past_range;
+	bool disturb_stealth;
 	struct effect *effect;	/* Effect(s) of the spell */
 	struct monster_spell_level *level;	/* Spell power dependent details */
 };
@@ -229,6 +265,8 @@ struct monster_base {
 	wchar_t d_char;					/* Default monster character */
 
 	struct monster_pain *pain;				/* Pain messages */
+	struct monster_pursuit *pursuit;		/* Pursuit messages */
+	struct monster_warning *warning;		/* Warning messages */
 };
 
 
@@ -238,43 +276,16 @@ struct monster_base {
 struct monster_drop {
 	struct monster_drop *next;
 	struct object_kind *kind;
-	unsigned int tval;
+	const struct artifact *art;
 	unsigned int percent_chance;
-	unsigned int min;
-	unsigned int max;
+	random_value dice;
 };
 
 enum monster_group_role {
 	MON_GROUP_LEADER,
 	MON_GROUP_SERVANT,
 	MON_GROUP_BODYGUARD,
-	MON_GROUP_MEMBER,
-	MON_GROUP_SUMMON
-};
-
-/**
- * Monster friends (specific monster)
- */
-struct monster_friends {
-	struct monster_friends *next;
-	char *name;
-	struct monster_race *race;
-	enum monster_group_role role;
-	unsigned int percent_chance;
-	unsigned int number_dice;
-	unsigned int number_side;
-};
-
-/**
- * Monster friends (general type)
- */
-struct monster_friends_base {
-	struct monster_friends_base *next;
-	struct monster_base *base;
-	enum monster_group_role role;
-	unsigned int percent_chance;
-	unsigned int number_dice;
-	unsigned int number_side;
+	MON_GROUP_MEMBER
 };
 
 /**
@@ -283,12 +294,6 @@ struct monster_friends_base {
 struct monster_group_info {
 	int index;
 	enum monster_group_role role;
-};
-
-enum monster_group_type {
-	PRIMARY_GROUP,
-	SUMMON_GROUP,
-	GROUP_MAX
 };
 
 /**
@@ -334,21 +339,22 @@ struct monster_race {
 	char *plural;			/* Optional pluralized name */
 
 	struct monster_base *base;
-	
-	int avg_hp;				/* Average HP for this creature */
+	byte hdice;				/* Creatures hit dice count */
+	byte hside;				/* Creatures hit dice sides */
 
-	int ac;					/* Armour Class */
+	int evn;				/* Bonus to evasion */
+	int pd;				/* Protection dice */
+	int ps;				/* Protection sides */
 
 	int sleep;				/* Inactive counter (base) */
-	int hearing;			/* Monster sense of hearing (1-100, standard 20) */
-	int smell;				/* Monster sense of smell (0-50, standard 20) */
+	int per;				/* Perception */
+	int stl;				/* Stealth */
+	int wil;				/* Will */
+	int song;				/* Singing skill */
 	int speed;				/* Speed (normally 110) */
 	int light;				/* Light intensity */
 
-	int mexp;				/* Exp value for kill */
-
-	int freq_innate;		/* Innate spell frequency */
-	int freq_spell;			/* Other spell frequency */
+	int freq_ranged;		/* Ranged attack frequency */
 	int spell_power;		/* Power of spells */
 
 	bitflag flags[RF_SIZE];         /* Flags */
@@ -367,14 +373,6 @@ struct monster_race {
 
 	struct monster_altmsg *spell_msgs;
 	struct monster_drop *drops;
-
-	struct monster_friends *friends;
-	struct monster_friends_base *friends_base;
-
-	struct monster_mimic *mimic_kinds;
-
-	struct monster_shape *shapes;
-	int num_shapes;
 };
 
 
@@ -387,8 +385,8 @@ struct monster_race {
  * of objects (if any) being carried by the monster (see above).
  */
 struct monster {
-	struct monster_race *race;		/* Monster's (current) race */
-	struct monster_race *original_race;	/* Changed monster's original race */
+	struct monster_race *race;		/* Monster's race */
+	struct monster_race *image_race;	/* Monster's hallucinatory race */
 	int midx;
 
 	struct loc grid;			/* Location on map */
@@ -396,17 +394,29 @@ struct monster {
 	int16_t hp;				/* Current Hit points */
 	int16_t maxhp;				/* Max Hit points */
 
+	int16_t alertness;	/* Positive can move/act, negative are unwary/asleep */
+	uint8_t skip_next_turn;		/* Skip the monster's next turn */
+	uint8_t skip_this_turn;		/* Used for Song of Mastery */
+
 	int16_t m_timed[MON_TMD_MAX];		/* Timed monster status effects */
 
 	uint8_t mspeed;				/* Monster "speed" */
 	uint8_t energy;				/* Monster "energy" */
 
+	uint8_t stance;		/* Fleeing, Timid, Cautious, Aggressive */
+	int16_t morale;		/* Overall morale */
+	int16_t tmp_morale;	/* Temporary modifier to morale */
+
 	uint8_t cdis;				/* Current dis from player */
 
 	bitflag mflag[MFLAG_SIZE];		/* Temporary monster flags */
 
-	struct object *mimicked_obj;		/* Object this monster is mimicking */
-	struct object *held_obj;		/* Object being held (if any) */
+	uint8_t noise;			/* amount of noise monster made this turn */
+
+	uint8_t encountered;	/* Whether the monster has been encountered yet */
+
+	struct object *held_obj;	/* Object being held (if any) */
+	uint8_t origin;				/* Origin (for labelling drops) */
 
 	uint8_t attr;  				/* attr last used for drawing monster */
 
@@ -414,11 +424,20 @@ struct monster {
 
 	struct target target;			/* Monster target */
 
-	struct monster_group_info group_info[GROUP_MAX];/* Monster group details */
-	struct heatmap heatmap;			/* Monster location heatmap */
+	struct monster_group_info group_info; /* Monster group details */
+	struct flow flow;			/* Monster pathfinding flow */
+
+	uint8_t wandering_dist;/* The distance to the destination */
 
 	uint8_t min_range;			/* What is the closest we want to be? */
 	uint8_t best_range;			/* How close do we want to be? */
+
+	uint8_t mana;          /* Current mana level */
+    struct song *song;          /* Current song */
+
+    int16_t consecutive_attacks;   /* Times attacked the player in a row */
+    int16_t turns_stationary;      /* Times stayed still in a row */
+    uint8_t previous_action[MAX_ACTION];  /* What it did on previous turns */
 };
 
 /** Variables **/

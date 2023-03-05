@@ -22,6 +22,7 @@
 #include "game-input.h"
 #include "init.h"
 #include "mon-desc.h"
+#include "mon-move.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
@@ -57,38 +58,20 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 {
 	struct monster *mon = cave_monster(cave, m_idx);
 
-	bool living = true;
-
 	if (!mon) return;
 
-	/* Determine if the monster is "living" (vs "undead") */
-	if (monster_is_destroyed(mon)) living = false;
-
-	/* Assess health */
-	if (mon->hp >= mon->maxhp) {
-		/* No damage */
-		my_strcpy(buf, (living ? "unhurt" : "undamaged"), max);
-	} else {
-		/* Calculate a health "percentage" */
-		int perc = 100L * mon->hp / mon->maxhp;
-
-		if (perc >= 60)
-			my_strcpy(buf, (living ? "somewhat wounded" : "somewhat damaged"),
-					  max);
-		else if (perc >= 25)
-			my_strcpy(buf, (living ? "wounded" : "damaged"), max);
-		else if (perc >= 10)
-			my_strcpy(buf, (living ? "badly wounded" : "badly damaged"), max);
-		else
-			my_strcpy(buf, (living ? "almost dead" : "almost destroyed"), max);
+	if (player->wizard) {
+		if (mon->alertness < ALERTNESS_UNWARY) {
+			my_strcat(buf, format("asleep (%d), ", mon->alertness), max);
+		} else if (mon->alertness < ALERTNESS_ALERT) {
+			my_strcat(buf, format("unwary (%d), ", mon->alertness), max);
+		} else {
+			my_strcat(buf, format("alert (%d), ", mon->alertness), max);
+		}
 	}
 
 	/* Effect status */
-	if (mon->m_timed[MON_TMD_SLEEP]) my_strcat(buf, ", asleep", max);
-	if (mon->m_timed[MON_TMD_HOLD]) my_strcat(buf, ", held", max);
-	if (mon->m_timed[MON_TMD_DISEN]) my_strcat(buf, ", disenchanted", max);
 	if (mon->m_timed[MON_TMD_CONF]) my_strcat(buf, ", confused", max);
-	if (mon->m_timed[MON_TMD_FEAR]) my_strcat(buf, ", afraid", max);
 	if (mon->m_timed[MON_TMD_STUN]) my_strcat(buf, ", stunned", max);
 	if (mon->m_timed[MON_TMD_SLOW]) my_strcat(buf, ", slowed", max);
 	if (mon->m_timed[MON_TMD_FAST]) my_strcat(buf, ", hasted", max);
@@ -109,7 +92,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
  */
 bool target_able(struct monster *m)
 {
-	return m && m->race && monster_is_obvious(m) &&
+	return m && m->race && monster_is_visible(m) &&
 		projectable(cave, player->grid, m->grid, PROJECT_NONE) &&
 		!player->timed[TMD_IMAGE];
 }
@@ -121,7 +104,7 @@ bool target_able(struct monster *m)
  *
  * We return true if the target is "okay" and false otherwise.
  */
-bool target_okay(void)
+bool target_okay(int range)
 {
 	/* No target */
 	if (!target_set) return false;
@@ -137,8 +120,15 @@ bool target_okay(void)
 			return true;
 		}
 	} else if (target.grid.x && target.grid.y) {
-		/* Allow a direction without a monster */
-		return true;
+        /* Reject things beyond range */
+        if (range && (distance(player->grid, target.grid) > range))
+			return false;
+
+        /* Accept things in LOF */
+        if (square_isfire(cave, target.grid)) return true;
+
+        /* Accept walls (for horn of blasting stuff) */
+        if (square_iswall(cave, target.grid)) return true;
 	}
 
 	/* Assume no target */
@@ -336,7 +326,7 @@ bool target_accept(int y, int x)
 	/* Obvious monsters */
 	if (square(cave, grid)->mon > 0) {
 		struct monster *mon = square_monster(cave, grid);
-		if (monster_is_obvious(mon)) {
+		if (monster_is_visible(mon)) {
 			return true;
 		}
 	}
@@ -345,10 +335,9 @@ bool target_accept(int y, int x)
 	if (square_isvisibletrap(cave, grid)) return true;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(player->cave, grid); obj; obj = obj->next) {
+	for (obj = square_object(cave, grid); obj; obj = obj->next) {
 		/* Memorized object */
-		if (obj->kind == unknown_item_kind
-				 || !ignore_known_item_ok(player, obj)) {
+		if (obj->marked && !ignore_known_item_ok(player, obj)) {
 			return true;
 		}
 	}
@@ -412,7 +401,7 @@ struct monster *target_get_monster(void)
  */
 bool target_sighted(void)
 {
-	return target_okay() &&
+	return target_okay(z_info->max_sight) &&
 			panel_contains(target.grid.y, target.grid.x) &&
 			 /* either the target is a grid and is visible, or it is a monster
 			  * that is visible */

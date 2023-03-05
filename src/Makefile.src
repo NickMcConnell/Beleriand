@@ -5,10 +5,10 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-NAME = Angband
-VERSION = 4.2.3
+NAME = Sil
+VERSION = 1.3.0
 COPYRIGHT = (c) 1995-2021 Angband contributors
-PROGNAME = angband
+PROGNAME = sil
 
 HEADERS = \
 	angband.h \
@@ -82,6 +82,7 @@ X11MAINFILES = main-x11.o
 
 ANGFILES = \
 	cave.o \
+	cave-fire.o \
 	cave-map.o \
 	cave-square.o \
 	cave-view.o \
@@ -92,6 +93,7 @@ ANGFILES = \
 	cmd-pickup.o \
 	cmd-spoil.o \
 	cmd-wizard.o \
+	combat.o \
 	datafile.o \
 	debug.o \
 	effect-handler-attack.o \
@@ -103,8 +105,6 @@ ANGFILES = \
 	game-world.o \
 	generate.o \
 	gen-cave.o \
-	gen-chunk.o \
-	gen-monster.o \
 	gen-room.o \
 	gen-util.o \
 	grafmode.o \
@@ -114,6 +114,7 @@ ANGFILES = \
 	message.o \
 	mon-attack.o \
 	mon-blows.o \
+	mon-calcs.o \
 	mon-desc.o \
 	mon-group.o \
 	mon-init.o \
@@ -128,7 +129,6 @@ ANGFILES = \
 	mon-timed.o \
 	mon-util.o \
 	obj-chest.o \
-	obj-curse.o \
 	obj-desc.o \
 	obj-gear.o \
 	obj-ignore.o \
@@ -138,25 +138,21 @@ ANGFILES = \
 	obj-list.o \
 	obj-make.o \
 	obj-pile.o \
-	obj-power.o \
 	obj-properties.o \
-	obj-randart.o \
 	obj-slays.o \
+	obj-smith.o \
 	obj-tval.o \
 	obj-util.o \
 	option.o \
 	parser.o \
-	randname.o \
+	player-abilities.o \
 	player-attack.o \
 	player-birth.o \
 	player-calcs.o \
-	player-class.o \
 	player-history.o \
 	player-path.o \
-	player-properties.o \
 	player-quest.o \
-	player-race.o \
-	player-spell.o \
+	player-skills.o \
 	player-timed.o \
 	player-util.o \
 	player.o \
@@ -165,26 +161,24 @@ ANGFILES = \
 	project-mon.o \
 	project-obj.o \
 	project-player.o \
+	randname.o \
 	score.o \
 	save.o \
 	savefile.o \
 	save-charoutput.o \
+	songs.o \
 	sound-core.o \
 	source.o \
-	store.o \
 	target.o \
 	trap.o \
+	ui-abilities.o \
 	ui-birth.o \
+	ui-combat.o \
 	ui-command.o \
 	ui-context.o \
-	ui-curse.o \
 	ui-death.o \
 	ui-display.o \
 	ui-effect.o \
-	ui-entry.o \
-	ui-entry-combiner.o \
-	ui-entry-renderers.o \
-	ui-equip-cmp.o \
 	ui-event.o \
 	ui-game.o \
 	ui-help.o \
@@ -201,14 +195,14 @@ ANGFILES = \
 	ui-object.o \
 	ui-options.o \
 	ui-output.o \
-	ui-player-properties.o \
 	ui-player.o \
 	ui-prefs.o \
 	ui-score.o \
 	ui-signals.o \
-	ui-spell.o \
+	ui-skills.o \
+	ui-smith.o \
+	ui-songs.o \
 	ui-spoil.o \
-	ui-store.o \
 	ui-target.o \
 	ui-term.o \
 	ui-visuals.o \

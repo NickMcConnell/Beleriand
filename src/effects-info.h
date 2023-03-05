@@ -18,23 +18,16 @@ enum {
 	EFINFO_NONE,
 	EFINFO_DICE,
 	EFINFO_HEAL,
-	EFINFO_CONST,
 	EFINFO_FOOD,
 	EFINFO_CURE,
 	EFINFO_TIMED,
 	EFINFO_STAT,
-	EFINFO_SEEN,
+	EFINFO_PROJ,
 	EFINFO_SUMM,
-	EFINFO_TELE,
 	EFINFO_QUAKE,
-	EFINFO_BALL,
 	EFINFO_SPOT,
 	EFINFO_BREATH,
-	EFINFO_SHORT,
-	EFINFO_LASH,
 	EFINFO_BOLT,
-	EFINFO_BOLTD,
-	EFINFO_TOUCH
 };
 
 enum effect_object_property_kind {
@@ -70,12 +63,11 @@ struct effect_object_property {
 	enum effect_object_property_kind kind;
 };
 
-textblock *effect_describe(const struct effect *e, const char *prefix,
-	int dev_skill_boost, bool only_first);
+textblock *effect_describe(const struct effect *e, const char *prefix);
 size_t effect_get_menu_name(char *buf, size_t max, const struct effect *e);
 struct effect *effect_next(struct effect *effect);
 bool effect_damages(const struct effect *effect);
-int effect_avg_damage(const struct effect *effect, const dice_t *shared_dice);
+int effect_avg_damage(const struct effect *effect);
 const char *effect_projection(const struct effect *effect);
 struct effect_object_property *effect_summarize_properties(
 	const struct effect *ef, int *unsummarized_count);

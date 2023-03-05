@@ -25,6 +25,217 @@
 #include "ui-term.h"
 
 /**
+ * Prints a nice comma spaced natural number
+ */
+void comma_number(char *output, int number, int len)
+{
+	if (number >= 1000000) {
+		strnfmt(output, len, "%d,%03d,%03d", number / 1000000,
+				(number % 1000000) / 1000, number % 1000);
+	} else if (number >= 1000) {
+		strnfmt(output, len, "%d,%03d", number / 1000, number % 1000);
+	} else {
+		strnfmt(output, len, "%d", number);
+	}
+}
+
+/*
+ * Converts a number into the three letter code of a month
+ */
+static void atomonth(int number, char *output, int len)
+{
+	switch (number)
+	{
+		case 1:
+			strnfmt(output, len, "Jan");
+			break;
+		case 2:
+			strnfmt(output, len, "Feb");
+			break;
+		case 3:
+			strnfmt(output, len, "Mar");
+			break;
+		case 4:
+			strnfmt(output, len, "Apr");
+			break;
+		case 5:
+			strnfmt(output, len, "May");
+			break;
+		case 6:
+			strnfmt(output, len, "Jun");
+			break;
+		case 7:
+			strnfmt(output, len, "Jul");
+			break;
+		case 8:
+			strnfmt(output, len, "Aug");
+			break;
+		case 9:
+			strnfmt(output, len, "Sep");
+			break;
+		case 10:
+			strnfmt(output, len, "Oct");
+			break;
+		case 11:
+			strnfmt(output, len, "Nov");
+			break;
+		case 12:
+			strnfmt(output, len, "Dec");
+			break;
+		default:
+			break;
+	}
+}
+
+/**
+ * Display a page of scores
+ */
+void display_single_score(const struct high_score *score, int row, int place,
+						  int attr)
+{
+	int aged, depth;
+	const char *user, *when;
+	struct player_house *h;
+	struct player_sex *s;
+	char out_val[160];
+	char tmp_val[160];
+	char aged_commas[15];
+	char depth_commas[15];
+	bool alive = streq(score->how, "(alive and well)");
+
+	h = player_id2house(atoi(score->p_h));
+	s = player_id2sex(atoi(score->p_s));
+
+	/* Hack -- extract the gold and such */
+	for (user = score->uid; isspace((unsigned char)*user); user++)
+		/* loop */;
+	for (when = score->day; isspace((unsigned char)*when); when++)
+		/* loop */;
+
+	aged = atoi(score->turns);
+	depth = atoi(score->cur_dun) * 50;
+
+	comma_number(aged_commas, aged, sizeof(aged_commas));
+	comma_number(depth_commas, depth, sizeof(depth_commas));
+
+	/* Clean up standard encoded form of "when" */
+	if ((*when == '@') && strlen(when) == 9) {
+		char month[4];
+
+		sprintf(month,"%.2s", when + 5);
+		atomonth(atoi(month), month, sizeof(month));
+
+		if (*(when + 7) == '0') {
+			sprintf(tmp_val, "%.1s %.3s %.4s", when + 8, month, when + 1);
+		} else {
+			sprintf(tmp_val, "%.2s %.3s %.4s", when + 7, month, when + 1);
+		}	
+		when = tmp_val;
+	}
+
+	/* If not displayed in a place, then don't write the place number */
+	if (place == 0) {
+		/* Prepare the first line, with the house only */
+		strnfmt(out_val, sizeof(out_val),
+				"     %5s ft  %s of %s",
+				depth_commas, score->who, h->alt_name);
+	} else {
+		/* Prepare the first line, with the house only */
+		strnfmt(out_val, sizeof(out_val),
+				"%3d. %5s ft  %s of %s",
+				place, depth_commas, score->who, h->alt_name);
+	}
+
+	/* Possibly amend the first line */
+	if (score->morgoth_slain[0] == 't') {
+		my_strcat(out_val,     ", who defeated Morgoth in his dark halls",
+				  sizeof(out_val));
+	} else {
+		if (score->silmarils[0] == '1') {
+			my_strcat(out_val, ", who freed a Silmaril", sizeof(out_val));
+		}
+		if (score->silmarils[0] == '2') {
+			my_strcat(out_val, ", who freed two Silmarils",
+					  sizeof(out_val));
+		}
+		if (score->silmarils[0] == '3') {
+			my_strcat(out_val, ", who freed all three Silmarils",
+					  sizeof(out_val));
+		}
+		if (score->silmarils[0] > '3') {
+			my_strcat(out_val, ", who freed suspiciously many Silmarils",
+					  sizeof(out_val));
+		}
+	}
+
+	/* Dump the first line */
+	c_put_str(attr, out_val, row + 3, 0);
+
+	/* Prepare the second line for escapees */
+	if (score->escaped[0] == 't') {
+		strnfmt(out_val, sizeof(out_val),
+				"               Escaped the iron hells");
+
+		if ((score->morgoth_slain[0] == 't') ||
+			(score->silmarils[0] > '0')) {
+			my_strcat(out_val, " and brought back the light of Valinor",
+					  sizeof(out_val));
+		} else {
+			my_strcat(out_val, format(" with %s task unfulfilled",
+									  s->possessive), sizeof(out_val));
+		}
+	} else if (alive) {
+		/* If character is still alive, display differently */
+		strnfmt(out_val, sizeof(out_val),
+				"               Lives still, deep within Angband's vaults");
+	} else {
+		/* Prepare the second line for those slain */
+		strnfmt(out_val, sizeof(out_val),
+				"               Slain by %s",
+				score->how);
+
+		/* Mark those with a silmaril */
+		if (score->silmarils[0] > '0') {
+			my_strcat(out_val, format(" during %s escape", s->possessive),
+					  sizeof(out_val));
+		}
+	}
+
+	/* Dump the info */
+	c_put_str(attr, out_val, row + 4, 0);
+
+	/* Don't print date for living characters */
+	if (alive) {
+		strnfmt(out_val, sizeof(out_val),
+				"               after %s turns.",
+				aged_commas);
+		c_put_str(attr, out_val, row + 5, 0);
+	} else {
+		strnfmt(out_val, sizeof(out_val),
+				"               after %s turns.  (%s)",
+				aged_commas, when);
+		c_put_str(attr, out_val, row + 5, 0);
+	}
+
+	/* Print symbols for silmarils / slaying Morgoth */
+	if (score->escaped[0] == 't') {
+		c_put_str(attr, "  escaped", row + 3, 4);
+	}
+	if (score->silmarils[0] == '1') {
+		c_put_str(attr, "         *", row + 5, 0);
+	}
+	if (score->silmarils[0] == '2') {
+		c_put_str(attr, "        * *", row + 5, 0);
+	}
+	if (score->silmarils[0] > '2') {
+		c_put_str(attr, "       * * *", row + 5, 0);
+	}
+	if (score->morgoth_slain[0] == 't') {
+		c_put_str(COLOUR_L_DARK, "         V", row + 4, 0);
+	}
+}
+
+/**
  * Display a page of scores
  */
 static void display_score_page(const struct high_score scores[], int start,
@@ -35,79 +246,10 @@ static void display_score_page(const struct high_score scores[], int start,
 	/* Dump 5 entries */
 	for (n = 0; start < count && n < 5; start++, n++) {
 		const struct high_score *score = &scores[start];
-		uint8_t attr;
-		int clev, mlev, cdun, mdun;
-		const char *user, *gold, *when, *aged;
-		struct player_class *c;
-		struct player_race *r;
-		char out_val[160];
-		char tmp_val[160];
+		bool alive = streq(score->how, "(alive and well)");
+		uint8_t attr = alive ? COLOUR_WHITE : COLOUR_SLATE;
 
-		/* Hack -- indicate death in yellow */
-		attr = (start == highlight) ? COLOUR_L_GREEN : COLOUR_WHITE;
-
-		c = player_id2class(atoi(score->p_c));
-		r = player_id2race(atoi(score->p_r));
-
-		/* Extract the level info */
-		clev = atoi(score->cur_lev);
-		mlev = atoi(score->max_lev);
-		cdun = atoi(score->cur_dun);
-		mdun = atoi(score->max_dun);
-
-		/* Hack -- extract the gold and such */
-		for (user = score->uid; isspace((unsigned char)*user); user++)
-			/* loop */;
-		for (when = score->day; isspace((unsigned char)*when); when++)
-			/* loop */;
-		for (gold = score->gold; isspace((unsigned char)*gold); gold++)
-			/* loop */;
-		for (aged = score->turns; isspace((unsigned char)*aged); aged++)
-			/* loop */;
-
-		/* Dump some info */
-		strnfmt(out_val, sizeof(out_val),
-				"%3d.%9s  %s the %s %s, level %d",
-				start + 1, score->pts, score->who,
-				r ? r->name : "<none>", c ? c->name : "<none>",
-				clev);
-
-		/* Append a "maximum level" */
-		if (mlev > clev)
-			my_strcat(out_val, format(" (Max %d)", mlev), sizeof(out_val));
-
-		/* Dump the first line */
-		c_put_str(attr, out_val, n * 4 + 2, 0);
-
-
-		/* Died where? */
-		if (!cdun)
-			strnfmt(out_val, sizeof(out_val), "Killed by %s in the town",
-					score->how);
-		else
-			strnfmt(out_val, sizeof(out_val),
-					"Killed by %s on dungeon level %d", score->how, cdun);
-
-		/* Append a "maximum level" */
-		if (mdun > cdun)
-			my_strcat(out_val, format(" (Max %d)", mdun), sizeof(out_val));
-
-		/* Dump the info */
-		c_put_str(attr, out_val, n * 4 + 3, 15);
-
-
-		/* Clean up standard encoded form of "when" */
-		if ((*when == '@') && strlen(when) == 9) {
-			strnfmt(tmp_val, sizeof(tmp_val), "%.4s-%.2s-%.2s", when + 1,
-					when + 5, when + 7);
-			when = tmp_val;
-		}
-
-		/* And still another line of info */
-		strnfmt(out_val, sizeof(out_val),
-				"(User %s, Date %s, Gold %s, Turn %s).",
-				user, when, gold, aged);
-		c_put_str(attr, out_val, n * 4 + 4, 15);
+		display_single_score(score, n * 4, start, attr);
 	}
 }
 
@@ -142,10 +284,10 @@ static void display_scores_aux(const struct high_score scores[], int from,
 
 			/* Title */
 			if (k > 0) {
-				put_str(format("%s Hall of Fame (from position %d)",
-							   VERSION_NAME, k + 1), 0, 21);
+				put_str(format("Names of the Fallen (from position %d)", k + 1),
+						0, 21);
 			} else {
-				put_str(format("%s Hall of Fame", VERSION_NAME), 0, 30);
+				put_str("Names of the Fallen", 0, 30);
 			}
 
 			display_score_page(scores, k, count, highlight);

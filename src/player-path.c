@@ -68,11 +68,8 @@ static bool is_valid_pf(struct loc grid)
 	/* Unvisited means allowed */
 	if (!square_isknown(cave, grid)) return true;
 
-	/* No damaging terrain */
-	if (square_isdamaging(cave, grid)) return false;
-
-	/* No trapped squares (unless trapsafe) */
-	if (square_isvisibletrap(cave, grid) &&	!player_is_trapsafe(player)) {
+	/* No trapped squares */
+	if (square_isvisibletrap(cave, grid)) {
 		return false;
 	}
 
@@ -430,20 +427,6 @@ static bool run_break_right;	/* Looking for a break (right) */
 static bool run_break_left;	/* Looking for a break (left) */
 
 /**
- * Hack -- allow quick "cycling" through the legal directions
- */
-static const uint8_t cycle[] =
-{ 1, 2, 3, 6, 9, 8, 7, 4, 1, 2, 3, 6, 9, 8, 7, 4, 1 };
-
-
-/**
- * Hack -- map each direction into the "middle" of the "cycle[]" array
- */
-static const uint8_t chome[] =
-{ 0, 8, 9, 10, 7, 0, 11, 6, 5, 4 };
-
-
-/**
  * Hack -- Check for a "known wall" (see below)
  */
 static bool see_wall(int dir, struct loc grid)
@@ -601,16 +584,15 @@ static bool run_test(const struct player *p)
 			}
 		}
 
-		/* Visible traps abort running (unless trapsafe) */
-		if (square_isvisibletrap(cave, grid) &&
-			!player_is_trapsafe(player)) {
+		/* Visible traps abort running */
+		if (square_isvisibletrap(cave, grid)) {
 			return true;
 		}
 
 		/* Visible objects abort running */
 		for (obj = square_object(cave, grid); obj; obj = obj->next)
 			/* Visible object */
-			if (obj->known && !ignore_item_ok(p, obj)) return true;
+			if (obj->marked && !ignore_item_ok(p, obj)) return true;
 
 		/* Assume unknown */
 		inv = true;
@@ -678,7 +660,7 @@ static bool run_test(const struct player *p)
 		/* Obvious monsters abort running */
 		if (square(cave, grid)->mon > 0) {
 			struct monster *mon = square_monster(cave, grid);
-			if (monster_is_obvious(mon))
+			if (monster_is_visible(mon))
 				return true;
 		}
 	}
@@ -757,8 +739,7 @@ static bool run_test(const struct player *p)
  */
 void run_step(int dir)
 {
-	/* Trapsafe player will treat the trap as if it isn't there */
-	bool disarm = player_is_trapsafe(player) ? false : true;
+	bool disarm = true;
 
 	/* Start or continue run */
 	if (dir) {
@@ -777,12 +758,12 @@ void run_step(int dir)
 			/* Update regular running */
 			if (run_test(player)) {
 				/* Disturb */
-				disturb(player);
+				disturb(player, false);
 				return;
 			}
 		} else if (path_step_idx < 0) {
 			/* Pathfinding, and the path is finished */
-			disturb(player);
+			disturb(player, false);
 			player->upkeep->running_withpathfind = false;
 			return;
 		} else {
@@ -793,7 +774,7 @@ void run_step(int dir)
 				/* Known wall */
 				if (square_isknown(cave, grid) &&
 					!square_ispassable(cave, grid)) {
-					disturb(player);
+					disturb(player, false);
 					player->upkeep->running_withpathfind = false;
 					return;
 				}
@@ -813,7 +794,7 @@ void run_step(int dir)
 				/* Known wall */
 				if (square_isknown(cave, grid) &&
 					!square_ispassable(cave, grid)) {
-					disturb(player);
+					disturb(player, false);
 					player->upkeep->running_withpathfind = false;
 					return;
 				}
@@ -824,7 +805,7 @@ void run_step(int dir)
 
 					/* Visible monster */
 					if (monster_is_visible(mon)) {
-						disturb(player);
+						disturb(player, false);
 						player->upkeep->running_withpathfind = false;
 						return;
 					}
@@ -834,8 +815,8 @@ void run_step(int dir)
 				for (obj = square_object(cave, grid); obj;
 						obj = obj->next) {
 					/* Visible object */
-					if (obj->known && !ignore_item_ok(player, obj)) {
-						disturb(player);
+					if (obj->marked && !ignore_item_ok(player, obj)) {
+						disturb(player, false);
 						player->upkeep->running_withpathfind = false;
 						return;
 					}
@@ -858,7 +839,7 @@ void run_step(int dir)
 	}
 
 	/* Take time */
-	player->upkeep->energy_use = energy_per_move(player);
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Move the player; running straight into a trap == trying to disarm */
 	move_player(run_cur_dir, dir && disarm ? true : false);

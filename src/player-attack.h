@@ -22,12 +22,13 @@
 #include "cmd-core.h"
 
 struct player;
+struct monster;
 
 struct attack_result {
-    bool success;
+    int hit;
     int dmg;
-    uint32_t msg_type;
-    char *hit_verb;
+	int crit_dice;
+	bool pierce;
 };
 
 /**
@@ -39,6 +40,23 @@ struct hit_types {
 };
 
 /**
+ * Attack types
+ */
+enum attack_type {
+	ATT_MAIN,
+	ATT_FLANKING,
+	ATT_CONTROLLED_RETREAT,
+	ATT_ZONE_OF_CONTROL,
+	ATT_OPPORTUNIST,
+	ATT_POLEARM,
+	ATT_FOLLOW_THROUGH,
+	ATT_RIPOSTE,
+	ATT_WHIRLWIND,
+	ATT_RAGE,
+	ATT_OPPORTUNITY
+};
+
+/**
  * ranged_attack is a function pointer, used to execute a kind of attack.
  *
  * This allows us to abstract details of throwing, shooting, etc. out while
@@ -47,20 +65,27 @@ struct hit_types {
  */
 typedef struct attack_result (*ranged_attack) (struct player *p,
 											   struct object *obj,
-											   struct loc grid);
+											   struct monster *mon,
+											   bool undo_rapid,
+											   bool attack_penalty,
+											   bool one_shot);
 
 extern void do_cmd_fire(struct command *cmd);
 extern void do_cmd_fire_at_nearest(void);
 extern void do_cmd_throw(struct command *cmd);
 
 
+int prt_after_sharpness(struct player *p, const struct object *obj, int *flag);
+void attack_punctuation(char *punctuation, int net_dam, int crit_bonus_dice);
 extern int breakage_chance(const struct object *obj, bool hit_target);
+int archery_range(const struct object *bow);
 int chance_of_melee_hit_base(const struct player *p,
 	const struct object *weapon);
 extern bool test_hit(int to_hit, int ac);
 void hit_chance(random_chance *, int, int);
 void apply_deadliness(int *die_average, int deadliness);
-extern void py_attack(struct player *p, struct loc grid);
-extern bool py_attack_real(struct player *p, struct loc grid, bool *fear);
+extern void py_attack(struct player *p, struct loc grid, int attack_type);
+extern void py_attack_real(struct player *p, struct loc grid, int attack_type);
+void attacks_of_opportunity(struct player *p, struct loc safe);
 
 #endif /* !PLAYER_ATTACK_H */

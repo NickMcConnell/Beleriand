@@ -18,16 +18,20 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "effects.h"
 #include "game-input.h"
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
+#include "player-calcs.h"
 #include "savefile.h"
-#include "store.h"
+#include "score.h"
 #include "ui-death.h"
 #include "ui-history.h"
 #include "ui-input.h"
 #include "ui-knowledge.h"
+#include "ui-map.h"
 #include "ui-menu.h"
 #include "ui-object.h"
 #include "ui-player.h"
@@ -35,246 +39,17 @@
 #include "ui-spoil.h"
 
 /**
- * Write formatted string `fmt` on line `y`, centred between points x1 and x2.
+ * Display a "tomb-stone"
  */
-static void put_str_centred(int y, int x1, int x2, const char *fmt, ...)
+static void print_tomb(struct high_score *score)
 {
-	va_list vp;
-	char *tmp;
-	size_t len;
-	int x;
-
-	/* Format into the (growable) tmp */
-	va_start(vp, fmt);
-	tmp = vformat(fmt, vp);
-	va_end(vp);
-
-	/* Centre now */
-	len = strlen(tmp);
-	x = x1 + ((x2-x1)/2 - len/2);
-
-	put_str(tmp, y, x);
-}
-
-
-/**
- * Display the tombstone
- */
-static void print_tomb(void)
-{
-	ang_file *fp;
-	char buf[1024];
-	int line = 0;
-	time_t death_time = (time_t)0;
-
-
-	Term_clear();
-	(void)time(&death_time);
-
-	/* Open the death file */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_SCREENS, "dead.txt");
-	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
-
-	if (fp) {
-		while (file_getl(fp, buf, sizeof(buf)))
-			put_str(buf, line++, 0);
-
-		file_close(fp);
+	if (player->escaped) {
+		Term_putstr(15, 2, -1, COLOUR_L_BLUE, "You have escaped");
+	} else {
+		Term_putstr(15, 2, -1, COLOUR_L_BLUE, "You have been slain");
 	}
-
-	line = 7;
-
-	put_str_centred(line++, 8, 8+31, "%s", player->full_name);
-	put_str_centred(line++, 8, 8+31, "the");
-	if (player->total_winner)
-		put_str_centred(line++, 8, 8+31, "Magnificent");
-	else
-		put_str_centred(line++, 8, 8+31, "%s", player->class->title[(player->lev - 1) / 5]);
-
-	line++;
-
-	put_str_centred(line++, 8, 8+31, "%s", player->class->name);
-	put_str_centred(line++, 8, 8+31, "Level: %d", (int)player->lev);
-	put_str_centred(line++, 8, 8+31, "Exp: %d", (int)player->exp);
-	put_str_centred(line++, 8, 8+31, "AU: %d", (int)player->au);
-	put_str_centred(line++, 8, 8+31, "Killed on Level %d", player->depth);
-	put_str_centred(line++, 8, 8+31, "by %s.", player->died_from);
-
-	line++;
-
-	put_str_centred(line, 8, 8+31, "on %-.24s", ctime(&death_time));
-}
-
-
-/**
- * Display the winner crown
- */
-static void display_winner(void)
-{
-	char buf[1024];
-	ang_file *fp;
-
-	int wid, hgt;
-	int i = 2;
-	int width = 0;
-
-
-	path_build(buf, sizeof(buf), ANGBAND_DIR_SCREENS, "crown.txt");
-	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
-
-	Term_clear();
-	Term_get_size(&wid, &hgt);
-
-	if (fp) {
-		/* Get us the first line of file, which tells us how long the */
-		/* longest line is */
-		file_getl(fp, buf, sizeof(buf));
-		sscanf(buf, "%d", &width);
-		if (!width) width = 25;
-
-		/* Dump the file to the screen */
-		while (file_getl(fp, buf, sizeof(buf)))
-			put_str(buf, i++, (wid/2) - (width/2));
-
-		file_close(fp);
-	}
-
-	put_str_centred(i, 0, wid, "All Hail the Mighty Champion!");
-
-	event_signal(EVENT_INPUT_FLUSH);
-	pause_line(Term);
-}
-
-
-/**
- * Menu command: dump character dump to file.
- */
-static void death_file(const char *title, int row)
-{
-	char buf[1024];
-	char ftmp[80];
-
-	/* Get the filesystem-safe name and append .txt */
-	player_safe_name(ftmp, sizeof(ftmp), player->full_name, false);
-	my_strcat(ftmp, ".txt", sizeof(ftmp));
-
-	if (get_file(ftmp, buf, sizeof buf)) {
-		bool success;
-
-		/* Dump a character file */
-		screen_save();
-		success = dump_save(buf);
-		screen_load();
-
-		/* Check result */
-		if (success)
-			msg("Character dump successful.");
-		else
-			msg("Character dump failed!");
-
-		/* Flush messages */
-		event_signal(EVENT_MESSAGE_FLUSH);
-	}
-}
-
-/**
- * Menu command: view character dump and inventory.
- */
-static void death_info(const char *title, int row)
-{
-	struct store *home = &stores[STORE_HOME];
-
-	screen_save();
-
-	/* Display player */
-	display_player(0);
-
-	/* Prompt for inventory */
-	prt("Hit any key to see more information: ", 0, 0);
-
-	/* Allow abort at this point */
-	(void)anykey();
-
-
-	/* Show equipment and inventory */
-
-	/* Equipment -- if any */
-	if (player->upkeep->equip_cnt) {
-		Term_clear();
-		show_equip(OLIST_WEIGHT | OLIST_SEMPTY | OLIST_DEATH, NULL);
-		prt("You are using: -more-", 0, 0);
-		(void)anykey();
-	}
-
-	/* Inventory -- if any */
-	if (player->upkeep->inven_cnt) {
-		Term_clear();
-		show_inven(OLIST_WEIGHT | OLIST_DEATH, NULL);
-		prt("You are carrying: -more-", 0, 0);
-		(void)anykey();
-	}
-
-	/* Quiver -- if any */
-	if (player->upkeep->quiver_cnt) {
-		Term_clear();
-		show_quiver(OLIST_WEIGHT | OLIST_DEATH, NULL);
-		prt("Your quiver holds: -more-", 0, 0);
-		(void)anykey();
-	}
-
-	/* Home -- if anything there */
-	if (home->stock) {
-		int page;
-		struct object *obj = home->stock;
-
-		/* Display contents of the home */
-		for (page = 1; obj; page++) {
-			int line;
-
-			/* Clear screen */
-			Term_clear();
-
-			/* Show 12 items */
-			for (line = 0; obj && line < 12; obj = obj->next, line++) {
-				uint8_t attr;
-
-				char o_name[80];
-				char tmp_val[80];
-
-				/* Print header, clear line */
-				strnfmt(tmp_val, sizeof(tmp_val), "%c) ", I2A(line));
-				prt(tmp_val, line + 2, 4);
-
-				/* Get the object description */
-				object_desc(o_name, sizeof(o_name), obj,
-					ODESC_PREFIX | ODESC_FULL, player);
-
-				/* Get the inventory color */
-				attr = obj->kind->base->attr;
-
-				/* Display the object */
-				c_put_str(attr, o_name, line + 2, 7);
-			}
-
-			/* Caption */
-			prt(format("Your home contains (page %d): -more-", page), 0, 0);
-
-			/* Wait for it */
-			(void)anykey();
-		}
-	}
-
-	screen_load();
-}
-
-/**
- * Menu command: peruse pre-death messages.
- */
-static void death_messages(const char *title, int row)
-{
-	screen_save();
-	do_cmd_messages();
-	screen_load();
+	display_single_score(score, 1, 0, COLOUR_WHITE);
+	prt_mini_screenshot(5, 12);
 }
 
 /**
@@ -314,6 +89,92 @@ static void death_examine(const char *title, int row)
 	}
 }
 
+/**
+ * Menu command: Look at the dungeon.
+ */
+static void death_dungeon(const char *title, int row)
+{
+	int i;
+	struct object *obj;
+				
+	/* Save screen */
+	screen_save();
+			
+	/* Dungeon objects */
+	for (i = 1; i < cave->obj_max; i++) {
+		/* Get the next object from the dungeon */
+		obj = cave->objects[i];
+
+		/* Skip dead objects */
+		if (!obj || !obj->kind) continue;
+
+		/* ID it */
+		object_flavor_aware(player, obj);
+		object_know(obj);
+	}
+
+	/* Light the level, show all monsters and redraw */
+	Term_clear();
+	wiz_light(cave, player);
+	effect_simple(EF_DETECT_MONSTERS, source_player(), "0",
+		0, 0, 0, NULL);
+	player->upkeep->redraw |= 0x0FFFFFFFL;
+	handle_stuff(player);
+
+	/* Allow the player to look around */
+	do_cmd_look();
+
+	/* Load screen */
+	screen_load();
+}
+
+/**
+ * Menu command: peruse pre-death messages.
+ */
+static void death_messages(const char *title, int row)
+{
+	screen_save();
+	do_cmd_messages();
+	screen_load();
+}
+
+/**
+ * Menu command: view character dump and inventory.
+ */
+static void death_info(const char *title, int row)
+{
+	screen_save();
+
+	/* Display player */
+	display_player(0);
+
+	/* Prompt for inventory */
+	prt("Hit any key to see more information: ", 0, 0);
+
+	/* Allow abort at this point */
+	(void)anykey();
+
+
+	/* Show equipment and inventory */
+
+	/* Equipment -- if any */
+	if (player->upkeep->equip_cnt) {
+		Term_clear();
+		show_equip(OLIST_WEIGHT | OLIST_SEMPTY | OLIST_DEATH, NULL);
+		prt("You are using: -more-", 0, 0);
+		(void)anykey();
+	}
+
+	/* Inventory -- if any */
+	if (player->upkeep->inven_cnt) {
+		Term_clear();
+		show_inven(OLIST_WEIGHT | OLIST_DEATH, NULL);
+		prt("You are carrying: -more-", 0, 0);
+		(void)anykey();
+	}
+
+	screen_load();
+}
 
 /**
  * Menu command: view character history.
@@ -324,19 +185,51 @@ static void death_history(const char *title, int row)
 }
 
 /**
+ * Menu command: add to character history.
+ */
+static void death_note(const char *title, int row)
+{
+	do_cmd_note();
+}
+
+/**
+ * Menu command: dump character dump to file.
+ */
+static void death_file(const char *title, int row)
+{
+	char buf[1024];
+	char ftmp[80];
+
+	/* Get the filesystem-safe name and append .txt */
+	player_safe_name(ftmp, sizeof(ftmp), player->full_name, false);
+	my_strcat(ftmp, ".txt", sizeof(ftmp));
+
+	if (get_file(ftmp, buf, sizeof buf)) {
+		bool success;
+
+		/* Dump a character file */
+		screen_save();
+		success = dump_save(buf);
+		screen_load();
+
+		/* Check result */
+		if (success)
+			msg("Character dump successful.");
+		else
+			msg("Character dump failed!");
+
+		/* Flush messages */
+		event_signal(EVENT_MESSAGE_FLUSH);
+	}
+}
+
+
+/**
  * Menu command: allow spoiler generation (mainly for randarts).
  */
 static void death_spoilers(const char *title, int row)
 {
 	do_cmd_spoilers();
-}
-
-/***
- * Menu command: start a new game
- */
-static void death_new_game(const char *title, int row)
-{
-    play_again = get_check("Start a new game? ");
 }
 
 /**
@@ -345,18 +238,17 @@ static void death_new_game(const char *title, int row)
  */
 static menu_action death_actions[] =
 {
-	{ 0, 'i', "Information",   death_info      },
-	{ 0, 'm', "Messages",      death_messages  },
-	{ 0, 'f', "File dump",     death_file      },
-	{ 0, 'v', "View scores",   death_scores    },
-	{ 0, 'x', "Examine items", death_examine   },
-	{ 0, 'h', "History",       death_history   },
-	{ 0, 's', "Spoilers",      death_spoilers  },
-	{ 0, 'n', "New Game",      death_new_game  },
-	{ 0, 'q', "Quit",          NULL            },
+	{ 0, 'v', "View scores",                  death_scores    },
+	{ 0, 'x', "View inventory and equipment", death_examine   },
+	{ 0, 'd', "View dungeon",                 death_dungeon   },
+	{ 0, 'm', "View final messages",          death_messages  },
+	{ 0, 'f', "View character sheet",         death_info      },
+	{ 0, 'h', "View character history",       death_history   },
+	{ 0, 'a', "Add comment to history",       death_note      },
+	{ 0, 'f', "Save character sheet",         death_file      },
+	{ 0, 's', "Spoilers",                     death_spoilers  },
+	{ 0, 'q', "Quit",                         NULL            },
 };
-
-
 
 /**
  * Handle character death
@@ -365,16 +257,18 @@ void death_screen(void)
 {
 	struct menu *death_menu;
 	bool done = false;
-	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
+	const region area = { 15, 12, 0, N_ELEMENTS(death_actions) };
+	time_t death_time = (time_t)0;
+	struct high_score score;
 
-	/* Winner */
-	if (player->total_winner)
-	{
-		display_winner();
-	}
+	/* Get time of death, prepare score */
+	(void)time(&death_time);
+	build_score(&score, player, player->died_from, &death_time);
+	enter_score(player, &death_time);
 
 	/* Tombstone */
-	print_tomb();
+	clear_from(0);
+	print_tomb(&score);
 
 	/* Flush all input and output */
 	event_signal(EVENT_INPUT_FLUSH);
@@ -388,17 +282,16 @@ void death_screen(void)
 
 	menu_layout(death_menu, &area);
 
-	while (!done && !play_again)
+	while (!done)
 	{
 		ui_event e = menu_select(death_menu, EVT_KBRD, false);
 		if (e.type == EVT_KBRD)
 		{
 			if (e.key.code == KTRL('X')) break;
-			if (e.key.code == KTRL('N')) play_again = true;
 		}
 		else if (e.type == EVT_SELECT)
 		{
-			done = get_check("Do you want to quit? ");
+			done = true;
 		}
 	}
 

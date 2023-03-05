@@ -1,0 +1,140 @@
+# File: drop.txt
+
+# This file contains themed object drop definitions, mostly used for
+# chest contents
+
+### Understanding drop.txt ###
+
+# name: name of drop type
+# chest: 1
+# base: object base
+# item: object kind
+# not-base: object base excluded
+
+# This file defines the types of themed object drops that are used by the game.
+# Most of these are just single object base types (tvals).
+
+# 'name' is the name of the drop type, unused in the actual code.
+
+# A 'chest' line appears if the drop type is used for themed chest contents.
+
+# 'base' is an object base that is included in the drop type.
+
+# 'item' is an object kind that is included in the drop type.
+
+# 'not-base' is an object base to be excluded from the drop type.  A drop type
+# with not-base definitions should not contain bases or items.
+
+name:great
+base:mail
+base:soft armor
+base:shield
+base:cloak
+base:boots
+base:gloves
+base:helm
+base:crown
+base:bow
+base:sword
+base:hafted
+base:polearm
+base:chest
+
+name:good
+base:mail
+base:soft armor
+base:shield
+base:cloak
+base:boots
+base:gloves
+base:helm
+base:crown
+base:bow
+base:sword
+base:hafted
+base:polearm
+base:digger
+base:arrow
+base:chest
+item:potion:Quickness
+item:potion:Miruvor
+item:potion:Healing
+
+name:not useless
+not-base:skeleton
+
+name:potion
+chest:1
+item:potion:Quickness
+item:potion:Miruvor
+item:potion:Healing
+#TODO level constraint
+item:herb:Restoration
+
+name:staff
+chest:1
+item:staff:Understanding
+item:staff:Treasures
+item:staff:Slumber
+item:staff:Warding
+item:staff:Recharging
+
+name:shield
+chest:1
+base:shield
+
+name:weapon
+chest:1
+base:sword
+base:polearm
+base:hafted
+
+name:armour
+chest:1
+base:mail
+base:soft armor
+
+name:boots
+chest:1
+base:boots
+
+name:bow
+chest:1
+base:bow
+base:arrow
+
+name:cloak
+chest:1
+base:cloak
+
+name:gloves
+chest:1
+base:gloves
+
+name:sword
+chest:1
+base:sword
+
+name:polearm
+chest:1
+base:polearm
+
+name:headgear
+chest:1
+base:helm
+base:crown
+
+name:jewellery
+chest:1
+base:crown
+item:hafted:Sceptre
+item:ring:Serpentine Ring
+item:ring:Filigree Ring
+item:amulet:the Blessed Realm
+item:amulet:Pendant
+item:amulet:Pearl
+item:amulet:Jewel
+item:amulet:Necklace
+
+name:chest
+base:chest

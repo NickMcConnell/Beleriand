@@ -21,10 +21,10 @@
 #include "cmd-core.h"
 #include "game-event.h"
 #include "game-input.h"
+#include "game-world.h"
 #include "obj-tval.h"
 #include "player.h"
 #include "player-birth.h"
-#include "player-spell.h"
 #include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -34,6 +34,7 @@
 #include "ui-options.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
+#include "ui-skills.h"
 #include "ui-target.h"
 
 /**
@@ -63,11 +64,12 @@ enum birth_stage
 	BIRTH_RESET = 0,
 	BIRTH_QUICKSTART,
 	BIRTH_RACE_CHOICE,
-	BIRTH_CLASS_CHOICE,
-	BIRTH_ROLLER_CHOICE,
-	BIRTH_POINTBASED,
-	BIRTH_ROLLER,
+	BIRTH_HOUSE_CHOICE,
+	BIRTH_SEX_CHOICE,
+	BIRTH_STAT_POINTS,
+	BIRTH_SKILL_POINTS,
 	BIRTH_NAME_CHOICE,
+	BIRTH_AHW_CHOICE,
 	BIRTH_HISTORY_CHOICE,
 	BIRTH_FINAL_CONFIRM,
 	BIRTH_COMPLETE
@@ -78,21 +80,25 @@ enum birth_questions
 {
 	BQ_METHOD = 0,
 	BQ_RACE,
-	BQ_CLASS,
-	BQ_ROLLER,
+	BQ_HOUSE,
 	MAX_BIRTH_QUESTIONS
 };
 
-enum birth_rollers
-{
-	BR_POINTBASED = 0,
-	BR_NORMAL,
-	MAX_BIRTH_ROLLERS
+const char *list_player_flag_names[] = {
+	#define PF(a, b) b,
+	#include "list-player-flags.h"
+	#undef PF
+	NULL
 };
 
+static const char *skill_names[] = {
+	#define SKILL(a, b) b,
+	#include "list-skills.h"
+	#undef SKILL
+	""
+};
 
 static void finish_with_random_choices(enum birth_stage current);
-static void point_based_start(void);
 static bool quickstart_allowed = false;
 bool arg_force_name;
 
@@ -139,13 +145,14 @@ static enum birth_stage textui_birth_quickstart(void)
 /**
  * ------------------------------------------------------------------------
  * The various "menu" bits of the birth process - namely choice of race,
- * class, and roller type.
+ * house, and sex.
  * ------------------------------------------------------------------------ */
 
 /**
  * The various menus
  */
-static struct menu race_menu, class_menu, roller_menu;
+static struct menu race_menu, house_menu, sex_menu;
+static int house_start = 0;
 
 /**
  * Locations of the menus, etc. on the screen
@@ -157,9 +164,10 @@ static struct menu race_menu, class_menu, roller_menu;
 #define QUESTION_COL     2
 #define RACE_COL         2
 #define RACE_AUX_COL    19
-#define CLASS_COL       19
-#define CLASS_AUX_COL   36
-#define ROLLER_COL      36
+#define HOUSE_COL       19
+#define HOUSE_AUX_COL   42
+#define SEX_COL         42
+#define HELP_ROW        14
 #define HIST_INSTRUCT_ROW 18
 
 #define MENU_ROWS TABLE_ROW + 14
@@ -168,13 +176,13 @@ static struct menu race_menu, class_menu, roller_menu;
  * upper left column and row, width, and lower column
  */
 static region race_region = {RACE_COL, TABLE_ROW, 17, MENU_ROWS};
-static region class_region = {CLASS_COL, TABLE_ROW, 17, MENU_ROWS};
-static region roller_region = {ROLLER_COL, TABLE_ROW, 34, MENU_ROWS};
+static region house_region = {HOUSE_COL, TABLE_ROW, 17, MENU_ROWS};
+static region sex_region = {SEX_COL, TABLE_ROW, 34, MENU_ROWS};
 
 /**
  * We use different menu "browse functions" to display the help text
  * sometimes supplied with the menu items - currently just the list
- * of bonuses, etc, corresponding to each race and class.
+ * of bonuses, etc, corresponding to each race and house.
  */
 typedef void (*browse_f) (int oid, void *db, const region *l);
 
@@ -214,181 +222,130 @@ static void birthmenu_display(struct menu *menu, int oid, bool cursor,
  */
 static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL };
 
-static void skill_help(const int r_skills[], const int c_skills[], int mhp, int exp, int infra)
+static int stat_attr(int adj)
 {
-	int16_t skills[SKILL_MAX];
-	unsigned i;
-
-	for (i = 0; i < SKILL_MAX ; ++i)
-		skills[i] = (r_skills ? r_skills[i] : 0 ) + (c_skills ? c_skills[i] : 0);
-
-	text_out_e("Hit/Shoot/Throw: %+d/%+d/%+d\n", skills[SKILL_TO_HIT_MELEE],
-			   skills[SKILL_TO_HIT_BOW], skills[SKILL_TO_HIT_THROW]);
-	text_out_e("Hit die: %2d   XP mod: %d%%\n", mhp, exp);
-	text_out_e("Disarm: %+3d/%+3d   Devices: %+3d\n", skills[SKILL_DISARM_PHYS],
-			   skills[SKILL_DISARM_MAGIC], skills[SKILL_DEVICE]);
-	text_out_e("Save:   %+3d   Stealth: %+3d\n", skills[SKILL_SAVE],
-			   skills[SKILL_STEALTH]);
-	if (infra >= 0)
-		text_out_e("Infravision:  %d ft\n", infra * 10);
-	text_out_e("Digging:      %+d\n", skills[SKILL_DIGGING]);
-	text_out_e("Search:       %+d", skills[SKILL_SEARCH]);
-	if (infra < 0)
-		text_out_e("\n");
+	int attr;
+	if (adj < 0) {
+		attr = COLOUR_RED;
+	} else if (adj == 0) {
+		attr = COLOUR_L_DARK;
+	} else if (adj == 1) {
+		attr = COLOUR_GREEN;
+	} else if (adj == 2) {
+		attr = COLOUR_L_GREEN;
+	} else {
+		attr = COLOUR_L_BLUE;
+	}
+	return attr;
 }
 
 static void race_help(int i, void *db, const region *l)
 {
 	int j;
 	struct player_race *r = player_id2race(i);
-	int len = (STAT_MAX + 1) / 2;
-
-	struct player_ability *ability;
-	int n_flags = 0;
-	int flag_space = 3;
 
 	if (!r) return;
 
 	/* Output to the screen */
 	text_out_hook = text_out_to_screen;
 	
+	clear_from(HELP_ROW);
+	
 	/* Indent output */
 	text_out_indent = RACE_AUX_COL;
 	Term_gotoxy(RACE_AUX_COL, TABLE_ROW);
 
-	for (j = 0; j < len; j++) {  
+	for (j = 0; j < STAT_MAX; j++) {  
 		const char *name = stat_names_reduced[j];
-		int adj = r->r_adj[j];
+		int adj = r->stat_adj[j];
 
-		text_out_e("%s%+3d", name, adj);
-
-		if (j * 2 + 1 < STAT_MAX) {
-			name = stat_names_reduced[j + len];
-			adj = r->r_adj[j + len];
-			text_out_e("  %s%+3d", name, adj);
-		}
-
+		text_out_e("%s", name);
+		text_out_c(stat_attr(j), "%+3d", adj);
 		text_out("\n");
 	}
-	
-	text_out_e("\n");
-	skill_help(r->r_skills, NULL, r->r_mhp, r->r_exp, r->infra);
-	text_out_e("\n");
 
-	for (ability = player_abilities; ability; ability = ability->next) {
-		if (n_flags >= flag_space) break;
-		if (streq(ability->type, "object") &&
-			!of_has(r->flags, ability->index)) {
-			continue;
-		} else if (streq(ability->type, "player") &&
-				   !pf_has(r->pflags, ability->index)) {
-			continue;
-		} else if (streq(ability->type, "element") &&
-				   (r->el_info[ability->index].res_level != ability->value)) {
-			continue;
+	text_out_e("\n");
+	for (j = 0; j < SKILL_MAX; j++) {  
+		int adj = r->skill_adj[j];
+		if (adj > 0) {
+			text_out_c(COLOUR_GREEN, "%s affinity\n", skill_names[j]);
+		} else if (adj < 0) {
+			text_out_c(COLOUR_RED, "%s penalty\n", skill_names[j]);
 		}
-		text_out_e("\n%s", ability->name);
-		n_flags++;
+	}
+	for (j = 0; j < PF_MAX; j++) {
+		if (pf_has(r->pflags, j)) {
+			text_out_c(COLOUR_GREEN, "%s proficiency\n",
+					   list_player_flag_names[j]);
+		}
 	}
 
-	while (n_flags < flag_space) {
-		text_out_e("\n");
-		n_flags++;
-	}
+	Term_gotoxy(RACE_AUX_COL, HIST_INSTRUCT_ROW);
+	text_out_c(COLOUR_L_WHITE, r->desc);
 
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 }
 
-static void class_help(int i, void *db, const region *l)
+static void house_help(int i, void *db, const region *l)
 {
 	int j;
-	struct player_class *c = player_id2class(i);
 	const struct player_race *r = player->race;
-	int len = (STAT_MAX + 1) / 2;
+	struct player_house *h = player_house_from_count(i);
 
-	struct player_ability *ability;
-	int n_flags = 0;
-	int flag_space = 5;
-
-	if (!c) return;
+	if (!h) return;
 
 	/* Output to the screen */
 	text_out_hook = text_out_to_screen;
+
+	clear_from(HELP_ROW);
 	
 	/* Indent output */
-	text_out_indent = CLASS_AUX_COL;
-	Term_gotoxy(CLASS_AUX_COL, TABLE_ROW);
+	text_out_indent = HOUSE_AUX_COL;
+	Term_gotoxy(HOUSE_AUX_COL, TABLE_ROW);
 
-	for (j = 0; j < len; j++) {  
+	for (j = 0; j < STAT_MAX; j++) {  
 		const char *name = stat_names_reduced[j];
-		int adj = c->c_adj[j] + r->r_adj[j];
+		int adj = r->stat_adj[j] + h->stat_adj[j];
 
-		text_out_e("%s%+3d", name, adj);
-
-		if (j*2 + 1 < STAT_MAX) {
-			name = stat_names_reduced[j + len];
-			adj = c->c_adj[j + len] + r->r_adj[j + len];
-			text_out_e("  %s%+3d", name, adj);
-		}
-
+		text_out_e("%s", name);
+		text_out_c(stat_attr(j), "%+3d", adj);
 		text_out("\n");
 	}
 
 	text_out_e("\n");
-	
-	skill_help(r->r_skills, c->c_skills, r->r_mhp + c->c_mhp,
-			   r->r_exp + c->c_exp, -1);
-
-	if (c->magic.total_spells) {
-		int count;
-		struct magic_realm *realm = class_magic_realms(c, &count), *realm_next;
-		char buf[120];
-
-		my_strcpy(buf, realm->name, sizeof(buf));
-		realm_next = realm->next;
-		mem_free(realm);
-		realm = realm_next;
-		if (count > 1) {
-			while (realm) {
-				count--;
-				if (count) {
-					my_strcat(buf, ", ", sizeof(buf));
-				} else {
-					my_strcat(buf, " and ", sizeof(buf));
-				}
-				my_strcat(buf, realm->name, sizeof(buf));
-				realm_next = realm->next;
-				mem_free(realm);
-				realm = realm_next;
+	for (j = 0; j < SKILL_MAX; j++) {  
+		int adj = r->skill_adj[j] + h->skill_adj[j];
+		if (adj > 1) {
+			text_out_c(COLOUR_L_GREEN, "%s mastery\n", skill_names[j]);
+		} else if (adj > 0) {
+			text_out_c(COLOUR_GREEN, "%s affinity\n", skill_names[j]);
+		} else if (adj < 0) {
+			text_out_c(COLOUR_RED, "%s penalty\n", skill_names[j]);
+		}
+	}
+	for (j = 0; j < PF_MAX; j++) {
+		if (pf_has(h->pflags, j)) {
+			if (pf_has(r->pflags, j)) {
+				text_out_c(COLOUR_L_GREEN, "%s mastery\n",
+						   list_player_flag_names[j]);
+			} else {
+				text_out_c(COLOUR_GREEN, "%s proficiency\n",
+						   list_player_flag_names[j]);
 			}
 		}
-		text_out_e("\nLearns %s magic", buf);
 	}
 
-	for (ability = player_abilities; ability; ability = ability->next) {
-		if (n_flags >= flag_space) break;
-		if (streq(ability->type, "object") &&
-			!of_has(c->flags, ability->index)) {
-			continue;
-		} else if (streq(ability->type, "player") &&
-				   !pf_has(c->pflags, ability->index)) {
-			continue;
-		} else if (streq(ability->type, "element")) {
-			continue;
-		}
-
-		text_out_e("\n%s", ability->name);
-		n_flags++;
-	}
-
-	while (n_flags < flag_space) {
-		text_out_e("\n");
-		n_flags++;
-	}
+	Term_gotoxy(HOUSE_AUX_COL, HIST_INSTRUCT_ROW);
+	text_out_c(COLOUR_L_WHITE, h->desc);
 
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
+}
+
+static void sex_help(int i, void *db, const region *l)
+{
+	clear_from(HELP_ROW);
 }
 
 /**
@@ -538,14 +495,9 @@ static void init_birth_menu(struct menu *menu, int n_choices,
 
 static void setup_menus(void)
 {
-	int i, n;
-	struct player_class *c;
+	int n;
+	struct player_sex *s;
 	struct player_race *r;
-
-	const char *roller_choices[MAX_BIRTH_ROLLERS] = { 
-		"Point-based", 
-		"Standard roller" 
-	};
 
 	struct birthmenu_data *mdata;
 
@@ -558,30 +510,51 @@ static void setup_menus(void)
 	                &race_region, true, race_help);
 	mdata = race_menu.menu_data;
 
-	for (i = 0, r = races; r; r = r->next, i++)
+	for (r = races; r; r = r->next) {
 		mdata->items[r->ridx] = r->name;
-	mdata->hint = "Race affects stats and skills, and may confer resistances and abilities.";
+	}
+	mdata->hint = "Race affects stats, skills, and other character traits.";
 
-	/* Count the classes */
+	/* Count the sexes */
 	n = 0;
-	for (c = classes; c; c = c->next) n++;
+	for (s = sexes; s; s = s->next) n++;
 
-	/* Class menu similar to race. */
-	init_birth_menu(&class_menu, n, player->class ? player->class->cidx : 0,
-	                &class_region, true, class_help);
-	mdata = class_menu.menu_data;
+	/* Sex menu similar to race. */
+	init_birth_menu(&sex_menu, n, player->sex ? player->sex->sidx : 0,
+					&sex_region, true, sex_help);
+	mdata = sex_menu.menu_data;
 
-	for (i = 0, c = classes; c; c = c->next, i++)
-		mdata->items[c->cidx] = c->name;
-	mdata->hint = "Class affects stats, skills, and other character traits.";
-		
-	/* Roller menu straightforward */
-	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, false,
-					NULL);
-	mdata = roller_menu.menu_data;
-	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
-		mdata->items[i] = roller_choices[i];
-	mdata->hint = "Choose how to generate your intrinsic stats. Point-based is recommended.";
+	for (s = sexes; s; s = s->next) {
+		mdata->items[s->sidx] = s->name;
+	}
+	mdata->hint = "Sex has no gameplay effect.";
+}
+
+static void setup_house_menu(const struct player_race *r)
+{
+	int i, n;
+	struct player_house *h;
+
+	struct birthmenu_data *mdata;
+
+	/* Count the houses */
+	n = 0;
+	for (h = houses; h; h = h->next) {
+		if (h->race == r) n++;
+	}
+
+	/* House menu similar to race. */
+	init_birth_menu(&house_menu, n, house_start, &house_region, true,
+					house_help);
+	mdata = house_menu.menu_data;
+
+	for (i = n - 1, h = houses; h; h = h->next) {
+		if (h->race == r) {
+			mdata->items[i] = h->name;
+			i--;
+		}
+	}
+	mdata->hint = "House affects stats, skills, and other character traits.";
 }
 
 /**
@@ -601,8 +574,8 @@ static void free_birth_menus(void)
 {
 	/* We don't need these any more. */
 	free_birth_menu(&race_menu);
-	free_birth_menu(&class_menu);
-	free_birth_menu(&roller_menu);
+	free_birth_menu(&house_menu);
+	free_birth_menu(&sex_menu);
 }
 
 /**
@@ -686,17 +659,25 @@ static void finish_with_random_choices(enum birth_stage current)
 		pr = player->race;
 	}
 
-	if (current <= BIRTH_CLASS_CHOICE) {
-		struct player_class *pc;
+	if (current <= BIRTH_HOUSE_CHOICE) {
+		struct player_house *ph;
 		int n, i;
 
-		for (pc = classes, n = 0; pc; pc = pc->next, ++n) {}
+		for (ph = houses, n = 0; ph; ph = ph->next) {
+			if (ph->race == pr) n++;
+		}
 		i = randint0(n);
+		for (ph = houses, n = 0; ph; ph = ph->next) {
+			if (ph->race == pr) {
+				if (n == i) break;
+				n++;
+			}
+		}
 
 		assert(ncmd < (int)N_ELEMENTS(cmds));
-		cmds[ncmd].code = CMD_CHOOSE_CLASS;
+		cmds[ncmd].code = CMD_CHOOSE_HOUSE;
 		cmds[ncmd].arg_name = "choice";
-		cmds[ncmd].arg_choice = i;
+		cmds[ncmd].arg_choice = ph->hidx;
 		cmds[ncmd].arg_is_choice = true;
 		++ncmd;
 	}
@@ -805,30 +786,12 @@ static enum birth_stage menu_question(enum birth_stage current,
 		if (cx.type == EVT_ESCAPE) {
 			next = BIRTH_BACK;
 		} else if (cx.type == EVT_SELECT) {
-			if (current == BIRTH_ROLLER_CHOICE) {
-				if (current_menu->cursor) {
-					/* Do a first roll of the stats */
-					cmdq_push(CMD_ROLL_STATS);
-					next = current + 2;
-				} else {
-					/* 
-					 * Make sure we've got a point-based char to play with. 
-					 * We call point_based_start here to make sure we get
-					 * an update on the points totals before trying to
-					 * display the screen.  The call to CMD_RESET_STATS
-					 * forces a rebuying of the stats to give us up-to-date
-					 * totals.  This is, it should go without saying, a hack.
-					 */
-					point_based_start();
-					cmdq_push(CMD_RESET_STATS);
-					cmd_set_arg_choice(cmdq_peek(), "choice", true);
-					next = current + 1;
-				}
-			} else {
-				cmdq_push(choice_command);
-				cmd_set_arg_choice(cmdq_peek(), "choice", current_menu->cursor);
-				next = current + 1;
+			cmdq_push(choice_command);
+			cmd_set_arg_choice(cmdq_peek(), "choice", current_menu->cursor);
+			if (current == BIRTH_HOUSE_CHOICE) {
+				house_start = current_menu->cursor;
 			}
+			next = current + 1;
 		} else if (cx.type == EVT_SWITCH) {
 			next = menu_data->stage_inout;
 		} else if (cx.type == EVT_KBRD) {
@@ -862,162 +825,13 @@ static enum birth_stage menu_question(enum birth_stage current,
 
 /**
  * ------------------------------------------------------------------------
- * The rolling bit of the roller.
- * ------------------------------------------------------------------------ */
-static enum birth_stage roller_command(bool first_call)
-{
-	enum {
-		ACT_CTX_BIRTH_ROLL_NONE,
-		ACT_CTX_BIRTH_ROLL_ESCAPE,
-		ACT_CTX_BIRTH_ROLL_REROLL,
-		ACT_CTX_BIRTH_ROLL_PREV,
-		ACT_CTX_BIRTH_ROLL_ACCEPT,
-		ACT_CTX_BIRTH_ROLL_QUIT,
-		ACT_CTX_BIRTH_ROLL_HELP
-	};
-	char prompt[80] = "";
-	size_t promptlen = 0;
-	int action = ACT_CTX_BIRTH_ROLL_NONE;
-	ui_event in;
-
-	enum birth_stage next = BIRTH_ROLLER;
-
-	/* Used to keep track of whether we've rolled a character before or not. */
-	static bool prev_roll = false;
-
-	/* Display the player - a bit cheaty, but never mind. */
-	display_player(0);
-
-	if (first_call)
-		prev_roll = false;
-
-	/* Prepare a prompt (must squeeze everything in) */
-	strnfcat(prompt, sizeof (prompt), &promptlen, "['r' to reroll");
-	if (prev_roll) 
-		strnfcat(prompt, sizeof(prompt), &promptlen, ", 'p' for previous roll");
-	strnfcat(prompt, sizeof (prompt), &promptlen, " or 'Enter' to accept]");
-
-	/* Prompt for it */
-	prt(prompt, Term->hgt - 1, Term->wid / 2 - promptlen / 2);
-	
-	/*
-	 * Get the response.  Emulate what inkey_does() without coercing mouse
-	 * events to look like keystrokes.
-	 */
-	while (1) {
-		in = inkey_ex();
-		if (in.type == EVT_KBRD || in.type == EVT_MOUSE) {
-			break;
-		}
-		if (in.type == EVT_BUTTON) {
-			in.type = EVT_KBRD;
-			break;
-		}
-		if (in.type == EVT_ESCAPE) {
-			in.type = EVT_KBRD;
-			in.key.code = ESCAPE;
-			in.key.mods = 0;
-			break;
-		}
-	}
-
-	/* Analyse the command */
-	if (in.type == EVT_KBRD) {
-		if (in.key.code == ESCAPE) {
-			action = ACT_CTX_BIRTH_ROLL_ESCAPE;
-		} else if (in.key.code == KC_ENTER) {
-			action = ACT_CTX_BIRTH_ROLL_ACCEPT;
-		} else if (in.key.code == ' ' || in.key.code == 'r') {
-			action = ACT_CTX_BIRTH_ROLL_REROLL;
-		} else if (prev_roll && in.key.code == 'p') {
-			action = ACT_CTX_BIRTH_ROLL_PREV;
-		} else if (in.key.code == KTRL('X')) {
-			action = ACT_CTX_BIRTH_ROLL_QUIT;
-		} else if (in.key.code == '?') {
-			action = ACT_CTX_BIRTH_ROLL_HELP;
-		} else {
-			/* Nothing handled directly here */
-			bell();
-		}
-	} else if (in.type == EVT_MOUSE) {
-		if (in.mouse.button == 2) {
-			action = ACT_CTX_BIRTH_ROLL_ESCAPE;
-		} else {
-			/* Present a context menu with the other actions. */
-			char *labels = string_make(lower_case);
-			struct menu *m = menu_dynamic_new();
-
-			m->selections = labels;
-			menu_dynamic_add_label(m, "Reroll", 'r',
-				ACT_CTX_BIRTH_ROLL_REROLL, labels);
-			if (prev_roll) {
-				menu_dynamic_add_label(m, "Retrieve previous",
-					'p', ACT_CTX_BIRTH_ROLL_PREV, labels);
-			}
-			menu_dynamic_add_label(m, "Accept", 'a',
-				ACT_CTX_BIRTH_ROLL_ACCEPT, labels);
-			menu_dynamic_add_label(m, "Quit", 'q',
-				ACT_CTX_BIRTH_ROLL_QUIT, labels);
-			menu_dynamic_add_label(m, "Help", '?',
-				ACT_CTX_BIRTH_ROLL_HELP, labels);
-
-			screen_save();
-
-			menu_dynamic_calc_location(m, in.mouse.x, in.mouse.y);
-			region_erase_bordered(&m->boundary);
-
-			action = menu_dynamic_select(m);
-
-			menu_dynamic_free(m);
-			string_free(labels);
-
-			screen_load();
-		}
-	}
-
-	switch (action) {
-	case ACT_CTX_BIRTH_ROLL_ESCAPE:
-		/* Back out to the previous birth stage. */
-		next = BIRTH_BACK;
-		break;
-
-	case ACT_CTX_BIRTH_ROLL_REROLL:
-		/* Reroll this character. */
-		cmdq_push(CMD_ROLL_STATS);
-		prev_roll = true;
-		break;
-
-	case ACT_CTX_BIRTH_ROLL_PREV:
-		/* Swap with previous roll. */
-		cmdq_push(CMD_PREV_STATS);
-		break;
-
-	case ACT_CTX_BIRTH_ROLL_ACCEPT:
-		/* Accept the roll.  Go to the next stage. */
-		next = BIRTH_NAME_CHOICE;
-		break;
-
-	case ACT_CTX_BIRTH_ROLL_QUIT:
-		quit(NULL);
-		break;
-
-	case ACT_CTX_BIRTH_ROLL_HELP:
-		do_cmd_help();
-		break;
-	}
-
-	return next;
-}
-
-/**
- * ------------------------------------------------------------------------
  * Point-based stat allocation.
  * ------------------------------------------------------------------------ */
 
-/* The locations of the "costs" area on the birth screen. */
-#define COSTS_ROW 2
-#define COSTS_COL (42 + 32)
-#define TOTAL_COL (42 + 19)
+/* The locations of the stat costs area on the birth screen. */
+#define STAT_COSTS_ROW 2
+#define COSTS_COL     (42 + 32)
+#define TOTAL_COL     (42 + 19)
 
 /*
  * Remember what's possible for a given stat.  0 means can't buy or sell.
@@ -1029,7 +843,7 @@ static int buysell[STAT_MAX];
  * This is called whenever a stat changes.  We take the easy road, and just
  * redisplay them all using the standard function.
  */
-static void point_based_stats(game_event_type type, game_event_data *data,
+static void point_stats(game_event_type type, game_event_data *data,
 							  void *user)
 {
 	display_player_stat_info();
@@ -1037,10 +851,9 @@ static void point_based_stats(game_event_type type, game_event_data *data,
 
 /**
  * This is called whenever any of the other miscellaneous stat-dependent things
- * changed.  We are hooked into changes in the amount of gold in this case,
- * but redisplay everything because it's easier.
+ * changed.  We redisplay everything because it's easier.
  */
-static void point_based_misc(game_event_type type, game_event_data *data,
+static void point_misc(game_event_type type, game_event_data *data,
 							 void *user)
 {
 	display_player_xtra_info();
@@ -1052,18 +865,18 @@ static void point_based_misc(game_event_type type, game_event_data *data,
  * that we can update our display of how many points have been spent and
  * are available.
  */
-static void point_based_points(game_event_type type, game_event_data *data,
-							   void *user)
+static void stat_points(game_event_type type, game_event_data *data,
+						void *user)
 {
 	int i;
 	int sum = 0;
-	const int *spent = data->birthpoints.points;
-	const int *inc = data->birthpoints.inc_points;
-	int remaining = data->birthpoints.remaining;
+	const int *spent = data->points.points;
+	const int *inc = data->points.inc_points;
+	int remaining = data->points.remaining;
 
 	/* Display the costs header */
-	put_str("Cost", COSTS_ROW - 1, COSTS_COL);
-	
+	put_str("Cost", STAT_COSTS_ROW - 1, COSTS_COL);
+
 	for (i = 0; i < STAT_MAX; i++) {
 		/* Remember what's allowed. */
 		buysell[i] = 0;
@@ -1074,15 +887,15 @@ static void point_based_points(game_event_type type, game_event_data *data,
 			buysell[i] |= 2;
 		}
 		/* Display cost */
-		put_str(format("%4d", spent[i]), COSTS_ROW + i, COSTS_COL);
+		put_str(format("%4d", spent[i]), STAT_COSTS_ROW + i, COSTS_COL);
 		sum += spent[i];
 	}
-	
+
 	put_str(format("Total Cost: %2d/%2d", sum, remaining + sum),
-		COSTS_ROW + STAT_MAX, TOTAL_COL);
+		STAT_COSTS_ROW + STAT_MAX, TOTAL_COL);
 }
 
-static void point_based_start(void)
+static void stat_points_start(void)
 {
 	const char *prompt = "[up/down to move, left/right to modify, 'r' to reset, 'Enter' to accept]";
 	int i;
@@ -1093,6 +906,7 @@ static void point_based_start(void)
 	/* Display the player */
 	display_player_xtra_info();
 	display_player_stat_info();
+	display_player_skill_info();
 
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
 
@@ -1102,19 +916,19 @@ static void point_based_start(void)
 
 	/* Register handlers for various events - cheat a bit because we redraw
 	   the lot at once rather than each bit at a time. */
-	event_add_handler(EVENT_BIRTHPOINTS, point_based_points, NULL);	
-	event_add_handler(EVENT_STATS, point_based_stats, NULL);	
-	event_add_handler(EVENT_GOLD, point_based_misc, NULL);	
+	event_add_handler(EVENT_STATPOINTS, stat_points, NULL);	
+	event_add_handler(EVENT_STATS, point_stats, NULL);	
+	event_add_handler(EVENT_EXP_CHANGE, point_misc, NULL);
 }
 
-static void point_based_stop(void)
+static void stat_points_stop(void)
 {
-	event_remove_handler(EVENT_BIRTHPOINTS, point_based_points, NULL);	
-	event_remove_handler(EVENT_STATS, point_based_stats, NULL);	
-	event_remove_handler(EVENT_GOLD, point_based_misc, NULL);	
+	event_remove_handler(EVENT_STATPOINTS, stat_points, NULL);	
+	event_remove_handler(EVENT_STATS, point_stats, NULL);	
+	event_remove_handler(EVENT_EXP_CHANGE, point_misc, NULL);	
 }
 
-static enum birth_stage point_based_command(void)
+static enum birth_stage stat_points_command(void)
 {
 	static int stat = 0;
 	enum {
@@ -1128,10 +942,10 @@ static enum birth_stage point_based_command(void)
 	};
 	int action = ACT_CTX_BIRTH_PTS_NONE;
 	ui_event in;
-	enum birth_stage next = BIRTH_POINTBASED;
+	enum birth_stage next = BIRTH_STAT_POINTS;
 
 	/* Place cursor just after cost of current stat */
-	Term_gotoxy(COSTS_COL + 4, COSTS_ROW + stat);
+	Term_gotoxy(COSTS_COL + 4, STAT_COSTS_ROW + stat);
 
 	/*
 	 * Get input.  Emulate what inkey() does without coercing mouse events
@@ -1204,25 +1018,25 @@ static enum birth_stage point_based_command(void)
 		assert(stat >= 0 && stat < STAT_MAX);
 		if (in.mouse.button == 2) {
 			action = ACT_CTX_BIRTH_PTS_ESCAPE;
-		} else if (in.mouse.y >= COSTS_ROW
-				&& in.mouse.y < COSTS_ROW + STAT_MAX
-				&& in.mouse.y != COSTS_ROW + stat) {
+		} else if (in.mouse.y >= STAT_COSTS_ROW
+				&& in.mouse.y < STAT_COSTS_ROW + STAT_MAX
+				&& in.mouse.y != STAT_COSTS_ROW + stat) {
 			/*
 			 * Make that stat the current one if buying or selling.
 			 */
-			stat = in.mouse.y - COSTS_ROW;
+			stat = in.mouse.y - STAT_COSTS_ROW;
 		} else {
 			/* Present a context menu with the other actions. */
 			char *labels = string_make(lower_case);
 			struct menu *m = menu_dynamic_new();
 
 			m->selections = labels;
-			if (in.mouse.y == COSTS_ROW + stat
+			if (in.mouse.y == STAT_COSTS_ROW + stat
 					&& (buysell[stat] & 1)) {
 				menu_dynamic_add_label(m, "Sell", 's',
 					ACT_CTX_BIRTH_PTS_SELL, labels);
 			}
-			if (in.mouse.y == COSTS_ROW + stat
+			if (in.mouse.y == STAT_COSTS_ROW + stat
 					&& (buysell[stat] & 2)) {
 				menu_dynamic_add_label(m, "Buy", 'b',
 					ACT_CTX_BIRTH_PTS_BUY, labels);
@@ -1274,7 +1088,7 @@ static enum birth_stage point_based_command(void)
 
 	case ACT_CTX_BIRTH_PTS_ACCEPT:
 		/* Done with this stage.  Proceed to the next. */
-		next = BIRTH_NAME_CHOICE;
+		next = BIRTH_SKILL_POINTS;
 		break;
 
 	case ACT_CTX_BIRTH_PTS_QUIT:
@@ -1519,6 +1333,34 @@ static int edit_text(char *buffer, int buflen) {
 
 /**
  * ------------------------------------------------------------------------
+ * Allowing the player to reroll their age, height, weight.
+ * ------------------------------------------------------------------------ */
+static enum birth_stage get_ahw_command(void)
+{
+	enum birth_stage next = 0;
+	struct keypress ke;
+
+	/* Ask ahw */
+	prt("Accept age, height and weight? [y/n]", 0, 0);
+	ke = inkey();
+
+	/* Quit, go back, change history, or accept */
+	if (ke.code == KTRL('X')) {
+		quit(NULL);
+	} else if (ke.code == ESCAPE) {
+		next = BIRTH_BACK;
+	} else if (ke.code == 'N' || ke.code == 'n') {
+		get_ahw(player);
+		next = BIRTH_AHW_CHOICE;
+	} else {
+		next = BIRTH_HISTORY_CHOICE;
+	}
+
+	return next;
+}
+
+/**
+ * ------------------------------------------------------------------------
  * Allowing the player to choose their history.
  * ------------------------------------------------------------------------ */
 static enum birth_stage get_history_command(void)
@@ -1617,7 +1459,6 @@ int textui_do_birth(void)
 {
 	enum birth_stage current_stage = BIRTH_RESET;
 	enum birth_stage prev = BIRTH_BACK;
-	enum birth_stage roller = BIRTH_RESET;
 	enum birth_stage next = current_stage;
 
 	bool done = false;
@@ -1633,8 +1474,6 @@ int textui_do_birth(void)
 			{
 				cmdq_push(CMD_BIRTH_RESET);
 
-				roller = BIRTH_RESET;
-				
 				if (quickstart_allowed)
 					next = BIRTH_QUICKSTART;
 				else
@@ -1652,9 +1491,9 @@ int textui_do_birth(void)
 				break;
 			}
 
-			case BIRTH_CLASS_CHOICE:
+			case BIRTH_HOUSE_CHOICE:
 			case BIRTH_RACE_CHOICE:
-			case BIRTH_ROLLER_CHOICE:
+			case BIRTH_SEX_CHOICE:
 			{
 				struct menu *menu = &race_menu;
 				cmd_code command = CMD_CHOOSE_RACE;
@@ -1664,19 +1503,25 @@ int textui_do_birth(void)
 
 				if (current_stage > BIRTH_RACE_CHOICE) {
 					menu_refresh(&race_menu, false);
-					menu = &class_menu;
-					command = CMD_CHOOSE_CLASS;
+					setup_house_menu(player->race);
+					menu = &house_menu;
+					command = CMD_CHOOSE_HOUSE;
 				}
 
-				if (current_stage > BIRTH_CLASS_CHOICE) {
-					menu_refresh(&class_menu, false);
-					menu = &roller_menu;
+				if (current_stage > BIRTH_HOUSE_CHOICE) {
+					menu_refresh(&house_menu, false);
+					menu = &sex_menu;
+					command = CMD_CHOOSE_SEX;
 				}
 
 				next = menu_question(current_stage, menu, command);
 
-				if (next == BIRTH_BACK)
+				if (next == BIRTH_BACK) {
+					if (current_stage == BIRTH_HOUSE_CHOICE) {
+						free_birth_menu(&house_menu);
+					}
 					next = current_stage - 1;
+				}
 
 				/* Make sure the character gets reset before quickstarting */
 				if (next == BIRTH_QUICKSTART) 
@@ -1685,37 +1530,39 @@ int textui_do_birth(void)
 				break;
 			}
 
-			case BIRTH_POINTBASED:
+			case BIRTH_STAT_POINTS:
 			{
-				roller = BIRTH_POINTBASED;
-		
-				if (prev > BIRTH_POINTBASED) {
-					point_based_start();
-					/*
-					 * Force a redraw of the point
-					 * allocations but do not reset them.
-					 */
-					cmdq_push(CMD_REFRESH_STATS);
-					cmdq_execute(CTX_BIRTH);
-				}
+				stat_points_start();
+				/*
+				 * Force a redraw of the point
+				 * allocations but do not reset them.
+				 */
+				cmdq_push(CMD_REFRESH_STATS);
+				cmdq_execute(CTX_BIRTH);
 
-				next = point_based_command();
+				next = stat_points_command();
 
 				if (next == BIRTH_BACK)
-					next = BIRTH_ROLLER_CHOICE;
+					next = BIRTH_SEX_CHOICE;
 
-				if (next != BIRTH_POINTBASED)
-					point_based_stop();
+				if (next != BIRTH_STAT_POINTS)
+					stat_points_stop();
 
 				break;
 			}
 
-			case BIRTH_ROLLER:
+			case BIRTH_SKILL_POINTS:
 			{
-				roller = BIRTH_ROLLER;
-				next = roller_command(prev < BIRTH_ROLLER);
-				if (next == BIRTH_BACK)
-					next = BIRTH_ROLLER_CHOICE;
+				int skill_action = gain_skills(CTX_BIRTH,
+											   (prev == BIRTH_STAT_POINTS));
+				if (skill_action > 0) {
+					next = BIRTH_NAME_CHOICE;
+				} else if (skill_action < 0) {
+					next = BIRTH_STAT_POINTS;
+				} else {
+					/* Shouldn't get here */
+					next = BIRTH_SKILL_POINTS;
+				}
 
 				break;
 			}
@@ -1727,7 +1574,19 @@ int textui_do_birth(void)
 
 				next = get_name_command();
 				if (next == BIRTH_BACK)
-					next = roller;
+					next = BIRTH_SKILL_POINTS;
+
+				break;
+			}
+
+			case BIRTH_AHW_CHOICE:
+			{
+				if (prev < BIRTH_AHW_CHOICE)
+					display_player(0);
+
+				next = get_ahw_command();
+				if (next == BIRTH_BACK)
+					next = BIRTH_NAME_CHOICE;
 
 				break;
 			}
@@ -1739,7 +1598,7 @@ int textui_do_birth(void)
 
 				next = get_history_command();
 				if (next == BIRTH_BACK)
-					next = BIRTH_NAME_CHOICE;
+					next = BIRTH_AHW_CHOICE;
 
 				break;
 			}

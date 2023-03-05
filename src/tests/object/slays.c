@@ -128,7 +128,7 @@ static void fill_in_monster(struct monster *mon, struct monster_race *race)
 	mon->target.grid = loc(0, 0);
 	mon->target.midx = 0;
 	memset(mon->group_info, 0, GROUP_MAX * sizeof(mon->group_info[0]));
-	mon->heatmap.grids = NULL;
+	mon->flow.grids = NULL;
 	mon->min_range = 0;
 	mon->best_range = 0;
 }

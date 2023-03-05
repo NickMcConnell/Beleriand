@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "mon-calcs.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-msg.h"
@@ -69,56 +70,6 @@ int mon_timed_name_to_idx(const char *name)
 }
 
 /**
- * Roll the saving throw for monsters resisting a timed effect.
- */
-static bool saving_throw(const struct monster *mon, int effect_type, int timer, int flag)
-{
-	int resist_chance = MIN(
-								90,
-								mon->race->level + MAX(0, 25 - timer / 2)
-						   );
-
-	/* Give unique monsters a double check */
-	if (rf_has(mon->race->flags, RF_UNIQUE) &&
-			(randint0(100) < resist_chance)) {
-		return true;
-	}
-
-	return randint0(100) < resist_chance;
-}
-
-/**
- * Determines whether the given monster successfully resists the given effect.
- */
-static bool does_resist(const struct monster *mon, int effect_type, int timer, int flag)
-{
-	assert(mon != NULL);
-	assert(effect_type >= 0);
-	assert(effect_type < MON_TMD_MAX);
-
-	struct mon_timed_effect *effect = &effects[effect_type];
-	struct monster_lore *lore = get_lore(mon->race);
-
-	/* Sometimes the game can override the monster's innate resistance */
-	if (flag & MON_TMD_FLG_NOFAIL) {
-		return false;
-	}
-
-	/* Check resistances from monster flags */
-	if (rf_has(mon->race->flags, effect->flag_resist)) {
-		lore_learn_flag_if_visible(lore, mon, effect->flag_resist);
-		return true;
-	}
-
-	/* Some effects get a saving throw; others don't */
-	if (effect->gets_save == true) {
-		return saving_throw(mon, effect_type, timer, flag);
-	} else {
-		return false;
-	}
-}
-
-/**
  * Attempts to set the timer of the given monster effect to `timer`.
  *
  * Checks to see if the monster resists the effect, using does_resist().
@@ -144,10 +95,6 @@ static bool mon_set_timed(struct monster *mon,
 
 	struct mon_timed_effect *effect = &effects[effect_type];
 
-	bool check_resist;
-	bool resisted = false;
-	bool update = false;
-
 	int m_note = 0;
 	int old_timer = mon->m_timed[effect_type];
 
@@ -163,62 +110,35 @@ static bool mon_set_timed(struct monster *mon,
 		/* Turning off, usually mention */
 		m_note = effect->message_end;
 		flag |= MON_TMD_FLG_NOTIFY;
-		check_resist = false;
 	} else if (old_timer == 0) {
 		/* Turning on, usually mention */
 		m_note = effect->message_begin;
 		flag |= MON_TMD_FLG_NOTIFY;
-		check_resist = true;
 	} else if (timer > old_timer) {
 		/* Different message for increases, but don't automatically mention. */
 		m_note = effect->message_increase;
-		check_resist = true;
-	} else {
-		/* Decreases don't get a message, but never resist them */
-		check_resist = false;
 	}
 
-	/* Determine if the monster resisted or not, if appropriate */
-	if (check_resist && does_resist(mon, effect_type, timer, flag)) {
-		resisted = true;
-		m_note = MON_MSG_UNAFFECTED;
-	} else {
-		mon->m_timed[effect_type] = timer;
-		update = true;
-	}
-
-	/* Special case - deal with monster shapechanges */
-	if (effect_type == MON_TMD_CHANGED) {
-		if (timer > old_timer) {
-			if (!monster_change_shape(mon)) {
-				m_note = MON_MSG_SHAPE_FAIL;
-				mon->m_timed[effect_type] = old_timer;
-			}
-		} else if (timer == 0) {
-			if (!monster_revert_shape(mon)) {
-				quit ("Monster shapechange reversion failed!");
-			}
-		}
-	}
+	/* Set the timer */
+	mon->m_timed[effect_type] = timer;
+	calc_monster_speed(mon);
 
 	/* Print a message if there is one, if the effect allows for it, and if
 	 * either the monster is visible, or we're trying to ID something */
 	if (m_note &&
 		!(flag & MON_TMD_FLG_NOMESSAGE) &&
 		(flag & MON_TMD_FLG_NOTIFY)
-		&& monster_is_obvious(mon)) {
+		&& monster_is_visible(mon)) {
 			add_monster_message(mon, m_note, true);
 	}
 
 	/* Update the visuals, as appropriate. */
-	if (update) {
-		if (player->upkeep->health_who == mon)
-			player->upkeep->redraw |= (PR_HEALTH);
+	if (player->upkeep->health_who == mon)
+		player->upkeep->redraw |= (PR_HEALTH);
 
-		player->upkeep->redraw |= (PR_MONLIST);
-	}
+	player->upkeep->redraw |= (PR_MONLIST);
 
-	return !resisted;
+	return true;
 }
 
 /** Minimum number of turns a new timed effect can last */
@@ -312,13 +232,3 @@ bool mon_clear_timed(struct monster *mon, int effect_type, int flag)
 	}
 }
 
-/**
- * The level at which an effect is affecting a monster.
- * Levels range from 0 (unaffected) to 5 (maximum effect).
- */
-int monster_effect_level(const struct monster *mon, int effect_type)
-{
-	struct mon_timed_effect *effect = &effects[effect_type];
-	int divisor = MAX(effect->max_timer / 5, 1);
-	return MIN((mon->m_timed[effect_type] + divisor - 1) / divisor, 5);
-}

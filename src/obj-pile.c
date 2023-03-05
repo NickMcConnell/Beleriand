@@ -27,7 +27,6 @@
 #include "mon-make.h"
 #include "mon-util.h"
 #include "monster.h"
-#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
@@ -40,7 +39,6 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
-#include "player-spell.h"
 #include "player-util.h"
 #include "randname.h"
 #include "trap.h"
@@ -295,18 +293,15 @@ void object_free(struct object *obj)
 {
 	mem_free(obj->slays);
 	mem_free(obj->brands);
-	mem_free(obj->curses);
 	mem_free(obj);
 }
 
 /**
  * Delete an object and free its memory, and set its pointer to NULL
  * \param c is the chunk the object belongs to (usually)
- * \param p_c is the corresponding known chunk (eg player->cave if c is cave)
  * \param obj_address is the address of the struct object* to be deleted
  */
-void object_delete(struct chunk *c, struct chunk *p_c,
-				   struct object **obj_address)
+void object_delete(struct chunk *c, struct object **obj_address)
 {
 	struct object *obj = *obj_address;
 	struct object *prev = obj->prev;
@@ -328,25 +323,7 @@ void object_delete(struct chunk *c, struct chunk *p_c,
 	if (player && player->upkeep && obj == player->upkeep->object)
 		player->upkeep->object = NULL;
 
-	/* Orphan rather than actually delete if we still have a known object */
-	if (c && p_c && obj->oidx && (obj == c->objects[obj->oidx]) &&
-		p_c->objects[obj->oidx]) {
-		obj->grid = loc(0, 0);
-		obj->prev = NULL;
-		obj->next = NULL;
-		obj->held_m_idx = 0;
-		obj->mimicking_m_idx = 0;
-
-		/* Object is now purely imaginary to the player */
-		obj->known->notice |= OBJ_NOTICE_IMAGINED;
-
-		return;
-	}
-
 	/* Remove from any lists */
-	if (p_c && p_c->objects && obj->oidx && (obj == p_c->objects[obj->oidx]))
-		p_c->objects[obj->oidx] = NULL;
-
 	if (c && c->objects && obj->oidx && (obj == c->objects[obj->oidx]))
 		c->objects[obj->oidx] = NULL;
 
@@ -358,18 +335,15 @@ void object_delete(struct chunk *c, struct chunk *p_c,
  * Free an entire object pile
  * \param c is the chunk holding the pile; should be NULL for piles held by
  * players or stores.
- * \param p_c is the player's view of the chunk holding the pile; should be NULL
- * when excising a pile in the player's view or for piles held by players or
- * stores.
  * \param obj is the pointer to the start of the pile to excise.
  */
-void object_pile_free(struct chunk *c, struct chunk *p_c, struct object *obj)
+void object_pile_free(struct chunk *c, struct object *obj)
 {
 	struct object *current = obj, *next;
 
 	while (current) {
 		next = current->next;
-		object_delete(c, p_c, &current);
+		object_delete(c, &current);
 		current = next;
 	}
 }
@@ -402,10 +376,6 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 	if (object_is_equipped(player->body, obj2))
 		return false;
 
-	/* If either item is unknown, do not stack */
-	if (mode & OSTACK_LIST && obj1->kind != obj1->known->kind) return false;
-	if (mode & OSTACK_LIST && obj2->kind != obj2->known->kind) return false;
-
 	/* Hack -- identical items cannot be stacked */
 	if (obj1 == obj2) return false;
 
@@ -431,13 +401,12 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 	if (tval_is_chest(obj1)) {
 		/* Chests never stack */
 		return false;
-	}
-	else if (tval_is_edible(obj1) || tval_is_potion(obj1) ||
-		tval_is_scroll(obj1) || tval_is_rod(obj1)) {
+	} else if (tval_is_edible(obj1) || tval_is_potion(obj1) ||
+			   tval_is_horn(obj1)) {
 		/* Food, potions, scrolls and rods all stack nicely,
 		   since the kinds are identical, either both will be
 		   aware or both will be unaware */
-	} else if (tval_can_have_charges(obj1) || tval_is_money(obj1)) {
+	} else if (tval_can_have_charges(obj1)) {
 		/* Gold, staves and wands stack most of the time */
 		/* Too much gold or too many charges */
 		if (obj1->pval + obj2->pval > MAX_PVAL)
@@ -445,19 +414,17 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 
 		/* ... otherwise ok */
 	} else if (tval_is_weapon(obj1) || tval_is_armor(obj1) ||
-		tval_is_jewelry(obj1) || tval_is_light(obj1)) {
-		bool obj1_is_known = object_fully_known(obj1);
-		bool obj2_is_known = object_fully_known(obj2);
+			   tval_is_jewelry(obj1) || tval_is_light(obj1)) {
+		/* Require identical knowledge of both items */
+		if (object_is_known(obj1) != object_is_known(obj2)) return false;
 
 		/* Require identical values */
-		if (obj1->ac != obj2->ac) return false;
+		if (obj1->att != obj2->att) return false;
 		if (obj1->dd != obj2->dd) return false;
 		if (obj1->ds != obj2->ds) return false;
-
-		/* Require identical bonuses */
-		if (obj1->to_h != obj2->to_h) return false;
-		if (obj1->to_d != obj2->to_d) return false;
-		if (obj1->to_a != obj2->to_a) return false;
+		if (obj1->evn != obj2->evn) return false;
+		if (obj1->pd != obj2->pd) return false;
+		if (obj1->ps != obj2->ps) return false;
 
 		/* Require all identical modifiers */
 		for (i = 0; i < OBJ_MOD_MAX; i++)
@@ -467,9 +434,6 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 		/* Require identical ego-item types */
 		if (obj1->ego != obj2->ego) return false;
 
-		/* Require identical curses */
-		if (!curses_are_equal(obj1, obj2)) return false;
-
 		/* Hack - Never stack recharging wearables ... */
 		if ((obj1->timeout || obj2->timeout) &&
 			!tval_is_light(obj1)) return false;
@@ -477,10 +441,6 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 		/* ... and lights must have same amount of fuel */
 		else if ((obj1->timeout != obj2->timeout) &&
 				 tval_is_light(obj1)) return false;
-
-		/* Prevent unIDd items stacking with IDd items in the object list */
-		if (mode & OSTACK_LIST && (obj1_is_known != obj2_is_known))
-			return false;
 	} else {
 		/* Anything else probably okay */
 	}
@@ -512,23 +472,8 @@ bool object_mergeable(const struct object *obj1, const struct object *obj2,
 	int total = obj1->number + obj2->number;
 
 	/* Check against stacking limit - except in stores which absorb anyway */
-	if (!(mode & OSTACK_STORE)) {
-		if (total > obj1->kind->base->max_stack) {
-			return false;
-		}
-		/* The quiver can impose stricter limits. */
-		if (mode & OSTACK_QUIVER) {
-			if (tval_is_ammo(obj1)) {
-				if (total > z_info->quiver_slot_size) {
-					return false;
-				}
-			} else {
-				if (total > z_info->quiver_slot_size /
-						z_info->thrown_quiver_mult) {
-					return false;
-				}
-			}
-		}
+	if (total > obj1->kind->base->max_stack) {
+		return false;
 	}
 
 	return object_stackable(obj1, obj2, mode);
@@ -578,22 +523,14 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 	int total;
 
 	/* First object gains any extra knowledge from second */
-	if (obj1->known && obj2->known) {
-		if (obj2->known->effect)
-			obj1->known->effect = obj1->effect;
-		player_know_object(player, obj1);
-	}
+	obj1->notice |= obj2->notice;
 
 	/* Merge inscriptions */
 	if (obj2->note)
 		obj1->note = obj2->note;
 
-	/* Combine timeouts for rod stacking */
-	if (tval_can_have_timeout(obj1))
-		obj1->timeout += obj2->timeout;
-
-	/* Combine pvals for wands and staves */
-	if (tval_can_have_charges(obj1) || tval_is_money(obj1)) {
+	/* Combine pvals for staves */
+	if (tval_can_have_charges(obj1)) {
 		total = obj1->pval + obj2->pval;
 		obj1->pval = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
@@ -608,54 +545,16 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
  * limits (from mode1 and mode2) are the same, this stack will be larger
  * when the function returns.
  * \param obj2 Is the second of the stacks to combine.
- * \param mode1 Describes the behavior, most notably the upper limit on size,
- * for the first stack. Can not include OSTACK_STORE, which typically has no
- * limit on the stack size.
- * \param mode2 Describes the behavior, most notable the upper limit on size,
- * for the second stack.  Can not include OSTACK_STORE, which typically has
- * no limit on the stack size.
  */
-void object_absorb_partial(struct object *obj1, struct object *obj2,
-	object_stack_t mode1, object_stack_t mode2)
+void object_absorb_partial(struct object *obj1, struct object *obj2)
 {
 	int smallest = MIN(obj1->number, obj2->number);
 	int largest = MAX(obj1->number, obj2->number);
 	int newsz1, newsz2;
+	int difference = obj1->kind->base->max_stack - largest;
 
-	assert(!(mode1 & OSTACK_STORE) && !(mode2 & OSTACK_STORE));
-
-	/* The quiver can have stricter limits. */
-	if (mode1 & OSTACK_QUIVER) {
-		int limit = z_info->quiver_slot_size /
-			(tval_is_ammo(obj1) ?
-			1 : z_info->thrown_quiver_mult);
-
-		if (mode2 & OSTACK_QUIVER) {
-			int difference = limit - largest;
-
-			newsz1 = largest + difference;
-			newsz2 = smallest - difference;
-		} else {
-			/* Handle the possibly different limits. */
-			newsz1 = limit;
-			newsz2 = (largest + smallest) - limit;
-			assert(newsz2 < obj1->kind->base->max_stack);
-		}
-	} else if (mode2 & OSTACK_QUIVER) {
-		/* Handle the possibly different limits. */
-		int limit = z_info->quiver_slot_size /
-			(tval_is_ammo(obj2) ?
-			1 : z_info->thrown_quiver_mult);
-
-		newsz1 = (largest + smallest) - limit;
-		newsz2 = limit;
-		assert(newsz1 < obj1->kind->base->max_stack);
-	} else {
-		int difference = obj1->kind->base->max_stack - largest;
-
-		newsz1 = largest + difference;
-		newsz2 = smallest - difference;
-	}
+	newsz1 = largest + difference;
+	newsz2 = smallest - difference;
 
 	obj1->number = newsz1;
 	obj2->number = newsz2;
@@ -668,21 +567,13 @@ void object_absorb_partial(struct object *obj1, struct object *obj2,
  */
 void object_absorb(struct object *obj1, struct object *obj2)
 {
-	struct object *known = obj2->known;
 	int total = obj1->number + obj2->number;
 
 	/* Add together the item counts */
 	obj1->number = MIN(total, obj1->kind->base->max_stack);
 
 	object_absorb_merge(obj1, obj2);
-	if (known) {
-		if (!loc_is_zero(known->grid)) {
-			square_excise_object(player->cave, known->grid, known);
-		}
-		delist_object(player->cave, known);
-		object_delete(player->cave, NULL, &known);
-	}
-	object_delete(cave, player->cave, &obj2);
+	object_delete(cave, &obj2);
 }
 
 /**
@@ -693,7 +584,6 @@ void object_wipe(struct object *obj)
 	/* Free slays and brands */
 	mem_free(obj->slays);
 	mem_free(obj->brands);
-	mem_free(obj->curses);
 
 	/* Wipe the structure */
 	memset(obj, 0, sizeof(*obj));
@@ -716,11 +606,6 @@ void object_copy(struct object *dest, const struct object *src)
 		dest->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
 		memcpy(dest->brands, src->brands, z_info->brand_max * sizeof(bool));
 	}
-	if (src->curses) {
-		size_t array_size = z_info->curse_max * sizeof(struct curse_data);
-		dest->curses = mem_zalloc(array_size);
-		memcpy(dest->curses, src->curses, array_size);
-	}
 
 	/* Detach from any pile */
 	dest->prev = NULL;
@@ -735,8 +620,6 @@ void object_copy(struct object *dest, const struct object *src)
  */
 void object_copy_amt(struct object *dest, struct object *src, int amt)
 {
-	int charge_time = randcalc(src->time, 0, AVERAGE), max_time;
-
 	/* Get a copy of the object */
 	object_copy(dest, src);
 
@@ -750,15 +633,6 @@ void object_copy_amt(struct object *dest, struct object *src, int amt)
 	 */
 	if (tval_can_have_charges(src))
 		dest->pval = src->pval * amt / src->number;
-
-	if (tval_can_have_timeout(src)) {
-		max_time = charge_time * amt;
-
-		if (src->timeout > max_time)
-			dest->timeout = max_time;
-		else
-			dest->timeout = src->timeout;
-	}
 }
 
 /**
@@ -771,44 +645,24 @@ void object_copy_amt(struct object *dest, struct object *src, int amt)
  */
 struct object *object_split(struct object *src, int amt)
 {
-	struct object *dest = object_new(), *dest_known;
+	struct object *dest = object_new();
 
 	/* Get a copy of the object */
 	object_copy(dest, src);
-
-	/* Do we need a new known object? */
-	if (src->known) {
-		/* Ensure numbers are aligned (should not be necessary, but safer) */
-		src->known->number = src->number;
-
-		/* Make the new object */
-		dest_known = object_new();
-		object_copy(dest_known, src->known);
-		dest->known = dest_known;
-	}
 
 	/* Check legality */
 	assert(src->number > amt);
 
 	/* Distribute charges of wands, staves, or rods */
 	distribute_charges(src, dest, amt);
-	if (src->known)
-		distribute_charges(src->known, dest->known, amt);
 
 	/* Modify quantity */
 	dest->number = amt;
 	src->number -= amt;
 	if (src->note)
 		dest->note = src->note;
-	if (src->known) {
-		dest->known->number = dest->number;
-		src->known->number = src->number;
-		dest->known->note = src->known->note;
-	}
 
 	/* Remove any index */
-	if (dest->known)
-		dest->known->oidx = 0;
 	dest->oidx = 0;
 
 	return dest;
@@ -835,8 +689,6 @@ struct object *floor_object_for_use(struct player *p, struct object *obj,
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
-		square_excise_object(p->cave, usable->grid, usable->known);
-		delist_object(p->cave, usable->known);
 		square_excise_object(cave, usable->grid, usable);
 		delist_object(cave, usable);
 		*none_left = true;
@@ -850,7 +702,6 @@ struct object *floor_object_for_use(struct player *p, struct object *obj,
 	}
 
 	/* Object no longer has a location */
-	usable->known->grid = loc(0, 0);
 	usable->grid = loc(0, 0);
 
 	/* Print a message if requested and there is anything left */
@@ -859,8 +710,7 @@ struct object *floor_object_for_use(struct player *p, struct object *obj,
 			obj->number = 0;
 
 		/* Get a description */
-		object_desc(name, sizeof(name), obj,
-			ODESC_PREFIX | ODESC_FULL, p);
+		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL, p);
 
 		if (usable == obj)
 			obj->number = num;
@@ -872,6 +722,37 @@ struct object *floor_object_for_use(struct player *p, struct object *obj,
 	return usable;
 }
 
+
+/**
+ * Destroy an item on the floor
+ */
+bool floor_destroy(struct object *obj, int amt)
+{
+	bool none_left;
+	char name[80];
+	char out_val[160];
+
+	/* Get the object */
+	struct object *destroyed = floor_object_for_use(player, obj, amt, true,
+													&none_left);
+
+	/* Describe the destroyed object */
+	object_desc(name, sizeof(name), destroyed, ODESC_PREFIX | ODESC_FULL,
+		player);
+
+	/* Check for known special items */
+	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", name);
+	if (!get_check(out_val)) return false;
+
+	/* Message */
+	msg("You destroy %s.", name);
+
+	/* Destroy it */
+	delist_object(cave, destroyed);
+	object_delete(cave, &destroyed);
+
+	return true;
+}
 
 /**
  * Find and return the oldest object on the given grid marked as "ignore".
@@ -931,13 +812,12 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 	}
 
 	/* The stack is already too large */
-	if (n >= z_info->floor_size || (!OPT(player, birth_stacking) && n)) {
+	if (n >= z_info->floor_size) {
 		/* Delete the oldest ignored object */
 		if (ignore) {
-			struct chunk *p_c = (c == cave) ? player->cave : NULL;
 			square_excise_object(c, grid, ignore);
 			delist_object(c, ignore);
-			object_delete(c, p_c, &ignore);
+			object_delete(c, &ignore);
 		} else {
 			return false;
 		}
@@ -954,16 +834,6 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 
 	/* Record in the level list */
 	list_object(c, drop);
-
-	/* If there's a known version, put it in the player's view of the
-	 * cave but at an unknown location.  square_note_spot() will move
-	 * it to the correct place if seen. */
-	if (drop->known) {
-		drop->known->oidx = drop->oidx;
-		drop->known->held_m_idx = 0;
-		drop->known->grid = loc(0, 0);
-		player->cave->objects[drop->oidx] = drop->known;
-	}
 
 	/* Redraw */
 	square_note_spot(c, grid);
@@ -984,23 +854,15 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
  */
 static void floor_carry_fail(struct chunk *c, struct object *drop, bool broke)
 {
-	struct object *known = drop->known;
-
 	/* Delete completely */
-	if (known) {
-		char o_name[80];
-		const char *verb = broke ?
-			VERB_AGREEMENT(drop->number, "breaks", "break") :
-			VERB_AGREEMENT(drop->number, "disappears", "disappear");
-		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE, player);
-		msg("The %s %s.", o_name, verb);
-		if (!loc_is_zero(known->grid))
-			square_excise_object(player->cave, known->grid, known);
-		delist_object(player->cave, known);
-		object_delete(player->cave, NULL, &known);
-	}
+	char o_name[80];
+	const char *verb = broke ?
+		VERB_AGREEMENT(drop->number, "breaks", "break") :
+		VERB_AGREEMENT(drop->number, "disappears", "disappear");
+	object_desc(o_name, sizeof(o_name), drop, ODESC_BASE, player);
+	msg("The %s %s.", o_name, verb);
 	delist_object(c, drop);
-	object_delete(cave, player->cave, &drop);
+	object_delete(cave, &drop);
 }
 
 /**
@@ -1058,9 +920,8 @@ static void drop_find_grid(const struct player *p, struct chunk *c,
 				num_shown++;
 
 			/* Disallow if the stack size is too big */
-			if ((!OPT(p, birth_stacking) && (num_shown > 1)) ||
-				((num_shown + num_ignored) > z_info->floor_size &&
-				 !floor_get_oldest_ignored(p, c, try)))
+			if ((num_shown + num_ignored) > z_info->floor_size &&
+				!floor_get_oldest_ignored(p, c, try))
 				continue;
 
 			/* Score the location based on how close and how full the grid is */
@@ -1126,7 +987,7 @@ void drop_near(struct chunk *c, struct object **dropped, int chance,
 	bool dont_ignore = verbose && !ignore_item_ok(player, *dropped);
 
 	/* Only called in the current level */
-	assert(c == cave);
+	//assert(c == cave);
 
 	/* Describe object */
 	object_desc(o_name, sizeof(o_name), *dropped, ODESC_BASE, player);
@@ -1175,16 +1036,10 @@ void push_object(struct loc grid)
 		object_copy(newobj, obj);
 		newobj->oidx = 0;
 		newobj->grid = loc(0, 0);
-		if (newobj->known) {
-			newobj->known = object_new();
-			object_copy(newobj->known, obj->known);
-			newobj->known->oidx = 0;
-			newobj->known->grid = loc(0, 0);
-		}
 		q_push_ptr(queue, newobj);
 
 		delist_object(cave, obj);
-		object_delete(cave, player->cave, &obj);
+		object_delete(cave, &obj);
 
 		/* Next object */
 		obj = next;
@@ -1202,55 +1057,8 @@ void push_object(struct loc grid)
 		/* Take object from the queue */
 		obj = q_pop_ptr(queue);
 
-		/* Unrevealed mimics require special handling, as always. */
-		if (obj->mimicking_m_idx) {
-			struct monster *mimic =
-				cave_monster(cave, obj->mimicking_m_idx);
-			int d;
-
-			assert(mimic);
-			/*
-			 * Reset since the current value is a dangling
-			 * reference to a deleted object.
-			 */
-			mimic->mimicked_obj = NULL;
-
-			/* Try to find a location; use closer grids first. */
-			d = 1;
-			while (1) {
-				struct loc newgrid;
-				bool dummy = true;
-
-				if (d >= 4) {
-					/*
-					 * Give up.  Destroy both the mimic
-					 * and the object.
-					 */
-					delete_monster_idx(obj->mimicking_m_idx);
-					if (obj->known) {
-						object_delete(player->cave, NULL, &obj->known);
-					}
-					object_delete(cave, player->cave, &obj);
-					break;
-				}
-				if (scatter_ext(cave, &newgrid, 1, grid, d,
-						true, square_isempty) > 0
-						&& floor_carry(cave, newgrid,
-						obj, &dummy)) {
-					/*
-					 * Move the monster and give it the
-					 * object.
-					 */
-					monster_swap(grid, newgrid);
-					mimic->mimicked_obj = obj;
-					break;
-				}
-				++d;
-			}
-		} else {
-			/* Drop the object */
-			drop_near(cave, &obj, 0, grid, false, false);
-		}
+		/* Drop the object */
+		drop_near(cave, &obj, 0, grid, false, false);
 	}
 
 	/* Reset cave feature, remove trap if needed */
@@ -1302,12 +1110,8 @@ int scan_floor(struct object **items, int max_size, struct player *p,
 		/* Item tester */
 		if ((mode & OFLOOR_TEST) && !object_test(tester, obj)) continue;
 
-		/* Sensed or known */
-		if ((mode & OFLOOR_SENSE) && (!obj->known)) continue;
-
 		/* Visible */
-		if ((mode & OFLOOR_VISIBLE) && !is_unknown(obj)
-				&& ignore_item_ok(p, obj)) continue;
+		if ((mode & OFLOOR_VISIBLE) && ignore_item_ok(p, obj)) continue;
 
 		/* Accept this item */
 		items[num++] = obj;
@@ -1331,15 +1135,16 @@ int scan_distant_floor(struct object **items, int max_size, struct player *p,
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(p->cave, grid)) return 0;
+	if (!square_in_bounds(cave, grid)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(p->cave, grid); obj; obj = obj->next) {
+	for (obj = square_object(cave, grid); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
 		/* Known */
 		if (obj->kind == unknown_item_kind) continue;
+		if (!obj->marked) continue;
 
 		/* Visible */
 		if (ignore_known_item_ok(p, obj)) continue;
@@ -1371,7 +1176,6 @@ int scan_items(struct object **item_list, size_t item_max, struct player *p,
 {
 	bool use_inven = ((mode & USE_INVEN) ? true : false);
 	bool use_equip = ((mode & USE_EQUIP) ? true : false);
-	bool use_quiver = ((mode & USE_QUIVER) ? true : false);
 	bool use_floor = ((mode & USE_FLOOR) ? true : false);
 
 	int floor_max = z_info->floor_size;
@@ -1393,16 +1197,10 @@ int scan_items(struct object **item_list, size_t item_max, struct player *p,
 				item_list[item_num++] = slot_object(p, i);
 		}
 
-	if (use_quiver)
-		for (i = 0; i < z_info->quiver_size && item_num < item_max; i++) {
-			if (object_test(tester, p->upkeep->quiver[i]))
-				item_list[item_num++] = p->upkeep->quiver[i];
-		}
-
-	/* Scan all non-gold objects in the grid */
+	/* Scan all objects in the grid */
 	if (use_floor) {
 		floor_num = scan_floor(floor_list, floor_max, p,
-			OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE, tester);
+			OFLOOR_TEST | OFLOOR_VISIBLE, tester);
 
 		for (i = 0; i < floor_num && item_num < item_max; i++)
 			item_list[item_num++] = floor_list[i];

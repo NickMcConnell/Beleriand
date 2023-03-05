@@ -27,7 +27,6 @@ void do_cmd_message_one(void);
 void do_cmd_messages(void);
 void do_cmd_inven(void);
 void do_cmd_equip(void);
-void do_cmd_quiver(void);
 void do_cmd_look(void);
 void do_cmd_locate(void);
 int cmp_monsters(const void *a, const void *b);

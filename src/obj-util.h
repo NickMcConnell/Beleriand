@@ -44,15 +44,10 @@ int lookup_sval(int tval, const char *name);
 void object_short_name(char *buf, size_t max, const char *name);
 int compare_items(const struct object *o1, const struct object *o2);
 uint8_t convert_depth_to_origin(int depth);
+bool obj_digging_score(const struct object *obj);
+bool obj_can_dig(const struct object *obj);
 bool obj_has_charges(const struct object *obj);
-bool obj_can_zap(const struct object *obj);
-bool obj_is_activatable(const struct object *obj);
-bool obj_can_activate(const struct object *obj);
-bool obj_can_refill(const struct object *obj);
-bool obj_kind_can_browse(const struct object_kind *kind);
-bool obj_can_browse(const struct object *obj);
-bool obj_can_cast_from(const struct object *obj);
-bool obj_can_study(const struct object *obj);
+bool obj_can_refuel(const struct object *obj);
 bool obj_can_takeoff(const struct object *obj);
 bool obj_can_wear(const struct object *obj);
 bool obj_can_fire(const struct object *obj);
@@ -61,14 +56,12 @@ bool obj_is_known_artifact(const struct object *obj);
 bool obj_has_inscrip(const struct object *obj);
 bool obj_has_flag(const struct object *obj, int flag);
 bool obj_is_useable(const struct object *obj);
+bool obj_nourishes(const struct object *obj);
 struct effect *object_effect(const struct object *obj);
 bool obj_needs_aim(struct object *obj);
-bool obj_can_fail(const struct object *o);
 
-int get_use_device_chance(const struct object *obj);
 void distribute_charges(struct object *source, struct object *dest, int amt);
-int number_charging(const struct object *obj);
-bool recharge_timeout(struct object *obj);
+void uncurse_object(struct object *obj);
 bool verify_object(const char *prompt, const struct object *obj,
 		const struct player *p);
 void print_custom_message(struct object *obj, const char *string, int msg_type,
@@ -80,5 +73,6 @@ bool is_artifact_everseen(const struct artifact *art);
 void mark_artifact_created(const struct artifact *art, bool created);
 void mark_artifact_seen(const struct artifact *art, bool seen);
 void mark_artifact_everseen(const struct artifact *art, bool seen);
+void write_self_made_artefact_entries(ang_file *fff);
 
 #endif /* OBJECT_UTIL_H */

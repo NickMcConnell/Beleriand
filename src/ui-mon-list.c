@@ -35,7 +35,7 @@
  * - monster char;
  * - number of monsters;
  * - monster name (truncated, if needed to fit the line);
- * - whether or not the monster is asleep (and how many if in a group);
+ * - whether or not the monster is alert (and how many if in a group);
  * - monster distance from the player (aligned to the right side of the list).
  * By passing in a NULL textblock, the maximum line width of the section can be
  * found.
@@ -96,13 +96,13 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 		textblock_append(tb, "%s", line_buffer);
 
 	for (index = 0; index < total && line_count < lines_to_display; index++) {
-		char asleep[20] = { '\0' };
+		char alert[20] = { '\0' };
 		char location[20] = { '\0' };
 		uint8_t line_attr;
 		size_t full_width;
 		size_t name_width;
 		uint16_t count_in_section = 0;
-		uint16_t asleep_in_section = 0;
+		uint16_t alert_in_section = 0;
 
 		line_buffer[0] = '\0';
 
@@ -124,21 +124,21 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 		 * space; location includes padding; last -1 for some reason? */
 		full_width = max_width - 2 - utf8_strlen(location) - 1;
 
-		asleep_in_section = list->entries[index].asleep[section];
+		alert_in_section = list->entries[index].alert[section];
 		count_in_section = list->entries[index].count[section];
 
-		if (asleep_in_section > 0 && count_in_section > 1)
-			strnfmt(asleep, sizeof(asleep), " (%d asleep)", asleep_in_section);
-		else if (asleep_in_section == 1 && count_in_section == 1)
-			strnfmt(asleep, sizeof(asleep), " (asleep)");
+		if (alert_in_section > 0 && count_in_section > 1)
+			strnfmt(alert, sizeof(alert), " (%d alert)", alert_in_section);
+		else if (alert_in_section == 1 && count_in_section == 1)
+			strnfmt(alert, sizeof(alert), " (alert)");
 
 		/* Clip the monster name to fit, and append the sleep tag. */
-		name_width = MIN(full_width - utf8_strlen(asleep), sizeof(line_buffer));
+		name_width = MIN(full_width - utf8_strlen(alert), sizeof(line_buffer));
 		get_mon_name(line_buffer, sizeof(line_buffer),
 					 list->entries[index].race,
 					 list->entries[index].count[section]);
 		utf8_clipto(line_buffer, name_width);
-		my_strcat(line_buffer, asleep, sizeof(line_buffer));
+		my_strcat(line_buffer, alert, sizeof(line_buffer));
 
 		/* Calculate the width of the line for dynamic sizing; use a fixed max
 		 * width for location and monster char. */

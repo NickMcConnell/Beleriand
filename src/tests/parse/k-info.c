@@ -174,7 +174,7 @@ static int test_pile0(void *state) {
 }
 
 static int test_flags0(void *state) {
-	errr r = parser_parse(state, "flags:EASY_KNOW | FEATHER");
+	errr r = parser_parse(state, "flags:SHOOTS_SHOTS | FEATHER");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -184,7 +184,7 @@ static int test_flags0(void *state) {
 	require(k->kind_flags);
 	eq(of_has(k->flags, OF_FEATHER), 1);
 	eq(of_has(k->flags, OF_SLOW_DIGEST), 0);
-	eq(kf_has(k->kind_flags, KF_EASY_KNOW), 1);
+	eq(kf_has(k->kind_flags, KF_SHOOTS_SHOTS), 1);
 	eq(kf_has(k->kind_flags, KF_INSTA_ART), 0);
 	ok;
 }

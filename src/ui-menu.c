@@ -26,10 +26,11 @@
 /**
  * Cursor colours
  */
-const uint8_t curs_attrs[2][2] =
+const uint8_t curs_attrs[3][2] =
 {
 	{ COLOUR_SLATE, COLOUR_BLUE },      /* Greyed row */
-	{ COLOUR_WHITE, COLOUR_L_BLUE }     /* Valid row */
+	{ COLOUR_WHITE, COLOUR_L_BLUE },    /* Valid row */
+	{ COLOUR_RED, COLOUR_L_RED }        /* Valid row under extra conditions */
 };
 
 /**
@@ -81,15 +82,20 @@ static int menu_action_valid(struct menu *m, int oid)
 	menu_action *acts = menu_priv(m);
 
 	if (acts[oid].flags & MN_ACT_HIDDEN)
-		return 2;
+		return MN_ROW_HIDDEN;
 
-	return acts[oid].name ? true : false;
+	if (acts[oid].flags & MN_ACT_MAYBE)
+		return MN_ROW_MAYBE;
+
+	return acts[oid].name ? MN_ROW_VALID : MN_ROW_INVALID;
 }
 
 static void menu_action_display(struct menu *m, int oid, bool cursor, int row, int col, int width)
 {
 	menu_action *acts = menu_priv(m);
-	uint8_t color = curs_attrs[!(acts[oid].flags & (MN_ACT_GRAYED))][0 != cursor];
+	uint8_t act = acts[oid].flags & MN_ACT_GRAYED ? 0 :
+		(acts[oid].flags & MN_ACT_MAYBE ? 2 : 1);
+	uint8_t color = curs_attrs[act][0 != cursor];
 
 	display_action_aux(&acts[oid], color, row, col, width);
 }
@@ -535,6 +541,9 @@ static menu_row_style_t menu_row_style_for_validity(menu_row_validity_t row_vali
 		case MN_ROW_INVALID:
 		case MN_ROW_HIDDEN:
 			style = MN_ROW_STYLE_DISABLED;
+			break;
+		case MN_ROW_MAYBE:
+			style = MN_ROW_STYLE_CONDITIONAL;
 			break;
 		case MN_ROW_VALID:
 		default:

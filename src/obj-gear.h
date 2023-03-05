@@ -27,20 +27,20 @@
  */
 enum
 {
-	#define EQUIP(a, b, c, d, e, f) EQUIP_##a,
+	#define EQUIP(a, b, c, d, e) EQUIP_##a,
 	#include "list-equip-slots.h"
 	#undef EQUIP
 	EQUIP_MAX
 };
 
 int slot_by_name(struct player *p, const char *name);
-bool slot_type_is(struct player *p, int slot, int type);
+bool slot_type_is(const struct player *p, int slot, int type);
 struct object *slot_object(struct player *p, int slot);
 struct object *equipped_item_by_slot_name(struct player *p, const char *name);
 int object_slot(struct player_body body, const struct object *obj);
 bool object_is_equipped(struct player_body body, const struct object *obj);
 bool object_is_carried(struct player *p, const struct object *obj);
-bool object_is_in_quiver(struct player *p, const struct object *obj);
+bool object_is_in_quiver(const struct player *p, const struct object *obj);
 uint16_t object_pack_total(struct player *p, const struct object *obj,
 	bool ignore_inscrip, struct object **first);
 int pack_slots_used(const struct player *p);
@@ -49,6 +49,7 @@ const char *equip_describe(struct player *p, int slot);
 int wield_slot(const struct object *obj);
 bool minus_ac(struct player *p);
 char gear_to_label(struct player *p, struct object *obj);
+bool gear_excise_object(struct player *p, struct object *obj);
 struct object *gear_last_item(struct player *p);
 void gear_insert_end(struct player *p, struct object *obj);
 struct object *gear_object_for_use(struct player *p, struct object *obj,
@@ -61,6 +62,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 void inven_wield(struct object *obj, int slot);
 void inven_takeoff(struct object *item);
 void inven_drop(struct object *obj, int amt);
+bool inven_destroy(struct object *obj, int amt);
 void combine_pack(struct player *p);
 bool pack_is_full(void);
 bool pack_is_overfull(void);

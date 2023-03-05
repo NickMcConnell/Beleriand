@@ -21,4 +21,6 @@ slot:SHIELD:arm
 slot:HAT:head
 slot:GLOVES:hands
 slot:BOOTS:feet
+slot:QUIVER:first quiver
+slot:QUIVER:second quiver
 

@@ -141,10 +141,7 @@ static bool object_list_should_ignore_object(const struct player *p,
 	assert(obj->kind);
 	assert(base_obj);
 
-	if (!is_unknown(base_obj) && ignore_known_item_ok(p, obj))
-		return true;
-
-	if (tval_is_money(base_obj))
+	if (object_is_known(base_obj) && ignore_known_item_ok(p, obj))
 		return true;
 
 	return false;
@@ -165,7 +162,7 @@ void object_list_collect(object_list_t *list)
 		return;
 
 	/* Scan each object in the dungeon. */
-	for (i = 1; i < player->cave->obj_max; i++) {
+	for (i = 1; i < cave->obj_max; i++) {
 		object_list_entry_t *entry = NULL;
 		int entry_index;
 		int current_distance;
@@ -173,11 +170,13 @@ void object_list_collect(object_list_t *list)
 		struct loc grid;
 		int field;
 		bool los = false;
-		struct object *obj = player->cave->objects[i];
+		struct object *obj = cave->objects[i];
 
 		/* Skip unfilled entries, unknown objects and monster-held objects */
 		if (!obj) continue;
 		if (loc_is_zero(obj->grid)) {
+			continue;
+		} else if (!obj->marked) {
 			continue;
 		} else {
 			grid = obj->grid;
@@ -330,10 +329,10 @@ uint8_t object_list_entry_line_attribute(const object_list_entry_t *entry)
 
 	base_obj = cave->objects[entry->object->oidx];
 
-	if (is_unknown(base_obj))
+	if (!object_is_known(base_obj))
 		/* unknown object */
 		attr = COLOUR_RED;
-	else if (base_obj->known->artifact)
+	else if (base_obj->artifact && object_is_known(base_obj))
 		/* known artifact */
 		attr = COLOUR_VIOLET;
 	else if (!object_flavor_is_aware(base_obj))
@@ -380,7 +379,8 @@ void object_list_format_name(const object_list_entry_t *entry,
 
 	base_obj = cave->objects[entry->object->oidx];
 	grid = entry->object->grid;
-	object_is_recognized_artifact = object_is_known_artifact(base_obj);
+	object_is_recognized_artifact = base_obj->artifact &&
+		object_is_known(base_obj);
 
 	/* Hack - these don't have a prefix when there is only one, so just pad
 	 * with a space. */
@@ -393,8 +393,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 			else
 				has_singular_prefix = false;
 			break;
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
+		case TV_MAIL:
 			if (object_is_recognized_artifact)
 				has_singular_prefix = true;
 			else

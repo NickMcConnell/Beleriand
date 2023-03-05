@@ -1,36 +1,27 @@
 # File: constants.txt
 
 
-# This file is used to initialize game constants for Angband.
+# This file is used to initialize game constants for Sil.
 
 #---------------------------------------------------------------------
 # Level Maxima
 #---------------------------------------------------------------------
 
 # Maximum number of monsters on the level
-level-max:monsters:1024
+level-max:monsters:300
 
 #---------------------------------------------------------------------
 # Monster Generation
 #---------------------------------------------------------------------
 
 # 1/per-turn-chance of new monster generation
-mon-gen:chance:500
+mon-gen:chance:160
 
 # Minimum number of monsters generated on a level
 mon-gen:level-min:14
 
-# Number of townsfolk generated in the day */
-mon-gen:town-day:4
-
-# Number of townsfolk generated in the night */
-mon-gen:town-night:8
-
 # Maximum number of breeding monsters allowed on a level
 mon-gen:repro-max:100
-
-# Chance of a generated monster's level being inflated is one-in-this
-mon-gen:ood-chance:25
 
 # Maximum out-of-depth amount for monster generation
 mon-gen:ood-amount:10
@@ -51,8 +42,17 @@ mon-play:break-glyph:550
 # High value slows multiplication
 mon-play:mult-rate:8
 
-# Percent of player exp drained per hit
-mon-play:life-drain:2
+# Number of speed 2 turns for complete health regeneration
+mon-play:regen-hp-period:150
+
+# Number of speed 2 turns for complete health regeneration
+mon-play:regen-sp-period:15
+
+# Amount of mana it costs a monster to cast a (non-free) spell
+mon-play:mana-cost:10
+
+# Maximum amount of mana a monster can have at once
+mon-play:mana-max:2
 
 # Monsters will run up to this many grids out of sight
 mon-play:flee-range:5
@@ -61,68 +61,52 @@ mon-play:flee-range:5
 # and closer than this distance.
 mon-play:turn-range:5
 
+# Monsters will search up to this many grids for a hiding spot when fleeing
+mon-play:hide-range:15
+
+# Monsters can have a destination up to this many grids away
+mon-play:wander-range:50
+
 #---------------------------------------------------------------------
 # Dungeon Generation
 #---------------------------------------------------------------------
 
 # Number of possible room centres (and hence rooms) on a normal level
-dun-gen:cent-max:100
+dun-gen:room-max:50
 
-# Number of possible door locations
-dun-gen:door-max:200
+# Number of possible room centres (and hence rooms) on a normal level
+dun-gen:room-min:2
 
-# Number of possible places to pierce room walls with tunnels
-dun-gen:wall-max:500
+# Dungeon block height
+dun-gen:block-hgt:11
 
-# Number of tunnel grids
-dun-gen:tunn-max:900
-
-# Average number of objects to place in rooms
-dun-gen:amt-room:9
-
-# Average number of objects to place in rooms/corridors
-dun-gen:amt-item:3
-
-# Average amount of treasure to place in rooms/corridors
-dun-gen:amt-gold:3
-
-# Maximum number of pits or nests allowed per level
-dun-gen:pit-max:2
+# Dungeon block width
+dun-gen:block-wid:33
 
 #---------------------------------------------------------------------
 # Game World
 #---------------------------------------------------------------------
 
-# Maximum dungeon level; must be at least 100.
-# Setting it below 128 may prevent the creation of some objects.
+# Maximum dungeon level.
+world:dun-depth:20
+
+# Maximum level for calculations (can probably be reduced considerably).
 world:max-depth:128
 
 # Number of turns from dawn to dawn
 world:day-length:10000
 
 # Max number of grids in each dungeon level (vertically)
-world:dungeon-hgt:66
+world:dungeon-hgt:55
 
 # Max number of grids in each dungeon level (horizontally)
-world:dungeon-wid:198
-
-# Max number of grids in each town level (vertically)
-world:town-hgt:22
-
-# Max number of grids in each town level (horizontally)
-world:town-wid:66
-
-# Total number of feeling squares per level
-world:feeling-total:100
-
-# Squares needed to see to get first feeling
-world:feeling-need:10
-
-# Number of levels for each stair
-world:stair-skip:1
+world:dungeon-wid:165
 
 # Energy needed by player or monsters to move
 world:move-energy:100
+
+# Maximum measured distance in a flow
+world:flow-max:250
 
 #---------------------------------------------------------------------
 # Carrying Capacity
@@ -148,23 +132,6 @@ carry-cap:floor-size:23
 
 
 #---------------------------------------------------------------------
-# Store Parameters
-#---------------------------------------------------------------------
-
-# Maximum number of discrete objects in store inventory
-store:inven-max:24
-
-# Number of turns between turnovers
-store:turns:1000
-
-# 1/Chance (per day) of an owner changing
-store:shuffle:25
-
-# Dungeon level to apply magic to objects for normal stores
-store:magic-level:5
-
-
-#---------------------------------------------------------------------
 # Object generation
 #---------------------------------------------------------------------
 
@@ -172,20 +139,22 @@ store:magic-level:5
 obj-make:max-depth:100
 
 # 1/chance of inflating the requested object level
-obj-make:great-obj:20
+obj-make:great-obj:7
 
-# 1/chance of inflating the requested ego item level
-obj-make:great-ego:20
+# 1/chance of inflating the requested special item level
+obj-make:great-spec:7
 
 # Maximum amount of fuel in a torch
-obj-make:fuel-torch:5000
+obj-make:fuel-torch:2000
 
 # Maximum amount of fuel in a lantern
-obj-make:fuel-lamp:15000
+obj-make:fuel-lamp:3000
 
-# Default amount of fuel in a lantern
-obj-make:default-lamp:7500
+# Default amount of fuel in a lantern (?)
+obj-make:default-lamp:3500
 
+# Maximum number of self-made artefacts
+#obj-make:self-arts:50
 
 #---------------------------------------------------------------------
 # Player constants
@@ -197,8 +166,14 @@ player:max-sight:20
 # Maximum missile and spell range
 player:max-range:20
 
-# Amount of gold (or value of equipment) the player starts with
-player:start-gold:600
+# Amount of experience the player starts with
+player:start-exp:5000
 
-# Number of turns that 1% of player food capacity feeds them for
-player:food-value:100
+# Base experience cost per ability
+player:ability-cost:500
+
+# Bonus to stealth in stealth mode
+player:stealth-bonus:5
+
+# Number of player turns for complete health or voice regeneration
+player:regen-period:150

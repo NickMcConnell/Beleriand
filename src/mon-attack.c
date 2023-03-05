@@ -22,10 +22,12 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "combat.h"
 #include "effects.h"
 #include "init.h"
 #include "mon-attack.h"
 #include "mon-blows.h"
+#include "mon-calcs.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-predicate.h"
@@ -39,445 +41,174 @@
 #include "project.h"
 
 /**
- * This file deals with monster attacks (including spells) as follows:
- *
- * Give monsters more intelligent attack/spell selection based on
- * observations of previous attacks on the player, and/or by allowing
- * the monster to "cheat" and know the player status.
- *
- * Maintain an idea of the player status, and use that information
- * to occasionally eliminate "ineffective" spell attacks.  We could
- * also eliminate ineffective normal attacks, but there is no reason
- * for the monster to do this, since he gains no benefit.
- * Note that MINDLESS monsters are not allowed to use this code.
- * And non-INTELLIGENT monsters only use it partially effectively.
- *
- * Actually learn what the player resists, and use that information
- * to remove attacks or spells before using them. 
- */
-
+ * ------------------------------------------------------------------------
+ * Ranged attacks
+ * ------------------------------------------------------------------------ */
 /**
- * Given the monster, *mon, and cave *c, set *dist to the distance to the
- * monster's target and *grid to the target's location.  Accounts for a player
- * decoy, if present.  Either dist or grid may be NULL if that value is not
- * needed.
- */
-static void monster_get_target_dist_grid(struct monster *mon, int *dist,
-										 struct loc *grid)
-{
-	if (monster_is_decoyed(mon)) {
-		struct loc decoy = cave_find_decoy(cave);
-		if (dist) {
-			*dist = distance(mon->grid, decoy);
-		}
-		if (grid) {
-			*grid = decoy;
-		}
-	} else {
-		if (dist) {
-			*dist = mon->cdis;
-		}
-		if (grid) {
-			*grid = player->grid;
-		}
-	}
-}
-
-/**
- * Check if a monster has a chance of casting a spell this turn
- */
-static bool monster_can_cast(struct monster *mon, bool innate)
-{
-	int chance = innate ? mon->race->freq_innate : mon->race->freq_spell;
-	int tdist;
-	struct loc tgrid;
-
-	monster_get_target_dist_grid(mon, &tdist, &tgrid);
-
-	/* Cannot cast spells when nice */
-	if (mflag_has(mon->mflag, MFLAG_NICE)) return false;
-
-	/* Not allowed to cast spells */
-	if (!chance) return false;
-
-	/* Taunted monsters are likely just to attack */
-	if (player->timed[TMD_TAUNT]) {
-		chance /= 2;
-	}
-
-	/* Monsters at their preferred range are more likely to cast */
-	if (tdist == mon->best_range) {
-		chance *= 2;
-	}
-
-	/* Only do spells occasionally */
-	if (randint0(100) >= chance) return false;
-
-	/* Check range */
-	if (tdist > z_info->max_range) return false;
-
-	/* Check path */
-	if (!projectable(cave, mon->grid, tgrid, PROJECT_SHORT))
-		return false;
-
-	/* If the target isn't the player, only cast if the player can witness */
-	if ((tgrid.x != player->grid.x || tgrid.y != player->grid.y) &&
-		!square_isview(cave, mon->grid) &&
-		!square_isview(cave, tgrid)) {
-		struct loc *path = mem_alloc(z_info->max_range * sizeof(*path));
-		int npath, ipath;
-
-		npath = project_path(cave, path, z_info->max_range, mon->grid,
-			tgrid, PROJECT_SHORT);
-		ipath = 0;
-		while (1) {
-			if (ipath >= npath) {
-				/* No point on path visible.  Don't cast. */
-				mem_free(path);
-				return false;
-			}
-			if (square_isview(cave, path[ipath])) {
-				break;
-			}
-			++ipath;
-		}
-		mem_free(path);
-	}
-
-	return true;
-}
-
-/**
- * Remove the "bad" spells from a spell list
- */
-static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
-{
-	bitflag f2[RSF_SIZE];
-	int tdist;
-
-	monster_get_target_dist_grid(mon, &tdist, NULL);
-
-	/* Take working copy of spell flags */
-	rsf_copy(f2, f);
-
-	/* Don't heal if full */
-	if (mon->hp >= mon->maxhp) {
-		rsf_off(f2, RSF_HEAL);
-	}
-
-	/* Don't heal others if no injuries */
-	if (rsf_has(f2, RSF_HEAL_KIN) && !find_any_nearby_injured_kin(cave, mon)) {
-		rsf_off(f2, RSF_HEAL_KIN);
-	}
-
-	/* Don't haste if hasted with time remaining */
-	if (mon->m_timed[MON_TMD_FAST] > 10) {
-		rsf_off(f2, RSF_HASTE);
-	}
-
-	/* Don't teleport to if the player is already next to us */
-	if (tdist == 1) {
-		rsf_off(f2, RSF_TELE_TO);
-		rsf_off(f2, RSF_TELE_SELF_TO);
-	}
-
-	/* Don't use the lash effect if the player is too far away */
-	if (tdist > 2) {
-		rsf_off(f2, RSF_WHIP);
-	}
-	if (tdist > 3) {
-		rsf_off(f2, RSF_SPIT);
-	}
-
-	/* Update acquired knowledge */
-	if (OPT(player, birth_ai_learn)) {
-		size_t i;
-		bitflag ai_flags[OF_SIZE], ai_pflags[PF_SIZE];
-		struct element_info el[ELEM_MAX];
-		bool know_something = false;
-
-		/* Occasionally forget player status */
-		if (one_in_(20)) {
-			of_wipe(mon->known_pstate.flags);
-			pf_wipe(mon->known_pstate.pflags);
-			for (i = 0; i < ELEM_MAX; i++)
-				mon->known_pstate.el_info[i].res_level = 0;
-		}
-
-		/* Use the memorized info */
-		of_wipe(ai_flags);
-		pf_wipe(ai_pflags);
-		of_copy(ai_flags, mon->known_pstate.flags);
-		pf_copy(ai_pflags, mon->known_pstate.pflags);
-		if (!of_is_empty(ai_flags) || !pf_is_empty(ai_pflags)) {
-			know_something = true;
-		}
-
-		for (i = 0; i < ELEM_MAX; i++) {
-			el[i].res_level = mon->known_pstate.el_info[i].res_level;
-			if (el[i].res_level != 0) {
-				know_something = true;
-			}
-		}
-
-		/* Cancel out certain flags based on knowledge */
-		if (know_something) {
-			unset_spells(f2, ai_flags, ai_pflags, el, mon);
-		}
-	}
-
-	/* Use working copy of spell flags */
-	rsf_copy(f, f2);
-}
-
-
-/**
- * Determine if there is a space near the selected spot in which
- * a summoned creature can appear
- */
-static bool summon_possible(struct loc grid)
-{
-	int y, x;
-
-	/* No summons in arenas */
-	if (player->upkeep->arena_level) return false;
-
-	/* Start at the location, and check 2 grids in each dir */
-	for (y = grid.y - 2; y <= grid.y + 2; y++) {
-		for (x = grid.x - 2; x <= grid.x + 2; x++) {
-			struct loc near = loc(x, y);
-
-			/* Ignore illegal locations */
-			if (!square_in_bounds(cave, near)) continue;
-
-			/* Only check a circular area */
-			if (distance(grid, near) > 2) continue;
-
-			/* Hack: no summon on glyph of warding */
-			if (square_iswarded(cave, near)) continue;
-
-			/* If it's empty floor grid in line of sight, we're good */
-			if (square_isempty(cave, near) && los(cave, grid, near))
-				return (true);
-		}
-	}
-
-	return false;
-}
-
-
-/**
- * Have a monster choose a spell to cast.
+ * Count the number of castable spells.
  *
- * Note that the monster's spell list has already had "useless" spells
- * (bolts that won't hit the player, summons without room, etc.) removed.
- * Perhaps that should be done by this function.
- *
- * Stupid monsters will just pick a spell randomly.  Smart monsters
- * will choose more "intelligently".
- *
- * This function could be an efficiency bottleneck.
+ * If exactly 1 spell is available cast it.  If more than one is
+ * available, and random is set, pick one.
  */
-int choose_attack_spell(bitflag *f, bool innate, bool non_innate)
+static int choose_attack_spell_fast(struct monster *mon, bool do_random)
 {
-	int num = 0;
+	int i, num = 0;
 	uint8_t spells[RSF_MAX];
-
-	int i;
 
 	/* Paranoid initialization */
 	for (i = 0; i < RSF_MAX; i++) {
 		spells[i] = 0;
 	}
 
-	/* Extract spells, filtering as necessary */
-	for (i = FLAG_START, num = 0; i < RSF_MAX; i++) {
-		if (!innate && mon_spell_is_innate(i)) continue;
-		if (!non_innate && !mon_spell_is_innate(i)) continue;
-		if (rsf_has(f, i)) spells[num++] = i;
+	/* Extract the spells  */
+	for (i = FLAG_START; i < RSF_MAX; i = rsf_next(mon->race->spell_flags, i)) {
+		if (rsf_has(mon->race->spell_flags, i)) {
+			spells[num++] = i;
+		}
 	}
+
+	/* Paranoia */
+	if (num == 0) return 0;
+
+	/* Go quick if possible */
+	if (num == 1) {
+		/* Cast the one spell */
+		return (spells[0]);
+	}
+
+	/* If we aren't allowed to choose at random and we have multiple spells
+	 * left, give up on quick selection */
+	if (!do_random) return 0;
 
 	/* Pick at random */
 	return (spells[randint0(num)]);
 }
 
+
 /**
- * Failure rate of a monster's spell, based on spell power and current status
+ * Have a monster choose a spell.
+ *
+ * Monsters use this function to select a legal attack spell.
+ * Spell casting AI is based here.
+ *
+ * First the code will try to save time by seeing if
+ * choose_attack_spell_fast is helpful.  Otherwise, various AI
+ * parameters are used to calculate a 'desirability' for each spell.
+ * There is some randomness.  The most desirable spell is cast.
+ *
+ * Returns the spell number, or '0' if no spell is selected.
  */
-static int monster_spell_failrate(struct monster *mon)
+static int choose_ranged_attack(struct monster *mon)
 {
-	int power = MIN(mon->race->spell_power, 1);
-	int failrate = 0;
+	bitflag f[RSF_SIZE];
+	bool do_random = false;
+	int best_spell, best_spell_rating = 0;
+	int i;
 
-	/* Stupid monsters will never fail (for jellies and such) */
-	if (!monster_is_stupid(mon)) {
-		/* Base failrate */
-		failrate = 25 - (power + 3) / 4;
+	/* Extract the racial spell flags */
+	rsf_copy(f, mon->race->spell_flags);
 
-		/* Fear adds 20% */
-		if (mon->m_timed[MON_TMD_FEAR])
-			failrate += 20;
+	/* Remove spells that cost too much or have unfulfilled conditions */
+	remove_bad_spells(mon, f);
 
-		/* Confusion and diesnchantment add 50% */
-		if (mon->m_timed[MON_TMD_CONF] || mon->m_timed[MON_TMD_DISEN])
-			failrate += 50;
+	/* No spells left */
+	if (!rsf_count(f)) return 0;
+
+	/* Sometimes non-smart monsters cast randomly (though from the
+	 * restricted list) */
+	if (!rf_has(mon->race->flags, RF_SMART) && one_in_(5)) {
+		do_random = true;
 	}
 
-	return failrate;
-}
+	/* Try fast selection first. If there is only one spell, choose that spell.
+	 * If there are multiple spells, choose one randomly if the 'random' flag
+	 * is set. Otherwise fail, and let the AI choose. */
+	best_spell = choose_attack_spell_fast(mon, do_random);
+	if (best_spell) return best_spell;
 
-/**
- * Calculate the base to-hit value for a monster attack based on race only.
- * See also: chance_of_spell_hit_base
- *
- * \param race The monster race
- * \param effect The attack
- */
-int chance_of_monster_hit_base(const struct monster_race *race,
-	const struct blow_effect *effect)
-{
-	return MAX(race->level, 1) * 3 + effect->power;
-}
+	/* Use full AI */
+	for (i = FLAG_START; i < RSF_MAX; i = rsf_next(mon->race->spell_flags, i)) {
+		int spell_range, cur_spell_rating;
+		const struct monster_spell *spell;
 
-/**
- * Calculate the to-hit value of a monster attack for a specific monster
- *
- * \param mon The monster
- * \param effect The attack
- */
-static int chance_of_monster_hit(const struct monster *mon,
-	const struct blow_effect *effect)
-{
-	int to_hit = chance_of_monster_hit_base(mon->race, effect);
+		/* Do we even have this spell? */
+		if (!rsf_has(f, i)) continue;
+		spell = monster_spell_by_index(i);
 
-	/* Apply stun hit reduction if applicable */
-	if (mon->m_timed[MON_TMD_STUN]) {
-		to_hit = to_hit * (100 - STUN_HIT_REDUCTION) / 100;
+		/* Get base range and desirability */
+		spell_range = spell->best_range;
+		cur_spell_rating = spell->desire;
+
+		/* Penalty for range if attack drops off in power */
+		if (spell_range) {
+			while (mon->cdis > spell_range) {
+				cur_spell_rating *= spell->use_past_range;
+				cur_spell_rating /= 100;
+			}
+		}
+
+		/* Random factor; less random for smart monsters */
+		if (rf_has(mon->race->flags, RF_SMART)) {
+			cur_spell_rating += randint0(10);
+		} else {
+			cur_spell_rating += randint0(50);
+		}
+
+		/* Is this the best spell yet?, or alternate between equal spells */
+		if ((cur_spell_rating > best_spell_rating) ||
+			((cur_spell_rating == best_spell_rating) && one_in_(2))) {
+			best_spell_rating = cur_spell_rating;
+			best_spell = i;
+		}
 	}
 
-	return to_hit;
+	if (player->wizard) {
+		msg("Spell rating: %i.", best_spell_rating);
+	}
+
+	/* Abort if there are no good spells */
+	if (!best_spell_rating) return 0;
+
+	/* Return best spell */
+	assert(best_spell);
+	return best_spell;
 }
 
 /**
  * Creatures can cast spells, shoot missiles, and breathe.
  *
  * Returns "true" if a spell (or whatever) was (successfully) cast.
- *
- * Perhaps monsters should breathe at locations *near* the player,
- * since this would allow them to inflict "partial" damage.
- *
- * It will not be possible to "correctly" handle the case in which a
- * monster attempts to attack a location which is thought to contain
- * the player, but which in fact is nowhere near the player, since this
- * might induce all sorts of messages about the attack itself, and about
- * the effects of the attack, which the player might or might not be in
- * a position to observe.  Thus, for simplicity, it is probably best to
- * only allow "faulty" attacks by a monster if one of the important grids
- * (probably the initial or final grid) is in fact in view of the player.
- * It may be necessary to actually prevent spell attacks except when the
- * monster actually has line of sight to the player.  Note that a monster
- * could be left in a bizarre situation after the player ducked behind a
- * pillar and then teleported away, for example.
- *
- * Note that this function attempts to optimize the use of spells for the
- * cases in which the monster has no spells, or has spells but cannot use
- * them, or has spells but they will have no "useful" effect.  Note that
- * this function has been an efficiency bottleneck in the past.
- *
- * Note the special "MFLAG_NICE" flag, which prevents a monster from using
- * any spell attacks until the player has had a single chance to move.
- *
- * Note the interaction between innate attacks and non-innate attacks (true
- * spells).  Because the check for spells is done first, actual innate attack
- * frequencies are affected by the spell frequency.
  */
 bool make_ranged_attack(struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
-	int thrown_spell, failrate;
-	bitflag f[RSF_SIZE];
 	char m_name[80];
 	bool seen = (player->timed[TMD_BLIND] == 0) && monster_is_visible(mon);
-	bool innate = false;
 
-	/* Check for cast this turn, non-innate and then innate */
-	if (!monster_can_cast(mon, false)) {
-		if (!monster_can_cast(mon, true)) {
-			return false;
-		} else {
-			/* We're casting an innate "spell" */
-			innate = true;
-		}
-	}
-
-	/* Extract the racial spell flags */
-	rsf_copy(f, mon->race->spell_flags);
-
-	/* Smart monsters can use "desperate" spells */
-	if (monster_is_smart(mon) && mon->hp < mon->maxhp / 10 && one_in_(2)) {
-		ignore_spells(f, RST_DAMAGE);
-	}
-
-	/* Non-stupid monsters do some filtering */
-	if (!monster_is_stupid(mon)) {
-		struct loc tgrid;
-
-		/* Remove the "ineffective" spells */
-		remove_bad_spells(mon, f);
-
-		/* Check for a clean bolt shot */
-		monster_get_target_dist_grid(mon, NULL, &tgrid);
-		if (test_spells(f, RST_BOLT) &&
-			!projectable(cave, mon->grid, tgrid, PROJECT_STOP)) {
-			ignore_spells(f, RST_BOLT);
-		}
-
-		/* Check for a possible summon */
-		if (!summon_possible(mon->grid)) {
-			ignore_spells(f, RST_SUMMON);
-		}
-	}
-
-	/* No spells left */
-	if (rsf_is_empty(f)) return false;
-
-	/* Choose a spell to cast */
-	thrown_spell = choose_attack_spell(f, innate, !innate);
-
-	/* Abort if no spell was chosen */
-	if (!thrown_spell) return false;
+	/* Choose attack, or give up */
+	int choice = choose_ranged_attack(mon);
+	if (!choice) return false;
 
 	/* There will be at least an attempt now, so get the monster's name */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 
-	/* If we see a hidden monster try to cast a spell, become aware of it */
-	if (monster_is_camouflaged(mon))
-		become_aware(cave, mon);
-
-	/* Check for spell failure (innate attacks never fail) */
-	failrate = monster_spell_failrate(mon);
-	if (!mon_spell_is_innate(thrown_spell) && (randint0(100) < failrate)) {
-		msg("%s tries to cast a spell, but fails.", m_name);
-		return true;
-	}
+	/* Monster has cast a spell*/
+	mflag_off(mon->mflag, MFLAG_ALWAYS_CAST);
 
 	/* Cast the spell. */
-	disturb(player);
-	do_mon_spell(thrown_spell, mon, seen);
+	do_mon_spell(choice, mon, seen);
+
+	/* Mark minimum desired range for recalculation */
+	mon->min_range = 0;
 
 	/* Remember what the monster did */
 	if (seen) {
-		rsf_on(lore->spell_flags, thrown_spell);
-		if (mon_spell_is_innate(thrown_spell)) {
-			/* Innate spell */
-			if (lore->cast_innate < UCHAR_MAX)
-				lore->cast_innate++;
-		} else {
-			/* Bolt or Ball, or Special spell */
-			if (lore->cast_spell < UCHAR_MAX)
-				lore->cast_spell++;
-		}
+		rsf_on(lore->spell_flags, choice);
+		if (lore->ranged < UCHAR_MAX)
+			lore->ranged++;
 	}
+
+	/* Always take note of monsters that kill you */
 	if (player->is_dead && (lore->deaths < SHRT_MAX)) {
 		lore->deaths++;
 	}
@@ -490,56 +221,115 @@ bool make_ranged_attack(struct monster *mon)
 
 
 /**
- * Critical blow.  All hits that do 95% of total possible damage,
- * and which also do at least 20 damage, or, sometimes, N damage.
- * This is used only to determine "cuts" and "stuns".
+ * ------------------------------------------------------------------------
+ * Melee attack
+ * ------------------------------------------------------------------------ */
+/**
+ * Determine whether a monster is making a valid charge attack
  */
-static int monster_critical(random_value dice, int rlev, int dam)
+bool monster_charge(struct monster *mon, struct player *p)
 {
-	int max = 0;
-	int total = randcalc(dice, rlev, MAXIMISE);
+    int speed = mon->race->speed;
+    int deltay = p->grid.y - mon->grid.y;
+    int deltax = p->grid.x - mon->grid.x;
+    
+    /* Paranoia */
+    if (distance(mon->grid, p->grid) > 1) return false;
 
-	/* Must do at least 95% of perfect */
-	if (dam < total * 19 / 20) return (0);
+    /* Determine the monster speed */
+    if (mon->m_timed[MON_TMD_SLOW]) speed--;
 
-	/* Weak blows rarely work */
-	if ((dam < 20) && (randint0(100) >= dam)) return (0);
+    /* If it has the ability and isn't slow */
+    if (rf_has(mon->race->flags, RF_CHARGE) && (speed >= 2)) {
+		int d, i;
 
-	/* Perfect damage */
-	if (dam == total) max++;
+        /* Try all three directions */
+        for (i = -1; i <= 1; i++) {
+            d = cycle[chome[dir_from_delta(deltay, deltax)] + i];
+            if (mon->previous_action[1] == d) {
+                return true;
+            }
+        }
+    }
 
-	/* Super-charge */
-	if (dam >= 20)
-		while (randint0(100) < 2) max++;
-
-	/* Critical damage */
-	if (dam > 45) return (6 + max);
-	if (dam > 33) return (5 + max);
-	if (dam > 25) return (4 + max);
-	if (dam > 18) return (3 + max);
-	if (dam > 11) return (2 + max);
-	return (1 + max);
+    return false;
 }
 
 /**
- * Determine if an attack against the player succeeds.
+ * Determine whether there is a bonus die for an elemental attack that
+ * the player doesn't resist
+ *
+ * Ideally this would be incorporated into melee_effect_elemental - NRM
  */
-bool check_hit(struct player *p, int to_hit)
+static int elem_bonus(struct player *p, struct blow_effect *effect)
 {
-	/* If anything checks vs ac, the player learns ac bonuses */
-	equip_learn_on_defend(p);
+	int resistance = 1;
 
-	/* Check if the player was hit */
-	return test_hit(to_hit, p->state.ac + p->state.to_a);
+	if (streq(effect->name, "FIRE")) {
+		resistance = p->state.el_info[ELEM_FIRE].res_level;
+	} else if (streq(effect->name, "COLD")) {
+		resistance = p->state.el_info[ELEM_COLD].res_level;
+	} else if (streq(effect->name, "POISON")) {
+		resistance = p->state.el_info[ELEM_POIS].res_level;
+	} else if (streq(effect->name, "DARK")) {
+		resistance = p->state.el_info[ELEM_DARK].res_level;
+	} else {
+		return 0;
+	}
+
+	if (resistance == 1) {
+		return 1;
+	} else if (resistance < 0) {
+		return -resistance;
+	}
+	return 0;
 }
 
 /**
- * Calculate how much damage remains after armor is taken into account
- * (does for a physical attack what adjust_dam does for an elemental attack).
+ * Critical hits by monsters can inflict cuts and stuns.
+ *
+ * The chance is greater for WOUND and BATTER attacks
  */
-int adjust_dam_armor(int damage, int ac)
+static bool monster_cut_or_stun(int dice, int dam, struct blow_effect *effect)
 {
-	return damage - (damage * ((ac < 240) ? ac : 240) / 400);
+	if (dam <= 0) return false;
+
+	/* Special case -- wounding/battering attack */
+	if (streq(effect->name, "WOUND") || streq(effect->name, "BATTER")) {
+		if (dice >= randint1(2)) return true;
+	} else if (one_in_(10)) {
+		/* Standard attack */
+		if (dice >= randint1(2)) return true;
+	}
+
+	return false;
+}
+
+/**
+ * Monster cruel blow ability
+ *
+ * Ideally we'd use a call to allow_player_confuse() here, but that doesn't
+ * work as it can't take the level of the critical into account.
+ * Sadly my solution doesn't let you ID confusion resistance items.
+ */
+static void cruel_blow(struct monster *mon, struct player *p, int dice)
+{
+	struct monster_lore *lore = get_lore(mon->race);
+	int difficulty = p->state.skill_use[SKILL_WILL] +
+		(p->state.flags[OF_PROT_CONF] * 10);
+
+	if (skill_check(source_monster(mon->midx), dice * 4, difficulty,
+					source_player()) > 0) {
+		/* Remember that the monster can do this */
+		if (monster_is_visible(mon)) {
+			rf_on(lore->flags, RF_CRUEL_BLOW);
+
+			msg("You reel in pain!");
+
+			/* Confuse the player */
+			player_inc_timed(p, TMD_CONFUSED, dice, true, true);
+		}
+	}
 }
 
 /**
@@ -549,13 +339,22 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
-	int ap_cnt;
 	char m_name[80];
 	char ddesc[80];
-	bool blinked = false;
+	int blow;
+	struct blow_effect *effect;
+	struct blow_method *method;
+	int att, dd, ds;
+	int total_attack_mod, total_evasion_mod;
+	bool visible = monster_is_visible(mon) || (mon->race->light > 0);
+	bool obvious = false;
 
-	/* Not allowed to attack */
-	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
+	bool do_cut, do_stun, do_prt;
+	int sound_msg = MSG_GENERIC;
+	int hit_result = 0;
+	int net_dam = 0;
+
+	char *act = NULL;
 
 	/* Get the monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
@@ -563,206 +362,245 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	/* Get the "died from" information (i.e. "a kobold") */
 	monster_desc(ddesc, sizeof(ddesc), mon, MDESC_SHOW | MDESC_IND_VIS);
 
-	/* Scan through all blows */
-	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
-		struct loc pgrid = p->grid;
-		bool visible = monster_is_visible(mon) || (mon->race->light > 0);
-		bool obvious = false;
+	/* Monsters might notice */
+	p->been_attacked = true;
 
-		int damage = 0;
-		bool do_cut = false;
-		bool do_stun = false;
-		int sound_msg = MSG_GENERIC;
+	/* Use the alternate attack one in three times */
+	blow = mon->race->blow[1].method && one_in_(3) ? 1 : 0;
+	effect = mon->race->blow[blow].effect;
+	method = mon->race->blow[blow].method;
+	att = mon->race->blow[blow].dice.base;
+	dd = mon->race->blow[blow].dice.dice;
+	ds = mon->race->blow[blow].dice.sides;
 
-		char *act = NULL;
-
-		/* Extract the attack infomation */
-		struct blow_effect *effect = mon->race->blow[ap_cnt].effect;
-		struct blow_method *method = mon->race->blow[ap_cnt].method;
-		random_value dice = mon->race->blow[ap_cnt].dice;
-
-		/* No more attacks */
-		if (!method) break;
-
-		/* Handle "leaving" */
-		if (p->is_dead || p->upkeep->generate_level) break;
-
-		/* Monster hits player */
-		assert(effect);
-		if (streq(effect->name, "NONE") ||
-			check_hit(p, chance_of_monster_hit(mon, effect))) {
-			melee_effect_handler_f effect_handler;
-
-			/* Always disturbing */
-			disturb(p);
-
-			/* Hack -- Apply "protection from evil" */
-			if (p->timed[TMD_PROTEVIL] > 0) {
-				/* Learn about the evil flag */
-				if (monster_is_visible(mon))
-					rf_on(lore->flags, RF_EVIL);
-
-				if (monster_is_evil(mon) && p->lev >= rlev &&
-				    randint0(100) + p->lev > 50) {
-					/* Message */
-					msg("%s is repelled.", m_name);
-
-					/* Hack -- Next attack */
-					continue;
-				}
-			}
-
-			/* Describe the attack method */
-			act = monster_blow_method_action(method, -1);
-			do_cut = method->cut;
-			do_stun = method->stun;
-			sound_msg = method->msgt;
-
-			/* Hack -- assume all attacks are obvious */
-			obvious = true;
-
-			/* Roll dice */
-			damage = randcalc(dice, rlev, RANDOMISE);
-
-			/* Reduce damage when stunned */
-			if (mon->m_timed[MON_TMD_STUN]) {
-				damage = (damage * (100 - STUN_DAM_REDUCTION)) / 100;
-			}
-
-			/* Message */
-			if (act) {
-				const char *fullstop = ".";
-				if (suffix(act, "'") || suffix(act, "!")) {
-					fullstop = "";
-				}
-
-				if (OPT(p, show_damage)) {
-					msgt(sound_msg, "%s %s (%d)%s", m_name, act, damage,
-						 fullstop);
-				} else {
-					msgt(sound_msg, "%s %s%s", m_name, act, fullstop);
-				}
-			}
-
-			/* Perform the actual effect. */
-			effect_handler = melee_handler_for_blow_effect(effect->name);
-			if (effect_handler != NULL) {
-				melee_effect_handler_context_t context = {
-					p,
-					mon,
-					NULL,
-					rlev,
-					method,
-					p->state.ac + p->state.to_a,
-					ddesc,
-					obvious,
-					blinked,
-					damage,
-				};
-
-				effect_handler(&context);
-
-				/* Save any changes made in the handler for later use. */
-				obvious = context.obvious;
-				blinked = context.blinked;
-				damage = context.damage;
-			} else {
-				msg("ERROR: Effect handler not found for %s.", effect->name);
-			}
-
-			/* Don't cut or stun if player is dead */
-			if (p->is_dead) {
-				do_cut = false;
-				do_stun = false;
-			}
-
-			/* Hack -- only one of cut or stun */
-			if (do_cut && do_stun) {
-				/* Cancel cut */
-				if (randint0(100) < 50)
-					do_cut = false;
-
-				/* Cancel stun */
-				else
-					do_stun = false;
-			}
-
-			/* Handle cut */
-			if (do_cut) {
-				/* Critical hit (zero if non-critical) */
-				int amt, tmp = monster_critical(dice, rlev, damage);
-
-				/* Roll for damage */
-				switch (tmp) {
-					case 0: amt = 0; break;
-					case 1: amt = randint1(5); break;
-					case 2: amt = randint1(5) + 5; break;
-					case 3: amt = randint1(20) + 20; break;
-					case 4: amt = randint1(50) + 50; break;
-					case 5: amt = randint1(100) + 100; break;
-					case 6: amt = 300; break;
-					default: amt = 500; break;
-				}
-
-				/* Apply the cut */
-				if (amt) (void)player_inc_timed(p, TMD_CUT, amt, true, true);
-			}
-
-			/* Handle stun */
-			if (do_stun) {
-				/* Critical hit (zero if non-critical) */
-				int amt, tmp = monster_critical(dice, rlev, damage);
-
-				/* Roll for damage */
-				switch (tmp) {
-					case 0: amt = 0; break;
-					case 1: amt = randint1(5); break;
-					case 2: amt = randint1(10) + 10; break;
-					case 3: amt = randint1(20) + 20; break;
-					case 4: amt = randint1(30) + 30; break;
-					case 5: amt = randint1(40) + 40; break;
-					case 6: amt = 100; break;
-					default: amt = 200; break;
-				}
-
-				/* Apply the stun */
-				if (amt)
-					(void)player_inc_timed(p, TMD_STUN, amt, true, true);
-			}
-
-			string_free(act);
-		} else {
-			/* Visible monster missed player, so notify if appropriate. */
-			if (monster_is_visible(mon) &&	method->miss) {
-				/* Disturbing */
-				disturb(p);
-				msg("%s misses you.", m_name);
-			}
-		}
-
-		/* Analyze "visible" monsters only */
-		if (visible) {
-			/* Count "obvious" attacks (and ones that cause damage) */
-			if (obvious || damage || (lore->blows[ap_cnt].times_seen > 10)) {
-				/* Count attacks of this type */
-				if (lore->blows[ap_cnt].times_seen < UCHAR_MAX)
-					lore->blows[ap_cnt].times_seen++;
-			}
-		}
-
-		/* Skip the other blows if the player has moved */
-		if (!loc_eq(p->grid, pgrid)) break;
+	/* Determine the monster's attack score */
+	total_attack_mod = total_monster_attack(p, mon, att);
+	if (monster_charge(mon, p)) {
+		total_attack_mod += 3;
+		ds += 3;
 	}
 
-	/* Blink away */
-	if (blinked) {
-		char dice[5];
+	/* Determine the player's evasion score */
+	total_evasion_mod = total_player_evasion(p, mon, false);
 
-		if (!p->is_dead && square_isseen(cave, mon->grid)) {
-			add_monster_message(mon, MON_MSG_HIT_AND_RUN, true);
+	/* Check if the player was hit */
+	hit_result = hit_roll(total_attack_mod, total_evasion_mod,
+						  source_monster(mon->midx), source_player(), true);
+
+	/* Monster hits player */
+	assert(effect);
+	if (streq(effect->name, "NONE") || (hit_result > 0)) {
+		melee_effect_handler_f effect_handler;
+		int crit_bonus_dice = 0;
+		int elem_bonus_dice = 0;
+		int dam = 0, prt = 0;
+
+		/* Always disturbing */
+		disturb(p, true);
+
+		/* Describe the attack method */
+		act = monster_blow_method_action(method, -1);
+		do_cut = method->cut;
+		do_stun = method->stun;
+		do_prt = method->prt;
+		sound_msg = method->msgt;
+
+		/* Special case */
+		if (streq(method->name, "HIT") && streq(effect->name, "BATTER")) {
+			act = "batters you";
 		}
-		strnfmt(dice, sizeof(dice), "%d", z_info->max_sight * 2 + 5);
-		effect_simple(EF_TELEPORT, source_monster(mon->midx), dice, 0, 0, 0, 0, 0, NULL);
+
+		/* Hack -- assume all attacks are obvious */
+		obvious = true;
+
+		/* Determine critical-hit bonus dice (if any)
+		 * treats attack as weapon weighing 2 pounds per damage die */
+		crit_bonus_dice = crit_bonus(p, hit_result, 20 * dd, NULL, SKILL_MELEE,
+									 false);
+
+		/* Determine elemental attack bonus dice (if any)  */
+		elem_bonus_dice = elem_bonus(p, effect);
+
+		/* Certain attacks can't do criticals */
+		if (!do_prt) crit_bonus_dice = 0;
+
+		/* Roll out the damage */
+		dam = damroll(dd + crit_bonus_dice + elem_bonus_dice, ds);
+	
+		/* Determine the armour based damage-reduction for the player */
+		prt = do_prt ? protection_roll(p, PROJ_HURT, true, RANDOMISE) : 0;
+
+		/* Now calculate net_dam, taking protection into account */
+		net_dam = MAX((dam - prt), 0);
+
+		/* Message */
+		if (act) {
+			char punctuation[20];
+			/* Determine the punctuation for the attack ("...", ".", "!" etc) */
+			attack_punctuation(punctuation, net_dam, crit_bonus_dice);
+
+			if (monster_charge(mon, p)) {
+				/* Remember that the monster can do this */
+				if (monster_is_visible(mon)) {
+					rf_on(lore->flags, RF_CHARGE);
+					act = "charges you";
+                }
+			}
+                
+			msgt(sound_msg, "%s %s%s", m_name, act, punctuation);
+		}
+
+		/* Perform the actual effect. */
+		effect_handler = melee_handler_for_blow_effect(effect->name);
+		if (effect_handler != NULL) {
+			melee_effect_handler_context_t context = {
+				p,
+				mon,
+				rlev,
+				method,
+				ddesc,
+				obvious,
+				do_stun,
+				do_cut,
+				net_dam,
+			};
+
+			effect_handler(&context);
+
+			/* Save any changes made in the handler for later use. */
+			obvious = context.obvious;
+			do_stun = context.stun;
+			do_cut = context.cut;
+			net_dam = context.damage;
+
+			event_signal_combat_damage(EVENT_COMBAT_DAMAGE,
+									   dd + crit_bonus_dice + elem_bonus_dice,
+									   ds, dam, -1, -1, prt, do_prt ? 100 : 0,
+									   effect->dam_type, true);
+			event_signal_hit(EVENT_HIT, net_dam, effect->dam_type, p->is_dead,
+							 p->grid);
+		} else {
+			msg("ERROR: Effect handler not found for %s.", effect->name);
+		}
+
+		/* Don't cut or stun if player is dead */
+		if (p->is_dead) {
+			do_cut = false;
+			do_stun = false;
+		}
+
+		/* Hack -- only one of cut or stun */
+		if (do_cut && do_stun) {
+			if (one_in_(2)) {
+				/* Cancel cut */
+				do_cut = false;
+			} else {
+			/* Cancel stun */
+				do_stun = false;
+			}
+		}
+
+		/* Handle cut */
+		if ((do_cut) && monster_cut_or_stun(crit_bonus_dice, net_dam, effect)) {
+			/* Apply the cut */
+			(void)player_inc_timed(p, TMD_CUT, dam / 2, true, true);
+		}
+
+		/* Handle stun */
+		if ((do_stun) && monster_cut_or_stun(crit_bonus_dice, net_dam, effect)){
+			/* Apply the stun */
+			(void)player_inc_timed(p, TMD_STUN, dam, true, true);
+		}
+
+		/* Deal with Cruel Blow */
+		if (rf_has(mon->race->flags, RF_CRUEL_BLOW) && (crit_bonus_dice >= 1) &&
+			(net_dam > 0)) {
+			cruel_blow(mon, p, crit_bonus_dice);
+		}
+
+		/* Deal with Knock Back */
+		if (rf_has(mon->race->flags, RF_KNOCK_BACK)) {
+			/* Only happens on the main attack (so bites don't knock back) */
+			if (blow == 0) {
+				/* Determine if the player is knocked back */
+				if (skill_check(source_monster(mon->midx),
+								monster_stat(mon, STAT_STR) * 2,
+								p->state.stat_use[STAT_CON] * 2,
+								source_player()) > 0) {
+					/* Do the knocking back */
+					knock_back(mon->grid, p->grid);
+
+					/* Remember that the monster can do this */
+					if (monster_is_visible(mon)) {
+						rf_on(lore->flags, RF_KNOCK_BACK);
+                    }
+                }
+            }
+		}
+
+		/* Deal with cowardice */
+		if ((p->state.flags[OF_AFRAID] > 0) &&
+			(net_dam >= 10 / p->state.flags[OF_AFRAID])) {
+			if (!p->timed[TMD_AFRAID]) {
+				if (player_inc_timed(p, TMD_AFRAID, damroll(10, 4), true,
+									 true)) {
+					player_inc_timed(p, TMD_FAST, damroll(5, 4), true, true);
+				}
+				/* Give the player a chance to identify what is causing it */
+				ident_cowardice(p);
+			}
+		}
+	} else {
+		/* Visible monster missed player, so notify if appropriate. */
+		if (monster_is_visible(mon) && !p->timed[TMD_CONFUSED] &&
+			method->miss) {
+			/* Disturbing */
+			disturb(p, true);
+
+			/* Deal with earthquakes if they miss you by 1 or 2 or 3 points */
+			if (streq(effect->name, "SHATTER") && (hit_result > -3)) {
+				/* Message */
+				msg("%s just misses you.", m_name);
+
+				/* Morgoth */
+				if (rf_has(mon->race->flags, RF_QUESTOR)) {
+					msg("You leap aside as his great hammer slams into the floor.");
+					msg("The ground shakes violently with the force of the blow!");
+
+					/* Radius 5 earthquake centered on the monster */
+					effect_simple(EF_EARTHQUAKE, source_monster(mon->midx), "0",
+								  0, 5, 1, NULL);
+				} else {
+					/* Kemenrauko */
+					msg("You leap aside as its stony fist slams into the floor.");
+					msg("The ground shakes violently with the force of the blow!");
+
+					/* Radius 4 earthquake centered on the monster */
+					effect_simple(EF_EARTHQUAKE, source_monster(mon->midx), "0",
+								  0, 4, 1, NULL);
+				}
+			} else {
+				/* A normal miss */
+				msg("%s misses you.", m_name);
+
+				/* Allow for ripostes */
+				if (player_can_riposte(p, hit_result)) {
+					msg("You riposte!");
+					p->upkeep->riposte = true;
+					py_attack_real(p, mon->grid, ATT_RIPOSTE);
+				}
+			}
+		}
+	}
+
+	/* Analyze "visible" monsters only */
+	if (visible) {
+		/* Count "obvious" attacks (and ones that cause damage) */
+		if (obvious || net_dam || (lore->blows[blow].times_seen > 10)) {
+			/* Count attacks of this type */
+			if (lore->blows[blow].times_seen < UCHAR_MAX)
+				lore->blows[blow].times_seen++;
+		}
 	}
 
 	/* Always notice cause of death */
@@ -773,164 +611,6 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	lore_update(mon->race, lore);
 
 	/* Assume we attacked */
-	return (true);
+	return true;
 }
 
-/**
- * Attack the another monster via physical attacks.
- */
-bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
-{
-	struct monster_lore *lore = get_lore(mon->race);
-	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
-	int ap_cnt;
-	char m_name[80];
-	char t_name[80];
-	bool blinked = false;
-
-	/* Not allowed to attack */
-	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
-
-	/* Get the monster names (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
-	monster_desc(t_name, sizeof(t_name), t_mon, MDESC_TARG);
-
-	/* Scan through all blows */
-	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
-		struct loc grid = t_mon->grid;
-		bool visible = monster_is_visible(mon) || (mon->race->light > 0);
-		bool obvious = false;
-
-		int damage = 0;
-		bool do_stun = false;
-		int sound_msg = MSG_GENERIC;
-
-		char *act = NULL;
-
-		/* Extract the attack infomation */
-		struct blow_effect *effect = mon->race->blow[ap_cnt].effect;
-		struct blow_method *method = mon->race->blow[ap_cnt].method;
-		random_value dice = mon->race->blow[ap_cnt].dice;
-
-		/* No more attacks */
-		if (!method) break;
-
-		/* Monster hits monster */
-		assert(effect);
-		if (streq(effect->name, "NONE") ||
-			test_hit(chance_of_monster_hit(mon, effect), t_mon->race->ac)) {
-			melee_effect_handler_f effect_handler;
-
-			/* Describe the attack method */
-			act = monster_blow_method_action(method, t_mon->midx);
-			do_stun = method->stun;
-			sound_msg = method->msgt;
-
-			/* Hack -- assume all attacks are obvious */
-			obvious = true;
-
-			/* Roll dice */
-			damage = randcalc(dice, rlev, RANDOMISE);
-
-			/* Reduce damage when stunned */
-			if (mon->m_timed[MON_TMD_STUN]) {
-				damage = (damage * (100 - STUN_DAM_REDUCTION)) / 100;
-			}
-
-			/* Message */
-			if (act) {
-				const char *fullstop = ".";
-				if (suffix(act, "'") || suffix(act, "!")) {
-					fullstop = "";
-				}
-
-				msgt(sound_msg, "%s %s%s", m_name, act, fullstop);
-			}
-
-			/* Perform the actual effect. */
-			effect_handler = melee_handler_for_blow_effect(effect->name);
-			if (effect_handler != NULL) {
-				melee_effect_handler_context_t context = {
-					NULL,
-					mon,
-					t_mon,
-					rlev,
-					method,
-					t_mon->race->ac,
-					NULL,
-					obvious,
-					blinked,
-					damage,
-				};
-
-				effect_handler(&context);
-
-				/* Save any changes made in the handler for later use. */
-				obvious = context.obvious;
-				blinked = context.blinked;
-				damage = context.damage;
-			} else {
-				msg("ERROR: Effect handler not found for %s.", effect->name);
-			}
-
-			/* Handle stun */
-			if (do_stun && square_monster(cave, grid)) {
-				/* Critical hit (zero if non-critical) */
-				int amt, tmp = monster_critical(dice, rlev, damage);
-
-				/* Roll for damage */
-				switch (tmp) {
-					case 0: amt = 0; break;
-					case 1: amt = randint1(5); break;
-					case 2: amt = randint1(10) + 10; break;
-					case 3: amt = randint1(20) + 20; break;
-					case 4: amt = randint1(30) + 30; break;
-					case 5: amt = randint1(40) + 40; break;
-					case 6: amt = 100; break;
-					default: amt = 200; break;
-				}
-
-				/* Apply the stun */
-				if (amt)
-					(void)mon_inc_timed(t_mon, MON_TMD_STUN, amt, 0);
-			}
-
-			string_free(act);
-		} else {
-			/* Visible monster missed monster, so notify if appropriate. */
-			if (monster_is_visible(mon) && method->miss) {
-				msg("%s misses %s.", m_name, t_name);
-			}
-		}
-
-		/* Analyze "visible" monsters only */
-		if (visible) {
-			/* Count "obvious" attacks (and ones that cause damage) */
-			if (obvious || damage || (lore->blows[ap_cnt].times_seen > 10)) {
-				/* Count attacks of this type */
-				if (lore->blows[ap_cnt].times_seen < UCHAR_MAX)
-					lore->blows[ap_cnt].times_seen++;
-			}
-		}
-
-		/* Skip the other blows if the target has moved or died */
-		if (!square_monster(cave, grid)) break;
-	}
-
-	/* Blink away */
-	if (blinked) {
-		char dice[5];
-
-		if (square_isseen(cave, mon->grid)) {
-			add_monster_message(mon, MON_MSG_HIT_AND_RUN, true);
-		}
-		strnfmt(dice, sizeof(dice), "%d", z_info->max_sight * 2 + 5);
-		effect_simple(EF_TELEPORT, source_monster(mon->midx), dice, 0, 0, 0, 0, 0, NULL);
-	}
-
-	/* Learn lore */
-	lore_update(mon->race, lore);
-
-	/* Assume we attacked */
-	return (true);
-}

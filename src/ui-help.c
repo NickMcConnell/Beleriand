@@ -404,7 +404,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		if (ch.code == '%') {
 			char ftmp[80];
 
-			if (OPT(player, rogue_like_commands)) {
+			if (OPT(player, angband_keyset)) {
 				my_strcpy(ftmp, "r_index.txt", sizeof(ftmp));
 			} else {
 				my_strcpy(ftmp, "index.txt", sizeof(ftmp));
@@ -481,7 +481,7 @@ void do_cmd_help(void)
 	screen_save();
 
 	/* Peruse the main help file */
-	(void)show_file((OPT(player, rogue_like_commands)) ?
+	(void)show_file((OPT(player, angband_keyset)) ?
 		"r_index.txt" : "index.txt", NULL, 0, 0);
 
 	/* Load screen */

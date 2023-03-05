@@ -1,12 +1,10 @@
 # File: terrain.txt
-
-
-# This file is used to initialize the "terrain feature" information for 
-# the Angband game.
-
+#
+# This file is used to create the "terrain feature" information for Sil.
+#
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-
+#
 # Note that, unlike other edit files, modifying this file casually is likely
 # to be a BAD IDEA (unless you intend to make actual programming changes)
 # for two reasons:
@@ -21,30 +19,18 @@
 #   change game behaviour; and any changes during the playing of an individual
 #   game are likely to mess it up.
 
-# Note that terrain feature zero contains the "darkness" picture.
-
+#
 # === Understanding terrain.txt ===
-
-# name : serial number : terrain name
+#
+# name : terrain name
 # graphics : symbol : color
 # mimic : feature to mimic
-# priority : display priority on mini-map
-# flags : terrain flags
-# info : shop number : digging
-# walk-msg: warning message - walking
-# run-msg: warning message - running
-# hurt-msg: damage message
-# die-msg: death message
-# confused-msg: message for confused monster move into non-passable terrain
-# look-prefix: used before the name in the result from looking
-# look-in-preposition: preposition used when looking at one's own position
-# resist-flag: monster race flag for resist
-
+#
 # 'name' indicates the beginning of an entry. The serial number must
-# increase for each new feature.
-
+#     increase for each new item.
+#
 # 'graphics' is for graphics - symbol and color. There are 27 colors:
-
+#
 # D - Dark Gray    w - White          s - Gray          o - Orange
 # r - Red          g - Green          b - Blue          u - Umber
 # W - Light Gray   P - Light Purple   y - Yellow        R - Light Red
@@ -52,66 +38,35 @@
 # v - Violet       t - Teal           m - Mud           Y - Light Yellow
 # i - Magenta-Pink T - Light Teal     V - Light Violet  I - Light Pink
 # M - Mustard      z - Blue Slate     Z - Deep Light Blue
+#
+# 'mimic' is the index of a feature to mimic.
+#
+#
+# === Important notes ===
+#
+# Note that terrain feature zero contains the "darkness" picture.
 
-# 'mimic' is the index of a feature to mimic; some features look like another
-# feature until they are discovered by the player.
 
-# 'priority' is for display priority on the minimap, where only a selection
-# of grids are chosen.  This enables the minimap to display the information
-# most likely to be useful to the player.
 
-# 'flags' is for terrain flags.
-
-# 'info' is for other terrain information;  Shop number is the index of the
-# shop if the terrain is a shop entrance, and 0 otherwise.  Digging is an
-# index used to get the difficulty of digging through this type of terrain.
-
-# 'walk-msg' is the warning message for the player on stepping into damaging
-# terrain
-
-# 'run-msg' is the warning message for the player on running into damaging
-# terrain
-
-# 'hurt-msg' is the message the player gets when damaged by terrain
-
-# 'die-msg' is the description if damaging terrain kills the player
-
-# 'confused-msg' is the description of an attempt for a monster to move into
-# non-passable terrain due to confusion
-
-# 'look-prefix' is printed before the name in the result of looking at the
-# terrain.  If not set, the default is to use 'an' if the name starts with
-# a vowel or 'a' if the name does not start with a vowel.
-
-# 'look-in-preposition' is the preposition that will be used when printing
-# the result for an observer looking at the observer's grid:  'You are
-# <preposition> <prefix> <name>'.  If not set, the default is to use 'on'.
-
-# 'resist-flag' is the race flag a monster must have to be able to enter
-# damaging terrain
-
-# 'desc' is for description. As many desc: lines may be used as are needed
-# to describe the terrain. Note that lines will need spaces at their
-# ends or the beginning of the next line to prevent words from running
-# together.
+# 0x00 --> <darkness>
 
 name:unknown grid
 graphics: :w
-priority:2
 
+
+# 0x01 --> open floor
 
 name:open floor
-graphics:.:w
-priority:5
+graphics:.:W
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
 desc:An open floor or bare ground.  Can be walked across by anything, and can
 desc: hold traps or items.  Does not break line of sight.
 
+# # 0x20 --> locked door (power 0) -- aka a normal door
+
 name:closed door
 graphics:+:U
-priority:17
 flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
-info:0:5
 confused-msg:bangs into a door
 desc:Doors may be locked; getting through them may not be easy.  Your
 desc: disarming skill makes all the difference to your ability to handle locks,
@@ -119,207 +74,337 @@ desc: but you can also take a pickaxe to them, or blast them open
 desc: with magic.  Monsters are also slowed down by doors; you can earn yourself
 desc: valuable time by locking them.
 
+# 0x04 --> open door
+
 name:open door
 graphics:':U
-priority:15
 flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | CLOSABLE | EASY
 look-in-preposition:in
 desc:A door that is already open.  Player, monster, spell and missile can pass
 desc: through as long as it stays open.
 
+# 0x05 --> broken door
+
 name:broken door
-graphics:':u
-priority:15
+graphics:.:U
 flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | EASY
 look-in-preposition:in
 desc:A door so broken that it cannot be shut.
 
+# 0x50 --> up stairs (perm)
+
 name:up staircase
-graphics:<:w
-priority:25
+graphics:<:W
 flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | UPSTAIR
 flags:EASY | TORCH
 desc:A staircase up to a shallower part of the dungeon.
 
+# 0x51 --> down stairs (perm)
+
 name:down staircase
-graphics:>:w
-priority:25
+graphics:>:W
 flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR
 flags:EASY | TORCH
 desc:A staircase down to a deeper part of the dungeon.
 
-name:General Store
-graphics:1:U
-priority:20
-flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:1:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:The General Store sells food, ammunition and lighting supplies.
+# 0x52 --> up shaft (perm)
 
-name:Armoury
-graphics:2:s
-priority:20
-flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:2:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:The armour sold here will give you some protection against the blows of
-desc: your enemies.
+name:up shaft
+graphics:<:D
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | SHAFT | UPSTAIR
+flags:EASY | TORCH
+desc:A shaft up to a shallower part of the dungeon.
 
-name:Weapon Smiths
-graphics:3:w
-priority:20
-flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:3:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:Weapons for hitting and shooting your enemies are forged in the hot, acrid
-desc: backroom of this enticing shop.
+# 0x53 --> down shaft (perm)
 
-name:Bookseller
-graphics:4:g
-priority:20
-flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:4:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:A quiet, reflective place of refuge, lined with shelves of
-desc: mystical tomes.
+name:down shaft
+graphics:>:D
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | SHAFT | DOWNSTAIR
+flags:EASY | TORCH
+desc:A shaft down to a deeper part of the dungeon.
 
-name:Alchemy Shop
-graphics:5:b
-priority:20
-flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:5:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:A dim, scented room where potions and scrolls are traded.
+# 0x02 --> unused
 
-name:Magic Shop
-graphics:6:r
-priority:20
-flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:6:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:A shop for devices and adornments with magic trapped within.
+name:chasm
+graphics:%:D
+flags:LOS | PROJECT | PASSABLE
+desc:Empty space - only flying creatures can pass across without falling.  All 
+desc:spells and missiles can pass through.
+walk-msg:It's a cliff! Really step off it?
+run-msg:You have come to a cliff.  Step off it?
+hurt-msg:You fall into darkness!
+die-msg:falling off a precipice
 
-name:Black Market
-graphics:7:D
-priority:20
-flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:7:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:Watch your back and hold onto your purse as you enter this disreputable
-desc: haunt - and do not expect friendly service or good bargains.
-
-name:Home
-graphics:8:y
-priority:20
-flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-info:8:0
-look-prefix:the entrance to the
-look-in-preposition:at
-desc:Your safe piece of Middle Earth, and the only place you can store goods
-desc: apart from on your person.
+# 0x30 --> secret door
 
 name:secret door
-graphics:#:w
-priority:10
+graphics:#:z
 mimic:granite wall
-flags:WALL | ROCK | DOOR_ANY | GRANITE | TORCH
+info:0:3:0
+flags:ROCK | DOOR_ANY | DOOR_CLOSED | GRANITE | TORCH
 confused-msg:bashes into a wall
+dig-msg:You uncover a secret door.
+fail-msg:You are unable to break the granite with your {name}.
+str-msg:You are not strong enough to break the granite.
 desc:A door that appears like a granite wall to untrained eyes.
 
+# 0x31 --> pile of rubble
+
 name:pile of rubble
-graphics:::W
-priority:13
-flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
-info:0:1
+graphics:::s
+flags:WALL | ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
+info:0:1:0
 confused-msg:bumps into some rocks
+dig-msg:You clear the rubble.
+fail-msg:You are unable to shift the rubble with your {name}.
+str-msg:You are not strong enough to shift the rubble.
 desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled
 desc: to normal floor.
 
-name:magma vein
-graphics:%:D
-priority:12
-flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA | TORCH
-info:0:2
-confused-msg:bashes into a wall
-desc:A seam of soft rock.  It can be removed by digging or magic, and passed
-desc: through by immaterial monsters.  It stops any spells, missiles or line of
-desc: sight.
+# 0x33 --> quartz vein
 
 name:quartz vein
-graphics:%:s
-priority:11
+graphics:%:w
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ | TORCH
-info:0:3
+info:0:2:0
 confused-msg:bashes into a wall
+dig-msg:You shatter the quartz.
+fail-msg:You are unable to break the quartz with your {name}.
+str-msg:You are not strong enough to break the quartz.
 desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
 desc: sight.
 
-name:magma vein with treasure
-graphics:*:o
-priority:19
-flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA
-info:0:2
-confused-msg:bashes into a wall
-desc:A seam of soft rock.  It can be removed by digging or magic, and passed
-desc: through by immaterial monsters.  It stops any spells, missiles or line of
-desc: sight.  It contains visible treasure.
-
-name:quartz vein with treasure
-graphics:*:y
-priority:19
-flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
-info:0:3
-confused-msg:bashes into a wall
-desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
-desc: through by immaterial monsters.  It stops any spells, missiles or line of
-desc: sight.  It contains visible treasure.
+# 0x38 --> granite wall -- basic
 
 name:granite wall
-graphics:#:W
-priority:10
+graphics:#:z
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
-info:0:4
+info:0:3:0
 confused-msg:bashes into a wall
+dig-msg:You break through the granite.
+fail-msg:You are unable to break the granite with your {name}.
+str-msg:You are not strong enough to break the granite.
 desc:A seam of hard rock.  It can be removed by digging or magic, and passed
 desc: through by immaterial monsters.  It stops any spells, missiles or line of
 desc: sight.
 
+# 0x3F --> granite wall -- permanent
+
 name:permanent wall
 graphics:#:z
-priority:10
-flags:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
+mimic:granite wall
+flags:WALL | ROCK | GRANITE | PERMANENT | NO_SCENT | NO_FLOW | TORCH
 confused-msg:bashes into a wall
 desc:You can dig through most walls but these are impenetrable.  The dungeon is
 desc: surrounded by these kinds of walls and some special rooms are made of them.
 
-## New terrain
+# 0x40 --> forge -- 0 uses
 
-name:lava
-graphics:#:r
-priority:10
-flags:LOS | PROJECT | FIERY | PASSABLE | NO_SCENT | BRIGHT
-look-prefix:some
-desc:A fiery pool of glowing lava.  Step in it at your peril!
-walk-msg:The lava will scald you!  Really step in? 
-run-msg:Lava blocks your path.  Step into it? 
-hurt-msg:The lava burns you!
-die-msg:burning to a cinder in lava
-resist-flag:IM_FIRE
+name:forge
+graphics:0:s
+info:0:0:0
+flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH
+desc:A forge for smithing objects.
 
-name:pile of passable rubble
-graphics:::u
-priority:13
-flags:ROCK | PASSABLE | INTERESTING | TORCH
-info:0:1
-desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball
-desc: spells.  May dissolve or be tunnelled to normal floor, and can be walked
-desc: through by the player and monsters.
+# 0x46 --> good forge -- 0 uses
+
+name:enchanted forge
+graphics:0:Y
+info:3:0:0
+flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH
+desc:An enchanted forge for smithing objects.
+
+# 0x4C --> unique forge -- 0 uses
+
+name:forge 'Orodruth'
+graphics:0:D
+info:7:0:0
+flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH
+desc:A uniquely enchanted forge for smithing objects.
+
+# # 0x11 --> visible trap -- open pit
+
+name:pit
+graphics:^:s
+flags:LOS | PROJECT | PASSABLE | PIT | EASY | TORCH
+info:0:0:10
+walk-msg:Are you sure you want to step in the pit? 
+run-msg:A pit blocks your path.  Step into it? 
+
+# # 0x12 --> visible trap -- spiked pit
+
+name:spiked pit
+graphics:^:W
+flags:LOS | PROJECT | PASSABLE | PIT | EASY | TORCH
+info:0:0:15
+walk-msg:Are you sure you want to step in the spiked pit? 
+run-msg:A spiked pit blocks your path.  Step into it? 
+
+
+# ## Traps - handled in trap.txt
+
+# # 0x03 --> glyph of warding
+
+# name:glyph of warding
+# graphics:;:t
+
+# # 0x10 --> visible trap -- false floor
+
+# name:false floor
+# graphics:^:U
+
+# # 0x11 --> visible trap -- open pit
+
+# name:pit
+# graphics:^:s
+
+# # 0x12 --> visible trap -- spiked pit
+
+# name:spiked pit
+# graphics:^:W
+
+# # 0x13 --> visible trap -- dart
+
+# name:dart trap
+# graphics:^:v
+
+# # 0x14 --> visible trap -- gas -- confusion
+
+# name:gas trap
+# graphics:^:t
+
+# # 0x15 --> visible trap -- gas -- memory
+
+# name:gas trap
+# graphics:^:Z
+
+# # 0x16 --> visible trap -- alarm
+
+# name:alarm trap
+# graphics:^:M
+
+# # 0x17 --> visible trap -- flash
+
+# name:flash trap
+# graphics:^:y
+
+# # 0x18 --> visible trap -- caltrops
+
+# name:caltrop field
+# graphics:^:w
+
+# # 0x19 --> visible trap -- roost
+
+# name:roost
+# graphics:^:m
+
+# # 0x1A --> visible trap - web
+
+# name:web
+# graphics:^:D
+
+# # 0x1B --> visible trap -- deadfall
+
+# name:deadfall trap
+# graphics:^:r
+
+# # 0x1C --> visible trap -- acid
+
+# name:discoloured spot
+# graphics:^:u
+
+# ## Locked doors - handled by locks
+
+# # 0x21 --> locked door (power 1)
+
+# name:locked door
+# graphics:+:U
+# mimic:door
+
+# # 0x22 --> locked door (power 2)
+
+# name:locked door
+# graphics:+:U
+# mimic:door
+
+# # 0x23 --> locked door (power 3)
+
+# name:locked door
+# graphics:+:U
+# mimic:door
+
+# # 0x24 --> locked door (power 4)
+
+# name:locked door
+# graphics:+:U
+# mimic:door
+
+# # 0x25 --> locked door (power 5)
+
+# name:locked door
+# graphics:+:U
+# mimic:door
+
+# # 0x26 --> locked door (power 6)
+
+# name:locked door
+# graphics:+:U
+# mimic:door
+
+# # 0x27 --> locked door (power 7)
+
+# name:locked door
+# graphics:+:U
+# mimic:door
+
+# ## Jammed doors - handled ??
+
+# # 0x28 --> jammed door (power 0)
+
+# name:jammed door
+# graphics:+:M
+# mimic:door
+
+# # 0x29 --> jammed door (power 1)
+
+# name:jammed door
+# graphics:+:M
+# mimic:door
+
+# # 0x2A --> jammed door (power 2)
+
+# name:jammed door
+# graphics:+:M
+# mimic:door
+
+# # 0x2B --> jammed door (power 3)
+
+# name:jammed door
+# graphics:+:M
+# mimic:door
+
+# # 0x2C --> jammed door (power 4)
+
+# name:jammed door
+# graphics:+:M
+# mimic:door
+
+# # 0x2D --> jammed door (power 5)
+
+# name:jammed door
+# graphics:+:M
+# mimic:door
+
+# # 0x2E --> jammed door (power 6)
+
+# name:jammed door
+# graphics:+:M
+# mimic:door
+
+# # 0x2F --> jammed door (power 7)
+
+# name:jammed door
+# graphics:+:M
+# mimic:door
 

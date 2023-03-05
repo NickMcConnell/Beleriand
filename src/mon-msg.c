@@ -23,6 +23,7 @@
 #include "mon-util.h"
 #include "game-input.h"
 #include "player-calcs.h"
+#include "songs.h"
 
 /**
  * Maxinum number of stacked monster messages
@@ -100,13 +101,55 @@ void message_pain(struct monster *mon, int dam)
 		long tmp = (newhp * 100L) / oldhp;
 		int percentage = (int)(tmp);
 
-		if (percentage > 95)		msg_code = MON_MSG_95;
-		else if (percentage > 75)	msg_code = MON_MSG_75;
-		else if (percentage > 50)	msg_code = MON_MSG_50;
-		else if (percentage > 35)	msg_code = MON_MSG_35;
-		else if (percentage > 20)	msg_code = MON_MSG_20;
-		else if (percentage > 10)	msg_code = MON_MSG_10;
+		if (percentage > 66)		msg_code = MON_MSG_66;
+		else if (percentage > 33)	msg_code = MON_MSG_33;
 		else						msg_code = MON_MSG_0;
+	}
+
+	add_monster_message(mon, msg_code, false);
+}
+
+/**
+ * Adds to the message queue a message describing a monster's encouragement
+ * of others to pursue the player.
+ */
+void message_pursuit(struct monster *mon)
+{
+	int msg_code = MON_MSG_NONE;
+	int dist = distance(player->grid, mon->grid);
+
+	/* Visible, or near or far */
+	if (monster_is_visible(mon)) {
+		msg_code = MON_MSG_PURSUE_VIS;
+	} else if (dist < 20) {
+		msg_code = MON_MSG_PURSUE_CLOSE;
+	} else {
+		msg_code = MON_MSG_PURSUE_FAR;
+	}
+
+	add_monster_message(mon, msg_code, false);
+}
+
+/**
+ * Adds to the message queue a message describing a monster's warning
+ * to others of the player's presence.
+ */
+void message_warning(struct monster *mon)
+{
+	int msg_code = MON_MSG_NONE;
+	bool silence = player_is_singing(player, lookup_song("Silence"));
+
+	/* Visible, or near or far */
+	if (monster_is_visible(mon)) {
+		if (silence) {
+			msg_code = MON_MSG_WARN_VIS_SIL;
+		} else {
+			msg_code = MON_MSG_WARN_VIS;
+		}
+	} else if (silence) {
+		msg_code = MON_MSG_WARN_INVIS_SIL;
+	} else {
+		msg_code = MON_MSG_WARN_INVIS;
 	}
 
 	add_monster_message(mon, msg_code, false);
@@ -145,7 +188,7 @@ static int message_flags(const struct monster *mon)
 		flags |= MON_MSG_FLAG_OFFSCREEN;
 	}
 
-	if (!monster_is_obvious(mon)) {
+	if (!monster_is_visible(mon)) {
 		flags |= MON_MSG_FLAG_INVISIBLE;
 	}
 
@@ -296,13 +339,37 @@ static void get_message_text(char *buf, size_t buflen,
 	/* Find the appropriate message */
 	const char *source = msg_repository[msg_code].msg;
 	switch (msg_code) {
-		case MON_MSG_95: source = race->base->pain->messages[0]; break;
-		case MON_MSG_75: source = race->base->pain->messages[1]; break;
-		case MON_MSG_50: source = race->base->pain->messages[2]; break;
-		case MON_MSG_35: source = race->base->pain->messages[3]; break;
-		case MON_MSG_20: source = race->base->pain->messages[4]; break;
-		case MON_MSG_10: source = race->base->pain->messages[5]; break;
-		case MON_MSG_0:  source = race->base->pain->messages[6]; break;
+		case MON_MSG_66: source = race->base->pain->messages[0]; break;
+		case MON_MSG_33: source = race->base->pain->messages[1]; break;
+		case MON_MSG_0:  source = race->base->pain->messages[2]; break;
+		case MON_MSG_PURSUE_VIS:  {
+			source = race->base->pursuit->msg_vis;
+			break;
+		}
+		case MON_MSG_PURSUE_CLOSE:  {
+			source = race->base->pursuit->msg_close;
+			break;
+		}
+		case MON_MSG_PURSUE_FAR:  {
+			source = race->base->pursuit->msg_far;
+			break;
+		}
+		case MON_MSG_WARN_VIS:  {
+			source = race->base->warning->msg_vis;
+			break;
+		}
+		case MON_MSG_WARN_INVIS:  {
+			source = race->base->warning->msg_invis;
+			break;
+		}
+		case MON_MSG_WARN_VIS_SIL:  {
+			source = race->base->warning->msg_vis_silence;
+			break;
+		}
+		case MON_MSG_WARN_INVIS_SIL:  {
+			source = race->base->warning->msg_invis_silence;
+			break;
+		}
 	}
 
 	int state = MSG_PARSE_NORMAL;

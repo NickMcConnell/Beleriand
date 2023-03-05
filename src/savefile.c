@@ -78,7 +78,7 @@ bool character_saved;
  * Magic bits at beginning of savefile
  */
 static const uint8_t savefile_magic[4] = { 83, 97, 118, 101 };
-static const uint8_t savefile_name[4] = "VNLA";
+static const uint8_t savefile_name[4] = "USIL";
 
 /* Some useful types */
 typedef int (*loader_t)(void);
@@ -109,20 +109,15 @@ static const struct {
 	{ "messages", wr_messages, 1 },
 	{ "monster memory", wr_monster_memory, 1 },
 	{ "object memory", wr_object_memory, 1 },
-	{ "quests", wr_quests, 1 },
 	{ "player", wr_player, 1 },
 	{ "ignore", wr_ignore, 1 },
 	{ "misc", wr_misc, 1 },
 	{ "artifacts", wr_artifacts, 1 },
-	{ "player hp", wr_player_hp, 1 },
-	{ "player spells", wr_player_spells, 1 },
 	{ "gear", wr_gear, 1 },
-	{ "stores", wr_stores, 1 },
 	{ "dungeon", wr_dungeon, 1 },
 	{ "objects", wr_objects, 1 },
 	{ "monsters", wr_monsters, 1 },
 	{ "traps", wr_traps, 1 },
-	{ "chunks", wr_chunks, 1 },
 	{ "history", wr_history, 1 },
 };
 
@@ -136,20 +131,15 @@ static const struct blockinfo loaders[] = {
 	{ "messages", rd_messages, 1 },
 	{ "monster memory", rd_monster_memory, 1 },
 	{ "object memory", rd_object_memory, 1 },
-	{ "quests", rd_quests, 1 },
 	{ "player", rd_player, 1 },
 	{ "ignore", rd_ignore, 1 },
 	{ "misc", rd_misc, 1 },
 	{ "artifacts", rd_artifacts, 1 },
-	{ "player hp", rd_player_hp, 1 },
-	{ "player spells", rd_player_spells, 1 },
 	{ "gear", rd_gear, 1 },	
-	{ "stores", rd_stores, 1 },	
 	{ "dungeon", rd_dungeon, 1 },
 	{ "objects", rd_objects, 1 },	
 	{ "monsters", rd_monsters, 1 },
 	{ "traps", rd_traps, 1 },
-	{ "chunks", rd_chunks, 1 },
 	{ "history", rd_history, 1 },
 };
 

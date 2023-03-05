@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "player-abilities.h"
 #include "ui-mon-lore.h"
 #include "ui-output.h"
 #include "ui-prefs.h"
@@ -51,12 +52,8 @@ void lore_title(textblock *tb, const struct monster_race *race)
 	optional_attr = monster_x_attr[race->ridx];
 
 	/* A title (use "The" for non-uniques) */
-	if (!rf_has(race->flags, RF_UNIQUE))
+	if (!rf_has(race->flags, RF_UNIQUE)) {
 		textblock_append(tb, "The ");
-	else if (OPT(player, purple_uniques)) {
-		standard_attr = COLOUR_VIOLET;
-		if (!(optional_attr & 0x80))
-			optional_attr = COLOUR_VIOLET;
 	}
 
 	/* Dump the name and then append standard attr/char info */
@@ -102,7 +99,7 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	monster_flags_known(race, lore, known_flags);
 
 	/* Spoilers -- know everything */
-	if (spoilers)
+	if (spoilers || player_active_ability(player, "Lore Keeper"))
 		cheat_monster_lore(race, lore);
 
 	/* Appending the title here simplifies code in the callers. It also causes
@@ -116,36 +113,32 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	if (!spoilers)
 		lore_append_kills(tb, race, lore, known_flags);
 
+	/* Monster description */
 	lore_append_flavor(tb, race);
 
 	/* Describe the monster type, speed, life, and armor */
 	lore_append_movement(tb, race, lore, known_flags);
 
-	if (!spoilers)
-		lore_append_toughness(tb, race, lore, known_flags);
-
-	/* Describe the experience and item reward when killed */
-	if (!spoilers)
-		lore_append_exp(tb, race, lore, known_flags);
-
-	lore_append_drop(tb, race, lore, known_flags);
-
-	/* Describe the special properties of the monster */
-	lore_append_abilities(tb, race, lore, known_flags);
-	lore_append_awareness(tb, race, lore, known_flags);
-	lore_append_friends(tb, race, lore, known_flags);
-
-	/* Describe the spells, spell-like abilities and melee attacks */
+	/* Describe the spells and innate attacks */
 	lore_append_spells(tb, race, lore, known_flags);
+
+	/* Describe the abilities of the monster */
+	lore_append_abilities(tb, race, lore, known_flags);
+
+	/* Describe the known attacks */
 	lore_append_attack(tb, race, lore, known_flags);
 
-	/* Do we know everything */
-	if (lore_is_fully_known(race))
-		textblock_append(tb, "You know everything about this monster.");
+	/* Describe monster "toughness" */
+	lore_append_toughness(tb, race, lore, known_flags);
 
-	/* Notice "Quest" monsters */
-	if (rf_has(race->flags, RF_QUESTOR))
-		textblock_append(tb, "You feel an intense desire to kill this monster...  ");
+	/* Describe the known skills */
+	lore_append_skills(tb, race, lore, known_flags);
+
+	/* Describe experience */
+	lore_append_exp(tb, race, lore, known_flags);
+
+	/* Describe the monster drop */
+	lore_append_drop(tb, race, lore, known_flags);
 
 	textblock_append(tb, "\n");
 }

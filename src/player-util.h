@@ -20,6 +20,7 @@
 #ifndef PLAYER_UTIL_H
 #define PLAYER_UTIL_H
 
+#include "cave.h"
 #include "cmd-core.h"
 #include "player.h"
 
@@ -48,11 +49,19 @@ enum {
  * negative numbers, as postive numbers are taken to be a turncount,
  * and zero means "not resting". 
  */
-enum 
-{
+enum {
 	REST_COMPLETE = -2,
 	REST_ALL_POINTS = -1,
 	REST_SOME_POINTS = -3
+};
+
+/**
+ * Stealth mode off, on, or stopping. 
+ */
+enum {
+	STEALTH_MODE_OFF = 0,
+	STEALTH_MODE_STOPPING = 1,
+	STEALTH_MODE_ON = 2
 };
 
 /**
@@ -60,44 +69,46 @@ enum
  */
 #define REST_REQUIRED_FOR_REGEN 5
 
+int player_min_depth(struct player *p);
 int dungeon_get_next_level(struct player *p, int dlev, int added);
 void player_set_recall_depth(struct player *p);
 bool player_get_recall_depth(struct player *p);
 void dungeon_change_level(struct player *p, int dlev);
+int int_exp(int base, int power);
 void take_hit(struct player *p, int dam, const char *kb_str);
 void death_knowledge(struct player *p);
 int energy_per_move(struct player *p);
-int16_t modify_stat_value(int value, int amount);
 void player_regen_hp(struct player *p);
 void player_regen_mana(struct player *p);
-void player_adjust_hp_precise(struct player *p, int32_t hp_gain);
-int32_t player_adjust_mana_precise(struct player *p, int32_t sp_gain);
 void convert_mana_to_hp(struct player *p, int32_t sp);
+void player_digest(struct player *p);
 void player_update_light(struct player *p);
-void player_over_exert(struct player *p, int flag, int chance, int amount);
 struct object *player_best_digger(struct player *p, bool forbid_stack);
-bool player_attack_random_monster(struct player *p);
-int player_check_terrain_damage(struct player *p, struct loc grid);
-void player_take_terrain_damage(struct player *p, struct loc grid);
-struct player_shape *lookup_player_shape(const char *name);
-int shape_name_to_idx(const char *name);
-struct player_shape *player_shape_by_idx(int index);
-bool player_get_resume_normal_shape(struct player *p, struct command *cmd);
-void player_resume_normal_shape(struct player *p);
-bool player_is_shapechanged(struct player *p);
-bool player_is_trapsafe(struct player *p);
-bool player_can_cast(struct player *p, bool show_msg);
-bool player_can_study(struct player *p, bool show_msg);
-bool player_can_read(struct player *p, bool show_msg);
+bool player_radiates(struct player *p);
+void player_fall_in_pit(struct player *p, bool spiked);
+void player_falling_damage(struct player *p, bool stun);
+void player_fall_in_chasm(struct player *p);
+void player_flanking_or_retreat(struct player *p, struct loc grid);
+bool player_can_leap(struct player *p, struct loc grid, int dir);
+void player_land(struct player *p);
+void player_continue_leap(struct player *p);
+bool player_break_web(struct player *p);
+bool player_escape_pit(struct player *p);
+void player_blast_ceiling(struct player *p);
+void player_blast_floor(struct player *p);
+int lookup_skill(const char *name);
+bool player_action_is_movement(struct player *p, int n);
+int player_dodging_bonus(struct player *p);
+bool player_can_riposte(struct player *p, int hit_result);
+bool player_is_sprinting(struct player *p);
+int calc_bane_bonus(struct player *p);
+int player_bane_bonus(struct player *p, struct monster *mon);
+int player_spider_bane_bonus(struct player *p);
 bool player_can_fire(struct player *p, bool show_msg);
 bool player_can_refuel(struct player *p, bool show_msg);
-bool player_can_cast_prereq(void);
-bool player_can_study_prereq(void);
-bool player_can_read_prereq(void);
 bool player_can_fire_prereq(void);
 bool player_can_refuel_prereq(void);
 bool player_can_debug_prereq(void);
-bool player_book_has_unlearned_spells(struct player *p);
 bool player_confuse_dir(struct player *p, int *dir, bool too);
 bool player_resting_is_special(int16_t count);
 bool player_is_resting(struct player *p);
@@ -113,7 +124,8 @@ bool player_of_has(struct player *p, int flag);
 bool player_resists(struct player *p, int element);
 bool player_is_immune(struct player *p, int element);
 void player_place(struct chunk *c, struct player *p, struct loc grid);
-void disturb(struct player *p);
+void disturb(struct player *p, bool stop_stealth);
 void search(struct player *p);
+void perceive(struct player *p);
 
 #endif /* !PLAYER_UTIL_H */

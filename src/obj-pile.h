@@ -43,16 +43,14 @@ typedef enum
 {
 	OFLOOR_NONE    = 0x00, /* No options */
 	OFLOOR_TEST    = 0x01, /* Verify item tester */
-	OFLOOR_SENSE   = 0x02, /* Sensed or known items only */
 	OFLOOR_TOP     = 0x04, /* Only the top item */
 	OFLOOR_VISIBLE = 0x08, /* Visible items only */
 } object_floor_t;
 
 struct object *object_new(void);
 void object_free(struct object *obj);
-void object_delete(struct chunk *c, struct chunk *p_c,
-				   struct object **obj_address);
-void object_pile_free(struct chunk *c, struct chunk *p_c, struct object *obj);
+void object_delete(struct chunk *c, struct object **obj_address);
+void object_pile_free(struct chunk *c, struct object *obj);
 
 void pile_insert(struct object **pile, struct object *obj);
 void pile_insert_end(struct object **pile, struct object *obj);
@@ -67,8 +65,7 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 bool object_mergeable(const struct object *obj1, const struct object *obj2,
 					object_stack_t mode);
 void object_origin_combine(struct object *obj1, const struct object *obj2);
-void object_absorb_partial(struct object *obj1, struct object *obj2,
-	object_stack_t mode1, object_stack_t mode2);
+void object_absorb_partial(struct object *obj1, struct object *obj2);
 void object_absorb(struct object *obj1, struct object *obj2);
 void object_wipe(struct object *obj);
 void object_copy(struct object *obj1, const struct object *obj2);
@@ -76,6 +73,7 @@ void object_copy_amt(struct object *dest, struct object *src, int amt);
 struct object *object_split(struct object *src, int amt);
 struct object *floor_object_for_use(struct player *p, struct object *obj,
 	int num, bool message, bool *none_left);
+bool floor_destroy(struct object *obj, int amt);
 bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 				 bool *note);
 void drop_near(struct chunk *c, struct object **dropped, int chance,

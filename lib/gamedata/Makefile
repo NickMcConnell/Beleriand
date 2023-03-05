@@ -1,15 +1,15 @@
 MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
-FILES = activation.txt artifact.txt body.txt blow_methods.txt \
- blow_effects.txt brand.txt chest_trap.txt class.txt constants.txt curse.txt \
- dungeon_profile.txt ego_item.txt flavor.txt hints.txt history.txt \
- monster.txt monster_base.txt monster_spell.txt names.txt object.txt \
- object_base.txt object_property.txt p_race.txt pain.txt pit.txt \
- player_property.txt player_timed.txt projection.txt quest.txt realm.txt \
- room_template.txt shape.txt slay.txt store.txt summon.txt terrain.txt \
- trap.txt ui_entry.txt ui_entry_base.txt ui_entry_renderer.txt vault.txt \
- visuals.txt world.txt
+FILES = ability.txt artefact.txt body.txt blow_methods.txt \
+ blow_effects.txt brand.txt chest_trap.txt constants.txt drop.txt \
+ dungeon_profile.txt female_entry_poetry.txt flavor.txt history.txt house.txt \
+ male_entry_poetry.txt monster.txt monster_base.txt monster_spell.txt \
+ names.txt object.txt object_base.txt object_property.txt pain.txt \
+ player_timed.txt projection.txt pursuit.txt race.txt sex.txt slay.txt \
+ song.txt special.txt summon.txt terrain.txt tutorial_early_death.txt \
+ tutorial_late_death.txt tutorial_leave.txt tutorial_win.txt trap.txt \
+ vault.txt visuals.txt warning.txt world.txt
 
 R1 = $(GAMEDATA_IN_LIB:true=$(FILES))
 DATA = $(R1:false=)

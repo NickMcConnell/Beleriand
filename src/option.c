@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "init.h"
 #include "option.h"
+#include "player-history.h"
 #include "z-util.h"
 
 /**
@@ -307,6 +308,20 @@ void options_restore_maintainer(struct player_options *opts, int page)
 		if (options[opt].type == page) {
 			(*opts).opt[opt] = options[opt].normal;
 		}
+}
+
+/**
+ * List all challenge options at the start of the game
+ */
+void options_list_challenge(void)
+{
+	int opt;
+	for (opt = 0; opt < OPT_MAX; opt++) {
+		if ((options[opt].type == OP_BIRTH) && (player->opts.opt[opt] == true)){
+			history_add(player,	format("Challenge: %s", option_desc(opt)),
+						HIST_CHALLENGE_OPTS);
+		}
+	}
 }
 
 /**

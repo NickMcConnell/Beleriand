@@ -1,0 +1,155 @@
+# File: song.txt
+#
+# This file is used to initialize the "song" information for Sil.
+#
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+#
+#
+# === Understanding song.txt ===
+#
+
+# name: song name
+# verb: verb for starting to sing
+# desc: description of the song
+# alt-desc: alternate song description
+# bonus-mult: multiplier for song skill bonus
+# bonus-div: divisor for song skill bonus
+# bonus-min: minimum song skill bonus
+# noise: noise level of the song
+# extend: whether the song is extended
+# effect: effect on starting the song
+
+
+name:Elbereth
+verb:begin a
+desc:to the Queen of the Stars
+bonus-mult:1
+bonus-div:1
+bonus-min:0
+noise:8
+extend:0
+effect:SONG_OF_ELBERETH
+
+name:Slaying
+verb:begin a
+desc:of fury and dread
+bonus-mult:1
+bonus-div:1
+bonus-min:0
+noise:12
+extend:1
+
+name:Silence
+verb:whisper a
+desc:of silence
+bonus-mult:1
+bonus-div:2
+bonus-min:0
+noise:0
+extend:1
+
+name:Freedom
+verb:begin a
+desc:of freedom and safe passage
+bonus-mult:1
+bonus-div:1
+bonus-min:0
+noise:4
+extend:1
+effect:SONG_OF_FREEDOM
+
+name:the Trees
+verb:begin a
+desc:about the Two Trees of Valinor
+msg:A memory of their light wells up around you.
+bonus-mult:1
+bonus-div:5
+bonus-min:0
+noise:4
+extend:1
+
+name:Aule
+verb:begin a
+desc:of great enchantment
+bonus-mult:1
+bonus-div:4
+bonus-min:0
+noise:8
+extend:1
+
+name:Staying
+verb:begin a
+desc:about the courage of great heroes past
+bonus-mult:1
+bonus-div:3
+bonus-min:0
+noise:4
+extend:0
+
+name:Lorien
+verb:begin a soothing
+desc:about weariness and rest
+bonus-mult:1
+bonus-div:1
+bonus-min:0
+noise:4
+extend:0
+effect:SONG_OF_LORIEN
+
+name:Este
+verb:begin a
+desc:about gentle growth and recovery
+bonus-mult:1
+bonus-div:4
+bonus-min:2
+noise:4
+extend:0
+
+name:Sharpness
+verb:begin a whetting
+desc:about things that cut deep and true
+bonus-mult:2
+bonus-div:1
+bonus-min:0
+noise:8
+extend:0
+
+name:Mastery
+verb:begin a
+desc:of mastery and command
+bonus-mult:1
+bonus-div:1
+bonus-min:0
+noise:8
+extend:0
+
+name:Binding
+verb:begins a
+desc:binding
+alt-desc:durance
+alt-desc:chains
+alt-desc:thralls
+alt-desc:prison walls
+alt-desc:locks without keys
+effect:SONG_OF_BINDING
+
+name:Piercing
+verb:begins a
+desc:piercing
+alt-desc:opening
+alt-desc:treachery
+alt-desc:revealing
+alt-desc:uncovering
+alt-desc:betraying
+effect:SONG_OF_PIERCING
+
+name:Oaths
+verb:begins a
+desc:oaths
+alt-desc:vows broken
+alt-desc:promises
+alt-desc:duty
+alt-desc:tasks forgotten
+alt-desc:redemption
+effect:SONG_OF_OATHS

@@ -25,7 +25,6 @@
 #include "init.h"
 #include "main.h"
 #include "obj-init.h"
-#include "obj-randart.h"
 #include "obj-util.h"
 #include "player-birth.h"
 #include "savefile.h"
@@ -51,82 +50,7 @@ const char help_spoil[] =
 	"                          the standard artifacts\n"
 	"              -m fname    Write brief monster spoilers to fname\n"
 	"              -M fname    Write extended monster spoilers to fname\n"
-	"              -o fname    Write object spoilers to fname\n"
-	"              -p          Use the artifacts associated with the\n"
-	"                          savefile set by main.c\n"
-	"              -r fname    Use the randart file, fname, as the source\n"
-	"                          of the artifacts; overrides -p or -s\n"
-	"              -s seed     Use the given randart seed (hexadecimal\n"
-	"                          value; no leading 0x) to generate the\n"
-        "                          artifacts; causes the randart file and log\n"
-        "                          to be generated as well; overrides -p";
-
-static bool copy_file(const char *src, const char *dest, file_type ft)
-{
-	ang_file *fin = file_open(src, MODE_READ, -1);
-	ang_file *fout;
-	char buf[1024];
-	bool result;
-
-	if (!fin) {
-		return false;
-	}
-
-	fout = file_open(dest, MODE_WRITE, ft);
-	if (!fout) {
-		(void) file_close(fin);
-		return false;
-	}
-
-	result = true;
-	while (1) {
-		int nin = file_read(fin, buf, sizeof(buf));
-
-		if (nin > 0) {
-			if (!file_write(fout, buf, nin)) {
-				result = false;
-				break;
-			}
-		} else {
-			if (nin < 0) {
-				result = false;
-			}
-			break;
-		}
-	}
-
-	if (!file_close(fout)) {
-		result = false;
-	}
-	if (!file_close(fin)) {
-		result = false;
-	}
-
-	return result;
-}
-
-/* Make an effort to get the seed from the supplied randart file. */
-static uint32_t parse_seed(const char *src)
-{
-	uint32_t result = 0;
-	ang_file *fin = file_open(src, MODE_READ, -1);
-
-	if (fin) {
-		char buf[256];
-		char *s;
-
-		if (file_getl(fin, buf, sizeof(buf)) &&
-				(s = my_stristr(buf, "seed"))) {
-			unsigned long ulv;
-
-			if (sscanf(s, "seed %lx", &ulv) == 1) {
-				result = (uint32_t)ulv;
-			}
-		}
-		(void) file_close(fin);
-	}
-	return result;
-}
+	"              -o fname    Write object spoilers to fname\n";
 
 /**
  * Usage:
@@ -139,12 +63,6 @@ static uint32_t parse_seed(const char *src)
  *   -m fname  Write brief monster spoilers to a file named fname.
  *   -M fname  Write extended monster spoilers to a file named fname.
  *   -o fname  Write object spoilers to a file named fname.
- *   -p        Use the artifacts associated with savefile set by main.c.
- *   -r fname  Use the randart file, fname, as the source of the artifacts.
- *             Overrides -p or -s.
- *   -s seed   Use the given randart seed, a hexadecimal value without the
- *             leading 0x, to generate the artifacts.  Causes the randart file
- *             and log to be generated as well.  Overrides -p.
  *
  * Bugs:
  * Would be nice to accept "-" as the file name and write the spoilers to
@@ -161,10 +79,6 @@ errr init_spoil(int argc, char *argv[]) {
 	/* Skip over argv[0] */
 	int i = 1;
 	int result = 0;
-	bool load_randart = false;
-	const char *randart_name = NULL;
-	bool have_specified_seed = false;
-	uint32_t specified_seed = 0;
 
 	/* Parse the arguments. */
 	while (1) {
@@ -177,74 +91,34 @@ errr init_spoil(int argc, char *argv[]) {
 
 		if (argv[i][0] == '-') {
 			/* Try to match with a known option. */
-			if (argv[i][1] == 'p' && argv[i][2] == '\0') {
-				load_randart = true;
-				randart_name = NULL;
-			} else if (argv[i][1] == 'r' && argv[i][2] == '\0') {
-				if (i < argc - 1) {
-					load_randart = true;
-					/* Record the name; don't parse it. */
-					randart_name = argv[i + 1];
-					++increment;
-				} else {
-					printf("init-spoil: '%s' requires an argument, the name of a randart file\n", argv[i]);
-					result = 1;
-				}
-			} else if (argv[i][1] == 's' && argv[i][2] == '\0') {
-				if (i < argc - 1) {
-					char *valend;
-					unsigned long val;
+			int j = 0;
 
-					val = strtoul(argv[i + 1], &valend, 16);
-					++increment;
-					if (argv[i + 1][0] != '\0'
-							&& contains_only_spaces(valend)
-							&& val <= 0xFFFFFFFFul) {
-						load_randart = true;
-						have_specified_seed = true;
-						specified_seed = val;
-					} else if (val > 0xFFFFFFFFul) {
-						printf("init-spoil: seed is too large\n");
-						result = 1;
+			while (1) {
+				if (j >= (int)N_ELEMENTS(opts)) {
+					badarg = true;
+					break;
+				}
+
+				if (argv[i][1] == opts[j].letter &&
+					argv[i][2] == '\0') {
+					if (i < argc - 1) {
+						opts[j].enabled = true;
+						/*
+						 * Record the filename
+						 * and skip parsing
+						 * of it.
+						 */
+						opts[j].path =
+							argv[i + 1];
+						++increment;
 					} else {
-						printf("init-spoil: '%s' requires an integer argument, the randart seed\n",
-							argv[i]);
+						printf("init-spoil: '%s' requires an argument, the name of the spoiler file\n", argv[i]);
 						result = 1;
 					}
-				} else {
-					printf("init-spoil: '%s' requires an argument, the randart seed\n", argv[i]);
-					result = 1;
+					break;
 				}
-			} else {
-				int j = 0;
 
-				while (1) {
-					if (j >= (int)N_ELEMENTS(opts)) {
-						badarg = true;
-						break;
-					}
-
-					if (argv[i][1] == opts[j].letter &&
-							argv[i][2] == '\0') {
-						if (i < argc - 1) {
-							opts[j].enabled = true;
-							/*
-							 * Record the filename
-							 * and skip parsing
-							 * of it.
-							 */
-							opts[j].path =
-								argv[i + 1];
-							++increment;
-						} else {
-							printf("init-spoil: '%s' requires an argument, the name of the spoiler file\n", argv[i]);
-							result = 1;
-						}
-						break;
-					}
-
-					++j;
-				}
+				++j;
 			}
 		} else {
 			badarg = true;
@@ -263,81 +137,7 @@ errr init_spoil(int argc, char *argv[]) {
 	/* Generate the spoilers. */
 	init_angband();
 
-	if (load_randart) {
-		if (randart_name || have_specified_seed) {
-			if (player_make_simple(NULL, NULL, "Spoiler")) {
-				char defname[1024] = "";
-
-				deactivate_randart_file();
-				option_set(option_name(OPT_birth_randarts),
-					true);
-
-				if (randart_name) {
-					path_build(defname, sizeof(defname),
-						ANGBAND_DIR_USER,
-						"randart.txt");
-					/*
-					 * Copy rather than move in case the
-					 * file supplied is read-only.
-					 */
-					if (copy_file(randart_name, defname,
-							FTYPE_TEXT)) {
-						seed_randart = parse_seed(randart_name);
-					} else {
-						printf("init-spoil: could not copy randart file to '%s'.\n", defname);
-						result = 1;
-					}
-				} else {
-					seed_randart = specified_seed;
-					do_randart(seed_randart, true);
-				}
-
-				if (result == 0) {
-					cleanup_parser(&artifact_parser);
-					run_parser(&randart_parser);
-					if (randart_name) {
-						file_delete(defname);
-					} else {
-						deactivate_randart_file();
-					}
-				}
-			} else {
-				printf("init-spoil: could not initialize player.\n");
-				result = 1;
-			}
-		} else {
-			bool exists;
-
-			safe_setuid_grab();
-			exists = file_exists(savefile);
-			safe_setuid_drop();
-			if (exists) {
-				bool loaded_save =
-					savefile_load(savefile, false);
-
-				deactivate_randart_file();
-				if (!loaded_save) {
-					printf("init-spoil: using artifacts "
-						"associated with a savefile, "
-						"but the savefile set by "
-						"main, '%s', failed to load.\n",
-						savefile);
-					result = 1;
-				}
-			} else if (savefile[0]) {
-				printf("init-spoil: using artifacts associated "
-					"with a savefile, but the savefile set "
-					"by main, '%s', does not exist.\n",
-					savefile);
-				result = 1;
-			} else {
-				printf("init-spoil: using artifacts associated "
-					"with a savefile, but main did not set "
-					"the savefile.\n");
-				result = 1;
-			}
-		}
-	} else if (!player_make_simple(NULL, NULL, "Spoiler")) {
+	if (!player_make_simple(NULL, NULL, NULL, "Spoiler")) {
 		printf("init-spoil: could not initialize player.\n");
 		result = 1;
 	}

@@ -85,5 +85,6 @@ void init_options(void);
 bool options_save_custom(struct player_options *opts, int page);
 bool options_restore_custom(struct player_options *opts, int page);
 void options_restore_maintainer(struct player_options *opts, int page);
+void options_list_challenge(void);
 
 #endif /* !INCLUDED_OPTIONS_H */

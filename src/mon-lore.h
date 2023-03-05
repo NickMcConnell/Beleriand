@@ -29,21 +29,21 @@ typedef struct monster_lore
 {
 	int ridx;			/* Index of monster race */
 
-	uint16_t sights;		/* Count sightings of this monster */
 	uint16_t deaths;		/* Count deaths from this monster */
 
 	uint16_t pkills;		/* Count monsters killed in this life */
-	uint16_t thefts;		/* Count objects stolen in this life */
+	uint16_t psights;		/* Count sightings of this monster in this life */
 	uint16_t tkills;		/* Count monsters killed in all lives */
+	uint16_t tsights;		/* Count sightings of this monster in all lives */
 
-	uint8_t wake;			/* Number of times woken up (?) */
-	uint8_t ignore;			/* Number of times ignored (?) */
+	uint8_t notice;			/* Number of times seen noticing the player */
+	uint8_t ignore;			/* Number of times seen not noticing the player */
 
-	uint8_t drop_gold;		/* Max number of gold dropped at once */
 	uint8_t drop_item;		/* Max number of item dropped at once */
 
-	uint8_t cast_innate;		/* Max number of innate spells seen */
-	uint8_t cast_spell;		/* Max number of other spells seen */
+	uint8_t ranged;		/* Max number of ranged attacks seen */
+	uint8_t mana;		/* Max mana */
+	uint8_t spell_power;		/* Power of (damage-dealing) spells */
 
 	struct monster_blow *blows; /* Knowledge of blows */
 
@@ -53,9 +53,6 @@ typedef struct monster_lore
 	bitflag spell_flags[RSF_SIZE];  /* Observed racial spell flags */
 
 	struct monster_drop *drops;
-    struct monster_friends *friends;
-	struct monster_friends_base *friends_base;
-	struct monster_mimic *mimic_kinds;
 
 	/* Derived known fields, put here for simplicity */
 	bool all_known;
@@ -63,8 +60,7 @@ typedef struct monster_lore
 	bool armour_known;
 	bool drop_known;
 	bool sleep_known;
-	bool spell_freq_known;
-	bool innate_freq_known;
+	bool ranged_freq_known;
 } monster_lore;
 
 /**
@@ -92,9 +88,9 @@ void lore_append_drop(textblock *tb, const struct monster_race *race,
 void lore_append_abilities(textblock *tb, const struct monster_race *race,
 						   const struct monster_lore *lore,
 						   bitflag known_flags[RF_SIZE]);
-void lore_append_awareness(textblock *tb, const struct monster_race *race,
-						   const struct monster_lore *lore,
-						   bitflag known_flags[RF_SIZE]);
+void lore_append_skills(textblock *tb, const struct monster_race *race,
+						const struct monster_lore *lore,
+						bitflag known_flags[RF_SIZE]);
 void lore_append_friends(textblock *tb, const struct monster_race *race,
 						 const struct monster_lore *lore,
 						 bitflag known_flags[RF_SIZE]);
@@ -119,7 +115,7 @@ bool lore_is_fully_known(const struct monster_race *race);
 void monster_flags_known(const struct monster_race *race,
 						 const struct monster_lore *lore,
 						 bitflag flags[RF_SIZE]);
-void lore_treasure(struct monster *mon, int num_item, int num_gold);
+void lore_treasure(struct monster *mon, int num_item);
 struct monster_lore *get_lore(const struct monster_race *race);
 bool lore_save(const char *name);
 

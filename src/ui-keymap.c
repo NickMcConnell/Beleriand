@@ -168,10 +168,14 @@ void keymap_dump(ang_file *fff)
 	int mode;
 	struct keymap *k;
 
-	if (OPT(player, rogue_like_commands))
-		mode = KEYMAP_MODE_ROGUE;
-	else
+	if (OPT(player, angband_keyset)) {
+		mode = KEYMAP_MODE_ANGBAND;
+	} else {
 		mode = KEYMAP_MODE_ORIG;
+	}
+	if (OPT(player, hjkl_movement)) {
+		mode |= KEYMAP_MODE_ROGUE;
+	}
 
 	for (k = keymaps[mode]; k; k = k->next) {
 		char buf[1024];

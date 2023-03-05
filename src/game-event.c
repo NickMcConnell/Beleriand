@@ -187,18 +187,39 @@ void event_signal_message(game_event_type type, int t, const char *s)
  * the ith stat, i >= 0 and i < STAT_MAX.
  * \param inc_points inc_points[i] is the number of additional points it would
  * take to incrase the ith stat by one, i >= 0 and i < STAT_MAX.
- * \param remaining is the number of poitns that remain to be spent.
+ * \param remaining is the number of points that remain to be spent.
  */
 void event_signal_birthpoints(const int *points, const int *inc_points,
 		int remaining)
 {
 	game_event_data data;
 
-	data.birthpoints.points = points;
-	data.birthpoints.inc_points = inc_points;
-	data.birthpoints.remaining = remaining;
+	data.points.points = points;
+	data.points.inc_points = inc_points;
+	data.points.remaining = remaining;
 
-	game_event_dispatch(EVENT_BIRTHPOINTS, &data);
+	game_event_dispatch(EVENT_STATPOINTS, &data);
+}
+
+/**
+ * Signal a change or refresh in the point buy for skills.
+ *
+ * \param exp exp[i] is the amount of experience already spent to increase
+ * the ith stat, i >= 0 and i < SKILL_MAX.
+ * \param inc_exp inc_exp[i] is the amount of additional experience it would
+ * take to incrase the ith skill by one, i >= 0 and i < SKILL_MAX.
+ * \param remaining is the amount of experience that remain to be spent.
+ */
+void event_signal_skillpoints(const int *exp, const int *inc_exp,
+		int remaining)
+{
+	game_event_data data;
+
+	data.exp.exp = exp;
+	data.exp.inc_exp = inc_exp;
+	data.exp.remaining = remaining;
+
+	game_event_dispatch(EVENT_SKILLPOINTS, &data);
 }
 
 void event_signal_blast(game_event_type type,
@@ -260,6 +281,21 @@ void event_signal_missile(game_event_type type,
 	game_event_dispatch(type, &data);
 }
 
+void event_signal_hit(game_event_type type,
+					  int dam,
+					  int dam_type,
+					  bool fatal,
+					  struct loc grid)
+{
+	game_event_data data;
+	data.hit.dam = dam;
+	data.hit.dam_type = dam_type;
+	data.hit.fatal = fatal;
+	data.hit.grid = grid;
+
+	game_event_dispatch(type, &data);
+}
+
 void event_signal_size(game_event_type type, int h, int w)
 {
 	game_event_data data;
@@ -282,3 +318,47 @@ void event_signal_tunnel(game_event_type type, int nstep, int npierce, int ndug,
 	data.tunnel.early = early;
 	game_event_dispatch(type, &data);
 }
+
+void event_signal_combat_attack(game_event_type type, struct source attacker,
+								struct source defender, bool vis, int att,
+								int att_roll, int evn, int evn_roll, bool melee)
+{
+	game_event_data data;
+	data.combat_attack.attacker = attacker;
+	data.combat_attack.defender = defender;
+	data.combat_attack.vis = vis;
+	data.combat_attack.att = att;
+	data.combat_attack.att_roll = att_roll;
+	data.combat_attack.evn = evn;
+	data.combat_attack.evn_roll = evn_roll;
+	data.combat_attack.melee = melee;
+	game_event_dispatch(type, &data);
+}
+
+void event_signal_combat_damage(game_event_type type, int dd, int ds, int dam,
+								int pd, int ps, int prot, int prt_percent,
+								int dam_type, bool melee)
+{
+	game_event_data data;
+	data.combat_damage.dd = dd;
+	data.combat_damage.ds = ds;
+	data.combat_damage.dam = dam;
+	data.combat_damage.pd = pd;
+	data.combat_damage.ps = ps;
+	data.combat_damage.prot = prot;
+	data.combat_damage.prt_percent = prt_percent;
+	data.combat_damage.dam_type = dam_type;
+	data.combat_damage.melee = melee;
+	game_event_dispatch(type, &data);
+}
+
+void event_signal_poem(game_event_type type, const char *name, int row, int col)
+{
+	game_event_data data;
+
+	data.verse.filename = name;
+	data.verse.row = row;
+	data.verse.col = col;
+	game_event_dispatch(type, &data);
+}
+

@@ -25,6 +25,7 @@
 extern bool arg_force_name;
 
 void do_cmd_options_birth(void);
+const char *strip_ego_name(const char *name);
 int ego_item_name(char *buf, size_t buf_size, struct ego_desc *desc);
 bool ignore_tval(int tval);
 void do_cmd_options_item(const char *title, int row);

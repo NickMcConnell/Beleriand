@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "wizard.h"
@@ -35,16 +36,14 @@ void wiz_cheat_death(void)
 
 	/* Restore hit & spell points */
 	player->chp = player->mhp;
-	player->chp_frac = 0;
 	player->csp = player->msp;
-	player->csp_frac = 0;
 
 	/* Healing */
 	(void)player_clear_timed(player, TMD_BLIND, true);
 	(void)player_clear_timed(player, TMD_CONFUSED, true);
 	(void)player_clear_timed(player, TMD_POISONED, true);
 	(void)player_clear_timed(player, TMD_AFRAID, true);
-	(void)player_clear_timed(player, TMD_PARALYZED, true);
+	(void)player_clear_timed(player, TMD_ENTRANCED, true);
 	(void)player_clear_timed(player, TMD_IMAGE, true);
 	(void)player_clear_timed(player, TMD_STUN, true);
 	(void)player_clear_timed(player, TMD_CUT, true);
@@ -52,31 +51,9 @@ void wiz_cheat_death(void)
 	/* Prevent starvation */
 	player_set_timed(player, TMD_FOOD, PY_FOOD_MAX - 1, false);
 
-	/* Cancel recall */
-	if (player->word_recall)
-	{
-		/* Message */
-		msg("A tension leaves the air around you...");
-		event_signal(EVENT_MESSAGE_FLUSH);
-
-		/* Hack -- Prevent recall */
-		player->word_recall = 0;
-	}
-
-	/* Cancel deep descent */
-	if (player->deep_descent)
-	{
-		/* Message */
-		msg("The air around you stops swirling...");
-		event_signal(EVENT_MESSAGE_FLUSH);
-
-		/* Hack -- Prevent recall */
-		player->deep_descent = 0;
-	}
-
 	/* Note cause of death XXX XXX XXX */
 	my_strcpy(player->died_from, "Cheating death", sizeof(player->died_from));
 
-	/* Back to the town */
-	dungeon_change_level(player, 0);
+	/* Back to the start */
+	dungeon_change_level(player, 1);
 }

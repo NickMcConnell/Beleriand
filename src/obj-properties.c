@@ -33,9 +33,11 @@ struct obj_property *lookup_obj_property(int type, int index)
 			return prop;
 		}
 
-		/* Special case - stats count as mods */
-		if ((type == OBJ_PROPERTY_MOD) && (prop->type == OBJ_PROPERTY_STAT)
-			&& (prop->index == index)) {
+		/* Special case - stats and skills count as mods */
+		if ((type == OBJ_PROPERTY_MOD) &&
+			((prop->type == OBJ_PROPERTY_STAT) ||
+			 (prop->type == OBJ_PROPERTY_SKILL)) &&
+			(prop->index == index)) {
 			return prop;
 		}
 	}
@@ -77,25 +79,15 @@ void create_obj_flag_mask(bitflag *f, int id, ...)
 	return;
 }
 
-/**
- * Print a message when an object flag is identified by use.
- *
- * \param flag is the flag being noticed
- * \param name is the object name 
- */
-void flag_message(int flag, char *name)
+void insert_name(char *buf, size_t size, char *msg, char *name)
 {
-	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, flag);
-	char buf[1024] = "\0";
 	const char *next;
 	const char *s;
 	const char *tag;
 	const char *in_cursor;
 	size_t end = 0;
 
-	/* See if we have a message */
-	if (!prop->msg) return;
-	in_cursor = prop->msg;
+	in_cursor = msg;
 
 	next = strchr(in_cursor, '{');
 	while (next) {
@@ -122,7 +114,67 @@ void flag_message(int flag, char *name)
 		next = strchr(in_cursor, '{');
 	}
 	strnfcat(buf, 1024, &end, in_cursor);
+}
 
+/**
+ * Print a message when an object flag is identified by use.
+ *
+ * \param flag is the flag being noticed
+ * \param name is the object (or monster) name 
+ */
+void flag_message(int flag, char *name)
+{
+	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, flag);
+	char buf[1024] = "\0";
+
+	/* See if we have a message */
+	if (!prop->msg) return;
+
+	/* Insert */
+	insert_name(buf, 1024, prop->msg, name);
+	msg("%s", buf);
+}
+
+/**
+ * Return a string when an object flag is identified by use.
+ * Note that this makes a string which must be freed.
+ *
+ * \param flag is the flag being noticed
+ * \param name is the object (or monster) name 
+ */
+void flag_slay_message(int flag, char *name, char *message, int len)
+{
+	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, flag);
+	char buf[1024] = "\0";
+
+	/* See if we have a message */
+	if (!prop->msg) return;
+
+	/* Insert */
+	insert_name(buf, 1024, prop->msg, name);
+	my_strcpy(message, buf, len);
+}
+
+/**
+ * Print a message when an object element property is identified by use.
+ *
+ * \param elem is the element being noticed
+ * \param name is the object name 
+ * \param vuln is whether it is a vulnerability being noticed
+ */
+void element_message(int elem, char *name, bool vuln)
+{
+	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_RESIST, elem);
+	char buf[1024] = "\0";
+
+	/* Vulnerability */
+	if (vuln) prop = lookup_obj_property(OBJ_PROPERTY_VULN, elem);
+
+	/* See if we have a message */
+	if (!prop->msg) return;
+
+	/* Insert */
+	insert_name(buf, 1024, prop->msg, name);
 	msg("%s", buf);
 }
 

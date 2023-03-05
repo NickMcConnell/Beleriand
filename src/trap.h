@@ -39,8 +39,7 @@ enum
 /* Types of glyph */
 enum {
 	GLYPH_NONE,
-	GLYPH_WARDING,
-	GLYPH_DECOY
+	GLYPH_WARDING
 };
 
 /**
@@ -52,6 +51,8 @@ struct trap_kind
 	char *text;					/**< Text  */
 	char *desc;					/**< Short description  */
 	char *msg;					/**< Message on hitting */
+	char *msg_vis;				/**< Message on hitting, only when visible */
+	char *msg_silence;			/**< Message on hitting with song of silence */
 	char *msg_good;				/**< Message on saving */
 	char *msg_bad;				/**< Message on failing to save */
 	char *msg_xtra;				/**< Message on getting an extra effect */
@@ -64,11 +65,11 @@ struct trap_kind
 
 	int rarity;					/**< Rarity */
 	int min_depth;				/**< Minimum depth */
-	int max_num;				/**< Unused */
-	random_value power;			/**< Visibility of player trap */
+	int max_depth;				/**< Maximum depth */
+	int power;					/**< Power of trap (multiple uses) */
+	int stealth;				/**< change to player's stealh score when hit */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (all traps of this kind) */
-	bitflag save_flags[OF_SIZE];/**< Save flags (player with these saves) */
 
 	struct effect *effect;		/**< Effect on entry to grid */
 	struct effect *effect_xtra;	/**< Possible extra effect */
@@ -87,19 +88,20 @@ struct trap
 
 	struct loc grid;		/**< Location of trap */
 
-	uint8_t power;			/**< Power for locks, visibility for traps */
-	uint8_t timeout;		/**< Timer for disabled traps */
+	uint8_t power;			/**< Power for locks/jams, disarm diff for traps */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (only this particular trap) */
 };
+
+extern struct file_parser trap_parser;
 
 struct trap_kind *lookup_trap(const char *desc);
 bool square_trap_specific(struct chunk *c, struct loc grid, int t_idx);
 bool square_trap_flag(struct chunk *c, struct loc grid, int flag);
 bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
 						bool domsg);
-void square_memorize_traps(struct chunk *c, struct loc grid);
-void hit_trap(struct loc grid, int delayed);
+void hit_trap(struct loc grid);
+bool check_hit(int power, bool display_roll);
 bool square_player_trap_allowed(struct chunk *c, struct loc grid);
 void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level);
 void square_free_trap(struct chunk *c, struct loc grid);
@@ -110,6 +112,10 @@ bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
 							 int t_idx, int time);
 int square_trap_timeout(struct chunk *c, struct loc grid, int t_idx);
 void square_set_door_lock(struct chunk *c, struct loc grid, int power);
-int square_door_power(struct chunk *c, struct loc grid);
+int square_door_lock_power(struct chunk *c, struct loc grid);
+void square_set_door_jam(struct chunk *c, struct loc grid, int power);
+int square_door_jam_power(struct chunk *c, struct loc grid);
+void square_set_forge(struct chunk *c, struct loc grid, int uses);
+int square_forge_uses(struct chunk *c, struct loc grid);
 
 #endif /* !TRAP_H */

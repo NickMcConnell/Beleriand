@@ -32,12 +32,9 @@ struct projection {
 	char *desc;
 	char *player_desc;
 	char *blind_desc;
-	char *lash_desc;
-	int numerator;
-	random_value denominator;
-	int divisor;
-	int damage_cap;
 	int msgt;
+	bool damaging;
+	bool evade;
 	bool obvious;
 	bool wake;
 	int color;
@@ -59,6 +56,14 @@ enum
     BOLT_MAX
 };
 
+/**
+ * Return values for the projectable() function
+ */
+enum {
+	PROJECT_PATH_NO,
+	PROJECT_PATH_NOT_CLEAR,
+	PROJECT_PATH_CLEAR
+};
 
 /**
  *   NONE: No flags
@@ -70,62 +75,57 @@ enum
  *   ITEM: May affect objects in the blast area in some way
  *   KILL: May affect monsters in the blast area in some way
  *   HIDE: Disable visual feedback from projection
- *   AWARE: Effects are already obvious to the player
- *   SAFE: Doesn't affect monsters of the same race as the caster
  *   ARC: Projection is a sector of circle radiating from the caster
  *   PLAY: May affect the player
  *   INFO: Use believed map rather than truth for player ui
  *   SHORT: Use one quarter of max_range
- *   SELF: May affect the player, even when cast by the player
+ *   BOOM: Explode
+ *   INVIS: Ignores invisible walls
+ *   CHASM: Blocked by chasms
+ *   CHCK: Projection notes when it cannot bypass a monster
  */
-enum
-{
-	PROJECT_NONE  = 0x0000,
-	PROJECT_JUMP  = 0x0001,
-	PROJECT_BEAM  = 0x0002,
-	PROJECT_THRU  = 0x0004,
-	PROJECT_STOP  = 0x0008,
-	PROJECT_GRID  = 0x0010,
-	PROJECT_ITEM  = 0x0020,
-	PROJECT_KILL  = 0x0040,
-	PROJECT_HIDE  = 0x0080,
-	PROJECT_AWARE = 0x0100,
-	PROJECT_SAFE  = 0x0200,
-	PROJECT_ARC   = 0x0400,
-	PROJECT_PLAY  = 0x0800,
-	PROJECT_INFO  = 0x1000,
-	PROJECT_SHORT = 0x2000,
-	PROJECT_SELF  = 0x4000,
-	PROJECT_ROCK  = 0x8000,
+enum {
+	PROJECT_NONE  = 0x00000,
+	PROJECT_JUMP  = 0x00001,
+	PROJECT_BEAM  = 0x00002,
+	PROJECT_THRU  = 0x00004,
+	PROJECT_STOP  = 0x00008,
+	PROJECT_GRID  = 0x00010,
+	PROJECT_ITEM  = 0x00020,
+	PROJECT_KILL  = 0x00040,
+	PROJECT_HIDE  = 0x00080,
+	PROJECT_ARC   = 0x00100,
+	PROJECT_PLAY  = 0x00200,
+	PROJECT_INFO  = 0x00400,
+	PROJECT_PASS  = 0x00800,
+	PROJECT_BOOM  = 0x01000,
+	PROJECT_INVIS = 0x02000,
+	PROJECT_CHASM = 0x04000,
+	PROJECT_CHCK  = 0x08000,
+	PROJECT_WALL  = 0x10000
 };
 
 /* Display attrs and chars */
 extern uint8_t proj_to_attr[PROJ_MAX][BOLT_MAX];
 extern wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
-void thrust_away(struct loc centre, struct loc target, int grids_away);
-int inven_damage(struct player *p, int type, int cperc);
-int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
-			   int resist, bool actual);
+int inven_damage(struct player *p, int type, int perc, int resistance);
+int adjust_dam(struct player *p, int dd, int ds, int type);
 
-bool project_f(struct source, int r, struct loc grid, int dam, int typ);
-bool project_o(struct source, int r, struct loc grid, int dam, int typ,
-			   const struct object *protected_obj);
-void project_m(struct source, int r, struct loc grid, int dam, int typ, int flg,
-               bool *did_hit, bool *was_obvious);
-bool project_p(struct source, int r, struct loc grid, int dam, int typ,
-			   int power, bool self);
+bool project_f(struct source origin, struct loc grid, int dif, int typ);
+bool project_o(struct loc grid, int typ, const struct object *protected_obj);
+void project_m(struct source origin, int r, struct loc grid, int dam, int ds,
+			   int dif, int typ, int flg, bool *did_hit, bool *was_obvious);
+bool project_p(struct source, struct loc grid, int dd, int ds, int typ);
 
-int project_path(struct chunk *c, struct loc *gp, int range, struct loc grid1,
-	struct loc grid2, int flg);
-bool projectable(struct chunk *c, struct loc grid1, struct loc grid2, int flg);
+int projectable(struct chunk *c, struct loc grid1, struct loc grid2, int flg);
 int proj_name_to_idx(const char *name);
 const char *proj_idx_to_name(int type);
 
 struct loc origin_get_loc(struct source origin);
 
-bool project(struct source origin, int rad, struct loc finish, int dam, int typ,
-	int flg, int degrees_of_arc, uint8_t diameter_of_source,
-	const struct object *obj);
+bool project(struct source origin, int rad, struct loc finish,
+			 int dd, int ds, int dif, int typ, int flg,
+			 int degrees_of_arc, bool uniform, const struct object *obj);
 
 #endif /* !PROJECT_H */

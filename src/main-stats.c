@@ -29,8 +29,6 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-gear.h"
-#include "obj-power.h"
-#include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -40,17 +38,14 @@
 #include "project.h"
 #include "stats/db.h"
 #include "stats/structs.h"
-#include "store.h"
 #include <stddef.h>
 #include <time.h>
 
-#define OBJ_FEEL_MAX	 11
-#define MON_FEEL_MAX 	 10
 #define LEVEL_MAX 		101
 #define TOP_DICE		 21 /* highest catalogued values for wearables */
 #define TOP_SIDES		 11
-#define TOP_AC			146
-#define TOP_PLUS		 56
+#define TOP_ATT			 50
+#define TOP_EVN			 50
 #define TOP_POWER		999
 #define TOP_MOD 		 25
 #define RUNS_PER_CHECKPOINT	10000
@@ -79,10 +74,10 @@ static int consumable_count = 0;
 
 struct wearables_data {
 	uint32_t count;
-	uint32_t dice[TOP_DICE][TOP_SIDES];
-	uint32_t ac[TOP_AC];
-	uint32_t hit[TOP_PLUS];
-	uint32_t dam[TOP_PLUS];
+	uint32_t damage[TOP_DICE][TOP_SIDES];
+	uint32_t prot[TOP_DICE][TOP_SIDES];
+	uint32_t att[TOP_ATT];
+	uint32_t evn[TOP_EVN];
 /*	uint32_t power[TOP_POWER]; not enough memory - add it later in bands */
 	uint32_t *egos;
 	uint32_t flags[OF_MAX];
@@ -93,9 +88,6 @@ static struct level_data {
 	uint32_t *monsters;
 	/* uint32_t *vaults;  Add these later - requires passing into generate.c
 	uint32_t *pits; */
-	uint32_t obj_feelings[OBJ_FEEL_MAX];
-	uint32_t mon_feelings[MON_FEEL_MAX];
-	long long gold[ORIGIN_STATS];
 	uint32_t *artifacts[ORIGIN_STATS];
 	uint32_t *consumables[ORIGIN_STATS];
 	struct wearables_data *wearables[ORIGIN_STATS];
@@ -183,15 +175,12 @@ static void generate_player_for_stats(void)
 	char buf[80];
 	int i;
 
-	OPT(player, birth_randarts) = randarts;
-	OPT(player, birth_no_selling) = no_selling;
-	OPT(player, birth_stacking) = true;
 	OPT(player, auto_more) = true;
 
 	player->wizard = 1; /* Set wizard mode on */
 
-	player->race = races;  /* Human   */
-	player->class = classes; /* Warrior */
+	player->race = races;  /* Noldor   */
+	player->house = houses; /* Feanor */
 
 	/* Needs a body; duplicates logic from the private player_embody(). */
 	memcpy(&player->body, &bodies[player->race->body],
@@ -208,20 +197,8 @@ static void generate_player_for_stats(void)
 		player->body.slots[i].name = string_make(buf);
 	}
 
-	/* Level 1 */
-	player->max_lev = player->lev = 1;
-
-	/* Experience factor */
-	player->expfact = player->race->r_exp + player->class->c_exp;
-
-	/* Hitdice */
-	player->hitdie = player->race->r_mhp + player->class->c_mhp;
-
 	/* Initial hitpoints -- high just to be safe */
 	player->mhp = player->chp = 2000;
-
-	/* Pre-calculate level 1 hitdice */
-	player->player_hp[0] = player->hitdie;
 
 	/* Set age/height/weight */
 	player->ht = player->ht_birth = 66;
@@ -251,11 +228,6 @@ static void initialize_character(void)
 	seed_flavor = randint0(0x10000000);
 	seed_randart = randint0(0x10000000);
 
-	if (randarts) {
-		do_randart(seed_randart, false);
-	}
-
-	store_reset();
 	flavor_init();
 	player->upkeep->playing = true;
 	player->upkeep->autosave = false;
@@ -274,7 +246,7 @@ static void kill_all_monsters(int level)
 
 		level_data[level].monsters[mon->race->ridx]++;
 
-		monster_death(mon, player, true);
+		monster_death(mon, player, false, NULL, true);
 
 		if (rf_has(mon->race->flags, RF_UNIQUE))
 			mon->race->max_num = 0;
@@ -353,10 +325,6 @@ static void log_all_objects(int level)
 					continue;
 				}
 
-				/* Capture gold amounts */
-				if (tval_is_money(obj))
-					level_data[level].gold[obj->origin] += obj->pval;
-
 				/* Capture artifact drops */
 				if (obj->artifact)
 					level_data[level].artifacts[obj->origin][obj->artifact->aidx]++;
@@ -367,10 +335,10 @@ static void log_all_objects(int level)
 						= &level_data[level].wearables[obj->origin][wearables_index[obj->kind->kidx]];
 
 					w->count++;
-					w->dice[MIN(obj->dd, TOP_DICE - 1)][MIN(obj->ds, TOP_SIDES - 1)]++;
-					w->ac[MIN(MAX(obj->ac + obj->to_a, 0), TOP_AC - 1)]++;
-					w->hit[MIN(MAX(obj->to_h, 0), TOP_PLUS - 1)]++;
-					w->dam[MIN(MAX(obj->to_d, 0), TOP_PLUS - 1)]++;
+					w->damage[MIN(obj->dd, TOP_DICE - 1)][MIN(obj->ds, TOP_SIDES - 1)]++;
+					w->prot[MIN(obj->pd, TOP_DICE - 1)][MIN(obj->ps, TOP_SIDES - 1)]++;
+					w->att[MIN(MAX(obj->att, 0), TOP_ATT - 1)]++;
+					w->evn[MIN(MAX(obj->evn, 0), TOP_EVN - 1)]++;
 
 					/* Capture egos */
 					if (obj->ego)
@@ -397,7 +365,6 @@ static void log_all_objects(int level)
 static void descend_dungeon(void)
 {
 	int level;
-	uint16_t obj_f, mon_f;
 
 	clock_t last = 0;
 
@@ -416,12 +383,6 @@ static void descend_dungeon(void)
 
 		dungeon_change_level(player, level);
 		prepare_next_level(player);
-
-		/* Store level feelings */
-		obj_f = cave->feeling / 10;
-		mon_f = cave->feeling - (10 * obj_f);
-		level_data[level].obj_feelings[MIN(obj_f, OBJ_FEEL_MAX - 1)]++;
-		level_data[level].mon_feelings[MIN(mon_f, MON_FEEL_MAX - 1)]++;
 
 		log_all_objects(level);
 		/* Besides killing, also gathers counts. */
@@ -492,11 +453,11 @@ static int stats_dump_artifacts(void)
 		err = sqlite3_bind_text(info_stmt, 2, art->name, 
 			strlen(art->name), SQLITE_STATIC);
 		if (err) return err;
-		err = stats_db_bind_ints(info_stmt, 13, 2, 
+		err = stats_db_bind_ints(info_stmt, 12, 2, 
 			art->tval, art->sval, art->weight,
-			art->cost, art->alloc_prob, art->alloc_min,
-			art->alloc_max, art->ac, art->dd,
-			art->ds, art->to_h, art->to_d, art->to_a);
+			art->cost, art->rarity, art->level,
+			art->att, art->dd,
+			art->ds, art->evn, art->pd, art->ps);
 		STATS_DB_STEP_RESET(info_stmt)
 
 		err = stats_dump_oflags(flags_stmt, idx, art->flags);
@@ -546,16 +507,10 @@ static int stats_dump_egos(void)
 		err = sqlite3_bind_text(info_stmt, 2, ego->name, 
 			strlen(ego->name), SQLITE_STATIC);
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 3, ego->to_h); 
-		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 4, ego->to_d); 
-		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 5, ego->to_a); 
-		if (err) return err;
-		err = stats_db_bind_ints(info_stmt, 8, 5, 
-			ego->cost, ego->alloc_min, ego->alloc_max,
-			ego->alloc_prob, ego->rating, ego->min_to_h, 
-			ego->min_to_d, ego->min_to_a);
+		err = stats_db_bind_ints(info_stmt, 10, 5, 
+			ego->cost, ego->level, ego->alloc_max,
+			ego->rarity, ego->att, ego->dd,
+			ego->ds, ego->evn, ego->pd, ego->ps);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
 
@@ -605,21 +560,12 @@ static int stats_dump_objects(void)
 		err = sqlite3_bind_text(info_stmt, 2, kind->name,
 			strlen(kind->name), SQLITE_STATIC);
 		if (err) return err;
-		err = stats_db_bind_ints(info_stmt, 13, 2,
+		err = stats_db_bind_ints(info_stmt, 12, 2,
 			kind->tval, kind->sval, kind->level, kind->weight,
-			kind->cost, kind->ac, kind->dd, kind->ds,
-			kind->alloc_prob, kind->alloc_min,
-			kind->alloc_max, kind->gen_mult_prob, kind->stack_size);
-		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 17, kind->to_h);
-		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 18, kind->to_d);
-		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 19, kind->to_a);
+			kind->cost, kind->att, kind->dd, kind->ds,
+			kind->evn, kind->pd, kind->ps, kind->stack_size);
 		if (err) return err;
 		err = stats_db_bind_rv(info_stmt, 20, kind->charge);
-		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 21, kind->time);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
 
@@ -702,9 +648,10 @@ static int stats_dump_monsters(void)
 		/* Skip empty entries */
 		if (!race->name) continue;
 
-		err = stats_db_bind_ints(info_stmt, 10, 0, idx,
-			race->ac, race->sleep, race->speed, race->mexp,
-			race->avg_hp, race->freq_innate, race->freq_spell,
+		err = stats_db_bind_ints(info_stmt, 14, 0, idx,
+			race->hdice, race->hside, race->sleep, race->speed, race->stl,
+			race->wil, race->per, race->freq_ranged,
+			race->light, race->evn, race->ps, race->pd,
 			race->level, race->rarity);
 		if (err) return err;
 		err = sqlite3_bind_text(info_stmt, 11, race->name,
@@ -1143,12 +1090,6 @@ static int stats_level_data_offsetof(const char *member)
 {
 	if (streq(member, "monsters"))
 		return offsetof(struct level_data, monsters);
-	else if (streq(member, "obj_feelings"))
-		return offsetof(struct level_data, obj_feelings);
-	else if (streq(member, "mon_feelings"))
-		return offsetof(struct level_data, mon_feelings);
-	else if (streq(member, "gold"))
-		return offsetof(struct level_data, gold);
 	else if (streq(member, "artifacts"))
 		return offsetof(struct level_data, artifacts);
 	else if (streq(member, "consumables"))
@@ -1168,14 +1109,14 @@ static int stats_wearables_data_offsetof(const char *member)
 {
 	if (streq(member, "count"))
 		return offsetof(struct wearables_data, count);
-	else if (streq(member, "dice"))
-		return offsetof(struct wearables_data, dice);
-	else if (streq(member, "ac"))
-		return offsetof(struct wearables_data, ac);
-	else if (streq(member, "hit"))
-		return offsetof(struct wearables_data, hit);
-	else if (streq(member, "dam"))
-		return offsetof(struct wearables_data, dam);
+	else if (streq(member, "damage"))
+		return offsetof(struct wearables_data, damage);
+	else if (streq(member, "prot"))
+		return offsetof(struct wearables_data, prot);
+	else if (streq(member, "att"))
+		return offsetof(struct wearables_data, att);
+	else if (streq(member, "evn"))
+		return offsetof(struct wearables_data, evn);
 	else if (streq(member, "egos"))
 		return offsetof(struct wearables_data, egos);
 	else if (streq(member, "flags"))
@@ -1423,15 +1364,6 @@ static int stats_write_db(uint32_t run)
 	err = stats_write_db_level_data("monsters", z_info->r_max);
 	if (err) return err;
 
-	err = stats_write_db_level_data("obj_feelings", OBJ_FEEL_MAX);
-	if (err) return err;
-
-	err = stats_write_db_level_data("mon_feelings", MON_FEEL_MAX);
-	if (err) return err;
-
-	err = stats_write_db_level_data("gold", ORIGIN_STATS);
-	if (err) return err;
-
 	err = stats_write_db_level_data_items("artifacts", z_info->a_max, 
 		false);
 	if (err) return err;
@@ -1443,16 +1375,16 @@ static int stats_write_db(uint32_t run)
 	err = stats_write_db_wearables_count();
 	if (err) return err;
 
-	err = stats_write_db_wearables_2d_array("dice", TOP_DICE, TOP_SIDES, true);
+	err = stats_write_db_wearables_2d_array("damage", TOP_DICE, TOP_SIDES, true);
 	if (err) return err;
 
-	err = stats_write_db_wearables_array("ac", TOP_AC, true);
+	err = stats_write_db_wearables_2d_array("prot", TOP_DICE, TOP_SIDES, true);
 	if (err) return err;
 
-	err = stats_write_db_wearables_array("hit", TOP_PLUS, true);
+	err = stats_write_db_wearables_array("att", TOP_ATT, true);
 	if (err) return err;
 
-	err = stats_write_db_wearables_array("dam", TOP_PLUS, true);
+	err = stats_write_db_wearables_array("evn", TOP_EVN, true);
 	if (err) return err;
 
 	err = stats_write_db_wearables_array("egos", z_info->e_max, false);
@@ -1510,10 +1442,6 @@ static void stats_cleanup_angband_run(void)
 {
 	if (character_dungeon) {
 		wipe_mon_list(cave, player);
-		if (player->cave) {
-			cave_free(player->cave);
-			player->cave = NULL;
-		}
 		if (cave) {
 			cave_free(cave);
 			cave = NULL;

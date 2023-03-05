@@ -25,6 +25,31 @@ enum monster_stagger {
 	 INNATE_STAGGER = 2
 };
 
+/**
+ * Monster alertness states
+ */
+enum monster_alertness {
+	ALERTNESS_MIN = -20,
+	ALERTNESS_UNWARY = -10,
+	ALERTNESS_ALERT = 0,
+	ALERTNESS_QUITE_ALERT = 5,
+	ALERTNESS_VERY_ALERT = 10,
+	ALERTNESS_MAX = 20
+};
+
+/**
+ * Monster stances
+ */
+enum monster_stance {
+	STANCE_FLEEING = 1,
+	STANCE_CONFIDENT = 2,
+	STANCE_AGGRESSIVE = 3
+};
+
+int monster_entry_chance(struct chunk *c, struct monster *mon, struct loc grid,
+						 bool *bash);
+int adj_mon_count(struct loc grid);
+void tell_allies(struct monster *mon, int flag);
 bool multiply_monster(const struct monster *mon);
 void process_monsters(int minimum_energy);
 void reset_monsters(void);

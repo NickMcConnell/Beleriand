@@ -19,8 +19,11 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "combat.h"
 #include "datafile.h"
+#include "effects.h"
 #include "init.h"
+#include "mon-calcs.h"
 #include "mon-util.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
@@ -31,12 +34,12 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "songs.h"
 
 int PY_FOOD_MAX;
 int PY_FOOD_FULL;
-int PY_FOOD_HUNGRY;
+int PY_FOOD_ALERT;
 int PY_FOOD_WEAK;
-int PY_FOOD_FAINT;
 int PY_FOOD_STARVE;
 
 /**
@@ -44,15 +47,8 @@ int PY_FOOD_STARVE;
  * Parsing functions for player_timed.txt
  * ------------------------------------------------------------------------ */
 
-const char *list_player_flag_names[] = {
-	#define PF(a) #a,
-	#include "list-player-flags.h"
-	#undef PF
-	NULL
-};
-
 struct timed_effect_data timed_effects[TMD_MAX] = {
-	#define TMD(a, b, c)	{ #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, 0, NULL, OF_NONE, false, -1, -1, -1 },
+#define TMD(a, b, c)	{ #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, { 0 }, 0, false },
 	#include "list-player-timed.h"
 	#undef TMD
 };
@@ -104,6 +100,7 @@ static enum parser_error parse_player_timed_name(struct parser *p)
 	struct timed_effect_data *t = &timed_effects[index];
 
 	t->index = index;
+	t->fail = -1;
 	parser_setpriv(p, t);
 
 	return PARSE_ERROR_NONE;
@@ -145,6 +142,44 @@ static enum parser_error parse_player_timed_decrease_message(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_player_timed_change_increase(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	struct timed_change *current = t->increase;
+	struct timed_change *l = mem_zalloc(sizeof(*l));
+	assert(t);
+
+	/* Make a zero change structure if there isn't one */
+	if (!current) {
+		t->increase = mem_zalloc(sizeof(struct timed_change));
+		current = t->increase;
+	}
+
+	/* Move to the highest change so far */
+	while (current->next) {
+		current = current->next;
+	}
+
+	current->max = parser_getint(p, "max");
+	current->msg = string_append(current->msg, parser_getsym(p, "msg"));
+	if (parser_hasval(p, "inc_msg")) {
+		current->inc_msg = string_append(current->inc_msg,
+										 parser_getsym(p, "inc_msg"));
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_change_decrease(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	struct timed_change *l = mem_zalloc(sizeof(*l));
+	assert(t);
+
+	t->decrease.max = parser_getint(p, "max");
+	t->decrease.msg = string_append(t->decrease.msg, parser_getsym(p, "msg"));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_player_timed_message_type(struct parser *p)
 {
 	struct timed_effect_data *t = parser_priv(p);
@@ -160,35 +195,14 @@ static enum parser_error parse_player_timed_message_type(struct parser *p)
 static enum parser_error parse_player_timed_fail(struct parser *p)
 {
 	struct timed_effect_data *t = parser_priv(p);
+	const char *name = parser_getstr(p, "flag");
+	int flag = lookup_flag(obj_flags, name);
 	assert(t);
 
-	t->fail_code = parser_getuint(p, "code");
-
-	const char *name = parser_getstr(p, "flag");
-	if (t->fail_code == TMD_FAIL_FLAG_OBJECT) {
-		int flag = lookup_flag(list_obj_flag_names, name);
-		if (flag == FLAG_END)
-			return PARSE_ERROR_INVALID_FLAG;
-		else
-			t->fail = flag;
-	} else if (t->fail_code == TMD_FAIL_FLAG_PLAYER) {
-		int flag = lookup_flag(list_player_flag_names, name);
-		if (flag == FLAG_END)
-			return PARSE_ERROR_INVALID_FLAG;
-		else
-			t->fail = flag;
-	} else if ((t->fail_code == TMD_FAIL_FLAG_RESIST) ||
-			   (t->fail_code == TMD_FAIL_FLAG_VULN)) {
-		size_t i = 0;
-		while (list_element_names[i] && !streq(list_element_names[i], name))
-			i++;
-
-		if (i == ELEM_MAX)
-			return PARSE_ERROR_INVALID_FLAG;
-		else
-			t->fail = i;
-	} else {
+	if (flag == FLAG_END) {
 		return PARSE_ERROR_INVALID_FLAG;
+	} else {
+		t->fail = flag;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -250,20 +264,62 @@ static enum parser_error parse_player_timed_grade(struct parser *p)
 
 	/* Set food constants and deal with percentages */
 	if (streq(t->name, "FOOD")) {
-		l->max *= z_info->food_value;
 		if (streq(l->name, "Starving")) {
 			PY_FOOD_STARVE = l->max;
-		} else if (streq(l->name, "Faint")) {
-			PY_FOOD_FAINT = l->max;
 		} else if (streq(l->name, "Weak")) {
 			PY_FOOD_WEAK = l->max;
 		} else if (streq(l->name, "Hungry")) {
-			PY_FOOD_HUNGRY = l->max;
+			PY_FOOD_ALERT = l->max;
 		} else if (streq(l->name, "Fed")) {
 			PY_FOOD_FULL = l->max;
 		} else if (streq(l->name, "Full")) {
 			PY_FOOD_MAX = l->max;
 		}
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_change_grade(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	struct timed_change_grade *current = t->c_grade;
+	struct timed_change_grade *l = mem_zalloc(sizeof(*l));
+    const char *color = parser_getsym(p, "color");
+    int attr = 0;
+	assert(t);
+
+	/* Make a zero grade structure if there isn't one */
+	if (!current) {
+		t->c_grade = mem_zalloc(sizeof(struct timed_change_grade));
+		current = t->c_grade;
+	}
+
+	/* Move to the highest grade so far */
+	while (current->next) {
+		current = current->next;
+	}
+
+	/* Add the new one */
+	current->next = l;
+	l->c_grade = current->c_grade + 1;
+
+    if (strlen(color) > 1) {
+		attr = color_text_to_attr(color);
+    } else {
+		attr = color_char_to_attr(color[0]);
+	}
+    if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+    l->color = attr;
+
+	l->max = parser_getint(p, "max");
+	l->name = string_make(parser_getsym(p, "name"));
+
+	/* Name may be a dummy (eg hunger)*/
+	if (strlen(l->name) == 1) {
+		string_free(l->name);
+		l->name = NULL;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -281,51 +337,12 @@ static enum parser_error parse_player_timed_resist(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_player_timed_brand(struct parser *p)
+static enum parser_error parse_player_timed_este(struct parser *p)
 {
 	struct timed_effect_data *t = parser_priv(p);
-	const char *name = parser_getsym(p, "name");
-	int idx = z_info->brand_max;
 
 	assert(t);
-	if (name) {
-		for (idx = 1; idx < z_info->brand_max; ++idx) {
-			if (streq(name, brands[idx].code)) break;
-		}
-	}
-	if (idx == z_info->brand_max) return PARSE_ERROR_UNRECOGNISED_BRAND;
-	t->temp_brand = idx;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_player_timed_slay(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	const char *name = parser_getsym(p, "name");
-	int idx = z_info->slay_max;
-
-	assert(t);
-	if (name) {
-		for (idx = 1; idx < z_info->slay_max; ++idx) {
-			if (streq(name, slays[idx].code)) break;
-		}
-	}
-	if (idx == z_info->slay_max) return PARSE_ERROR_UNRECOGNISED_SLAY;
-	t->temp_slay = idx;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_player_timed_flag_synonym(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	const char *code = parser_getsym(p, "code");
-	bool is_exact = parser_getint(p, "exact") != 0;
-	int idx = (code) ? code_index_in_array(obj_flags, code) : OF_NONE;
-
-	assert(t);
-	if (idx <= OF_NONE) return PARSE_ERROR_INVALID_OBJ_PROP_CODE;
-	t->oflag_dup = idx;
-	t->oflag_syn = is_exact;
+	t->este = parser_getuint(p, "value") ? true : false;
 	return PARSE_ERROR_NONE;
 }
 
@@ -338,14 +355,18 @@ static struct parser *init_parse_player_timed(void)
 	parser_reg(p, "on-end str text", parse_player_timed_end_message);
 	parser_reg(p, "on-increase str text", parse_player_timed_increase_message);
 	parser_reg(p, "on-decrease str text", parse_player_timed_decrease_message);
+	parser_reg(p, "change-inc int max sym msg ?sym inc_msg",
+			   parse_player_timed_change_increase);
+	parser_reg(p, "change-dec int max sym msg",
+			   parse_player_timed_change_decrease);
 	parser_reg(p, "msgt sym type", parse_player_timed_message_type);
-	parser_reg(p, "fail uint code str flag", parse_player_timed_fail);
-	parser_reg(p, "grade sym color int max sym name sym up_msg ?sym down_msg", parse_player_timed_grade);
+	parser_reg(p, "fail str flag", parse_player_timed_fail);
+	parser_reg(p, "grade sym color int max sym name sym up_msg ?sym down_msg",
+			   parse_player_timed_grade);
+	parser_reg(p, "change-grade sym color int max sym name",
+			   parse_player_timed_change_grade);
 	parser_reg(p, "resist sym elem", parse_player_timed_resist);
-	parser_reg(p, "brand sym name", parse_player_timed_brand);
-	parser_reg(p, "slay sym name", parse_player_timed_slay);
-	parser_reg(p, "flag-synonym sym code int exact",
-		parse_player_timed_flag_synonym);
+	parser_reg(p, "este uint value", parse_player_timed_este);
 	return p;
 }
 
@@ -365,6 +386,8 @@ static void cleanup_player_timed(void)
 	for (size_t i = 0; i < TMD_MAX; i++) {
 		struct timed_effect_data *effect = &timed_effects[i];
 		struct timed_grade *grade = effect->grade;
+		struct timed_change_grade *c_grade = effect->c_grade;
+		struct timed_change *increase = effect->increase;
 
 		while (grade) {
 			struct timed_grade *next = grade->next;
@@ -375,6 +398,22 @@ static void cleanup_player_timed(void)
 			grade = next;
 		}
 		effect->grade = NULL;
+		while (c_grade) {
+			struct timed_change_grade *next = c_grade->next;
+			string_free(c_grade->name);
+			mem_free(c_grade);
+			c_grade = next;
+		}
+		effect->c_grade = NULL;
+		while (increase) {
+			struct timed_change *next = increase->next;
+			string_free(increase->msg);
+			if (increase->inc_msg) string_free(increase->inc_msg);
+			mem_free(increase);
+			increase = next;
+		}
+		effect->increase = NULL;
+		string_free(effect->decrease.msg);
 
 		string_free(effect->desc);
 
@@ -406,54 +445,68 @@ struct file_parser player_timed_parser = {
  * Utilities for more complex or anomolous effects
  * ------------------------------------------------------------------------ */
 /**
- * Swap stats at random to temporarily scramble the player's stats.
+ * Amount to decrement over time
  */
-static void player_scramble_stats(struct player *p)
+int player_timed_decrement_amount(struct player *p, int idx)
 {
-	int max1, cur1, max2, cur2, i, j, swap;
+	struct song *este = lookup_song("Este");
+	struct song *freedom = lookup_song("Freedom");
+	int bonus_este = song_bonus(p, p->state.skill_use[SKILL_SONG], este);
+	int bonus_freedom = song_bonus(p, p->state.skill_use[SKILL_SONG], freedom);
+	int amount = 1;
 
-	/* Fisher-Yates shuffling algorithm */
-	for (i = STAT_MAX - 1; i > 0; --i) {
-		j = randint0(i);
-
-		max1 = p->stat_max[i];
-		cur1 = p->stat_cur[i];
-		max2 = p->stat_max[j];
-		cur2 = p->stat_cur[j];
-
-		p->stat_max[i] = max2;
-		p->stat_cur[i] = cur2;
-		p->stat_max[j] = max1;
-		p->stat_cur[j] = cur1;
-
-		/* Record what we did */
-		swap = p->stat_map[i];
-		p->stat_map[i] = p->stat_map[j];
-		p->stat_map[j] = swap;
+	/* Adjust for songs */
+	if (timed_effects[idx].este) {
+		amount = bonus_este;
+	}
+	if (idx == TMD_SLOW) {
+		amount = bonus_freedom;
 	}
 
-	return;
+	/* Special cases */
+	if ((idx == TMD_CUT) || (idx == TMD_POISONED)) {
+		amount *= ((p->timed[idx] + 4) / 5);
+	}
+
+	return amount;
 }
 
 /**
- * Undo scrambled stats when effect runs out.
+ * Effects on end of temporary boost
  */
-static void player_fix_scramble(struct player *p)
+void player_timed_end_effect(int idx)
 {
-	/* Figure out what stats should be */
-	int new_cur[STAT_MAX];
-	int new_max[STAT_MAX];
-
-	for (int i = 0; i < STAT_MAX; i++) {
-		new_cur[p->stat_map[i]] = p->stat_cur[i];
-		new_max[p->stat_map[i]] = p->stat_max[i];
-	}
-
-	/* Apply new stats and clear the stat_map */
-	for (int i = 0; i < STAT_MAX; i++) {
-		p->stat_cur[i] = new_cur[i];
-		p->stat_max[i] = new_max[i];
-		p->stat_map[i] = i;
+	bool fake;
+	switch (idx) {
+		case TMD_ENTRANCED: {
+			player->upkeep->was_entranced = true;
+			break;
+		}
+		case TMD_RAGE: {
+			player->upkeep->redraw |= PR_MAP;
+			break;
+		}
+		case TMD_STR: {
+			effect_simple(EF_DRAIN_STAT, source_none(), "3", STAT_STR, 0, 0,
+						  &fake);
+			break;
+		}
+		case TMD_DEX: {
+			effect_simple(EF_DRAIN_STAT, source_none(), "3", STAT_DEX, 0, 0,
+						  &fake);
+			break;
+		}
+		case TMD_CON: {
+			effect_simple(EF_DRAIN_STAT, source_none(), "3", STAT_CON, 0, 0,
+						  &fake);
+			break;
+		}
+		case TMD_GRA: {
+			effect_simple(EF_DRAIN_STAT, source_none(), "3", STAT_GRA, 0, 0,
+						  &fake);
+			break;
+		}
+		default: break;
 	}
 }
 
@@ -473,24 +526,6 @@ bool player_timed_grade_eq(struct player *p, int idx, const char *match)
 	return false;
 }
 
-static bool player_of_has_not_timed(struct player *p, int flag)
-{
-    bitflag collect_f[OF_SIZE], f[OF_SIZE];
-    int i;
-
-    player_flags(p, collect_f);
-
-    for (i = 0; i < p->body.count; i++) {
-        struct object *obj = slot_object(p, i);
-
-        if (!obj) continue;
-        object_flags(obj, f);
-        of_union(collect_f, f);
-    }
-
-    return of_has(collect_f, flag);
-}
-
 /**
  * ------------------------------------------------------------------------
  * Setting, increasing, decreasing and clearing timed effects
@@ -506,7 +541,9 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	struct timed_effect_data *effect = &timed_effects[idx];
 	struct timed_grade *new_grade = effect->grade;
 	struct timed_grade *current_grade = effect->grade;
+	struct timed_change_grade *change_grade = effect->c_grade;
 	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
+	struct timed_grade *blackout_grade = timed_effects[TMD_STUN].grade;
 
 	/* Lower bound */
 	v = MAX(v, (idx == TMD_FOOD) ? 1 : 0);
@@ -516,78 +553,114 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 		return false;
 	}
 
-	/* Find the grade we will be going to, and the current one */
-	while (v > new_grade->max) {
-		new_grade = new_grade->next;
-		if (!new_grade->next) break;
-	}
-	while (p->timed[idx] > current_grade->max) {
-		current_grade = current_grade->next;
-		if (!current_grade->next) break;
-	}
-
-	/* Upper bound */
-	v = MIN(v, new_grade->max);
-
-	/* Don't mention effects which already match the known player state. */
-	if (timed_effects[idx].temp_resist != -1 &&
-			p->obj_k->el_info[timed_effects[idx].temp_resist].res_level &&
-			player_is_immune(p, timed_effects[idx].temp_resist)) {
-		notify = false;
-	}
-	if (timed_effects[idx].oflag_syn &&
-			timed_effects[idx].oflag_dup != OF_NONE &&
-			of_has(p->obj_k->flags, timed_effects[idx].oflag_dup) &&
-			player_of_has_not_timed(p, timed_effects[idx].oflag_dup)) {
-		notify = false;
-	}
-
-	/* Always mention going up a grade, otherwise on request */
-	if (new_grade->grade > current_grade->grade) {
-		print_custom_message(weapon, new_grade->up_msg,
-			effect->msgt, p);
-		notify = true;
-	} else if ((new_grade->grade < current_grade->grade) &&
-			   (new_grade->down_msg)) {
-		print_custom_message(weapon, new_grade->down_msg,
-			effect->msgt, p);
-		notify = true;
-	} else if (notify) {
-		if (v == 0) {
-			/* Finishing */
-			print_custom_message(weapon, effect->on_end,
-				MSG_RECOVER, p);
-		} else if (p->timed[idx] > v && effect->on_decrease) {
-			/* Decrementing */
-			print_custom_message(weapon, effect->on_decrease,
-				effect->msgt, p);
-		} else if (v > p->timed[idx] && effect->on_increase) {
-			/* Incrementing */
-			print_custom_message(weapon, effect->on_increase,
-				effect->msgt, p);
+	/* Don't increase stunning if stunning value is greater than 100.
+	 * this is an effort to eliminate the "knocked out" instadeath. */
+	if (blackout_grade->grade) {
+		while (!streq(blackout_grade->name, "Heavy Stun")) {
+			blackout_grade = blackout_grade->next;
+		}
+		if ((idx == TMD_STUN) && (p->timed[idx] > blackout_grade->max) &&
+			(v > p->timed[idx])) {
+			return false;
 		}
 	}
 
-	/* Handle stat swap */
-	if (idx == TMD_SCRAMBLE) {
-		if (p->timed[idx] == 0) {
-			player_scramble_stats(p);
-		} else if (v == 0) {
-			player_fix_scramble(p);
+	/* Deal with graded effects */
+	if (new_grade) {
+		/* Find the grade we will be going to, and the current one */
+		while (v > new_grade->max) {
+			new_grade = new_grade->next;
+			if (!new_grade->next) break;
+		}
+		while (p->timed[idx] > current_grade->max) {
+			current_grade = current_grade->next;
+			if (!current_grade->next) break;
+		}
+
+		/* Upper bound */
+		v = MIN(v, new_grade->max);
+
+		/* Knocked out */
+		if ((idx == TMD_STUN) && v > 100) {
+			p->timed[TMD_BLIND] = MAX(p->timed[TMD_BLIND], 2);
+		}
+
+		/* Always mention going up a grade, otherwise on request */
+		if (new_grade->grade > current_grade->grade) {
+			if ((timed_effects[idx].temp_resist != -1) &&
+				player_resists(p, timed_effects[idx].temp_resist)) {
+				/* Special message for temporary + permanent resist */
+				print_custom_message(weapon, effect->on_increase, effect->msgt,
+									 p);
+			} else {			
+				print_custom_message(weapon, new_grade->up_msg, effect->msgt,
+									 p);
+			}
+			notify = true;
+		} else if ((new_grade->grade < current_grade->grade) &&
+				   (new_grade->down_msg)) {
+			print_custom_message(weapon, new_grade->down_msg, effect->msgt, p);
+
+			/* Special cases */
+			if (idx == TMD_FOOD) ident_hunger(p);
+			if ((idx == TMD_STUN) && (v < blackout_grade->max)) {
+				msg("You wake up.");
+				p->timed[TMD_BLIND] = MAX(p->timed[TMD_BLIND] - 1, 0);
+			}
+
+			notify = true;
+		} else if (notify) {
+			if (v == 0) {
+				/* Finishing */
+				print_custom_message(weapon, effect->on_end, MSG_RECOVER, p);
+				player_timed_end_effect(idx);
+			} else if (p->timed[idx] > v && effect->on_decrease) {
+				/* Decrementing */
+				print_custom_message(weapon, effect->on_decrease, effect->msgt,
+									 p);
+			}
+		}
+	} else {
+		int change;
+
+		/* There had better be a change grade */
+		assert(change_grade);
+
+		/* Find the change we will be using */
+		change = v - p->timed[idx];
+
+		/* Increase */
+		if (change > 0) {
+			struct timed_change *inc = effect->increase;
+			while (change >= inc->max) {
+				inc = inc->next;
+			}
+			if (p->timed[idx] && inc->inc_msg) {
+				/* Increasing from existing effect, and increase message */
+				msgt(effect->msgt, inc->inc_msg);
+			} else {
+				/* Effect starting, or no special increase message */
+				msgt(effect->msgt, inc->msg);
+			}
+		} else {
+			/* Decrease */
+			int div = effect->decrease.max;
+			if (-change > (p->timed[idx] + div - 1) / div) {
+				msgt(effect->msgt, effect->decrease.msg);
+			}
+			/* Finishing */
+			if (v == 0) {
+				msgt(effect->msgt, effect->on_end);
+			}
 		}
 	}
 
 	/* Use the value */
 	p->timed[idx] = v;
 
-	/* Sort out the sprint effect */
-	if (idx == TMD_SPRINT && v == 0) {
-		player_inc_timed(p, TMD_SLOW, 100, true, false);
-	}
-
 	if (notify) {
 		/* Disturb */
-		disturb(p);
+		disturb(p, false);
 
 		/* Update the visuals, as appropriate. */
 		p->upkeep->update |= effect->flag_update;
@@ -601,73 +674,51 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 }
 
 /**
+ * The saving throw is a will skill check.
+ *
+ * Note that the player is resisting and thus wins ties.
+ */
+bool player_saving_throw(struct player *p, struct monster *mon, int resistance)
+{
+	int player_skill = p->state.skill_use[SKILL_WILL];
+	int difficulty = mon ? monster_skill(mon, SKILL_WILL) : 10;
+
+	/* Adjust difficulty for resistance */
+	difficulty -= 10 * resistance;
+
+	if (mon) {
+		return skill_check(source_monster(mon->midx), difficulty, player_skill,
+						   source_player()) > 0;
+	}
+	return skill_check(source_none(), difficulty, player_skill,
+					   source_player()) > 0;
+}
+
+/**
  * Check whether a timed effect will affect the player
  */
 bool player_inc_check(struct player *p, int idx, bool lore)
 {
 	struct timed_effect_data *effect = &timed_effects[idx];
-
-	/* Check that @ can be affected by this effect */
-	if (!effect->fail_code) {
-		return true;
-	}
+	int resistance = (effect->fail != -1) ? p->state.flags[effect->fail]: 0;
+	struct monster *mon = cave->mon_current > 0 ?
+		cave_monster(cave, cave->mon_current) : NULL;
 
 	/* If we're only doing this for monster lore purposes */
 	if (lore) {
-		if (((effect->fail_code == TMD_FAIL_FLAG_OBJECT) &&
-			 (of_has(p->known_state.flags, effect->fail))) ||
-			((effect->fail_code == TMD_FAIL_FLAG_RESIST) &&
-			 (p->known_state.el_info[effect->fail].res_level > 0)) ||
-			((effect->fail_code == TMD_FAIL_FLAG_VULN) &&
-			 (p->known_state.el_info[effect->fail].res_level < 0))) {
-			return false;
-		} else {
-			return true;
-		}
+		return (resistance == 0);
 	}
 
-	/* Determine whether an effect can be prevented by a flag */
-	if (effect->fail_code == TMD_FAIL_FLAG_OBJECT) {
-		/* If the effect is from a monster action, extra stuff happens */
-		struct monster *mon = cave->mon_current > 0 ?
-				cave_monster(cave, cave->mon_current) : NULL;
-
-		/* Effect is inhibited by an object flag */
-		equip_learn_flag(p, effect->fail);
-
-		if (mon) {
-			update_smart_learn(mon, p, effect->fail, 0, -1);
-		}
-
-		if (player_of_has(p, effect->fail)) {
-			if (mon) {
-				msg("You resist the effect!");
-			}
-			return false;
-		}
-	} else if (effect->fail_code == TMD_FAIL_FLAG_RESIST) {
-		/* Effect is inhibited by a resist */
-		equip_learn_element(p, effect->fail);
-		if (p->state.el_info[effect->fail].res_level > 0) {
-			return false;
-		}
-	} else if (effect->fail_code == TMD_FAIL_FLAG_VULN) {
-		/* Effect is inhibited by a vulnerability
-		 * the asymmetry with resists is OK for now - NRM */
-		equip_learn_element(p, effect->fail);
-		if (p->state.el_info[effect->fail].res_level < 0) {
-			return false;
-		}
-	} else if (effect->fail_code == TMD_FAIL_FLAG_PLAYER) {
-		/* Effect is inhibited by a player flag */
-		if (player_has(p, effect->fail)) {
-			return false;
-		}
+	/* Check whether @ has resistance to this effect */
+	if (resistance) {
+		/* Possibly identify relevant items */
+		ident_flag(p, effect->fail);
 	}
 
-	/* Special cases */
-	if (effect->index == TMD_POISONED && p->timed[TMD_OPP_POIS])
+	/* Determine whether the player saves */
+	if (player_saving_throw(p, mon, resistance)) {
 		return false;
+	}
 
 	return true;
 }
@@ -682,14 +733,11 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 	assert(idx < TMD_MAX);
 
 	if (check == false || player_inc_check(p, idx, false) == true) {
-		/* Paralysis should be non-cumulative */
-		if (idx == TMD_PARALYZED && p->timed[TMD_PARALYZED] > 0) {
+		/* Entrancement should be non-cumulative */
+		if (idx == TMD_ENTRANCED && p->timed[TMD_ENTRANCED] > 0) {
 			return false;
 		} else {
-			return player_set_timed(p,
-					idx,
-					p->timed[idx] + v,
-					notify);
+			return player_set_timed(p, idx, p->timed[idx] + v, notify);
 		}
 	}
 
@@ -722,5 +770,19 @@ bool player_clear_timed(struct player *p, int idx, bool notify)
 	assert(idx < TMD_MAX);
 
 	return player_set_timed(p, idx, 0, notify);
+}
+
+/**
+ * Hack to check whether a timed effect happened.
+ */
+bool player_timed_inc_happened(struct player *p, int old[], int len)
+{
+	int idx;
+	assert(len == TMD_MAX);
+	for (idx = 0; idx < len; idx++) {
+		if (player->timed[idx] > old[idx]) return true;
+	}
+
+	return false;
 }
 

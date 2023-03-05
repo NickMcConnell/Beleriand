@@ -28,9 +28,9 @@
 #include "player-path.h"
 #include "savefile.h"
 #include "target.h"
+#include "ui-abilities.h"
 #include "ui-command.h"
 #include "ui-context.h"
-#include "ui-curse.h"
 #include "ui-display.h"
 #include "ui-effect.h"
 #include "ui-help.h"
@@ -40,12 +40,11 @@
 #include "ui-menu.h"
 #include "ui-object.h"
 #include "ui-output.h"
-#include "ui-player-properties.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
 #include "ui-signals.h"
-#include "ui-spell.h"
-#include "ui-store.h"
+#include "ui-smith.h"
+#include "ui-songs.h"
 #include "ui-target.h"
 
 static bool inkey_xtra;
@@ -213,8 +212,7 @@ ui_event inkey_ex(void)
 	(void)Term_get_cursor(&cursor_state);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
-	if (!inkey_scan && (!inkey_flag || screen_save_depth ||
-						(OPT(player, show_target) && target_sighted())))
+	if (!inkey_scan && (!inkey_flag || screen_save_depth))
 		(void)Term_set_cursor(true);
 
 
@@ -1511,7 +1509,7 @@ static bool textui_get_rep_dir(int *dp, bool allow_5)
  * Note that "Force Target", if set, will pre-empt user interaction,
  * if there is a usable target already set.
  */
-static bool textui_get_aim_dir(int *dp)
+static bool textui_get_aim_dir(int *dp, int range)
 {
 	/* Global direction */
 	int dir = 0;
@@ -1523,13 +1521,10 @@ static bool textui_get_aim_dir(int *dp)
 	/* Initialize */
 	(*dp) = 0;
 
-	/* Hack -- auto-target if requested */
-	if (OPT(player, use_old_target) && target_okay() && !dir) dir = 5;
-
 	/* Ask until satisfied */
 	while (!dir) {
 		/* Choose a prompt */
-		if (!target_okay())
+		if (!target_okay(range))
 			p = "Direction ('*' or <click> to target, \"'\" for closest, Escape to cancel)? ";
 		else
 			p = "Direction ('5' for target, '*' or <click> to re-target, Escape to cancel)? ";
@@ -1540,24 +1535,30 @@ static bool textui_get_aim_dir(int *dp)
 		if (ke.type == EVT_MOUSE) {
 			if (ke.mouse.button == 1) {
 				if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke),
-										   KEY_GRID_Y(ke)))
-					dir = 5;
+										   KEY_GRID_Y(ke), range))
+					dir = DIR_TARGET;
 			} else if (ke.mouse.button == 2) {
 				break;
 			}
 		} else if (ke.type == EVT_KBRD) {
 			if (ke.key.code == '*') {
 				/* Set new target, use target if legal */
-				if (target_set_interactive(TARGET_KILL, -1, -1))
-					dir = 5;
+				if (target_set_interactive(TARGET_KILL, -1, -1, range))
+					dir = DIR_TARGET;
 			} else if (ke.key.code == '\'') {
 				/* Set to closest target */
 				if (target_set_closest(TARGET_KILL, NULL))
-					dir = 5;
+					dir = DIR_TARGET;
 			} else if (ke.key.code == 't' || ke.key.code == '5' ||
 					   ke.key.code == '0' || ke.key.code == '.') {
-				if (target_okay())
-					dir = 5;
+				if (target_okay(range))
+					dir = DIR_TARGET;
+			} else if (ke.key.code == '>') {
+				/* Rarely we need to aim at the floor */
+				dir = DIR_DOWN;
+			} else if (ke.key.code == '<') {
+				/* Rarely we need to aim at the ceiling */
+				dir = DIR_UP;
 			} else {
 				/* Possible direction */
 				int keypresses_handled = 0;
@@ -1610,15 +1611,13 @@ void textui_input_init(void)
 	get_com_hook = textui_get_com;
 	get_rep_dir_hook = textui_get_rep_dir;
 	get_aim_dir_hook = textui_get_aim_dir;
-	get_spell_from_book_hook = textui_get_spell_from_book;
-	get_spell_hook = textui_get_spell;
 	get_effect_from_list_hook = textui_get_effect_from_list;
 	get_item_hook = textui_get_item;
-	get_curse_hook = textui_get_curse;
 	get_panel_hook = textui_get_panel;
 	panel_contains_hook = textui_panel_contains;
 	map_is_visible_hook = textui_map_is_visible;
-	view_abilities_hook = textui_view_ability_menu;
+	smith_object_hook = textui_smith_object;
+	change_song_hook = textui_change_song;
 }
 
 
@@ -1687,7 +1686,7 @@ static struct keypress request_command_buffer[256];
  */
 ui_event textui_get_command(int *count)
 {
-	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, angband_keyset) ? KEYMAP_MODE_ANGBAND : KEYMAP_MODE_ORIG;
 
 	struct keypress tmp[2] = { KEYPRESS_NULL, KEYPRESS_NULL };
 
@@ -1695,7 +1694,9 @@ ui_event textui_get_command(int *count)
 
 	const struct keypress *act = NULL;
 
-
+	if (OPT(player, hjkl_movement)) {
+		mode |= KEYMAP_MODE_ROGUE;
+	}
 
 	/* Get command */
 	while (1) {
@@ -1723,7 +1724,20 @@ ui_event textui_get_command(int *count)
 			bool keymap_ok = true;
 			switch (ke.key.code) {
 				case '0': {
-					if(ke.key.mods & KC_MOD_KEYPAD) break;
+					if (ke.key.mods & KC_MOD_KEYPAD) break;
+					if (!(mode & KEYMAP_MODE_ANGBAND)) break;
+
+					int c = textui_get_count();
+
+					if (c == -1 || !get_com_ex("Command: ", &ke))
+						continue;
+					else
+						*count = c;
+					break;
+				}
+
+				case 'R': {
+					if (mode & KEYMAP_MODE_ANGBAND) break;
 
 					int c = textui_get_count();
 

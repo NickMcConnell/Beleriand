@@ -19,6 +19,7 @@
 #ifndef INCLUDED_GAME_EVENT_H
 #define INCLUDED_GAME_EVENT_H
 
+#include "source.h"
 #include "z-type.h"
 
 /**
@@ -28,22 +29,22 @@ typedef enum game_event_type
 {
 	EVENT_MAP = 0,		/* Some part of the map has changed. */
 
+	EVENT_NAME,			/* Name. */
 	EVENT_STATS,  		/* One or more of the stats. */
-	EVENT_HP,	   	/* HP or MaxHP. */
-	EVENT_MANA,		/* Mana or MaxMana. */
-	EVENT_AC,		/* Armour Class. */
+	EVENT_SKILLS,  		/* One or more of the skills. */
+	EVENT_HP,	   		/* HP or MaxHP. */
+	EVENT_MANA,			/* Mana or MaxMana. */
+	EVENT_MELEE,
+	EVENT_ARCHERY,
+	EVENT_ARMOR,
 	EVENT_EXPERIENCE,	/* Experience or MaxExperience. */
-	EVENT_PLAYERLEVEL,	/* Player's level has changed */
-	EVENT_PLAYERTITLE,	/* Player's title has changed */
-	EVENT_GOLD,		/* Player's gold amount. */
+	EVENT_EXP_CHANGE,	/* Experience or MaxExperience. */
+	EVENT_SONG,			/* Player's singing. */
 	EVENT_MONSTERHEALTH,	/* Observed monster's health level. */
 	EVENT_DUNGEONLEVEL,	/* Dungeon depth */
 	EVENT_PLAYERSPEED,	/* Player's speed */
 	EVENT_RACE_CLASS,	/* Race or Class */
-	EVENT_STUDYSTATUS,	/* "Study" availability */
 	EVENT_STATUS,		/* Status */
-	EVENT_DETECTIONSTATUS,  /* Trap detection status */
-	EVENT_FEELING,		/* Object level feeling */
 	EVENT_LIGHT,		/* Light level */
 	EVENT_STATE,		/* The two 'R's: Resting and Repeating */
 
@@ -52,6 +53,7 @@ typedef enum game_event_type
 	EVENT_EXPLOSION,
 	EVENT_BOLT,
 	EVENT_MISSILE,
+	EVENT_HIT,
 
 	EVENT_INVENTORY,
 	EVENT_EQUIPMENT,
@@ -60,10 +62,14 @@ typedef enum game_event_type
 	EVENT_MONSTERTARGET,
 	EVENT_OBJECTTARGET,
 	EVENT_MESSAGE,
+	EVENT_COMBAT_RESET,
+	EVENT_COMBAT_ATTACK,
+	EVENT_COMBAT_DAMAGE,
+	EVENT_COMBAT_DISPLAY,
 	EVENT_SOUND,
 	EVENT_BELL,
 	EVENT_USE_STORE,
-	EVENT_STORECHANGED,	/* Triggered on a successful buy/retrieve or sell/drop */
+	EVENT_STORECHANGED,	/* Triggered on a successful buy/retrieve or sell/drop */	
 
 	EVENT_INPUT_FLUSH,
 	EVENT_MESSAGE_FLUSH,
@@ -73,9 +79,12 @@ typedef enum game_event_type
 	EVENT_COMMAND_REPEAT,
 	EVENT_ANIMATE,
 	EVENT_CHEAT_DEATH,
+	EVENT_POEM,
+	EVENT_DEATH,
 
 	EVENT_INITSTATUS,	/* New status message for initialisation */
-	EVENT_BIRTHPOINTS,	/* Change in the birth points */
+	EVENT_STATPOINTS,	/* Change in the (birth) stat points */
+	EVENT_SKILLPOINTS,	/* Change in the skill points */
 
 	/* Changing of the game state/context. */
 	EVENT_ENTER_INIT,
@@ -134,7 +143,14 @@ typedef union
 		const int *points;
 		const int *inc_points;
 		int remaining;
-	} birthpoints;
+	} points;
+
+  	struct
+	{
+		const int *exp;
+		const int *inc_exp;
+		int remaining;
+	} exp;
 
 	struct
 	{
@@ -169,6 +185,14 @@ typedef union
 
 	struct
 	{
+		int dam;
+		int dam_type;
+		bool fatal;
+		struct loc grid;
+	} hit;
+
+	struct
+	{
 		int h, w;
 	} size;
 
@@ -196,6 +220,37 @@ typedef union
 		 */
 		bool early;
 	} tunnel;
+
+	struct
+	{
+		struct source attacker;
+		struct source defender;
+		bool vis;
+		int att;
+		int att_roll;
+		int evn;
+		int evn_roll;
+		bool melee;
+	} combat_attack;
+
+	struct
+	{
+		int dd;
+		int ds;
+		int dam;
+		int pd;
+		int ps;
+		int prot;
+		int prt_percent;
+		int dam_type;
+		bool melee;
+	} combat_damage;
+
+	struct
+	{
+		const char *filename;
+		int row, col;
+	} verse;
 } game_event_data;
 
 
@@ -215,6 +270,8 @@ void event_add_handler_set(game_event_type *type, size_t n_types, game_event_han
 void event_remove_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user);
 
 void event_signal_birthpoints(const int *points, const int *inc_points,
+	int remaining);
+void event_signal_skillpoints(const int *points, const int *inc_points,
 	int remaining);
 
 void event_signal_point(game_event_type, int x, int y);
@@ -244,8 +301,22 @@ void event_signal_missile(game_event_type type,
 						  bool seen,
 						  int y,
 						  int x);
+void event_signal_hit(game_event_type type,
+					  int dam,
+					  int dam_type,
+					  bool fatal,
+					  struct loc grid);					  
 void event_signal_size(game_event_type type, int h, int w);
 void event_signal_tunnel(game_event_type type, int nstep, int npierce, int ndug,
 	int dstart, int dend, bool early);
+void event_signal_combat_attack(game_event_type type, struct source attacker,
+								struct source defender, bool vis, int att,
+								int att_roll, int evn, int evn_roll,
+								bool melee);
+void event_signal_combat_damage(game_event_type type, int dd, int ds, int dam,
+								int pd, int ps, int prot, int prt_percent,
+								int dam_type, bool melee);
+void event_signal_poem(game_event_type type, const char *name, int row,
+					   int col);
 
 #endif /* INCLUDED_GAME_EVENT_H */

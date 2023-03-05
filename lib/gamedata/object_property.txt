@@ -7,12 +7,6 @@
 # id-type: how a property is identified, currently only used by flags
 # code: a code for the object property, which is used to associate it with its
 #       index among the other properties of that type
-# power: the value given to the property in object power calculations
-# mult: relative value of properties, used in power calculations
-# type-mult: extra multiplier used in power for particular properties on
-#            particular types of object.  Assumed 1 if not mentioned; setting
-#            explicitly to 0 will stop the property appearing on this type
-#            of random artifact.
 # adjective: adjective describing the property as a player attribute, currently
 #            only used by stats
 # neg-adjective: adjective describing the opposite of the property as a player
@@ -35,241 +29,161 @@
 name:strength
 type:stat
 code:STR
-power:9
-mult:13
+smith-cat:stat
+smith-difficulty:12
+smith-cost:STR:1
 adjective:strong
 neg-adjective:weak
-bindui:stat_mod_ui_compact_0<STR>:0
-
-name:intelligence
-type:stat
-code:INT
-power:5
-mult:10
-adjective:smart
-neg-adjective:stupid
-bindui:stat_mod_ui_compact_0<INT>:0
-
-name:wisdom
-type:stat
-code:WIS
-power:5
-mult:10
-adjective:wise
-neg-adjective:naive
-bindui:stat_mod_ui_compact_0<WIS>:0
 
 name:dexterity
 type:stat
 code:DEX
-power:8
-mult:10
-type-mult:gloves:2
+smith-cat:stat
+smith-difficulty:12
+smith-cost:DEX:1
 adjective:dextrous
-neg-adjective:clumsy
-bindui:stat_mod_ui_compact_0<DEX>:0
+neg-adjective:awkward
 
 name:constitution
 type:stat
 code:CON
-power:12
-mult:15
+smith-cat:stat
+smith-difficulty:12
+smith-cost:CON:1
 adjective:healthy
 neg-adjective:sickly
-bindui:stat_mod_ui_compact_0<CON>:0
+
+name:grace
+type:stat
+code:GRA
+smith-cat:stat
+smith-difficulty:12
+smith-cost:GRA:1
+adjective:attuned
+neg-adjective:drained
+
+name:melee
+type:skill
+code:MELEE
+smith-cat:skill
+smith-difficulty:4
+smith-cost:EXP:100
+
+name:archery
+type:skill
+code:ARCHERY
+smith-cat:skill
+smith-difficulty:4
+smith-cost:EXP:100
+
+name:evasion
+type:skill
+code:EVASION
 
 name:stealth
-type:mod
+type:skill
 code:STEALTH
-power:8
-mult:12
-bindui:stealth_ui_compact_0:0
+smith-cat:skill
+smith-difficulty:4
+smith-cost:EXP:100
 
-name:searching skill
-type:mod
-code:SEARCH
-power:2
-mult:5
-bindui:search_ui_compact_0:0
+name:perception
+type:skill
+code:PERCEPTION
+smith-cat:skill
+smith-difficulty:4
+smith-cost:EXP:100
 
-name:infravision
+name:will
+type:skill
+code:WILL
+smith-cat:skill
+smith-difficulty:4
+smith-cost:EXP:100
+
+name:smithing
+type:skill
+code:SMITHING
+smith-cat:skill
+smith-difficulty:4
+smith-cost:EXP:100
+
+name:song
+type:skill
+code:SONG
+smith-cat:skill
+smith-difficulty:4
+smith-cost:EXP:100
+
+name:damage sides
 type:mod
-code:INFRA
-power:4
-mult:8
-bindui:infravision_ui_compact_0:0
+code:DAMAGE_SIDES
+smith-cat:misc
+smith-difficulty:15
+smith-cost:STR:1
 
 name:tunneling
 type:mod
 code:TUNNEL
-power:3
-mult:8
-bindui:tunneling_ui_compact_0:0
-
-name:speed
-type:mod
-code:SPEED
-power:20
-mult:6
-bindui:speed_ui_compact_0:0
-
-name:damage reduction
-type:mod
-code:DAM_RED
-power:5
-mult:6
-bindui:damage_reduction_ui_compact_0:0
-
-name:extra blows
-type:mod
-code:BLOWS
-power:0
-mult:50
-type-mult:bow:0
-type-mult:ring:3
-type-mult:amulet:3
-type-mult:light:3
-type-mult:soft armor:3
-type-mult:hard armor:3
-type-mult:dragon armor:3
-type-mult:cloak:3
-type-mult:shield:3
-type-mult:helm:3
-type-mult:crown:3
-type-mult:gloves:3
-type-mult:boots:3
-bindui:blows_ui_compact_0:0
-
-name:shooting speed
-type:mod
-code:SHOTS
-power:0
-mult:5
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:ring:4
-type-mult:amulet:4
-type-mult:light:4
-type-mult:soft armor:4
-type-mult:hard armor:4
-type-mult:dragon armor:4
-type-mult:cloak:4
-type-mult:shield:4
-type-mult:helm:4
-type-mult:crown:4
-type-mult:gloves:4
-type-mult:boots:4
-bindui:shots_ui_compact_0:0
-
-name:shooting power
-type:mod
-code:MIGHT
-power:0
-mult:30
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:light:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
-bindui:shooting_power_ui_compact_0:0
-
-name:extra moves
-type:mod
-code:MOVES
-power:0
-mult:50
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:light:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
-bindui:movement_speed_ui_compact_0:0
+smith-cat:melee
+smith-difficulty:10
+smith-cost:STR:1
 
 name:light
-type:mod
+type:flag
 code:LIGHT
-power:3
-mult:6
-type-mult:light:3
-bindui:light_ui_compact_0:0
+smith-cat:misc
+smith-difficulty:8
+smith-cost:GRA:1
 
 name:sustain strength
 type:flag
 subtype:sustain
 id-type:on effect
 code:SUST_STR
-power:9
+smith-cat:sustain
+smith-difficulty:3
+smith-cost:STR:1
 msg:Your {name} glows.
-bindui:stat_mod_ui_compact_0<STR>:1
-
-name:sustain intelligence
-type:flag
-subtype:sustain
-id-type:on effect
-code:SUST_INT
-power:4
-msg:Your {name} glows.
-bindui:stat_mod_ui_compact_0<INT>:1
-
-name:sustain wisdom
-type:flag
-subtype:sustain
-id-type:on effect
-code:SUST_WIS
-power:4
-msg:Your {name} glows.
-bindui:stat_mod_ui_compact_0<WIS>:1
 
 name:sustain dexterity
 type:flag
 subtype:sustain
 id-type:on effect
 code:SUST_DEX
-power:7
+smith-cat:sustain
+smith-difficulty:3
+smith-cost:DEX:1
 msg:Your {name} glows.
-bindui:stat_mod_ui_compact_0<DEX>:1
 
 name:sustain constitution
 type:flag
 subtype:sustain
 id-type:on effect
 code:SUST_CON
-power:8
+smith-cat:sustain
+smith-difficulty:3
+smith-cost:CON:1
 msg:Your {name} glows.
-bindui:stat_mod_ui_compact_0<CON>:1
+
+name:sustain grace
+type:flag
+subtype:sustain
+id-type:on effect
+code:SUST_GRA
+smith-cat:sustain
+smith-difficulty:3
+smith-cost:GRA:1
+msg:Your {name} glows.
 
 name:protection from fear
 type:flag
 code:PROT_FEAR
 subtype:protection
 id-type:on effect
-power:6
-msg:Your {name} strengthens your courage.
-bindui:pfear_ui_compact_0:0
+smith-cat:resist
+smith-difficulty:3
+msg:Your {name} fills you with courage.
 desc:fear
 
 name:protection from blindness
@@ -277,9 +191,9 @@ type:flag
 code:PROT_BLIND
 subtype:protection
 id-type:on effect
-power:16
-msg:Your {name} soothes your eyes.
-bindui:pblind_ui_compact_0:0
+smith-cat:resist
+smith-difficulty:6
+msg:Your {name} protects your sight.
 desc:blindness
 
 name:protection from confusion
@@ -287,9 +201,9 @@ type:flag
 code:PROT_CONF
 subtype:protection
 id-type:on effect
-power:24
-msg:Your {name} clears your thoughts.
-bindui:pconf_ui_compact_0:0
+smith-cat:resist
+smith-difficulty:6
+msg:Your {name} fills you with calm.
 desc:confusion
 
 name:protection from stunning
@@ -297,93 +211,49 @@ type:flag
 code:PROT_STUN
 subtype:protection
 id-type:on effect
-power:12
-msg:Your {name} steadies you.
-bindui:pstun_ui_compact_0:0
+smith-cat:resist
+smith-difficulty:3
+msg:Your {name} fills you with calm.
 desc:stunning
 
-name:slow digestion
+name:protection from hallucination
+type:flag
+code:PROT_HALLU
+subtype:protection
+id-type:on effect
+smith-cat:resist
+smith-difficulty:3
+msg:Your {name} protects your sight.
+desc:hallucination
+
+name:sustenance
 type:flag
 subtype:misc ability
 id-type:timed
 code:SLOW_DIGEST
-power:2
+smith-cat:misc
+smith-difficulty:4
 msg:You realise your {name} is slowing your metabolism.
-bindui:slow_digestion_ui_compact_0:0
 desc:Slows your metabolism
-
-name:feather falling
-type:flag
-subtype:misc ability
-id-type:on effect
-code:FEATHER
-power:1
-msg:Your {name} slows your fall.
-bindui:feather_falling_ui_compact_0:0
-desc:Feather Falling
 
 name:regeneration
 type:flag
 subtype:misc ability
 id-type:timed
 code:REGEN
-power:5
-type-mult:ring:2
-type-mult:amulet:2
-type-mult:light:2
-type-mult:soft armor:2
-type-mult:hard armor:2
-type-mult:dragon armor:2
-type-mult:cloak:2
-type-mult:shield:2
-type-mult:helm:2
-type-mult:crown:2
-type-mult:gloves:2
-type-mult:boots:2
+smith-cat:misc
+smith-difficulty:8
+smith-cost:CON:1
 msg:You note that your {name} is speeding up your recovery.
-bindui:regen_ui_compact_0:0
 desc:Speeds regeneration
-
-name:telepathy
-type:flag
-subtype:misc ability
-id-type:on wield
-code:TELEPATHY
-type-mult:ring:2
-type-mult:amulet:2
-type-mult:light:2
-type-mult:soft armor:2
-type-mult:hard armor:2
-type-mult:dragon armor:2
-type-mult:cloak:2
-type-mult:shield:2
-type-mult:helm:2
-type-mult:crown:2
-type-mult:gloves:2
-type-mult:boots:2
-power:35
-bindui:esp_ui_compact_0:0
-desc:Grants telepathy
 
 name:see invisible
 type:flag
 subtype:misc ability
 id-type:on wield
 code:SEE_INVIS
-type-mult:ring:2
-type-mult:amulet:2
-type-mult:light:2
-type-mult:soft armor:2
-type-mult:hard armor:2
-type-mult:dragon armor:2
-type-mult:cloak:2
-type-mult:shield:2
-type-mult:helm:2
-type-mult:crown:2
-type-mult:gloves:2
-type-mult:boots:2
-power:6
-bindui:see_invis_ui_compact_0:0
+smith-cat:misc
+smith-difficulty:8
 desc:Grants the ability to see invisible things
 
 name:free action
@@ -391,500 +261,282 @@ type:flag
 subtype:misc ability
 id-type:on effect
 code:FREE_ACT
-power:8
-type-mult:ring:2
-type-mult:amulet:2
-type-mult:light:2
-type-mult:soft armor:2
-type-mult:hard armor:2
-type-mult:dragon armor:2
-type-mult:cloak:2
-type-mult:shield:2
-type-mult:helm:2
-type-mult:crown:2
-type-mult:gloves:5
-type-mult:boots:2
-msg:Your {name} keeps you moving.
-bindui:free_action_ui_compact_0:0
+smith-cat:misc
+smith-difficulty:8
+msg:Your {name} glows softly.
 desc:Prevents paralysis
 
-name:hold life
+name:speed
 type:flag
 subtype:misc ability
 id-type:on effect
-code:HOLD_LIFE
-power:5
-type-mult:ring:2
-type-mult:amulet:2
-type-mult:light:2
-type-mult:soft armor:2
-type-mult:hard armor:2
-type-mult:dragon armor:2
-type-mult:cloak:2
-type-mult:shield:2
-type-mult:helm:2
-type-mult:crown:2
-type-mult:gloves:2
-type-mult:boots:2
-msg:Your {name} warms your spirit.
-bindui:holdlife_ui_compact_0:0
-desc:Sustains your life force
+code:SPEED
+smith-cat:misc
+smith-difficulty:30
+smith-cost:CON:5
+msg:Your {name} quickens your steps.
+desc:Hastens you
 
-name:earthquakes
+name:radiance
+type:flag
+subtype:misc ability
+id-type:on effect
+code:RADIANCE
+smith-cat:misc
+smith-difficulty:8
+smith-cost:GRA:1
+msg:Your {name} glows.
+desc:Lights your path
+
+name:sharpness
 type:flag
 subtype:melee
 id-type:on effect
-code:IMPACT
-power:10
-type-mult:bow:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:light:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
-msg:Your {name} causes an earthquake!
-desc:Sometimes creates earthquakes on impact
+code:SHARPNESS
+smith-cat:melee
+smith-difficulty:20
+smith-cost:STR:2
+desc:Sharp
+slay-msg:cuts deeply
 
-name:blessed melee
+name:extreme sharpness
+type:flag
+subtype:melee
+id-type:on effect
+code:SHARPNESS2
+desc:Very sharp
+slay-msg:cuts effortlessly
+
+name:vampiric
 type:flag
 subtype:melee
 id-type:on wield
-code:BLESSED
-power:1
-type-mult:bow:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:light:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
-bindui:bless_ui_compact_0:0
-desc:Blessed by the gods (combat bonuses for holy casters)
+code:VAMPIRIC
+smith-cat:melee
+smith-difficulty:10
+smith-cost:STR:2
+desc:Vampiric
+slay-msg:drains life from {name}
 
 name:burns out
 type:flag
 subtype:light
 id-type:on wield
 code:BURNS_OUT
-power:0
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:bow:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
 
 name:takes fuel
 type:flag
 subtype:light
 id-type:on wield
 code:TAKES_FUEL
-power:0
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:bow:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
 
 name:no fuel
 type:flag
 subtype:light
 id-type:on wield
 code:NO_FUEL
-power:5
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:bow:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
 
-name:impaired hitpoint recovery
+name:danger
 type:flag
 subtype:bad
 id-type:timed
-code:IMPAIR_HP
-power:-8
-msg:You feel your {name} is slowing your recovery.
-bindui:imphp_ui_compact_0:0
-desc:Impairs hitpoint recovery
+code:DANGER
+smith-cat:curse
+smith-difficulty:-5
+#msg:You feel your {name} is slowing your recovery.
+desc:Makes you encounter more dangerous creatures (even when not worn)
 
-name:impaired mana recovery
+name:darkness
 type:flag
 subtype:bad
-id-type:timed
-code:IMPAIR_MANA
-power:-8
-msg:You feel your {name} is slowing your mana recovery.
-bindui:impsp_ui_compact_0:0
-desc:Impairs mana recovery
+id-type:on wield
+code:DARKNESS
+smith-cat:curse
+smith-difficulty:-5
+#msg:You feel your {name} is slowing your recovery.
+desc:Creates an unnatural darkness
 
-name:constant fear
+name:terror
 type:flag
 subtype:bad
 id-type:on wield
 code:AFRAID
-power:-20
-bindui:fear_ui_compact_0:0
+smith-cat:curse
+smith-difficulty:0
 desc:Makes you afraid of melee, and worse at shooting and casting spells
 
-name:teleportation ban
-type:flag
-subtype:bad
-id-type:on effect
-code:NO_TELEPORT
-power:-20
-msg:Your {name} prevents you teleporting.
-bindui:noteleport_ui_compact_0:0
-desc:Prevents teleportation
-
-name:aggravation
+name:wrath
 type:flag
 subtype:bad
 id-type:timed
 code:AGGRAVATE
-power:-20
+smith-cat:curse
+smith-difficulty:0
 msg:You notice your {name} aggravating things around you.
-bindui:aggravate_ui_compact_0:0
-desc:Aggravates creatures nearby
+desc:Enrages nearby creatures
 
-name:experience drain
+name:haunted
 type:flag
 subtype:bad
 id-type:timed
-code:DRAIN_EXP
-power:-5
+code:HAUNTED
+smith-cat:curse
+smith-difficulty:0
 msg:You sense your {name} is draining your life.
-bindui:drainxp_ui_compact_0:0
-desc:Drains experience
+desc:Draws wraiths to your level
 
-name:stuck on
+name:cursed
 type:flag
 subtype:bad
 id-type:on wield
-code:STICKY
-power:-5
-bindui:sticky_ui_compact_0:0
-desc:Can't be removed
-
-name:fragile
-type:flag
-subtype:bad
-id-type:on wield
-code:FRAGILE
-power:-1
-bindui:fragile_ui_compact_0:0
-desc:Can be destroyed if you attempt to remove its curses
-
-name:intensity 2 light
-type:flag
-subtype:light
-id-type:on wield
-code:LIGHT_2
-power:9
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:bow:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
-
-name:intensity 3 light
-type:flag
-subtype:light
-id-type:on wield
-code:LIGHT_3
-power:18
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:bow:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
+code:CURSED
+smith-cat:curse
+smith-difficulty:0
+desc:Is cursed
 
 name:power 1 digging
 type:flag
 subtype:dig
 id-type:on wield
 code:DIG_1
-power:3
-bindui:tunneling_ui_compact_0:0:1
 
 name:power 2 digging
 type:flag
 subtype:dig
 id-type:on wield
 code:DIG_2
-power:6
-bindui:tunneling_ui_compact_0:0:2
-
-name:power 3 digging
-type:flag
-subtype:dig
-id-type:on wield
-code:DIG_3
-power:9
-bindui:tunneling_ui_compact_0:0:3
-
-name:explode
-type:flag
-subtype:light
-id-type:on wield
-code:EXPLODE
-power:0
-type-mult:sword:0
-type-mult:polearm:0
-type-mult:hafted:0
-type-mult:digger:0
-type-mult:bow:0
-type-mult:ring:0
-type-mult:amulet:0
-type-mult:soft armor:0
-type-mult:hard armor:0
-type-mult:dragon armor:0
-type-mult:cloak:0
-type-mult:shield:0
-type-mult:helm:0
-type-mult:crown:0
-type-mult:gloves:0
-type-mult:boots:0
-
-name:trap immunity
-type:flag
-subtype:misc ability
-id-type:on effect
-code:TRAP_IMMUNE
-power:5
-type-mult:ring:2
-type-mult:amulet:2
-type-mult:light:2
-type-mult:soft armor:2
-type-mult:hard armor:2
-type-mult:dragon armor:2
-type-mult:cloak:2
-type-mult:shield:2
-type-mult:helm:2
-type-mult:crown:2
-type-mult:gloves:2
-type-mult:boots:2
-msg:Your {name} stops you from setting off the trap.
-bindui:trap_immunity_ui_compact_0:0
-desc:Gives immunity to traps
 
 name:throwing
 type:flag
 subtype:throw
 id-type:on wield
 code:THROWING
-power:4
 
 name:ignore acid
 type:ignore
 code:ACID
-power:3
-
-name:ignore electricity
-type:ignore
-code:ELEC
-power:1
 
 name:ignore fire
 type:ignore
 code:FIRE
-power:3
 
 name:ignore cold
 type:ignore
 code:COLD
-power:1
-
-name:acid resistance
-type:resistance
-code:ACID
-power:5
-bindui:resist_ui_compact_0<ACID>:0
-
-name:electricity resistance
-type:resistance
-code:ELEC
-power:6
-bindui:resist_ui_compact_0<ELEC>:0
 
 name:fire resistance
 type:resistance
 code:FIRE
-power:6
-bindui:resist_ui_compact_0<FIRE>:0
+msg:Your {name} partly protects you from the flame.
+smith-cat:resist
+smith-difficulty:8
+smith-cost:CON:1
 
 name:cold resistance
 type:resistance
 code:COLD
-power:6
-bindui:resist_ui_compact_0<COLD>:0
+msg:Your {name} partly protects you from the chill.
+smith-cat:resist
+smith-difficulty:8
+smith-cost:CON:1
 
 name:poison resistance
 type:resistance
 code:POIS
-power:28
-bindui:resist_ui_compact_0<POIS>:0
-
-name:light resistance
-type:resistance
-code:LIGHT
-power:6
-bindui:resist_ui_compact_0<LIGHT>:0
+msg:Your {name} partly protects you from the poison.
+smith-cat:resist
+smith-difficulty:8
+smith-cost:CON:1
 
 name:dark resistance
 type:resistance
 code:DARK
-power:16
-bindui:resist_ui_compact_0<DARK>:0
 
-name:sound resistance
-type:resistance
-code:SOUND
-power:14
-bindui:resist_ui_compact_0<SOUND>:0
-
-name:shards resistance
-type:resistance
-code:SHARD
-power:8
-bindui:resist_ui_compact_0<SHARD>:0
-
-name:nexus resistance
-type:resistance
-code:NEXUS
-power:15
-bindui:resist_ui_compact_0<NEXUS>:0
-
-name:nether resistance
-type:resistance
-code:NETHER
-power:20
-bindui:resist_ui_compact_0<NETHER>:0
-
-name:chaos resistance
-type:resistance
-code:CHAOS
-power:20
-bindui:resist_ui_compact_0<CHAOS>:0
-
-name:disenchantment resistance
-type:resistance
-code:DISEN
-power:20
-bindui:resist_ui_compact_0<DISEN>:0
-
-name:acid vulnerability
+name:poison vulnerability
 type:vulnerability
-code:ACID
-power:-6
-bindui:resist_ui_compact_0<ACID>:0
-
-name:lightning vulnerability
-type:vulnerability
-code:ELEC
-power:-6
-bindui:resist_ui_compact_0<ELEC>:0
+code:POIS
+msg:Your {name} intensifies the poison.
+smith-cat:curse
+smith-difficulty:0
 
 name:fire vulnerability
 type:vulnerability
 code:FIRE
-power:-6
-bindui:resist_ui_compact_0<FIRE>:0
+msg:Your {name} intensifies the flame.
+smith-cat:curse
+smith-difficulty:0
 
 name:cold vulnerability
 type:vulnerability
 code:COLD
-power:-6
-bindui:resist_ui_compact_0<COLD>:0
+msg:Your {name} intensifies the chill.
+smith-cat:curse
+smith-difficulty:0
 
-name:acid immunity
-type:immunity
-code:ACID
-power:43
-bindui:resist_ui_compact_0<ACID>:0
+name:slay orc
+type:slay
+code:ORC_1
+smith-cat:slay
+smith-difficulty:5
 
-name:lightning immunity
-type:immunity
-code:ELEC
-power:41
-bindui:resist_ui_compact_0<ELEC>:0
+name:slay troll
+type:slay
+code:TROLL_1
+smith-cat:slay
+smith-difficulty:5
 
-name:fire immunity
-type:immunity
-code:FIRE
-power:46
-bindui:resist_ui_compact_0<FIRE>:0
+name:slay wolf
+type:slay
+code:WOLF_1
+smith-cat:slay
+smith-difficulty:6
 
-name:cold immunity
-type:immunity
-code:COLD
-power:43
-bindui:resist_ui_compact_0<COLD>:0
+name:slay spider
+type:slay
+code:SPIDER_1
+smith-cat:slay
+smith-difficulty:6
+
+name:slay undead
+type:slay
+code:UNDEAD_1
+smith-cat:slay
+smith-difficulty:6
+
+name:slay rauko
+type:slay
+code:RAUKO_1
+smith-cat:slay
+smith-difficulty:7
+
+name:slay dragon
+type:slay
+code:DRAGON_1
+smith-cat:slay
+smith-difficulty:7
+
+name:elec brand
+type:brand
+code:ELEC_1
+
+name:cold brand
+type:brand
+code:COLD_1
+smith-cat:slay
+smith-difficulty:24
+smith-cost:STR:2
+
+name:fire brand
+type:brand
+code:FIRE_1
+smith-cat:slay
+smith-difficulty:20
+smith-cost:STR:2
+
+name:poison brand
+type:brand
+code:POIS_1
+smith-cat:slay
+smith-difficulty:16
+smith-cost:STR:2
 

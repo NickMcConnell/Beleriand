@@ -97,6 +97,11 @@ typedef enum {
  */
 #define one_in_(x) (!randint0(x))
 
+/*
+ * An X percent chance
+ */
+#define percent_chance(X) (randint0(100) < X)
+
 /**
  * Whether we are currently using the "quick" method or not.
  */

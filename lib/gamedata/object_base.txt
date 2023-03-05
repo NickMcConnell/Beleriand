@@ -1,6 +1,6 @@
 # File: object_base.txt
 #
-# This file is used to initialize object base information for Angband.
+# This file is used to initialize object base information for Sil.
 # Object bases correspond to tvals as defined in src/list-tvals.h.
 
 # === Understanding object_base.txt ===
@@ -12,188 +12,399 @@
 # break: breakage chance when thrown
 # max-stack: maximum number that can appear in a stack
 # flags: default flags
+# smith-attack: add for artistry : add for artefact
 
-default:break-chance:10
-default:max-stack:40
+#default:break-chance:10
+default:max-stack:99
+
+name:note:Note~
+graphics:Light Slate
+break:5
+# max-stack:1
+flags:HATES_ACID | HATES_FIRE
+flags:EASY_KNOW
+
+name:skeleton:Skeleton~
+graphics:White
+break:100
+# max-stack:1
+flags:HATES_ACID | HATES_FIRE
+flags:EASY_KNOW
+
+name:metal:Metal~
+graphics:Light Blue
+break:5
+# max-stack:1
+flags:EASY_KNOW
 
 name:chest:Chest~
 graphics:slate
+break:5
 # max-stack:1
 flags:HATES_ACID | HATES_FIRE
-
-name:shot:Shot~
-graphics:light umber
-break:0
-# max-stack:40
-flags:SHOW_DICE
 
 name:arrow:Arrow~
 graphics:light umber
-break:35
-# max-stack:40
-flags:HATES_ACID | HATES_FIRE
-flags:SHOW_DICE
-
-name:bolt:Bolt~
-graphics:light umber
 break:20
 # max-stack:40
-flags:HATES_ACID
-flags:SHOW_DICE
+smith-attack:3:8
+flags:HATES_ACID | HATES_FIRE
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SHARPNESS
+smith-flags:HAUNTED | AFRAID
+slay:ORC_1
+slay:WOLF_1
+slay:SPIDER_1
+slay:UNDEAD_1
+slay:RAUKO_1
+slay:DRAGON_1
+slay:TROLL_1
+brand:ELEC_1
+brand:FIRE_1
+brand:COLD_1
+brand:POIS_1
 
 name:bow:Bow~
 graphics:umber
+break:5
 # max-stack:1
+smith-attack:1:4
 flags:HATES_ACID | HATES_FIRE
-flags:SHOW_MULT
+flags:SHOW_DICE
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:RADIANCE
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
+slay:ORC_1
+slay:WOLF_1
+slay:SPIDER_1
+slay:UNDEAD_1
+slay:RAUKO_1
+slay:DRAGON_1
+slay:TROLL_1
 
 name:digger:Digger~
 graphics:slate
+break:5
 # max-stack:1
+smith-attack:1:0:4
 flags:SHOW_DICE
+smith-values:STR[1] | DEX[1] | CON[1]
+smith-values:WILL[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:VAMPIRIC
+smith-flags:SUST_STR | SUST_DEX | SUST_CON
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
+slay:ORC_1
+slay:WOLF_1
+slay:SPIDER_1
+slay:UNDEAD_1
+slay:RAUKO_1
+slay:DRAGON_1
+slay:TROLL_1
+brand:ELEC_1
+brand:FIRE_1
+brand:COLD_1
+brand:POIS_1
 
 name:hafted:Hafted weapon~
 graphics:white
+break:5
 # max-stack:1
+smith-attack:1:4
 flags:HATES_ACID | HATES_FIRE
 flags:SHOW_DICE
+smith-values:STR[1] | DEX[1] | CON[1] | GRA[1]
+smith-values:ARCHERY[1] | STEALTH[1] | PERCEPTION[1] | WILL[1] | SONG[1]
+smith-values:TUNNEL[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
+slay:ORC_1
+slay:WOLF_1
+slay:SPIDER_1
+slay:UNDEAD_1
+slay:RAUKO_1
+slay:DRAGON_1
+slay:TROLL_1
+brand:ELEC_1
+brand:FIRE_1
+brand:COLD_1
+brand:POIS_1
 
 name:polearm:Polearm~
 graphics:white
+break:5
 # max-stack:1
+smith-attack:1:4
 flags:HATES_ACID | HATES_FIRE
 flags:SHOW_DICE
+smith-values:STR[1] | DEX[1] | CON[1] | GRA[1]
+smith-values:ARCHERY[1] | STEALTH[1] | PERCEPTION[1] | WILL[1] | SONG[1]
+smith-values:TUNNEL[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SHARPNESS | VAMPIRIC
+smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
+slay:ORC_1
+slay:WOLF_1
+slay:SPIDER_1
+slay:UNDEAD_1
+slay:RAUKO_1
+slay:DRAGON_1
+slay:TROLL_1
+brand:ELEC_1
+brand:FIRE_1
+brand:COLD_1
+brand:POIS_1
 
 name:sword:Bladed weapon~
 graphics:white
+break:5
 # max-stack:1
+smith-attack:1:4
 flags:HATES_ACID
 flags:SHOW_DICE
+smith-values:STR[1] | DEX[1] | CON[1] | GRA[1]
+smith-values:ARCHERY[1] | STEALTH[1] | PERCEPTION[1] | WILL[1] | SONG[1]
+smith-values:TUNNEL[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SHARPNESS | VAMPIRIC
+smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
+slay:ORC_1
+slay:WOLF_1
+slay:SPIDER_1
+slay:UNDEAD_1
+slay:RAUKO_1
+slay:DRAGON_1
+slay:TROLL_1
+brand:ELEC_1
+brand:FIRE_1
+brand:COLD_1
+brand:POIS_1
 
 name:boots:Boot~
 graphics:light umber
+break:5
 # max-stack:1
+smith-attack:1:1
 flags:HATES_ACID | HATES_FIRE
+smith-values:DEX[1]
+smith-values:STEALTH[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SUST_DEX
+smith-flags:FREE_ACT | SPEED
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:gloves:Glove~
 graphics:light umber
+break:5
 # max-stack:1
+smith-attack:1:2
 flags:HATES_ACID | HATES_FIRE
+smith-values:STR[1] | DEX[1]
+smith-values:ARCHERY[1] | SMITHING[1]
+smith-values:DAMAGE_SIDES[1] | TUNNEL[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SUST_STR | SUST_DEX
+smith-flags:FREE_ACT
+smith-flags:HUNGER | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:helm:Helm~
 graphics:light umber
+break:5
 # max-stack:1
+smith-attack:1:1
 flags:HATES_ACID
+smith-values:STR[1] | CON[1] | GRA[1]
+smith-values:PERCEPTION[1] | WILL[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SUST_STR | SUST_CON | SUST_GRA
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:LIGHT | REGEN | SEE_INVIS
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:crown:Crown~
 graphics:light umber
+break:5
 # max-stack:1
+smith-attack:1:1
 flags:HATES_ACID
+smith-values:GRA[1]
+smith-values:PERCEPTION[1] | WILL[1] | SONG[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SUST_GRA
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:LIGHT | REGEN | SEE_INVIS
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:shield:Shield~
 graphics:light umber
+break:5
 # max-stack:1
+smith-attack:1:1
 flags:HATES_ACID
+smith-values:STR[1] | CON[1]
+smith-values:WILL[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-flags:SUST_STR | SUST_CON
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN
+smith-flags:LIGHT | REGEN | FREE_ACT
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:cloak:Cloak~
 graphics:light umber
+break:5
 # max-stack:1
+smith-attack:1:1
 flags:HATES_ACID | HATES_FIRE
+smith-values:DEX[1] | CON[1]
+smith-values:STEALTH[1] | SONG[1]
+smith-values:RES_FIRE[1] | RES_COLD[1]
+smith-flags:SUST_DEX | SUST_CON
+smith-flags:PROT_FEAR | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:SLOW_DIGEST | LIGHT | REGEN | FREE_ACT
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:soft armor:Soft Armor~
 graphics:slate
+break:5
 # max-stack:1
+smith-attack:1:1
 flags:HATES_ACID | HATES_FIRE
+smith-values:STR[1] | DEX[1] | CON[1] | GRA[1]
+smith-values:ARCHERY[1] | STEALTH[1] | PERCEPTION[1] | WILL[1] | SONG[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT | SPEED
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
-name:hard armor:Hard Armor~
+name:mail:Mail~
 graphics:slate
+break:5
 # max-stack:1
+smith-attack:1:1
 flags:HATES_ACID
-
-name:dragon armor:Dragon Armor~
-graphics:slate
-# max-stack:1
+smith-values:STR[1] | DEX[1] | CON[1] | GRA[1]
+smith-values:ARCHERY[1] | STEALTH[1] | PERCEPTION[1] | WILL[1] | SONG[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT | SPEED
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:light:Light~
 graphics:yellow
-break:50
+break:20
 # max-stack:10
 flags:HATES_FIRE
+smith-values:GRA[1]
+smith-values:PERCEPTION[1] | WILL[1]
+smith-flags:SUST_GRA
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_HALLU
+smith-flags:LIGHT | SEE_INVIS
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:amulet:Amulet~
 graphics:orange
+break:5
 # max-stack:2
+smith-values:CON[1] | GRA[1]
+smith-values:ARCHERY[1] | STEALTH[1] | PERCEPTION[1] | WILL[1] | SONG[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SUST_CON | SUST_GRA
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
+smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:ring:Ring~
 graphics:red
+break:5
 # max-stack:5
-flags:HATES_ELEC
+smith-values:STR[1] | DEX[1]
+smith-values:ARCHERY[1] | STEALTH[1] | PERCEPTION[1]
+smith-values:DAMAGE_SIDES[1] | TUNNEL[1]
+smith-values:RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
+smith-flags:SUST_STR | SUST_DEX
+smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
+smith-flags:SLOW_DIGEST | REGEN | SEE_INVIS | FREE_ACT | SPEED
+smith-flags:HUNGER | DANGER | AGGRAVATE | CURSED
+smith-flags:HAUNTED | AFRAID
 
 name:staff:Staff~
 graphics:light umber
+break:5
 # max-stack:5
 flags:HATES_ACID | HATES_FIRE | EASY_KNOW
 
-name:wand:Wand~
+name:horn:Horn~
 graphics:green
+break:5
 # max-stack:5
-flags:HATES_ELEC | EASY_KNOW
-
-name:rod:Rod~
-graphics:light purple
-# max-stack:5
-flags:HATES_ELEC | EASY_KNOW
-
-name:scroll:Scroll~
-graphics:white
-# max-stack:20
-flags:HATES_ACID | HATES_FIRE | EASY_KNOW
+flags:EASY_KNOW
 
 name:potion:Potion~
 graphics:light blue
 break:100
 # max-stack:20
-flags:HATES_COLD | HATES_SOUND | HATES_SHARD | HATES_ICE | HATES_FORCE
+flags:HATES_COLD
 flags:EASY_KNOW
 
 name:flask:Flask~
 graphics:yellow
 break:100
 # max-stack:20
-flags:HATES_COLD | HATES_SOUND | HATES_SHARD | HATES_ICE | HATES_FORCE
+flags:HATES_COLD
 flags:EASY_KNOW
 
 name:food:Food
 graphics:light umber
-break:100
+break:5
 # max-stack:10
 flags:EASY_KNOW
 
-name:mushroom:Mushroom~
+name:herb:Herb~
 graphics:light umber
-break:100
+break:5
 # max-stack:10
 flags:EASY_KNOW
 
-name:magic book:Magic Book~
-graphics:light red
-# max-stack:5
-flags:HATES_FIRE | EASY_KNOW
+name:easter:Easter Egg~
+graphics:umber
+break:5
+# max-stack:10
+flags:EASY_KNOW
 
-name:prayer book:Prayer Book~
-graphics:light green
-# max-stack:5
-flags:HATES_FIRE | EASY_KNOW
-
-name:nature book:Nature Book~
-graphics:yellow
-# max-stack:5
-flags:HATES_FIRE | EASY_KNOW
-
-name:shadow book:Shadow Book~
-graphics:light purple
-# max-stack:5
-flags:HATES_FIRE | EASY_KNOW
-
-name:gold
-graphics:light yellow

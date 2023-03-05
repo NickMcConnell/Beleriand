@@ -40,89 +40,6 @@
 #include "trap.h"
 
 /**
- * Pick up all gold at the player's current location.
- */
-static void player_pickup_gold(struct player *p)
-{
-	int32_t total_gold = 0L;
-	char name[30] = "";
-
-	struct object *obj = square_object(cave, p->grid), *next;
-
-	int sound_msg;
-	bool verbal = false;
-	bool at_most_one = true;
-
-	/* Pick up all the ordinary gold objects */
-	while (obj) {
-		struct object_kind *kind = NULL;
-
-		/* Get next object */
-		next = obj->next;
-
-		/* Ignore if not legal treasure */
-		kind = lookup_kind(obj->tval, obj->sval);
-		if (!tval_is_money(obj) || !kind) {
-			obj = next;
-			continue;
-		}
-
-		/* Multiple types if we have a second name, otherwise record the name */
-		if (total_gold && !streq(kind->name, name))
-			at_most_one = false;
-		else
-			my_strcpy(name, kind->name, sizeof(name));
-
-		/* Remember whether feedback message is in order */
-		if (!ignore_item_ok(p, obj))
-			verbal = true;
-
-		/* Increment total value */
-		total_gold += (int32_t)obj->pval;
-
-		/* Delete the gold */
-		if (obj->known) {
-			square_delete_object(p->cave, p->grid, obj->known, false, false);
-		}
-		square_delete_object(cave, p->grid, obj, false, false);
-		obj = next;
-	}
-
-	/* Pick up the gold, if present */
-	if (total_gold) {
-		char buf[100];
-
-		/* Build a message */
-		(void)strnfmt(buf, sizeof(buf),
-					  "You have found %d gold pieces worth of ", total_gold);
-
-		/* One treasure type.. */
-		if (at_most_one)
-			my_strcat(buf, name, sizeof(buf));
-		/* ... or more */
-		else
-			my_strcat(buf, "treasures", sizeof(buf));
-		my_strcat(buf, ".", sizeof(buf));
-
-		/* Determine which sound to play */
-		if      (total_gold < 200) sound_msg = MSG_MONEY1;
-		else if (total_gold < 600) sound_msg = MSG_MONEY2;
-		else                       sound_msg = MSG_MONEY3;
-
-		/* Display the message */
-		if (verbal)
-			msgt(sound_msg, "%s", buf);
-
-		/* Add gold to purse */
-		p->au += total_gold;
-
-		/* Redraw gold */
-		p->upkeep->redraw |= (PR_GOLD);
-	}
-}
-
-
-/**
  * Find the specified object in the inventory (not equipment)
  */
 static const struct object *find_stack_object_in_inventory(const struct object *obj, const struct object *start)
@@ -252,10 +169,6 @@ static void player_pickup_aux(struct player *p, struct object *obj,
 
 	/* Carry the object, prompting for number if necessary */
 	if (max == obj->number) {
-		if (obj->known) {
-			square_excise_object(p->cave, p->grid, obj->known);
-			delist_object(p->cave, obj->known);
-		}
 		square_excise_object(cave, p->grid, obj);
 		delist_object(cave, obj);
 		inven_carry(p, obj, true, domsg);
@@ -272,6 +185,12 @@ static void player_pickup_aux(struct player *p, struct object *obj,
 		picked_up = floor_object_for_use(p, obj, num, false, &dummy);
 		inven_carry(p, picked_up, true, domsg);
 	}
+
+	/* Store the action type */
+	p->previous_action[0] = ACTION_MISC;
+
+	/* Take a turn */
+	p->upkeep->energy_use = z_info->move_energy;
 }
 
 /**
@@ -300,7 +219,7 @@ static void player_pickup_aux(struct player *p, struct object *obj,
  * \param obj is the object to pick up.
  * \param menu is whether to present a menu to the player
  */
-static uint8_t player_pickup_item(struct player *p, struct object *obj, bool menu)
+void player_pickup_item(struct player *p, struct object *obj, bool menu)
 {
 	struct object *current = NULL;
 
@@ -314,27 +233,20 @@ static uint8_t player_pickup_item(struct player *p, struct object *obj, bool men
 
 	bool domsg = true;
 
-	/* Objects picked up.  Used to determine time cost of command. */
-	uint8_t objs_picked_up = 0;
-
 	/* Always know what's on the floor */
 	square_know_pile(cave, p->grid);
-
-	/* Always pickup gold, effortlessly */
-	player_pickup_gold(p);
 
 	/* Nothing else to pick up -- return */
 	if (!square_object(cave, p->grid)) {
 		mem_free(floor_list);
-		return objs_picked_up;
+		return;
 	}
 
 	/* We're given an object - pick it up */
 	if (obj) {
 		player_pickup_aux(p, obj, 0, domsg);
-		objs_picked_up = 1;
 		mem_free(floor_list);
-		return objs_picked_up;
+		return;
 	}
 
 	/* Tally objects that can be at least partially picked up.*/
@@ -346,7 +258,7 @@ static uint8_t player_pickup_item(struct player *p, struct object *obj, bool men
 	if (!can_pickup) {
 	    event_signal(EVENT_SEEFLOOR);
 		mem_free(floor_list);
-	    return objs_picked_up;
+	    return;
 	}
 
 	/* Use a menu interface for multiple objects, or pickup single objects */
@@ -367,7 +279,7 @@ static uint8_t player_pickup_item(struct player *p, struct object *obj, bool men
 		s = "You see nothing there.";
 		if (!get_item(&obj_local, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR)) {
 			mem_free(floor_list);
-			return (objs_picked_up);
+			return;
 		}
 
 		current = obj_local;
@@ -381,9 +293,6 @@ static uint8_t player_pickup_item(struct player *p, struct object *obj, bool men
 	if (current) {
 		/* Pick up the object */
 		player_pickup_aux(p, current, 0, domsg);
-
-		/* Indicate an object picked up. */
-		objs_picked_up = 1;
 	}
 
 	/*
@@ -391,28 +300,21 @@ static uint8_t player_pickup_item(struct player *p, struct object *obj, bool men
 	 * up.  Force the display of a menu in all cases.
 	 */
 	if (call_function_again)
-		objs_picked_up += player_pickup_item(p, NULL, true);
+		player_pickup_item(p, NULL, true);
 
 	mem_free(floor_list);
-
-	/* Indicate how many objects have been picked up. */
-	return (objs_picked_up);
 }
 
 /**
  * Pick up everything on the floor that requires no player action
  */
-int do_autopickup(struct player *p)
+void do_autopickup(struct player *p)
 {
 	struct object *obj, *next;
-	uint8_t objs_picked_up = 0;
 
 	/* Nothing to pick up -- return */
 	if (!square_object(cave, p->grid))
-		return 0;
-
-	/* Always pickup gold, effortlessly */
-	player_pickup_gold(p);
+		return;
 
 	/* Scan the remaining objects */
 	obj = square_object(cave, p->grid);
@@ -424,20 +326,17 @@ int do_autopickup(struct player *p)
 			int auto_num;
 
 			/* Hack -- disturb */
-			disturb(p);
+			disturb(p, false);
 
 			/* Automatically pick up items into the backpack */
 			auto_num = auto_pickup_okay(obj);
 			if (auto_num) {
 				/* Pick up the object (as much as possible) with message */
 				player_pickup_aux(p, obj, auto_num, true);
-				objs_picked_up++;
 			}
 		}
 		obj = next;
 	}
-
-	return objs_picked_up;
 }
 
 /**
@@ -445,21 +344,13 @@ int do_autopickup(struct player *p)
  */
 void do_cmd_pickup(struct command *cmd)
 {
-	int energy_cost = 0;
 	struct object *obj = NULL;
 
 	/* See if we have an item already */
 	(void) cmd_get_arg_item(cmd, "item", &obj);
 
 	/* Pick up floor objects with a menu for multiple objects */
-	energy_cost += player_pickup_item(player, obj, false)
-		* z_info->move_energy / 10;
-
-	/* Limit */
-	if (energy_cost > z_info->move_energy) energy_cost = z_info->move_energy;
-
-	/* Charge this amount of energy. */
-	player->upkeep->energy_use = energy_cost;
+	player_pickup_item(player, obj, false);
 
 	/* Redraw the object list using the upkeep flag so that the update can be
 	 * somewhat coalesced. Use event_signal(EVENT_ITEMLIST to force update. */
@@ -472,10 +363,7 @@ void do_cmd_pickup(struct command *cmd)
 void do_cmd_autopickup(struct command *cmd)
 {
 	/* Get the obvious things */
-	player->upkeep->energy_use = do_autopickup(player)
-		* z_info->move_energy / 10;
-	if (player->upkeep->energy_use > z_info->move_energy)
-		player->upkeep->energy_use = z_info->move_energy;
+	do_autopickup(player);
 
 	/* Look at or feel what's left */
 	event_signal(EVENT_SEEFLOOR);

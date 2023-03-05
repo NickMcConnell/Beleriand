@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "init.h"
+#include "obj-knowledge.h"
 #include "obj-list.h"
 #include "obj-util.h"
 #include "ui-object.h"
@@ -131,7 +132,7 @@ static void object_list_format_section(const object_list_t *list,
 			uint8_t a = COLOUR_RED;
 			wchar_t c = L'*';
 
-			if (!is_unknown(list->entries[entry_index].object) &&
+			if (object_is_known(list->entries[entry_index].object) &&
 				list->entries[entry_index].object->kind != NULL) {
 				a = object_kind_attr(list->entries[entry_index].object->kind);
 				c = object_kind_char(list->entries[entry_index].object->kind);

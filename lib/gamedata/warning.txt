@@ -1,0 +1,53 @@
+# File: warning.txt
+
+
+# This file is used to initialize the monster warning messages for Sil.
+
+# === Understanding warning.txt ===
+
+# type: serial number
+# vis: message
+# vis-silence: message
+# invis: message
+# invis-silence: message
+
+# 'type' indicates the beginning of an entry. The serial number must
+# increase for each new item.
+
+# 'vis-silence' is for a visible monster with Song of Silence active
+
+# 'invis-silence' is for an invisible monster with Song of Silence active
+
+# 'vis' is for a visible monster with Song of Silence not active
+
+# 'invis' is for an invisible monster with Song of Silence not active
+
+type:1
+vis-silence:shouts a muffled warning.
+invis-silence:You hear a muffled warning shout.
+vis:shouts a warning.
+invis:You hear a warning shout.
+
+type:2
+vis-silence:lets out a muffled roar.
+invis-silence:You hear a muffled roar.
+vis:roars in anger.
+invis:You hear a loud roar.
+
+type:3
+vis-silence:lets out a muffled grunt.
+invis-silence:You hear a muffled grunt.
+vis:grunts in anger.
+invis:You hear a loud grunt.
+
+type:4
+vis-silence:makes a muffled howl.
+invis-silence:You hear a muffled howl.
+vis:makes a low howl.
+invis:You hear a low howl.
+
+type:5
+vis-silence:cries out a muffled warning.
+invis-silence:You hear something cry out a muffled warning.
+vis:cries out a warning.
+invis:You hear something cry out a warning.

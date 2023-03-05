@@ -33,7 +33,7 @@ struct blow_method {
 	bool cut;
 	bool stun;
 	bool miss;
-	bool phys;
+	bool prt;
 	int msgt;
 	struct blow_message *messages;
 	int num_messages;
@@ -54,14 +54,14 @@ extern struct blow_method *blow_methods;
 typedef struct melee_effect_handler_context_s {
 	struct player * const p;
 	struct monster * const mon;
-	struct monster * const t_mon;
 	const int rlev;
 	const struct blow_method *method;
-	const int ac;
 	const char *ddesc;
 	bool obvious;
-	bool blinked;
+	bool stun;
+	bool cut;
 	int damage;
+	int net_dam;
 } melee_effect_handler_context_t;
 
 /**
@@ -74,12 +74,9 @@ struct blow_effect {
 	int power;
 	int eval;
 	char *desc;
-	uint8_t lore_attr;		/* Color of the attack used in lore text */
-	uint8_t lore_attr_resist;	/* Color used in lore text when resisted */
-	uint8_t lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	char *effect_type;
 	int resist;
-	int lash_type;
+	int dam_type;
 	struct blow_effect *next;
 };
 

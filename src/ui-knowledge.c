@@ -42,11 +42,9 @@
 #include "player-history.h"
 #include "player-util.h"
 #include "project.h"
-#include "store.h"
 #include "target.h"
 #include "trap.h"
 #include "ui-context.h"
-#include "ui-equip-cmp.h"
 #include "ui-history.h"
 #include "ui-knowledge.h"
 #include "ui-menu.h"
@@ -58,7 +56,6 @@
 #include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-score.h"
-#include "ui-store.h"
 #include "ui-target.h"
 #include "wizard.h"
 
@@ -170,12 +167,12 @@ static int feat_order(int feat)
 		case L'\'': case L'+': 	return 1;
 		case L'<': case L'>':	return 2;
 		case L'#':				return 3;
-		case L'*': case L'%' :	return 4;
-		case L';': case L':' :	return 5;
-		case L' ':				return 7;
+		case L':': case L'%' :	return 4;
+		case L'0':			 	return 5;
+		case L'^':			 	return 6;
 		default:
 		{
-			return 6;
+			return 7;
 		}
 	}
 }
@@ -773,7 +770,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int i;
 	int prev_g = -1;
 
-	int omode = OPT(player, rogue_like_commands);
+	int omode = OPT(player, angband_keyset);
 	ui_event ke;
 
 	/* Get size */
@@ -781,7 +778,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	browser_rows = hgt - 8;
 
 	/* Disable the roguelike commands for the duration */
-	OPT(player, rogue_like_commands) = false;
+	OPT(player, angband_keyset) = false;
 
 	/* Determine if using tiles or not */
 	if (tiles) tiles = (current_graphics_mode->grafID != 0);
@@ -1061,7 +1058,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	}
 
 	/* Restore roguelike option */
-	OPT(player, rogue_like_commands) = omode;
+	OPT(player, angband_keyset) = omode;
 
 	/* Prompt */
 	if (!grp_cnt)
@@ -1157,14 +1154,7 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	if ((tile_height != 1) && (a & 0x80)) {
 		a = race->d_attr;
 		c = race->d_char;
-		/* If uniques are purple, make it so */
-		if (OPT(player, purple_uniques) && rf_has(race->flags, RF_UNIQUE))
-			a = COLOUR_VIOLET;
 	}
-	/* If uniques are purple, make it so */
-	else if (OPT(player, purple_uniques) && !(a & 0x80) &&
-			 rf_has(race->flags, RF_UNIQUE))
-		a = COLOUR_VIOLET;
 
 	/* Display the name */
 	c_prt(attr, race->name, row, col);
@@ -1284,7 +1274,7 @@ static int count_known_monsters(void)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!l_list[i].all_known && !l_list[i].sights) {
+		if (!l_list[i].all_known && !l_list[i].psights) {
 			continue;
 		}
 
@@ -1319,7 +1309,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!l_list[i].all_known && !l_list[i].sights) {
+		if (!l_list[i].all_known && !l_list[i].psights) {
 			continue;
 		}
 
@@ -1339,7 +1329,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!l_list[i].all_known && !l_list[i].sights) {
+		if (!l_list[i].all_known && !l_list[i].psights) {
 			continue;
 		}
 
@@ -1375,17 +1365,10 @@ static const grouper object_text_order[] =
 	{TV_RING,			"Ring"			},
 	{TV_AMULET,			"Amulet"		},
 	{TV_POTION,			"Potion"		},
-	{TV_SCROLL,			"Scroll"		},
-	{TV_WAND,			"Wand"			},
 	{TV_STAFF,			"Staff"			},
-	{TV_ROD,			"Rod"			},
+	{TV_HORN,			"Horn"			},
  	{TV_FOOD,			"Food"			},
- 	{TV_MUSHROOM,		"Mushroom"		},
-	{TV_PRAYER_BOOK,	"Priest Book"	},
-	{TV_MAGIC_BOOK,		"Magic Book"	},
-	{TV_NATURE_BOOK,	"Nature Book"	},
-	{TV_SHADOW_BOOK,	"Shadow Book"	},
-	{TV_OTHER_BOOK,		"Mystery Book"	},
+ 	{TV_HERB,			"Herb"			},
 	{TV_LIGHT,			"Light"			},
 	{TV_FLASK,			"Flask"			},
 	{TV_SWORD,			"Sword"			},
@@ -1393,19 +1376,16 @@ static const grouper object_text_order[] =
 	{TV_HAFTED,			"Hafted Weapon" },
 	{TV_BOW,			"Bow"			},
 	{TV_ARROW,			"Ammunition"	},
-	{TV_BOLT,			NULL			},
-	{TV_SHOT,			NULL			},
 	{TV_SHIELD,			"Shield"		},
 	{TV_CROWN,			"Crown"			},
 	{TV_HELM,			"Helm"			},
 	{TV_GLOVES,			"Gloves"		},
 	{TV_BOOTS,			"Boots"			},
 	{TV_CLOAK,			"Cloak"			},
-	{TV_DRAG_ARMOR,		"Dragon Scale Mail" },
-	{TV_HARD_ARMOR,		"Hard Armor"	},
+	{TV_MAIL,			"Hard Armor"	},
 	{TV_SOFT_ARMOR,		"Soft Armor"	},
 	{TV_DIGGING,		"Digger"		},
-	{TV_GOLD,			"Money"			},
+	{TV_METAL,			"Metal"			},
 	{0,					NULL			}
 };
 
@@ -1413,16 +1393,13 @@ static int *obj_group_order = NULL;
 
 static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 {
-	struct object body = OBJECT_NULL, known_body = OBJECT_NULL;
-	struct object *obj = &body, *known_obj = &known_body;
+	struct object body = OBJECT_NULL;
+	struct object *obj = &body;
 
 	make_fake_artifact(obj, &a_info[a_idx]);
-	object_wipe(known_obj);
-	object_copy(known_obj, obj);
-	obj->known = known_obj;
+	object_know(obj);
 	object_desc(o_name, namelen, obj,
 		ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL, NULL);
-	object_wipe(known_obj);
 	object_wipe(obj);
 }
 
@@ -1473,42 +1450,6 @@ static struct object *find_artifact(struct artifact *artifact)
 		}
 	}
 
-	/* Store objects */
-	for (i = 0; i < MAX_STORES; i++) {
-		struct store *s = &stores[i];
-		for (obj = s->stock; obj; obj = obj->next) {
-			if (obj->artifact == artifact) return obj;
-		}
-	}
-
-	/* Stored chunk objects */
-	for (i = 0; i < chunk_list_max; i++) {
-		struct chunk *c = chunk_list[i];
-		int j;
-		if (strstr(c->name, "known")) continue;
-
-		/* Ground objects */
-		for (y = 1; y < c->height; y++) {
-			for (x = 1; x < c->width; x++) {
-				struct loc grid = loc(x, y);
-				for (obj = square_object(c, grid); obj; obj = obj->next) {
-					if (obj->artifact == artifact) return obj;
-				}
-			}
-		}
-
-		/* Monster objects */
-		for (j = cave_monster_max(c) - 1; j >= 1; j--) {
-			struct monster *mon = cave_monster(c, j);
-			obj = mon ? mon->held_obj : NULL;
-
-			while (obj) {
-				if (obj->artifact == artifact) return obj;
-				obj = obj->next;
-			}
-		}
-	}	
-
 	return NULL;
 }
 
@@ -1517,8 +1458,8 @@ static struct object *find_artifact(struct artifact *artifact)
  */
 static void desc_art_fake(int a_idx)
 {
-	struct object *obj, *known_obj = NULL;
-	struct object object_body = OBJECT_NULL, known_object_body = OBJECT_NULL;
+	struct object *obj;
+	struct object object_body = OBJECT_NULL;
 	bool fake = false;
 
 	char header[120];
@@ -1532,18 +1473,14 @@ static void desc_art_fake(int a_idx)
 	if (!obj) {
 		fake = true;
 		obj = &object_body;
-		known_obj = &known_object_body;
 
 		make_fake_artifact(obj, &a_info[a_idx]);
-		obj->known = known_obj;
-		known_obj->artifact = obj->artifact;
-		known_obj->kind = obj->kind;
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
 		if (history_is_artifact_known(player, obj->artifact))
 			/* Be very careful not to influence anything but this object */
-			object_copy(known_obj, obj);
+			object_know(obj);
 	}
 
 	/* Hack -- Handle stuff */
@@ -1553,7 +1490,6 @@ static void desc_art_fake(int a_idx)
 	object_desc(header, sizeof(header), obj,
 		ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL, player);
 	if (fake) {
-		object_wipe(known_obj);
 		object_wipe(obj);
 	}
 
@@ -1608,7 +1544,7 @@ static bool artifact_is_known(int a_idx)
 
 	/* Check all objects to see if it exists but hasn't been IDed */
 	obj = find_artifact(&a_info[a_idx]);
-	if (obj && !object_is_known_artifact(obj))
+	if (obj && !obj_is_known_artifact(obj))
 		return false;
 
 	return true;
@@ -1661,12 +1597,7 @@ static void do_cmd_knowledge_artifacts(const char *name, int row)
 	/* Collect valid artifacts */
 	a_count = collect_known_artifacts(artifacts, z_info->a_max);
 
-	if (OPT(player, birth_randarts)) {
-		strnfmt(title, sizeof(title), "artifacts (seed %08x)",
-			seed_randart);
-	} else {
-		strnfmt(title, sizeof(title), "artifacts");
-	}
+	strnfmt(title, sizeof(title), "artifacts");
 	display_knowledge(title, artifacts, a_count, obj_f, art_f, NULL);
 	mem_free(artifacts);
 }
@@ -1845,7 +1776,7 @@ static void desc_obj_fake(int k_idx)
 	struct object_kind *kind = &k_info[k_idx];
 	struct object_kind *old_kind = player->upkeep->object_kind;
 	struct object *old_obj = player->upkeep->object;
-	struct object *obj = object_new(), *known_obj = object_new();
+	struct object *obj = object_new();
 
 	char header[120];
 
@@ -1861,8 +1792,7 @@ static void desc_obj_fake(int k_idx)
 
 	/* It's fully known */
 	if (kind->aware || !kind->flavor)
-		object_copy(known_obj, obj);
-	obj->known = known_obj;
+		object_know(obj);
 
 	/* Hack -- Handle stuff */
 	handle_stuff(player);
@@ -1872,8 +1802,7 @@ static void desc_obj_fake(int k_idx)
 		ODESC_PREFIX | ODESC_CAPITAL, player);
 
 	textui_textblock_show(tb, area, header);
-	object_delete(NULL, NULL, &known_obj);
-	object_delete(NULL, NULL, &obj);
+	object_delete(NULL, &obj);
 	textblock_free(tb);
 
 	/* Restore the old trackee */
@@ -1905,12 +1834,6 @@ static int o_cmp_tval(const void *a, const void *b)
 	switch (k_a->tval)
 	{
 		case TV_LIGHT:
-		case TV_MAGIC_BOOK:
-		case TV_PRAYER_BOOK:
-		case TV_NATURE_BOOK:
-		case TV_SHADOW_BOOK:
-		case TV_OTHER_BOOK:
-		case TV_DRAG_ARMOR:
 			/* leave sorted by sval */
 			break;
 
@@ -2071,156 +1994,6 @@ void textui_browse_object_knowledge(const char *name, int row)
 	mem_free(objects);
 }
 
-/**
- * ------------------------------------------------------------------------
- * OBJECT RUNES
- * ------------------------------------------------------------------------ */
-
-/**
- * Description of each rune group.
- */
-static const char *rune_group_text[] =
-{
-	"Combat",
-	"Modifiers",
-	"Resists",
-	"Brands",
-	"Slays",
-	"Curses",
-	"Other",
-	NULL
-};
-
-/**
- * Display the runes in a group.
- */
-static void display_rune(int col, int row, bool cursor, int oid )
-{
-	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	const char *inscrip = quark_str(rune_note(oid));
-
-	c_prt(attr, rune_name(oid), row, col);
-
-	/* Show autoinscription if around */
-	if (inscrip)
-		c_put_str(COLOUR_YELLOW, inscrip, row, 47);
-}
-
-
-static const char *rune_var_name(int gid)
-{
-	return rune_group_text[gid];
-}
-
-static int rune_var(int oid)
-{
-	return (int) rune_variety(oid);
-}
-
-static void rune_lore(int oid)
-{
-	textblock *tb = textblock_new();
-	char *title = string_make(rune_name(oid));
-
-	my_strcap(title);
-	textblock_append_c(tb, COLOUR_L_BLUE, "%s", title);
-	textblock_append(tb, "\n");
-	textblock_append(tb, "%s", rune_desc(oid));
-	textblock_append(tb, "\n");
-	textui_textblock_show(tb, SCREEN_REGION, NULL);
-	textblock_free(tb);
-
-	string_free(title);
-}
-
-/**
- * Display special prompt for rune inscription.
- */
-static const char *rune_xtra_prompt(int oid)
-{
-	const char *no_insc = ", 'r'ecall, '{'";
-	const char *with_insc = ", 'r'ecall, '{', '}'";
-
-	/* Appropriate prompt */
-	return rune_note(oid) ? with_insc : no_insc;
-}
-
-/**
- * Special key actions for rune inscription.
- */
-static void rune_xtra_act(struct keypress ch, int oid)
-{
-	/* Uninscribe */
-	if (ch.code == '}') {
-		rune_set_note(oid, NULL);
-	} else if (ch.code == '{') {
-		/* Inscribe */
-		char note_text[80] = "";
-
-		/* Avoid the prompt getting in the way */
-		screen_save();
-
-		/* Prompt */
-		prt("Inscribe with: ", 0, 0);
-
-		/* Default note */
-		if (rune_note(oid))
-			strnfmt(note_text, sizeof(note_text), "%s",
-					quark_str(rune_note(oid)));
-
-		/* Get an inscription */
-		if (askfor_aux(note_text, sizeof(note_text), NULL)) {
-			/* Remove old inscription if existent */
-			if (rune_note(oid))
-				rune_set_note(oid, NULL);
-
-			/* Add the autoinscription */
-			rune_set_note(oid, note_text);
-			rune_autoinscribe(player, oid);
-
-			/* Redraw gear */
-			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-		}
-
-		/* Reload the screen */
-		screen_load();
-	}
-}
-
-
-
-/**
- * Display rune knowledge.
- */
-static void do_cmd_knowledge_runes(const char *name, int row)
-{
-	group_funcs rune_var_f = {rune_var_name, NULL, rune_var, 0,
-							  N_ELEMENTS(rune_group_text), false};
-
-	member_funcs rune_f = {display_rune, rune_lore, NULL, NULL,
-						   rune_xtra_prompt, rune_xtra_act, 0};
-
-	int *runes;
-	int rune_max = max_runes();
-	int count = 0;
-	int i;
-	char buf[30];
-
-	runes = mem_zalloc(rune_max * sizeof(int));
-
-	for (i = 0; i < rune_max; i++) {
-		/* Ignore unknown runes */
-		if (!player_knows_rune(player, i))
-			continue;
-
-		runes[count++] = i;
-	}
-
-	my_strcpy(buf, format("runes (%d unknown)", rune_max - count), sizeof(buf));
-
-	display_knowledge(buf, runes, count, rune_var_f, rune_f, "Inscribed");
-	mem_free(runes);
-}
 
 /**
  * ------------------------------------------------------------------------
@@ -2236,9 +2009,9 @@ static const char *feature_group_text[] =
 	"Doors",
 	"Stairs",
 	"Walls",
-	"Streamers",
 	"Obstructions",
-	"Stores",
+	"Forges",
+	"Pits",
 	"Other",
 	NULL
 };
@@ -2568,631 +2341,11 @@ static void do_cmd_knowledge_traps(const char *name, int row)
 }
 
 
-/**
- * ------------------------------------------------------------------------
- * SHAPECHANGE
- * ------------------------------------------------------------------------ */
-
-/**
- * Counts the number of interesting shapechanges and returns it.
- */
-static int count_interesting_shapes(void)
-{
-	int count = 0;
-	struct player_shape *s;
-
-	for (s = shapes; s; s = s->next) {
-		if (! streq(s->name, "normal")) {
-			++count;
-		}
-	}
-
-	return count;
-}
-
-
-/**
- * Is a comparison function for an array of struct player_shape* which is
- * compatible with sort() and puts the elements in ascending alphabetical
- * order by name.
- */
-static int compare_shape_names(const void *left, const void *right)
-{
-	const struct player_shape * const *sleft = left;
-	const struct player_shape * const *sright = right;
-
-	return my_stricmp((*sleft)->name, (*sright)->name);
-}
-
-
-static void shape_lore_helper_append_to_list(const char* item,
-	const char ***list, int* p_nmax, int *p_n)
-{
-	if (*p_n >= *p_nmax) {
-		if (*p_nmax == 0) {
-			*p_nmax = 4;
-		} else {
-			assert(*p_nmax > 0);
-			*p_nmax *= 2;
-		}
-		*list = mem_realloc(*list, *p_nmax * sizeof(**list));
-	}
-	(*list)[*p_n] = string_make(item);
-	++*p_n;
-}
-
-
-static const char *skill_index_to_name(int i)
-{
-	const char *name;
-
-	switch (i) {
-	case SKILL_DISARM_PHYS:
-		name = "physical disarming";
-		break;
-
-	case SKILL_DISARM_MAGIC:
-		name = "magical disarming";
-		break;
-
-	case SKILL_DEVICE:
-		name = "magic devices";
-		break;
-
-	case SKILL_SAVE:
-		name = "saving throws";
-		break;
-
-	case SKILL_SEARCH:
-		name = "searching";
-		break;
-
-	case SKILL_TO_HIT_MELEE:
-		name = "melee to hit";
-		break;
-
-	case SKILL_TO_HIT_BOW:
-		name = "shooting to hit";
-		break;
-
-	case SKILL_TO_HIT_THROW:
-		name = "throwing to hit";
-		break;
-
-	case SKILL_DIGGING:
-		name = "digging";
-		break;
-
-	default:
-		name = "unknown skill";
-		break;
-	}
-
-	return name;
-}
-
-
-static void shape_lore_append_list(textblock *tb,
-	const char * const *list, int n)
-{
-	int i;
-
-	if (n > 0) {
-		textblock_append(tb, " %s", list[0]);
-	}
-	for (i = 1; i < n; ++i) {
-		textblock_append(tb, "%s %s", (i < n - 1) ? "," : " and",
-			list[i]);
-	}
-}
-
-
-static void shape_lore_append_basic_combat(textblock *tb,
-	const struct player_shape *s)
-{
-	char toa_msg[24];
-	char toh_msg[24];
-	char tod_msg[24];
-	const char* msgs[3];
-	int n = 0;
-
-	if (s->to_a != 0) {
-		strnfmt(toa_msg, sizeof(toa_msg), "%+d to AC", s->to_a);
-		msgs[n] = toa_msg;
-		++n;
-	}
-	if (s->to_h != 0) {
-		strnfmt(toh_msg, sizeof(toh_msg), "%+d to hit", s->to_h);
-		msgs[n] = toh_msg;
-		++n;
-	}
-	if (s->to_d != 0) {
-		strnfmt(tod_msg, sizeof(tod_msg), "%+d to damage", s->to_d);
-		msgs[n] = tod_msg;
-		++n;
-	}
-	if (n > 0) {
-		textblock_append(tb, "Adds");
-		shape_lore_append_list(tb, msgs, n);
-		textblock_append(tb, ".\n");
-	}
-}
-
-
-static void shape_lore_append_skills(textblock *tb,
-	const struct player_shape *s)
-{
-	const char **msgs = NULL;
-	int nmax = 0, n = 0;
-	int i;
-
-	for (i = 0; i < SKILL_MAX; ++i) {
-		if (s->skills[i] != 0) {
-			shape_lore_helper_append_to_list(
-				format("%+d to %s", s->skills[i],
-					skill_index_to_name(i)),
-				&msgs, &nmax, &n);
-		}
-	}
-
-	if (n > 0) {
-		textblock_append(tb, "Adds");
-		shape_lore_append_list(tb, msgs, n);
-		textblock_append(tb, ".\n");
-		for (i = 0; i < n; ++i) {
-			string_free((char*) msgs[i]);
-		}
-	}
-
-	mem_free(msgs);
-}
-
-
-static void shape_lore_append_non_stat_modifiers(textblock *tb,
-	const struct player_shape *s)
-{
-	const char **msgs = NULL;
-	int nmax = 0, n = 0;
-	int i;
-
-	for (i = STAT_MAX; i < OBJ_MOD_MAX; ++i) {
-		if (s->modifiers[i] != 0) {
-			shape_lore_helper_append_to_list(
-				format("%+d to %s",
-					s->modifiers[i],
-					lookup_obj_property(OBJ_PROPERTY_MOD, i)->name),
-				&msgs, &nmax, &n);
-		}
-	}
-
-	if (n > 0) {
-		textblock_append(tb, "Adds");
-		shape_lore_append_list(tb, msgs, n);
-		textblock_append(tb, ".\n");
-		for (i = 0; i < n; ++i) {
-			string_free((char*) msgs[i]);
-		}
-	}
-
-	mem_free(msgs);
-}
-
-
-static void shape_lore_append_stat_modifiers(textblock *tb,
-	const struct player_shape *s)
-{
-	const char **msgs = NULL;
-	int nmax = 0, n = 0;
-	int i;
-
-	for (i = 0; i < STAT_MAX; ++i) {
-		if (s->modifiers[i] != 0) {
-			shape_lore_helper_append_to_list(
-				format("%+d to %s",
-					s->modifiers[i],
-					lookup_obj_property(OBJ_PROPERTY_MOD, i)->name),
-				&msgs, &nmax, &n);
-		}
-	}
-
-	if (n > 0) {
-		textblock_append(tb, "Adds");
-		shape_lore_append_list(tb, msgs, n);
-		textblock_append(tb, ".\n");
-		for (i = 0; i < n; ++i) {
-			string_free((char*) msgs[i]);
-		}
-	}
-
-	mem_free(msgs);
-}
-
-
-static void shape_lore_append_resistances(textblock *tb,
-	const struct player_shape *s)
-{
-	const char* vul[ELEM_MAX];
-	const char* res[ELEM_MAX];
-	const char* imm[ELEM_MAX];
-	int nvul = 0, nres = 0, nimm = 0;
-	int i;
-
-	for (i = 0; i < ELEM_MAX; ++i) {
-		if (s->el_info[i].res_level < 0) {
-			vul[nvul] = projections[i].name;
-			++nvul;
-		} else if (s->el_info[i].res_level >= 3) {
-			imm[nimm] = projections[i].name;
-			++nimm;
-		} else if (s->el_info[i].res_level != 0) {
-			res[nres] = projections[i].name;
-			++nres;
-		}
-	}
-
-	if (nvul != 0) {
-		textblock_append(tb, "Makes you vulnerable to");
-		shape_lore_append_list(tb, vul, nvul);
-		textblock_append(tb, ".\n");
-	}
-
-	if (nres != 0) {
-		textblock_append(tb, "Makes you resistant to");
-		shape_lore_append_list(tb, res, nres);
-		textblock_append(tb, ".\n");
-	}
-
-	if (nimm != 0) {
-		textblock_append(tb, "Makes you immune to");
-		shape_lore_append_list(tb, imm, nimm);
-		textblock_append(tb, ".\n");
-	}
-}
-
-
-static void shape_lore_append_protection_flags(textblock *tb,
-	const struct player_shape *s)
-{
-	const char **msgs = NULL;
-	int nmax = 0, n = 0;
-	int i;
-
-	for (i = 1; i < OF_MAX; ++i) {
-		struct obj_property *prop =
-			lookup_obj_property(OBJ_PROPERTY_FLAG, i);
-
-		if (prop->subtype == OFT_PROT &&
-			of_has(s->flags, prop->index)) {
-			shape_lore_helper_append_to_list(
-				prop->desc, &msgs, &nmax, &n);
-		}
-	}
-
-	if (n > 0) {
-		textblock_append(tb, "Provides protection from");
-		shape_lore_append_list(tb, msgs, n);
-		textblock_append(tb, ".\n");
-		for (i = 0; i < n; ++i) {
-			string_free((char*) msgs[i]);
-		}
-	}
-
-	mem_free(msgs);
-}
-
-
-static void shape_lore_append_sustains(textblock *tb,
-	const struct player_shape *s)
-{
-	const char **msgs = NULL;
-	int nmax = 0, n = 0;
-	int i;
-
-	for (i = 0; i < STAT_MAX; ++i) {
-		struct obj_property *prop =
-			lookup_obj_property(OBJ_PROPERTY_STAT, i);
-
-		if (of_has(s->flags, sustain_flag(prop->index))) {
-			shape_lore_helper_append_to_list(
-				prop->name, &msgs, &nmax, &n);
-		}
-	}
-
-	if (n > 0) {
-		textblock_append(tb, "Sustains");
-		shape_lore_append_list(tb, msgs, n);
-		textblock_append(tb, ".\n");
-		for (i = 0; i < n; ++i) {
-			string_free((char*) msgs[i]);
-		}
-	}
-
-	mem_free(msgs);
-}
-
-
-static void shape_lore_append_misc_flags(textblock *tb,
-	const struct player_shape *s)
-{
-	int n = 0;
-	int i;
-	struct player_ability *ability;
-
-	for (i = 1; i < OF_MAX; ++i) {
-		struct obj_property *prop =
-			lookup_obj_property(OBJ_PROPERTY_FLAG, i);
-
-		if ((prop->subtype == OFT_MISC || prop->subtype == OFT_MELEE ||
-			prop->subtype == OFT_BAD) &&
-			of_has(s->flags, prop->index)) {
-			textblock_append(tb, "%s%s.", (n > 0) ? "  " : "",
-				prop->desc);
-			++n;
-		}
-	}
-
-	for (ability = player_abilities; ability; ability = ability->next) {
-		if (streq(ability->type, "player") &&
-			pf_has(s->pflags, ability->index)) {
-			textblock_append(tb, "%s%s", (n > 0) ? "  " : "",
-				ability->desc);
-			++n;
-		}
-	}
-
-	if (n > 0) {
-		textblock_append(tb, "\n");
-	}
-}
-
-
-static void shape_lore_append_change_effects(textblock *tb,
-	const struct player_shape *s)
-{
-	textblock *tbe = effect_describe(s->effect, "Changing into the shape ",
-		0, false);
-
-	if (tbe) {
-		textblock_append_textblock(tb, tbe);
-		textblock_free(tbe);
-		textblock_append(tb, ".\n");
-	}
-}
-
-
-static void shape_lore_append_triggering_spells(textblock *tb,
-	const struct player_shape *s)
-{
-	int n = 0;
-	struct player_class *c;
-
-	for (c = classes; c; c = c->next) {
-		int ibook;
-
-		for (ibook = 0; ibook < c->magic.num_books; ++ibook) {
-			const struct class_book *book = c->magic.books + ibook;
-			const struct object_kind *kind =
-				lookup_kind(book->tval, book->sval);
-			int ispell;
-
-			if (!kind || !kind->name) {
-				continue;
-			}
-			for (ispell = 0; ispell < book->num_spells; ++ispell) {
-				const struct class_spell *spell =
-					book->spells + ispell;
-				const struct effect *effect;
-
-				for (effect = spell->effect;
-					effect;
-					effect = effect->next) {
-					if (effect->index == EF_SHAPECHANGE &&
-						effect->subtype == s->sidx) {
-						if (n == 0) {
-							textblock_append(tb, "\n");
-						}
-						textblock_append(tb,
-							"The %s spell, %s, from %s triggers the shapechange.",
-							c->name,
-							spell->name,
-							kind->name
-						);
-						++n;
-					}
-				}
-			}
-		}
-	}
-
-	if (n > 0) {
-		textblock_append(tb, "\n");
-	}
-}
-
-
-/**
- * Display information about a shape change.
- */
-static void shape_lore(const struct player_shape *s)
-{
-	textblock *tb = textblock_new();
-
-	textblock_append(tb, "%s", s->name);
-	textblock_append(tb, "\nLike all shapes, the equipment at the time of "
-		"the shapechange sets the base attributes, including damage "
-		"per blow, number of blows and resistances.  While changed, "
-		"items in your pack or on the floor (except for pickup or "
-		"eating) are inaccessible.  To switch back to your normal "
-		"shape, cast a spell or use an item command other than eat "
-		"(drop, for instance).\n");
-	shape_lore_append_basic_combat(tb, s);
-	shape_lore_append_skills(tb, s);
-	shape_lore_append_non_stat_modifiers(tb, s);
-	shape_lore_append_stat_modifiers(tb, s);
-	shape_lore_append_resistances(tb, s);
-	shape_lore_append_protection_flags(tb, s);
-	shape_lore_append_sustains(tb, s);
-	shape_lore_append_misc_flags(tb, s);
-	shape_lore_append_change_effects(tb, s);
-	shape_lore_append_triggering_spells(tb, s);
-
-	textui_textblock_show(tb, SCREEN_REGION, NULL);
-	textblock_free(tb);
-}
-
-
-static void do_cmd_knowledge_shapechange(const char *name, int row)
-{
-	region header_region = { 0, 0, -1, 5 };
-	region list_region = { 0, 6, -1, -2 };
-	int count = count_interesting_shapes();
-	struct menu* m;
-	struct player_shape **sarray;
-	const char **narray;
-	int omode;
-	int h, mark, mark_old;
-	bool displaying, redraw;
-	struct player_shape *s;
-	int i;
-
-	if (!count) {
-		return;
-	}
-
-	m = menu_new(MN_SKIN_SCROLL, menu_find_iter(MN_ITER_STRINGS));
-
-	/* Set up an easily indexable list of the interesting shapes. */
-	sarray = mem_alloc(count * sizeof(*sarray));
-	for (s = shapes, i = 0; s; s = s->next) {
-		if (streq(s->name, "normal")) {
-			continue;
-		}
-		sarray[i] = s;
-		++i;
-	}
-
-	/*
-	 * Sort them alphabetically by name and set up an array with just the
-	 * names.
-	 */
-	sort(sarray, count, sizeof(sarray[0]), compare_shape_names);
-	narray = mem_alloc(count * sizeof(*narray));
-	for (i = 0; i < count; ++i) {
-		narray[i] = sarray[i]->name;
-	}
-
-	menu_setpriv(m, count, narray);
-	menu_layout(m, &list_region);
-	m->flags |= MN_DBL_TAP;
-
-	screen_save();
-	clear_from(0);
-
-	/* Disable the roguelike commands for the duration */
-	omode = OPT(player, rogue_like_commands);
-	OPT(player, rogue_like_commands) = false;
-
-	h = 0;
-	mark = 0;
-	mark_old = -1;
-	displaying = true;
-	redraw = true;
-	while (displaying) {
-		bool recall = false;
-		int wnew, hnew;
-		ui_event ke0 = EVENT_EMPTY;
-		ui_event ke;
-
-		Term_get_size(&wnew, &hnew);
-		if (h != hnew) {
-			h = hnew;
-			redraw = true;
-		}
-
-		if (redraw) {
-			region_erase(&header_region);
-			prt("Knowledge - shapes", 2, 0);
-			prt("Name", 4, 0);
-			for (i = 0; i < MIN(80, wnew); i++) {
-				Term_putch(i, 5, COLOUR_WHITE, L'=');
-			}
-			prt("<dir>, 'r' to recall, ESC", h - 2, 0);
-			redraw = false;
-		}
-
-		if (mark_old != mark) {
-			mark_old = mark;
-			m->cursor = mark;
-		}
-
-		menu_refresh(m, false);
-
-		handle_stuff(player);
-
-		ke = inkey_ex();
-		if (ke.type == EVT_MOUSE) {
-			menu_handle_mouse(m, &ke, &ke0);
-		} else if (ke.type == EVT_KBRD) {
-			menu_handle_keypress(m, &ke, &ke0);
-		}
-		if (ke0.type != EVT_NONE) {
-			ke = ke0;
-		}
-
-		switch (ke.type) {
-			case EVT_KBRD:
-				if (ke.key.code == 'r' || ke.key.code == 'R') {
-					recall = true;
-				}
-				break;
-
-			case EVT_ESCAPE:
-				displaying = false;
-				break;
-
-			case EVT_SELECT:
-				if (mark == m->cursor) {
-					recall = true;
-				}
-				break;
-
-			case EVT_MOVE:
-				mark = m->cursor;
-				break;
-
-			default:
-				break;
-		}
-
-		if (recall) {
-			assert(mark >= 0 && mark < count);
-			shape_lore(sarray[mark]);
-		}
-	}
-
-	/* Restore roguelike option */
-	OPT(player, rogue_like_commands) = omode;
-
-	screen_load();
-
-	mem_free(narray);
-	mem_free(sarray);
-	menu_free(m);
-}
-
 
 /**
  * ------------------------------------------------------------------------
  * Main knowledge menus
  * ------------------------------------------------------------------------ */
-
-/* The first row of the knowledge_actions menu which does store knowledge */
-#define STORE_KNOWLEDGE_ROW 8
-
-static void do_cmd_knowledge_store(const char *name, int row)
-{
-	textui_store_knowledge(row - STORE_KNOWLEDGE_ROW);
-}
 
 static void do_cmd_knowledge_scores(const char *name, int row)
 {
@@ -3204,56 +2357,19 @@ static void do_cmd_knowledge_history(const char *name, int row)
 	history_display();
 }
 
-static void do_cmd_knowledge_equip_cmp(const char* name, int row)
-{
-	equip_cmp_display();
-}
-
-static bool handle_store_shortcuts(struct menu *m, const ui_event *ev, int oid)
-{
-	int i = 0;
-
-	assert(ev->type == EVT_KBRD);
-	while (1) {
-		if (! m->cmd_keys[i]) {
-			return false;
-		}
-		if (ev->key.code == (unsigned) m->cmd_keys[i]) {
-			menu_action *acts = menu_priv(m);
-
-			do_cmd_knowledge_store(
-				acts[i + STORE_KNOWLEDGE_ROW].name,
-				i + STORE_KNOWLEDGE_ROW);
-			return true;
-		}
-		++i;
-	}
-}
-
 /**
  * Definition of the "player knowledge" menu.
  */
 static menu_action knowledge_actions[] =
 {
 { 0, 0, "Display object knowledge",   	   textui_browse_object_knowledge },
-{ 0, 0, "Display rune knowledge",   	   do_cmd_knowledge_runes },
 { 0, 0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts },
-{ 0, 0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items },
+{ 0, 0, "Display special item knowledge",  do_cmd_knowledge_ego_items },
 { 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },
 { 0, 0, "Display feature knowledge",  	   do_cmd_knowledge_features  },
 { 0, 0, "Display trap knowledge",          do_cmd_knowledge_traps  },
-{ 0, 0, "Display shapechange effects",     do_cmd_knowledge_shapechange },
-{ 0, 0, "Display contents of general store (1)", do_cmd_knowledge_store },
-{ 0, 0, "Display contents of armourer (2)",      do_cmd_knowledge_store },
-{ 0, 0, "Display contents of weaponsmith (3)",   do_cmd_knowledge_store },
-{ 0, 0, "Display contents of bookseller (4)",    do_cmd_knowledge_store },
-{ 0, 0, "Display contents of alchemist (5)",     do_cmd_knowledge_store },
-{ 0, 0, "Display contents of magic shop (6)",    do_cmd_knowledge_store },
-{ 0, 0, "Display contents of black market (7)",  do_cmd_knowledge_store },
-{ 0, 0, "Display contents of home (8)",          do_cmd_knowledge_store },
 { 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
 { 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
-{ 0, 0, "Display equippable comparison",   do_cmd_knowledge_equip_cmp },
 };
 
 static struct menu knowledge_menu;
@@ -3270,7 +2386,6 @@ void textui_knowledge_init(void)
 	/* Shortcuts to get the contents of the stores by number; does prevent
 	 * the normal use of 4 and 6 to go to the previous or next menu */
 	menu->cmd_keys = "12345678";
-	menu->keys_hook = handle_store_shortcuts;
 
 	/* initialize other static variables */
 	if (!obj_group_order) {
@@ -3305,42 +2420,29 @@ void textui_knowledge_cleanup(void)
  */
 void textui_browse_knowledge(void)
 {
-	int i, rune_max = max_runes();
+	int i;
 	region knowledge_region = { 0, 0, -1, 2 + (int)N_ELEMENTS(knowledge_actions) };
 
-	/* Runes */
-	knowledge_actions[1].flags = MN_ACT_GRAYED;
-	for (i = 0; i < rune_max; i++) {
-		if (player_knows_rune(player, i) || OPT(player, cheat_xtra)) {
-			knowledge_actions[1].flags = 0;
-		    break;
-		}
-	}
-		
 	/* Artifacts */
 	if (collect_known_artifacts(NULL, 0) > 0)
-		knowledge_actions[2].flags = 0;
+		knowledge_actions[1].flags = 0;
 	else
-		knowledge_actions[2].flags = MN_ACT_GRAYED;
+		knowledge_actions[1].flags = MN_ACT_GRAYED;
 
 	/* Ego items */
-	knowledge_actions[3].flags = MN_ACT_GRAYED;
+	knowledge_actions[2].flags = MN_ACT_GRAYED;
 	for (i = 0; i < z_info->e_max; i++) {
 		if (e_info[i].everseen || OPT(player, cheat_xtra)) {
-			knowledge_actions[3].flags = 0;
+			knowledge_actions[2].flags = 0;
 			break;
 		}
 	}
 
 	/* Monsters */
 	if (count_known_monsters() > 0)
-		knowledge_actions[4].flags = 0;
+		knowledge_actions[3].flags = 0;
 	else
-		knowledge_actions[4].flags = MN_ACT_GRAYED;
-
-	/* Shapechanges */
-	knowledge_actions[7].flags = (count_interesting_shapes() > 0) ?
-		0 : MN_ACT_GRAYED;
+		knowledge_actions[3].flags = MN_ACT_GRAYED;
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);
@@ -3589,9 +2691,7 @@ void do_cmd_inven(void)
 				/* Track the object */
 				track_object(player->upkeep, obj);
 
-				if (!player_is_shapechanged(player)) {
-					while ((ret = context_menu_object(obj)) == 2);
-				}
+				while ((ret = context_menu_object(obj)) == 2);
 			}
 		} else {
 			/* Load screen */
@@ -3635,61 +2735,10 @@ void do_cmd_equip(void)
 				/* Track the object */
 				track_object(player->upkeep, obj);
 
-				if (!player_is_shapechanged(player)) {
-					while ((ret = context_menu_object(obj)) == 2);
-				}
+				while ((ret = context_menu_object(obj)) == 2);
 
 				/* Stay in "equipment" mode */
 				player->upkeep->command_wrk = (USE_EQUIP);
-			}
-		} else {
-			/* Load screen */
-			screen_load();
-
-			ret = -1;
-		}
-	}
-}
-
-
-/**
- * Display equipment
- */
-void do_cmd_quiver(void)
-{
-	struct object *obj = NULL;
-	int ret = 3;
-
-	if (player->upkeep->quiver_cnt == 0) {
-		msg("You have nothing in your quiver.");
-		return;
-	}
-
-	/* Start in "quiver" mode */
-	player->upkeep->command_wrk = (USE_QUIVER);
-
-	/* Loop this menu until an object context menu says differently */
-	while (ret == 3) {
-		/* Save screen */
-		screen_save();
-
-		/* Get an item to use a context command on (Display the quiver) */
-		if (get_item(&obj, "Select Item:",
-				"Error in do_cmd_quiver(), please report.",
-				CMD_NULL, NULL, GET_ITEM_PARAMS)) {
-			/* Load screen */
-			screen_load();
-
-			if (obj && obj->kind) {
-				/* Track the object */
-				track_object(player->upkeep, obj);
-
-				if (!player_is_shapechanged(player)) {
-					while  ((ret = context_menu_object(obj)) == 2);
-				}
-
-				/* Stay in "quiver" mode */
-				player->upkeep->command_wrk = (USE_QUIVER);
 			}
 		} else {
 			/* Load screen */
@@ -3707,7 +2756,7 @@ void do_cmd_quiver(void)
 void do_cmd_look(void)
 {
 	/* Look around */
-	if (target_set_interactive(TARGET_LOOK, -1, -1))
+	if (target_set_interactive(TARGET_LOOK, -1, -1, 0))
 	{
 		msg("Target Selected.");
 	}
@@ -3800,26 +2849,13 @@ void do_cmd_locate(void)
 	verify_panel();
 }
 
-static int cmp_mexp(const void *a, const void *b)
-{
-	uint16_t ia = *(const uint16_t *)a;
-	uint16_t ib = *(const uint16_t *)b;
-	if (r_info[ia].mexp < r_info[ib].mexp)
-		return -1;
-	if (r_info[ia].mexp > r_info[ib].mexp)
-		return 1;
-	return (a < b ? -1 : (a > b ? 1 : 0));
-}
-
 static int cmp_level(const void *a, const void *b)
 {
 	uint16_t ia = *(const uint16_t *)a;
 	uint16_t ib = *(const uint16_t *)b;
 	if (r_info[ia].level < r_info[ib].level)
 		return -1;
-	if (r_info[ia].level > r_info[ib].level)
-		return 1;
-	return cmp_mexp(a, b);
+	return 1;
 }
 
 static int cmp_tkill(const void *a, const void *b)
@@ -3969,7 +3005,7 @@ void do_cmd_query_symbol(void)
 		struct monster_lore *lore = &l_list[idx];
 
 		/* Nothing to recall */
-		if (!lore->all_known && !lore->sights)
+		if (!lore->all_known && !lore->psights)
 			continue;
 
 		/* Require non-unique monsters if needed */

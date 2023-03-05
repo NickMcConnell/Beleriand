@@ -1,0 +1,50 @@
+# File: pursuit.txt
+
+
+# This file is used to initialize the monster pursuit messages for Sil.
+
+# === Understanding pursuit.txt ===
+
+# type: serial number
+# visible: message
+# close: message
+# far: message
+
+# 'type' indicates the beginning of an entry. The serial number must
+# increase for each new item.
+
+# 'visible' is for any visible monster
+
+# 'close' is for an unseen monster at a distance of less than 20 grids
+
+# 'far' is for an unseen monster at a distance of 20 or more grids
+
+type:1
+visible:shouts excitedly.
+close:You hear a shout.
+far:You hear a distant shout.
+
+type:2
+visible:roars.
+close:You hear a loud roar.
+far:You hear a distant roar.
+
+type:3
+visible:grunts.
+close:You hear a low grunt.
+far:You hear a distant grunt.
+
+type:4
+visible:makes a low howl.
+close:You hear a low howl.
+far:You hear a distant howl.
+
+type:5
+visible:makes a yowling sound.
+close:You hear yowling nearby.
+far:You hear distant yowling.
+
+type:6
+visible:roars in anger.
+close:You hear a loud roar.
+far:You hear a distant roar.

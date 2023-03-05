@@ -27,6 +27,7 @@
 #include "mon-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-quest.h"
 #include "obj-util.h"
 #include "target.h"
 
@@ -62,9 +63,56 @@ void do_cmd_wizard(void)
 
 	/* Update monsters */
 	player->upkeep->update |= (PU_MONSTERS);
+}
 
-	/* Redraw "title" */
-	player->upkeep->redraw |= (PR_TITLE);
+/**
+ * Escape from Angband
+ */
+void do_cmd_escape(void)
+{
+	time_t ct = time((time_t*)0);
+	char long_day[40];
+	char buf[120];
+
+	/* Set the escaped flag */
+	player->escaped = true;
+
+	/* Flush input */
+	event_signal(EVENT_INPUT_FLUSH);
+
+	/* Commit suicide */
+	player->is_dead = true;
+
+	/* Get time */
+	(void)strftime(long_day, 40, "%d %B %Y", localtime(&ct));
+	
+	/* Add notes to the history */
+	strnfmt(buf, sizeof(buf), "You escaped the Iron Hells on %s.", long_day);
+	history_add(player, buf, HIST_ESCAPE);
+	switch (silmarils_possessed(player)) {
+		case 0:	{
+			history_add(player, "You returned empty handed.", HIST_ESCAPE);
+			break;
+		}
+		case 1:	{
+			history_add(player, "You brought back a Silmaril from Morgoth's crown!", HIST_ESCAPE);
+			break;
+		}
+		case 2:	{
+			history_add(player, "You brought back two Silmarils from Morgoth's crown!", HIST_ESCAPE);
+			break;
+		}
+		case 3: {
+			history_add(player, "You brought back all three Silmarils from Morgoth's crown!", HIST_ESCAPE);
+			break;
+		}
+		default: {
+			history_add(player, "You brought back so many Silmarils that people should be suspicious!", HIST_ESCAPE);
+		}
+	}
+
+	/* Cause of death */
+	my_strcpy(player->died_from, "ripe old age", sizeof(player->died_from));
 }
 
 /**

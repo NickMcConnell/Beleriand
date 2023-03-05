@@ -19,6 +19,7 @@
 #include "cave.h"
 #include "game-world.h"
 #include "obj-desc.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-util.h"
@@ -77,7 +78,6 @@ bool history_add_full(struct player *p,
 		bitflag *type,
 		int aidx,
 		int dlev,
-		int clev,
 		int turnno,
 		const char *text)
 {
@@ -92,7 +92,6 @@ bool history_add_full(struct player *p,
 	/* Add entry */
 	hist_copy(h->entries[h->next].type, type);
 	h->entries[h->next].dlev = dlev;
-	h->entries[h->next].clev = clev;
 	h->entries[h->next].a_idx = aidx;
 	h->entries[h->next].turn = turnno;
 	my_strcpy(h->entries[h->next].event,
@@ -116,8 +115,7 @@ static bool history_add_with_flags(struct player *p,
 		flags,
 		artifact ? artifact->aidx : 0,
 		p->depth,
-		p->lev,
-		p->total_energy / 100,
+		p->turn,
 		text);
 }
 
@@ -197,20 +195,16 @@ static bool history_mark_artifact_lost(struct player_history *h,
 static void get_artifact_name(char *buf, size_t len, const struct artifact *artifact)
 {
 	struct object body = OBJECT_NULL;
-	struct object known_body = OBJECT_NULL;
 
 	struct object *fake = &body;
-	struct object *known_obj = &known_body;
 
 	/* Make fake artifact for description purposes */
 	make_fake_artifact(fake, artifact);
 
-	fake->known = known_obj;
-	object_copy(known_obj, fake);
+	ident(fake);
 	object_desc(buf, len, fake, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL,
 		NULL);
 
-	object_wipe(known_obj);
 	object_wipe(fake);
 }
 

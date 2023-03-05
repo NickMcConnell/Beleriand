@@ -43,34 +43,14 @@ typedef struct
  */
 static quality_ignore_struct quality_mapping[] =
 {
-	{ ITYPE_GREAT,					TV_SWORD,		"Chaos" },
-	{ ITYPE_GREAT,					TV_POLEARM,		"Slicing" },
-	{ ITYPE_GREAT,					TV_HAFTED,		"Disruption" },
 	{ ITYPE_SHARP,					TV_SWORD,		"" },
 	{ ITYPE_SHARP,					TV_POLEARM,		"" },
 	{ ITYPE_BLUNT,					TV_HAFTED,		"" },
-	{ ITYPE_SLING,					TV_BOW,			"Sling" },
 	{ ITYPE_BOW,					TV_BOW,			"Bow" },
-	{ ITYPE_CROSSBOW,				TV_BOW,			"Crossbow" },
-	{ ITYPE_SHOT,					TV_SHOT,		"" },
 	{ ITYPE_ARROW,					TV_ARROW,		"" },
-	{ ITYPE_BOLT,					TV_BOLT,		"" },
 	{ ITYPE_ROBE,					TV_SOFT_ARMOR,	"Robe" },
-	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Black" },
-	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Blue" },
-	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"White" },
-	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Red" },
-	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Green" },
-	{ ITYPE_MULTI_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Multi" },
-	{ ITYPE_HIGH_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Shining" },
-	{ ITYPE_HIGH_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Law" },
-	{ ITYPE_HIGH_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Gold" },
-	{ ITYPE_HIGH_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Chaos" },
-	{ ITYPE_BALANCE_DRAGON_ARMOR,	TV_DRAG_ARMOR,	"Balance" },
-	{ ITYPE_POWER_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Power" },
-	{ ITYPE_BODY_ARMOR,				TV_HARD_ARMOR,	"" },
+	{ ITYPE_BODY_ARMOR,				TV_MAIL,		"" },
 	{ ITYPE_BODY_ARMOR,				TV_SOFT_ARMOR,	"" },
-	{ ITYPE_ELVEN_CLOAK,			TV_CLOAK,		"Elven" },
 	{ ITYPE_CLOAK,					TV_CLOAK,		"" },
 	{ ITYPE_SHIELD,					TV_SHIELD,		"" },
 	{ ITYPE_HEADGEAR,				TV_HELM,		"" },
@@ -167,63 +147,6 @@ void ignore_birth_init(void)
 
 
 /**
- * Make or extend a rune autoinscription
- */
-static void rune_add_autoinscription(struct object *obj, int i)
-{
-	char current_note[80] = "";
-
-	/* No autoinscription, or already there, don't bother */
-	if (!rune_note(i)) return;
-	if (obj->note && strstr(quark_str(obj->note), quark_str(rune_note(i))))
-		return;
-
-	/* Extend any current note */
-	if (obj->note)
-		my_strcpy(current_note, quark_str(obj->note), sizeof(current_note));
-	my_strcat(current_note, quark_str(rune_note(i)), sizeof(current_note));
-
-	/* Add the inscription */
-	obj->note = quark_add(current_note);
-}
-
-/**
- * Put a rune autoinscription on all available objects
- */
-void rune_autoinscribe(struct player *p, int i)
-{
-	struct object *obj;
-
-	/* Check the player knows the rune */
-	if (!player_knows_rune(p, i)) {
-		return;
-	}
-
-	/* Autoinscribe each object on the ground */
-	if (cave)
-		for (obj = square_object(cave, p->grid); obj; obj = obj->next)
-			if (object_has_rune(obj, i))
-				rune_add_autoinscription(obj, i);
-
-	/* Autoinscribe each object in the inventory */
-	for (obj = p->gear; obj; obj = obj->next)
-		if (object_has_rune(obj, i))
-			rune_add_autoinscription(obj, i);
-}
-
-/**
- * Put all appropriate rune autoinscriptions on an object
- */
-static void runes_autoinscribe(struct player *p, struct object *obj)
-{
-	int i, rune_max = max_runes();
-
-	for (i = 0; i < rune_max; i++)
-		if (object_has_rune(obj, i) && player_knows_rune(p, i))
-			rune_add_autoinscription(obj, i);
-}
-
-/**
  * Return an object kind autoinscription
  */
 const char *get_autoinscription(struct object_kind *kind, bool aware)
@@ -249,9 +172,6 @@ int apply_autoinscription(struct player *p, struct object *obj)
 	if (aware && quark_str(obj->note) && quark_str(obj->kind->note_unaware) &&
 		streq(quark_str(obj->note), quark_str(obj->kind->note_unaware)))
 		obj->note = 0;
-
-	/* Make rune autoinscription go first, for now */
-	runes_autoinscribe(p, obj);
 
 	/* No note - don't inscribe */
 	if (!note)
@@ -426,9 +346,9 @@ bool ego_has_ignore_type(struct ego_item *ego, ignore_type_t itype)
  * use zero (players don't consider an item with a positive bonus to be bad
  * even if the base kind has a higher positive bonus).
  */
-static int cmp_object_trait(int bonus, random_value base)
+static int cmp_object_trait(int bonus, int base)
 {
-	int amt = randcalc(base, 0, MINIMISE);
+	int amt = base;
 	if (amt > 0) amt = 0;
 	return CMP(bonus, amt);
 }
@@ -443,9 +363,12 @@ static int cmp_object_trait(int bonus, random_value base)
 static int is_object_good(const struct object *obj)
 {
 	int good = 0;
-	good += 4 * cmp_object_trait(obj->to_d, obj->kind->to_d);
-	good += 2 * cmp_object_trait(obj->to_h, obj->kind->to_h);
-	good += 1 * cmp_object_trait(obj->to_a, obj->kind->to_a);
+	good += cmp_object_trait(obj->att, obj->kind->att);
+	good += cmp_object_trait(obj->dd, obj->kind->dd);
+	good += cmp_object_trait(obj->ds, obj->kind->ds);
+	good += cmp_object_trait(obj->evn, obj->kind->evn);
+	good += cmp_object_trait(obj->pd, obj->kind->pd);
+	good += cmp_object_trait(obj->ps, obj->kind->ps);
 	return good;
 }
 
@@ -459,30 +382,9 @@ static int is_object_good(const struct object *obj)
 uint8_t ignore_level_of(const struct object *obj)
 {
 	uint8_t value = 0;
-	int i;
-
-	if (!obj->known) return IGNORE_MAX;
-
-	/* Deal with jewelry specially - only bad or average */
-	if (tval_is_jewelry(obj)) {
-		/* One positive modifier means not bad*/
-		for (i = 0; i < OBJ_MOD_MAX; i++)
-			if (obj->known->modifiers[i] > 0)
-				return IGNORE_AVERAGE;
-
-		/* One positive combat value means not bad, one negative means bad */
-		if ((obj->known->to_h > 0) || (obj->known->to_d > 0) ||
-			(obj->known->to_a > 0))
-			return IGNORE_AVERAGE;
-		if ((obj->known->to_h < 0) || (obj->known->to_d < 0) ||
-			(obj->known->to_a < 0))
-			return IGNORE_BAD;
-
-		return IGNORE_AVERAGE;
-	}
 
 	/* Now just do bad, average, good, ego */
-	if (object_fully_known(obj)) {
+	if (object_is_known(obj)) {
 		int isgood = is_object_good(obj);
 
 		/* Values for items not egos or artifacts, may be updated */
@@ -499,7 +401,7 @@ uint8_t ignore_level_of(const struct object *obj)
 		else if (obj->artifact)
 			value = IGNORE_MAX;
 	} else {
-		if ((obj->known->notice & OBJ_NOTICE_ASSESSED) && !obj->artifact)
+		if (object_is_known(obj) && !obj->artifact)
 			value = IGNORE_ALL;
 		else
 			value = IGNORE_MAX;
@@ -573,11 +475,11 @@ bool object_is_ignored(const struct object *obj)
 	uint8_t type;
 
 	/* Objects that aren't yet known can't be ignored */
-	if (!obj->known)
+	if (!object_is_known(obj) && !(obj->notice & OBJ_NOTICE_SENSE))
 		return false;
 
 	/* Do ignore individual objects that marked ignore */
-	if (obj->known->notice & OBJ_NOTICE_IGNORE)
+	if (obj->notice & OBJ_NOTICE_IGNORE)
 		return true;
 
 	/* Don't ignore artifacts unless marked to be ignored */
@@ -596,11 +498,11 @@ bool object_is_ignored(const struct object *obj)
 		return false;
 
 	/* Ignore ego items if known */
-	if (obj->known->ego && ego_is_ignored(obj->ego->eidx, type))
+	if (obj->ego && object_is_known(obj) && ego_is_ignored(obj->ego->eidx,type))
 		return true;
 
 	/* Ignore items known not to be artifacts */
-	if ((obj->known->notice & OBJ_NOTICE_ASSESSED) && !obj->artifact &&
+	if (object_is_known(obj) && !obj->artifact &&
 		ignore_level[type] == IGNORE_ALL)
 		return true;
 
@@ -676,12 +578,10 @@ void ignore_drop(struct player *p)
 			}
 
 			/* We're allowed to drop it. */
-			if (!square_isshop(cave, p->grid)) {
-				p->upkeep->dropping = true;
-				cmdq_push(CMD_DROP);
-				cmd_set_arg_item(cmdq_peek(), "item", obj);
-				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
-			}
+			p->upkeep->dropping = true;
+			cmdq_push(CMD_DROP);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+			cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
 		}
 	}
 

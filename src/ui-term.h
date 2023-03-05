@@ -329,6 +329,7 @@ extern int col_map[SIDEBAR_MAX];
 #define PW_STATUS           0x00000800L /* Display status */
 #define PW_ITEMLIST         0x00001000L /* Display item list */
 #define PW_PLAYER_3         0x00002000L /* Display player (topbar) */
+#define PW_COMBAT_ROLLS     0x00004000L /* Display combat rolls */
 
 #define PW_MAPS (PW_MAP | PW_OVERHEAD)
 

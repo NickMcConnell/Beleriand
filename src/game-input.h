@@ -20,6 +20,7 @@
 #define INCLUDED_GAME_INPUT_H
 
 #include "cmd-core.h"
+#include "obj-smith.h"
 #include "player.h"
 
 /**
@@ -44,7 +45,7 @@ extern int (*get_quantity_hook)(const char *prompt, int max);
 extern bool (*get_check_hook)(const char *prompt);
 extern bool (*get_com_hook)(const char *prompt, char *command);
 extern bool (*get_rep_dir_hook)(int *dir, bool allow_none);
-extern bool (*get_aim_dir_hook)(int *dir);
+extern bool (*get_aim_dir_hook)(int *dir, int range);
 extern int (*get_spell_from_book_hook)(struct player *p, const char *verb,
 	struct object *book, const char *error,
 	bool (*spell_filter)(const struct player *p, int spell));
@@ -54,23 +55,23 @@ extern int (*get_spell_hook)(struct player *p, const char *verb,
 extern bool (*get_item_hook)(struct object **choice, const char *pmt,
 							 const char *str, cmd_code cmd, item_tester tester,
 							 int mode);
-extern bool (*get_curse_hook)(int *choice, struct object *obj,
-							  char *dice_string);
 extern int (*get_effect_from_list_hook)(const char *prompt,
 	struct effect *effect, int count, bool allow_random);
 extern bool (*confirm_debug_hook)(void);
 extern void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 extern bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 extern bool (*map_is_visible_hook)(void);
+extern struct object *(*smith_object_hook)(struct smithing_cost *cost);
 extern void (*view_abilities_hook)(struct player_ability *ability_list,
 								   int num_abilities);
+extern void (*change_song_hook)(void);
 
 bool get_string(const char *prompt, char *buf, size_t len);
 int get_quantity(const char *prompt, int max);
 bool get_check(const char *prompt);
 bool get_com(const char *prompt, char *command);
 bool get_rep_dir(int *dir, bool allow_none);
-bool get_aim_dir(int *dir);
+bool get_aim_dir(int *dir, int range);
 int get_spell_from_book(struct player *p, const char *verb,
 	struct object *book, const char *error,
 	bool (*spell_filter)(const struct player *p, int spell));
@@ -79,14 +80,15 @@ int get_spell(struct player *p, const char *verb,
 	bool (*spell_filter)(const struct player *p, int spell));
 bool get_item(struct object **choice, const char *pmt, const char *str,
 			  cmd_code cmd, item_tester tester, int mode);
-bool get_curse(int *choice, struct object *obj, char *dice_string);
 int get_effect_from_list(const char *prompt, struct effect *effect, int count,
 	bool allow_random);
 void get_panel(int *min_y, int *min_x, int *max_y, int *max_x);
 bool confirm_debug(void);
 bool panel_contains(unsigned int y, unsigned int x);
 bool map_is_visible(void);
+struct object *smith_object(struct smithing_cost *cost);
 void view_ability_menu(struct player_ability *ability_list,
 						 int num_abilities);
+void change_song(void);
 
 #endif /* INCLUDED_GAME_INPUT_H */

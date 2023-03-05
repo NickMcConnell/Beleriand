@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cmd-core.h"
 #include "game-input.h"
+#include "obj-smith.h"
 #include "player.h"
 
 bool (*get_string_hook)(const char *prompt, char *buf, size_t len);
@@ -26,7 +27,7 @@ int (*get_quantity_hook)(const char *prompt, int max);
 bool (*get_check_hook)(const char *prompt);
 bool (*get_com_hook)(const char *prompt, char *command);
 bool (*get_rep_dir_hook)(int *dir, bool allow_none);
-bool (*get_aim_dir_hook)(int *dir);
+bool (*get_aim_dir_hook)(int *dir, int range);
 int (*get_spell_from_book_hook)(struct player *p, const char *verb,
 	struct object *book, const char *error,
 	bool (*spell_filter)(const struct player *p, int spell));
@@ -35,15 +36,16 @@ int (*get_spell_hook)(struct player *p, const char *verb,
 	bool (*spell_filter)(const struct player *p, int spell));
 bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
 					  cmd_code cmd, item_tester tester, int mode);
-bool (*get_curse_hook)(int *choice, struct object *obj, char *dice_string);
 int (*get_effect_from_list_hook)(const char* prompt,
 	struct effect *effect, int count, bool allow_random);
 bool (*confirm_debug_hook)(void);
 void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 bool (*map_is_visible_hook)(void);
+struct object *(*smith_object_hook)(struct smithing_cost *cost);
 void (*view_abilities_hook)(struct player_ability *ability_list,
 							int num_abilities);
+void (*change_song_hook)(void);
 
 /**
  * Prompt for a string from the user.
@@ -135,11 +137,11 @@ bool get_rep_dir(int *dir, bool allow_none)
  * \param dir is a pointer to an integer representing the chosen direction
  * \return true if a direction was chosen, otherwise return false.
  */
-bool get_aim_dir(int *dir)
+bool get_aim_dir(int *dir, int range)
 {
 	/* Ask the UI for it */
 	if (get_aim_dir_hook)
-		return get_aim_dir_hook(dir);
+		return get_aim_dir_hook(dir, range);
 	else
 		return false;
 }
@@ -195,18 +197,6 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 	/* Ask the UI for it */
 	if (get_item_hook)
 		return get_item_hook(choice, pmt, str, cmd, tester, mode);
-	else
-		return false;
-}
-
-/**
- * Get a curse from an object
- */
-bool get_curse(int *choice, struct object *obj, char *dice_string)
-{
-	/* Ask the UI for it */
-	if (get_curse_hook)
-		return get_curse_hook(choice, obj, dice_string);
 	else
 		return false;
 }
@@ -294,6 +284,18 @@ bool map_is_visible(void)
 }
 
 /**
+ * Smith an object
+ */
+struct object *smith_object(struct smithing_cost *cost)
+{
+	/* Ask the UI for it */
+	if (smith_object_hook)
+		return smith_object_hook(cost);
+
+	return NULL;
+}
+
+/**
  * Browse player abilities
  */
 void view_ability_menu(struct player_ability *ability_list,
@@ -303,3 +305,14 @@ void view_ability_menu(struct player_ability *ability_list,
 	if (view_abilities_hook)
 		view_abilities_hook(ability_list, num_abilities);
 }
+
+/**
+ * Change songs
+ */
+void change_song(void)
+{
+	/* Ask the UI for it */
+	if (change_song_hook)
+		change_song_hook();
+}
+

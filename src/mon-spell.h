@@ -29,22 +29,14 @@
 /* Spell type bitflags */
 enum mon_spell_type {
 	RST_NONE		= 0x0000,
-	RST_BOLT		= 0x0001,
-	RST_BALL		= 0x0002,	/* Ball spells, but also beams */
+	RST_INNATE		= 0x0001,
+	RST_ARCHERY		= 0x0002,
 	RST_BREATH		= 0x0004,
-	RST_DIRECT		= 0x0008,	/* Direct (non-projectable) attacks */
-	RST_ANNOY		= 0x0010,	/* Irritant spells, usually non-fatal */
-	RST_HASTE		= 0x0020,	/* Relative speed advantage */
-	RST_HEAL		= 0x0040,
-	RST_HEAL_OTHER	= 0x0080,
-	RST_TACTIC		= 0x0100,	/* Get a better position */
-	RST_ESCAPE		= 0x0200,
-	RST_SUMMON		= 0x0400,
-	RST_INNATE		= 0x0800,
-	RST_ARCHERY		= 0x1000
+	RST_SPELL		= 0x0008,
+	RST_DISTANT		= 0x0010,
+	RST_SONG		= 0x0020
 };
 
-#define RST_DAMAGE (RST_BOLT | RST_BALL | RST_BREATH | RST_DIRECT)
 
 /** Macros **/
 #define rsf_has(f, flag)       flag_has_dbg(f, RSF_SIZE, flag, #f, #flag)
@@ -67,18 +59,13 @@ enum mon_spell_type {
 
 
 /** Functions **/
-int breath_dam(int element, int hp);
 const struct monster_spell *monster_spell_by_index(int index);
+bool monster_cast_chance(struct monster *mon);
 void do_mon_spell(int index, struct monster *mon, bool seen);
-bool test_spells(bitflag *f, int types);
-void ignore_spells(bitflag *f, int types);
-void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
-				  struct element_info *el, const struct monster *mon);
-bool mon_spell_is_innate(int index);
+void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE]);
 void create_mon_spell_mask(bitflag *f, ...);
 const char *mon_spell_lore_description(int index,
 									   const struct monster_race *race);
-int mon_spell_lore_damage(int index, const struct monster_race *race,
-						  bool know_hp);
+random_value mon_spell_lore_damage(int index);
 
 #endif /* MONSTER_SPELL_H */

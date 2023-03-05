@@ -3,11 +3,15 @@
  * \brief List flags for room types
  *
  * Changing these flags would not affect savefiles but would affect the parsing
- * of vault.txt and room_template.txt.
+ * of vault.txt.
  *
  * Fields:
  * name
  * help string
  */
-ROOMF(FEW_ENTRANCES, "select alternate tunneling for a room since it can only be entered from a few directions or the entrances involve digging")
+ROOMF(NO_ROTATION, "Vault cannot be rotated")
+ROOMF(TRAPS, "Vault has more traps than usual")
+ROOMF(WEBS, "Vault has spider webs")
+ROOMF(LIGHT, "Vault is always generated with light")
+ROOMF(TEST, "Vault must be generated (for debugging)")
 ROOMF(MAX, "")

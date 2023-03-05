@@ -25,9 +25,9 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
-#include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -83,9 +83,7 @@ static void spoiler_underline(const char *str, char c)
  */
 static const grouper group_item[] =
 {
-	{ TV_SHOT,		"Ammo" },
-	{ TV_ARROW,		  NULL },
-	{ TV_BOLT,		  NULL },
+	{ TV_ARROW,		"Ammo" },
 
 	{ TV_BOW,		"Bows" },
 
@@ -94,9 +92,8 @@ static const grouper group_item[] =
 	{ TV_HAFTED,	  NULL },
 	{ TV_DIGGING,	  NULL },
 
-	{ TV_SOFT_ARMOR,	"Armour (Body)" },
-	{ TV_HARD_ARMOR,	  NULL },
-	{ TV_DRAG_ARMOR,	  NULL },
+	{ TV_SOFT_ARMOR,"Armour (Body)" },
+	{ TV_MAIL,	  	  NULL },
 
 	{ TV_CLOAK,		"Armour (Misc)" },
 	{ TV_SHIELD,	  NULL },
@@ -108,20 +105,11 @@ static const grouper group_item[] =
 	{ TV_AMULET,	"Amulets" },
 	{ TV_RING,		"Rings" },
 
-	{ TV_SCROLL,	"Scrolls" },
 	{ TV_POTION,	"Potions" },
 	{ TV_FOOD,		"Food" },
-	{ TV_MUSHROOM,	"Mushrooms" },
+	{ TV_HERB,		"Herbs" },
 
-	{ TV_ROD,		"Rods" },
-	{ TV_WAND,		"Wands" },
-	{ TV_STAFF,		"Staffs" },
-
-	{ TV_MAGIC_BOOK,	"Magic Books" },
-	{ TV_PRAYER_BOOK,	"Holy Books" },
-	{ TV_NATURE_BOOK,	"Nature Books" },
-	{ TV_SHADOW_BOOK,	"Shadow Books" },
-	{ TV_OTHER_BOOK,	"Mystery Books" },
+	{ TV_HORN,		"Horns" },
 
 	{ TV_CHEST,		"Chests" },
 
@@ -142,7 +130,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 		char *wgt, size_t wgt_len, int *lev, int32_t *val, int k)
 {
 	struct object_kind *kind = &k_info[k];
-	struct object *obj = object_new(), *known_obj = object_new();
+	struct object *obj = object_new();
 	int i;
 
 	/* Prepare a fake item */
@@ -151,19 +139,17 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	/* Cancel bonuses */
 	for (i = 0; i < OBJ_MOD_MAX; i++)
 		obj->modifiers[i] = 0;
-	obj->to_a = 0;
-	obj->to_h = 0;
-	obj->to_d = 0;
+	obj->att = 0;
+	obj->evn = 0;
 
 	/* Level */
 	(*lev) = kind->level;
 
 	/* Make known */
-	object_copy(known_obj, obj);
-	obj->known = known_obj;
+	object_know(obj);
 
 	/* Value */
-	(*val) = object_value(obj, 1);
+	(*val) = object_value(obj);
 
 	/* Description (too brief) */
 	if (buf) {
@@ -176,8 +162,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 
 	/* Hack */
 	if (!dam) {
-		object_delete(NULL, NULL, &known_obj);
-		object_delete(NULL, NULL, &obj);
+		object_delete(NULL, &obj);
 		return;
 	}
 
@@ -188,10 +173,9 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	if (tval_is_ammo(obj) || tval_is_melee_weapon(obj))
 		strnfmt(dam, dam_len, "%dd%d", obj->dd, obj->ds);
 	else if (tval_is_armor(obj))
-		strnfmt(dam, dam_len, "%d", obj->ac);
+		strnfmt(dam, dam_len, "%dd%d", obj->pd, obj->ps);
 
-	object_delete(NULL, NULL, &known_obj);
-	object_delete(NULL, NULL, &obj);
+	object_delete(NULL, &obj);
 }
 
 
@@ -350,8 +334,7 @@ static const grouper group_artifact[] =
 	{ TV_DIGGING,       "Diggers" },
 
 	{ TV_SOFT_ARMOR,    "Body Armor" },
-	{ TV_HARD_ARMOR,    NULL },
-	{ TV_DRAG_ARMOR,    NULL },
+	{ TV_MAIL,            NULL },
 
 	{ TV_CLOAK,         "Cloaks" },
 	{ TV_SHIELD,        "Shields" },
@@ -409,14 +392,13 @@ void spoil_artifact(const char *fname)
 			const struct artifact *art = &a_info[j];
 			struct artifact artc;
 			char buf2[80];
-			struct object *obj, *known_obj;
+			struct object *obj;
 
 			/* We only want objects in the current group */
 			if (art->tval != group_artifact[i].tval) continue;
 
 			/* Get local object */
 			obj = object_new();
-			known_obj = object_new();
 
 			/*
 			 * Make a copy of the artifact state; hide the
@@ -428,14 +410,12 @@ void spoil_artifact(const char *fname)
 
 			/* Attempt to "forge" the artifact */
 			if (!make_fake_artifact(obj, &artc)) {
-				object_delete(NULL, NULL, &known_obj);
-				object_delete(NULL, NULL, &obj);
+				object_delete(NULL, &obj);
 				continue;
 			}
 
 			/* Grab artifact name */
-			object_copy(known_obj, obj);
-			obj->known = known_obj;
+			object_know(obj);
 			object_desc(buf2, sizeof(buf2), obj, ODESC_PREFIX |
 				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL, NULL);
 
@@ -450,17 +430,13 @@ void spoil_artifact(const char *fname)
 			 * artifact can appear, its rarity, its weight, and
 			 * its power rating.
 			 */
-			text_out("\nMin Level %u, Max Level %u, Generation chance %u, Power %d, %d.%d lbs\n",
-					 art->alloc_min, art->alloc_max, art->alloc_prob,
-					 object_power(obj, false, NULL), (art->weight / 10),
+			text_out("\nLevel %u, Rarity %u, %d.%d lbs\n",
+					 art->level, art->rarity, (art->weight / 10),
 					 (art->weight % 10));
-
-			if (OPT(player, birth_randarts)) text_out("%s.\n", art->text);
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);
-			object_delete(NULL, NULL, &known_obj);
-			object_delete(NULL, NULL, &obj);
+			object_delete(NULL, &obj);
 		}
 	}
 
@@ -491,10 +467,9 @@ void spoil_mon_desc(const char *fname)
 	char nam[80];
 	char lev[80];
 	char rar[80];
-	char spd[80];
-	char ac[80];
-	char hp[80];
-	char exp[80];
+	char health[80];
+	char prot[80];
+	char graphics[80];
 
 	uint16_t *who;
 
@@ -513,10 +488,10 @@ void spoil_mon_desc(const char *fname)
 	file_putf(fh, "------------------------------------------\n\n");
 
 	/* Dump the header */
-	file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
-	        "Name", "Lev", "Rar", "Spd", "Hp", "Ac", "Visual Info");
-	file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
-	        "----", "---", "---", "---", "--", "--", "-----------");
+	file_putf(fh, "%-40.40s%4s%4s%8s%8s  %11.11s\n",
+	        "Name", "Lev", "Rar", "Hit", "Prot", "Visual Info");
+	file_putf(fh, "%-40.40s%4s%4s%8s%8s  %11.11s\n",
+	        "----", "---", "---", "---", "----", "-----------");
 
 	/* Allocate the "who" array */
 	who = mem_zalloc(z_info->r_max * sizeof(uint16_t));
@@ -552,24 +527,15 @@ void spoil_mon_desc(const char *fname)
 		/* Rarity */
 		strnfmt(rar, sizeof(rar), "%d", race->rarity);
 
-		/* Speed */
-		if (race->speed >= 110)
-			strnfmt(spd, sizeof(spd), "+%d", (race->speed - 110));
-		else
-			strnfmt(spd, sizeof(spd), "-%d", (110 - race->speed));
+		/* Hit Dice */
+		strnfmt(health, sizeof(health), "%dd%d", race->hdice, race->hside);
 
-		/* Armor Class */
-		strnfmt(ac, sizeof(ac), "%d", race->ac);
-
-		/* Hitpoints */
-		strnfmt(hp, sizeof(hp), "%d", race->avg_hp);
-
-		/* Experience */
-		strnfmt(exp, sizeof(exp), "%ld", (long)(race->mexp));
+		/* Protection Dice */
+		strnfmt(prot, sizeof(prot), "%d:%dd%d", race->evn, race->pd, race->ps);
 
 		/* Hack -- use visual instead */
-		strnfmt(exp, sizeof(exp), "%s '%c'", attr_to_text(race->d_attr),
-				race->d_char);
+		strnfmt(graphics, sizeof(graphics), "%s '%c'",
+				attr_to_text(race->d_attr), race->d_char);
 
 		/*
 		 * Dump the info.  The rationale for handling the first column
@@ -585,8 +551,8 @@ void spoil_mon_desc(const char *fname)
 			}
 			file_putf(fh, "%s", nam);
 		}
-		file_putf(fh, "%4s%4s%6s%8s%4s  %11.11s\n",
-		        lev, rar, spd, hp, ac, exp);
+		file_putf(fh, "%4s%4s%8s%8s  %11.11s\n",
+		        lev, rar, health, prot, graphics);
 	}
 
 	/* End it */
@@ -688,9 +654,8 @@ void spoil_mon_info(const char *fname)
 		else
 			textblock_append(tb, "Spd:-%d  ", (110 - race->speed));
 
-		textblock_append(tb, "Hp:%d  ", race->avg_hp);
-		textblock_append(tb, "Ac:%d  ", race->ac);
-		textblock_append(tb, "Exp:%ld\n", (long)(race->mexp));
+		textblock_append(tb, "Hp:%dd%d  ", race->hdice, race->hside);
+		textblock_append(tb, "Prot:%d:%dd%d  ", race->evn, race->pd, race->ps);
 
 		/* Normal description (with automatic line breaks) */
 		lore_description(tb, race, lore, true);

@@ -27,30 +27,24 @@ void create_mon_flag_mask(bitflag *f, ...);
 struct monster_race *lookup_monster(const char *name);
 struct monster_base *lookup_monster_base(const char *name);
 bool match_monster_bases(const struct monster_base *base, ...);
-void update_mon(struct monster *mon, struct chunk *c, bool full);
-void update_monsters(bool full);
-bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj);
 void monster_swap(struct loc grid1, struct loc grid2);
 void monster_wake(struct monster *mon, bool notify, int aware_chance);
 bool monster_can_see(struct chunk *c, struct monster *mon, struct loc grid);
-void become_aware(struct chunk *c, struct monster *m);
 void update_smart_learn(struct monster *mon, struct player *p, int flag,
 						int pflag, int element);
-bool find_any_nearby_injured_kin(struct chunk *c, const struct monster *mon);
-struct monster *choose_nearby_injured_kin(struct chunk *c, const struct monster *mon);
-void monster_death(struct monster *mon, struct player *p, bool stats);
+void monsters_hear(bool player_centered, bool main_roll, int difficulty);
+int32_t adjusted_mon_exp(const struct monster_race *race, bool kill);
+int mon_create_drop_count(const struct monster_race *race, bool maximize);
+void drop_loot(struct monster *mon, bool stats);
+void monster_death(struct monster *mon, struct player *p, bool player,
+				   const char *note, bool stats);
 bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 							enum mon_messages hurt_msg,
 							enum mon_messages die_msg);
-bool mon_take_hit(struct monster *mon, struct player *p, int dam, bool *fear,
+bool mon_take_hit(struct monster *mon, struct player *p, int dam,
 	const char *note);
-void kill_arena_monster(struct monster *mon);
-void monster_take_terrain_damage(struct monster *mon);
-bool monster_taking_terrain_damage(struct chunk *c, struct monster *mon);
-struct monster *get_commanded_monster(void);
-struct object *get_random_monster_object(struct monster *mon);
-void steal_monster_item(struct monster *mon, int midx);
-bool monster_change_shape(struct monster *mon);
-bool monster_revert_shape(struct monster *mon);
+bool similar_monsters(struct monster *mon1, struct monster *mon2);
+void scare_onlooking_friends(const struct monster *mon, int amount);
+bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj);
 
 #endif /* MONSTER_UTILITIES_H */

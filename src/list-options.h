@@ -11,13 +11,45 @@
 type     normal */
 OP(none,                  "",
 SPECIAL, false)
-OP(rogue_like_commands,   "Use the roguelike command keyset",
+OP(hjkl_movement,         "Move with hjkl etc. (use ^ for underlying keys)",
 INTERFACE, false)
 OP(use_sound,             "Use sound",
 INTERFACE, false)
-OP(show_damage,           "Show damage player deals to monsters",
+OP(quick_messages,        "Dismiss '-more-' and 'y/n' prompts with any key",
 INTERFACE, false)
-OP(use_old_target,        "Use old target by default",
+OP(angband_keyset,         "Use a keyset more closely based on Angband",
+INTERFACE, false)
+OP(stop_singing_on_rest,  "Stop singing when you use the rest command",
+INTERFACE, false)
+OP(forgo_attacking_unwary,"Forgo bonus attacks on non-alert enemies",
+INTERFACE, false)
+OP(beep,                  "Audible beep (on errors/warnings)",
+INTERFACE, false)
+OP(highlight_player,      "Highlight the player with the cursor",
+INTERFACE, false)
+OP(highlight_target,      "Highlight the target with the cursor",
+INTERFACE, false)
+OP(highlight_unwary,      "Highlight sleeping and unwary creatures",
+INTERFACE, false)
+OP(solid_walls,           "Show walls as solid blocks",
+INTERFACE, false)
+OP(hybrid_walls,          "Show walls with shaded background",
+INTERFACE, false)
+OP(instant_run,           "Faster display while running",
+INTERFACE, false)
+OP(animate_flicker,       "Color: Shimmer multi-colored things",
+INTERFACE, false)
+OP(center_player,         "Center map continuously",
+INTERFACE, false)
+OP(run_avoid_center,      "Avoid centering while running",
+INTERFACE, false)
+OP(auto_more,             "Automatically clear '-more-' prompts",
+INTERFACE, false)
+OP(easy_main_menu,        "Use the Escape key to access the main menu",
+INTERFACE, true)
+OP(mouse_movement,        "Allow mouse clicks to move the player",
+INTERFACE, true)
+OP(display_hits,          "Display a mark when something gets hit",
 INTERFACE, false)
 OP(pickup_always,         "Always pickup items",
 INTERFACE, false)
@@ -25,78 +57,58 @@ OP(pickup_inven,          "Always pickup items matching inventory",
 INTERFACE, true)
 OP(show_flavors,          "Show flavors in object descriptions",
 INTERFACE, false)
-OP(show_target,           "Highlight target with cursor",
-INTERFACE, true)
-OP(highlight_player,      "Highlight player with cursor between turns",
-INTERFACE, false)
-OP(disturb_near,          "Disturb whenever viewable monster moves",
-INTERFACE, true)
-OP(solid_walls,           "Show walls as solid blocks",
-INTERFACE, false)
-OP(hybrid_walls,          "Show walls with shaded background",
-INTERFACE, false)
-OP(view_yellow_light,     "Color: Illuminate torchlight in yellow",
-INTERFACE, false)
-OP(animate_flicker,       "Color: Shimmer multi-colored things",
-INTERFACE, false)
-OP(center_player,         "Center map continuously",
-INTERFACE, false)
-OP(purple_uniques,        "Color: Show unique monsters in purple",
-INTERFACE, false)
-OP(auto_more,             "Automatically clear '-more-' prompts",
-INTERFACE, false)
-OP(hp_changes_color,      "Color: Player color indicates % hit points",
-INTERFACE, true)
-OP(mouse_movement,        "Allow mouse clicks to move the player",
-INTERFACE, true)
-OP(notify_recharge,       "Notify on object recharge",
-INTERFACE, false)
-OP(effective_speed,       "Show effective speed as multiplier",
-INTERFACE, false)
-OP(cheat_hear,            "Cheat: Peek into monster creation",
+OP(cheat_peek,            "Debug: Peek into object creation",
+CHEAT, false)
+OP(score_peek,            "Score: Peek into object creation",
+SCORE, false)
+OP(cheat_hear,            "Debug: Peek into monster creation",
 CHEAT, false)
 OP(score_hear,            "Score: Peek into monster creation",
 SCORE, false)
-OP(cheat_room,            "Cheat: Peek into dungeon creation",
+OP(cheat_room,            "Debug: Peek into dungeon creation",
 CHEAT, false)
 OP(score_room,            "Score: Peek into dungeon creation",
 SCORE, false)
-OP(cheat_xtra,            "Cheat: Peek into something else",
+OP(cheat_xtra,            "Debug: Peek into something else",
 CHEAT, false)
 OP(score_xtra,            "Score: Peek into something else",
 SCORE, false)
-OP(cheat_live,            "Cheat: Allow player to avoid death",
+OP(cheat_know,            "Debug: Know complete monster info",
+CHEAT, false)
+OP(score_know,            "Score: Know complete monster info",
+SCORE, false)
+OP(cheat_live,            "Debug: Allow player to avoid death",
 CHEAT, false)
 OP(score_live,            "Score: Allow player to avoid death",
 SCORE, false)
-OP(birth_randarts,        "Generate a new, random artifact set",
+OP(cheat_monsters,        "Debug: Continually display all monsters",
+CHEAT, false)
+OP(score_monsters,        "Score: Continually display all monsters",
+SCORE, false)
+OP(cheat_noise,           "Debug: Continually display noise levels",
+CHEAT, false)
+OP(score_noise,           "Score: Continually display noise levels",
+SCORE, false)
+OP(cheat_scent,           "Debug: Continually display scent levels",
+CHEAT, false)
+OP(score_scent,           "Score: Continually display scent levels",
+SCORE, false)
+OP(cheat_light,           "Debug: Continually display light levels",
+CHEAT, false)
+OP(score_light,           "Score: Continually display light levels",
+SCORE, false)
+OP(cheat_skill_rolls,     "Debug: Show all skill rolls",
+CHEAT, false)
+OP(score_skill_rolls,     "Score: Show all skill rolls",
+SCORE, false)
+OP(cheat_timestop,        "Debug: Don't allow monsters to move",
+CHEAT, false)
+OP(score_timestop,        "Score: Don't allow monsters to move",
+SCORE, false)
+OP(birth_discon_stairs,   "Disconnected stairs",
 BIRTH, false)
-OP(birth_connect_stairs,  "Generate connected stairs",
-BIRTH, true)
 OP(birth_force_descend,   "Force player descent (never make up stairs)",
 BIRTH, false)
-OP(birth_no_recall,       "Word of Recall has no effect",
-BIRTH, false)
 OP(birth_no_artifacts,    "Restrict creation of artifacts",
-BIRTH, false)
-OP(birth_stacking,        "Stack objects on the floor",
-BIRTH, true)
-OP(birth_lose_arts,       "Lose artifacts when leaving level",
-BIRTH, false)
-OP(birth_feelings,        "Show level feelings",
-BIRTH, true)
-OP(birth_no_selling,      "Increase gold drops but disable selling",
-BIRTH, true)
-OP(birth_start_kit,       "Start with a kit of useful gear",
-BIRTH, true)
-OP(birth_ai_learn,        "Monsters learn from their mistakes",
-BIRTH, true)
-OP(birth_know_runes,      "Know all runes on birth",
-BIRTH, false)
-OP(birth_know_flavors,    "Know all flavors on birth",
-BIRTH, false)
-OP(birth_levels_persist,  "Persistent levels (experimental)",
-BIRTH, false)
-OP(birth_percent_damage,  "To-damage is a percentage of dice (experimental)",
 BIRTH, false)
 

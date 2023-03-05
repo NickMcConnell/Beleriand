@@ -20,6 +20,7 @@
 #include "game-world.h"
 #include "mon-desc.h"
 #include "mon-list.h"
+#include "mon-move.h"
 #include "mon-predicate.h"
 #include "project.h"
 
@@ -153,7 +154,7 @@ void monster_list_collect(monster_list_t *list)
 		bool los = false;
 
 		/* Only consider visible, known monsters */
-		if (!monster_is_visible(mon) ||	monster_is_camouflaged(mon))
+		if (!monster_is_visible(mon))
 			continue;
 
 		/* Find or add a list entry. */
@@ -190,8 +191,8 @@ void monster_list_collect(monster_list_t *list)
 		field = (los) ? MONSTER_LIST_SECTION_LOS : MONSTER_LIST_SECTION_ESP;
 		entry->count[field]++;
 
-		if (mon->m_timed[MON_TMD_SLEEP] > 0)
-			entry->asleep[field]++;
+		if (mon->alertness >= ALERTNESS_ALERT)
+			entry->alert[field]++;
 
 		/* Store the location offset from the player; this is only used for
 		 * monster counts of 1 */
@@ -245,7 +246,7 @@ int monster_list_standard_compare(const void *a, const void *b)
 }
 
 /**
- * Comparison function for the monster list: sort by exp
+ * Comparison function for the monster list: sort by level
  */
 int monster_list_compare_exp(const void *a, const void *b)
 {
@@ -259,8 +260,8 @@ int monster_list_compare_exp(const void *a, const void *b)
 		return 1;
 
 	/* Experience, integer part */
-	a_exp = (long)ar->mexp * ar->level / player->lev;
-	b_exp = (long)br->mexp * br->level / player->lev;
+	a_exp = (long)ar->level;
+	b_exp = (long)br->level;
 
 	/* Evaluate exp gained when killing */
 	if (a_exp > b_exp)

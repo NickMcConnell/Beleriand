@@ -22,14 +22,17 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-move.h"
 #include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "obj-knowledge.h"
+#include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "songs.h"
 
 /**
  * ------------------------------------------------------------------------
@@ -39,9 +42,6 @@ typedef enum {
 	SPELL_TAG_NONE,
 	SPELL_TAG_NAME,
 	SPELL_TAG_PRONOUN,
-	SPELL_TAG_TARGET,
-	SPELL_TAG_TYPE,
-	SPELL_TAG_OF_TYPE
 } spell_tag_t;
 
 static spell_tag_t spell_tag_lookup(const char *tag)
@@ -50,12 +50,6 @@ static spell_tag_t spell_tag_lookup(const char *tag)
 		return SPELL_TAG_NAME;
 	else if (strncmp(tag, "pronoun", 7) == 0)
 		return SPELL_TAG_PRONOUN;
-	else if (strncmp(tag, "target", 6) == 0)
-		return SPELL_TAG_TARGET;
-	else if (strncmp(tag, "type", 4) == 0)
-		return SPELL_TAG_TYPE;
-	else if (strncmp(tag, "oftype", 6) == 0)
-		return SPELL_TAG_OF_TYPE;
 	else
 		return SPELL_TAG_NONE;
 }
@@ -93,7 +87,7 @@ static const char *find_alternate_spell_message(const struct monster_race *r,
  */
 static void spell_message(struct monster *mon,
 						  const struct monster_spell *spell,
-						  bool seen, bool hits)
+						  bool seen)
 {
 	const char punct[] = ".!?;:,'";
 	char buf[1024] = "\0";
@@ -103,7 +97,8 @@ static void spell_message(struct monster *mon,
 	const char *in_cursor;
 	size_t end = 0;
 	struct monster_spell_level *level = spell->level;
-	struct monster *t_mon = NULL;
+	bool smart = rf_has(mon->race->flags, RF_SMART);
+	bool silence = player_is_singing(player, lookup_song("Silence"));
 	bool is_leading;
 
 	/* Get the right level of message */
@@ -111,37 +106,44 @@ static void spell_message(struct monster *mon,
 		level = level->next;
 	}
 
-	/* Get the target monster, if any */
-	if (mon->target.midx > 0) {
-		t_mon = cave_monster(cave, mon->target.midx);
-	}
-
 	/* Get the message */
 	if (!seen) {
-		if (t_mon) {
-			return;
-		} else {
-			in_cursor = find_alternate_spell_message(mon->race,
-				spell->index, MON_ALTMSG_UNSEEN);
-			if (in_cursor == NULL) {
-				in_cursor = level->blind_message;
-			} else if (in_cursor[0] == '\0') {
-				return;
-			}
-		}
-	} else if (!hits) {
-		in_cursor = find_alternate_spell_message(mon->race,
-			spell->index, MON_ALTMSG_MISS);
+		in_cursor = find_alternate_spell_message(mon->race,	spell->index,
+												 MON_ALTMSG_UNSEEN);
 		if (in_cursor == NULL) {
-			in_cursor = level->miss_message;
+			if (smart) {
+				if (silence) {
+					in_cursor = level->smart_blind_silence_message;
+				} else {
+					in_cursor = level->smart_blind_message;
+				}
+			} else {
+				if (silence) {
+					in_cursor = level->blind_silence_message;
+				} else {
+					in_cursor = level->blind_message;
+				}
+			}
 		} else if (in_cursor[0] == '\0') {
 			return;
 		}
 	} else {
-		in_cursor = find_alternate_spell_message(mon->race,
-			spell->index, MON_ALTMSG_SEEN);
+		in_cursor = find_alternate_spell_message(mon->race,	spell->index,
+												 MON_ALTMSG_SEEN);
 		if (in_cursor == NULL) {
-			in_cursor = level->message;
+			if (smart) {
+				if (silence) {
+					in_cursor = level->smart_silence_message;
+				} else {
+					in_cursor = level->smart_message;
+				}
+			} else {
+				if (silence) {
+					in_cursor = level->silence_message;
+				} else {
+					in_cursor = level->message;
+				}
+			}
 		} else if (in_cursor[0] == '\0') {
 			return;
 		}
@@ -191,45 +193,6 @@ static void spell_message(struct monster *mon,
 					break;
 				}
 
-				case SPELL_TAG_TARGET: {
-					char m_name[80];
-					if (mon->target.midx > 0) {
-						int mdesc_mode = MDESC_TARG;
-
-						if (!strchr(punct, *in_cursor)) {
-							mdesc_mode |= MDESC_COMMA;
-						}
-						monster_desc(m_name,
-							sizeof(m_name), t_mon,
-							mdesc_mode);
-						strnfcat(buf, sizeof(buf), &end, m_name);
-					} else {
-						strnfcat(buf, sizeof(buf), &end, "you");
-					}
-					break;
-				}
-
-				case SPELL_TAG_TYPE: {
-					/* Get the attack type (assuming lash) */
-					int type = mon->race->blow[0].effect->lash_type;
-					char *type_name = projections[type].lash_desc;
-
-					strnfcat(buf, sizeof(buf), &end, type_name);
-					break;
-				}
-
-				case SPELL_TAG_OF_TYPE: {
-					/* Get the attack type (assuming lash) */
-					int type = mon->race->blow[0].effect->lash_type;
-					char *type_name = projections[type].lash_desc;
-
-					if (type_name) {
-						strnfcat(buf, sizeof(buf), &end, " of ");
-						strnfcat(buf, sizeof(buf), &end, type_name);
-					}
-					break;
-				}
-
 				default: {
 					break;
 				}
@@ -247,6 +210,31 @@ static void spell_message(struct monster *mon,
 	msgt(spell->msgt, "%s", buf);
 }
 
+/**
+ * Check if a monster has a chance of casting a spell this turn
+ */
+bool monster_cast_chance(struct monster *mon)
+{
+	int chance = mon->race->freq_ranged;
+
+	/* Not allowed to cast spells */
+	if (!chance) return 0;
+
+	/* Certain conditions always cause a monster to always cast */
+	if (mflag_has(mon->mflag, MFLAG_ALWAYS_CAST)) chance = 100;
+
+	/* Cannot use ranged attacks when confused. */
+	if (mon->m_timed[MON_TMD_CONF]) chance = 0;
+
+	/* Cannot use ranged attacks during the truce. */
+	if (player->truce) chance = 0;
+	
+	/* Stunned monsters use ranged attacks half as often. */
+	if (mon->m_timed[MON_TMD_STUN]) chance /= 2;
+
+	return chance;
+}
+
 const struct monster_spell *monster_spell_by_index(int index)
 {
 	const struct monster_spell *spell = monster_spells;
@@ -259,55 +247,28 @@ const struct monster_spell *monster_spell_by_index(int index)
 }
 
 /**
- * Check if a spell effect which has been saved against would also have
- * been prevented by an object property, and learn the appropriate rune
+ * Check if a spell effect has been saved against, learn any object property
+ * that may have helped
  */
-static void spell_check_for_fail_rune(const struct monster_spell *spell)
+static bool spell_check_for_save(const struct monster_spell *spell)
 {
 	struct effect *effect = spell->effect;
+	bool save = false;
 	while (effect) {
-		if (effect->index == EF_TELEPORT_LEVEL) {
-			/* Special case - teleport level */
-			equip_learn_element(player, ELEM_NEXUS);
-		} else if (effect->index == EF_TIMED_INC) {
+		if (effect->index == EF_TIMED_INC) {
 			/* Timed effects */
-			(void) player_inc_check(player, effect->subtype, false);
+			save = player_inc_check(player, effect->subtype, false);
+		} else {
+			/* Direct call to player_saving_throw() */
+			struct monster *mon = cave->mon_current > 0 ?
+				cave_monster(cave, cave->mon_current) : NULL;
+			save = player_saving_throw(player, mon, 0);
 		}
 		effect = effect->next;
 	}
+	return save;
 }
 
-/**
- * Calculate the base to-hit value for a monster spell based on race only
- * See also: chance_of_monster_hit_base
- *
- * \param race The monster race
- * \param spell The spell
- */
-static int chance_of_spell_hit_base(const struct monster_race *race,
-	const struct monster_spell *spell)
-{
-	return MAX(race->level, 1) * 3 + spell->hit;
-}
-
-/**
- * Calculate the to-hit value of a monster spell for a specific monster
- *
- * \param mon The monster
- * \param spell The spell
- */
-static int chance_of_spell_hit(const struct monster *mon,
-	const struct monster_spell *spell)
-{
-	int to_hit = chance_of_spell_hit_base(mon->race, spell);
-
-	/* Apply confusion hit reduction for each level of confusion */
-	for (int i = 0; i < monster_effect_level(mon, MON_TMD_CONF); i++) {
-		to_hit = to_hit * (100 - CONF_HIT_REDUCTION) / 100;
-	}
-
-	return to_hit;
-}
 
 /**
  * Process a monster spell 
@@ -319,45 +280,27 @@ static int chance_of_spell_hit(const struct monster *mon,
 void do_mon_spell(int index, struct monster *mon, bool seen)
 {
 	const struct monster_spell *spell = monster_spell_by_index(index);
-
+	struct monster_spell_level *level = spell->level;
 	bool ident = false;
-	bool hits;
-	int target_midx = mon->target.midx;
-
-	/* See if it hits */
-	if (spell->hit == 100) {
-		hits = true;
-	} else if (spell->hit == 0) {
-		hits = false;
-	} else {
-		if (target_midx > 0) {
-			hits = test_hit(chance_of_spell_hit(mon, spell),
-				cave_monster(cave, target_midx)->race->ac);
-		} else {
-			hits = check_hit(player, chance_of_spell_hit(mon, spell));
-		}
-	}
 
 	/* Tell the player what's going on */
-	disturb(player);
-	spell_message(mon, spell, seen, hits);
+	disturb(player, spell->disturb_stealth);
+	spell_message(mon, spell, seen);
 
-	if (hits) {
-		struct monster_spell_level *level = spell->level;
+	/* Get the right level of save message */
+	while (level->next && mon->race->spell_power >= level->next->power) {
+		level = level->next;
+	}
 
-		/* Get the right level of save message */
-		while (level->next && mon->race->spell_power >= level->next->power) {
-			level = level->next;
+	/* Try a saving throw if available */
+	if (level->save_message && spell_check_for_save(spell)) {
+		msg("%s", level->save_message);
+	} else {
+		if (level->no_save_message) {
+			msg("%s", level->no_save_message);
 		}
-
-		/* Try a saving throw if available */
-		if (level->save_message && (target_midx <= 0) &&
-				randint0(100) < player->state.skills[SKILL_SAVE]) {
-			msg("%s", level->save_message);
-			spell_check_for_fail_rune(spell);
-		} else {
-			effect_do(spell->effect, source_monster(mon->midx), NULL, &ident, true, 0, 0, 0, NULL);
-		}
+		effect_do(spell->effect, source_monster(mon->midx), NULL, &ident,
+				  true, 0, NULL);
 	}
 }
 
@@ -383,196 +326,145 @@ static bool mon_spell_is_valid(int index)
 	return index > RSF_NONE && index < RSF_MAX;
 }
 
-static bool monster_spell_is_breath(int index)
+static bool mon_spell_is_archery(int index)
+{
+	return (mon_spell_types[index].type & RST_ARCHERY) ? true : false;
+}
+
+static bool mon_spell_is_breath(int index)
 {
 	return (mon_spell_types[index].type & RST_BREATH) ? true : false;
 }
 
-static bool mon_spell_has_damage(int index)
+static bool mon_spell_is_innate(int index)
 {
-	return (mon_spell_types[index].type & RST_DAMAGE) ? true : false;
+	return (mon_spell_types[index].type & RST_INNATE) ? true : false;
 }
 
-bool mon_spell_is_innate(int index)
+static bool mon_spell_is_distant(int index)
 {
-	return mon_spell_types[index].type & (RST_INNATE);
+	return (mon_spell_types[index].type & RST_DISTANT) ? true : false;
 }
 
-/**
- * Test a spell bitflag for a type of spell.
- * Returns true if any desired type is among the flagset
- *
- * \param f is the set of spell flags we're testing
- * \param types is the spell type(s) we're looking for
- */
-bool test_spells(bitflag *f, int types)
+static bool mon_spell_is_song(int index)
 {
-	const struct mon_spell_info *info;
-
-	for (info = mon_spell_types; info->index < RSF_MAX; info++)
-		if (rsf_has(f, info->index) && (info->type & types))
-			return true;
-
-	return false;
+	return (mon_spell_types[index].type & RST_SONG) ? true : false;
 }
 
 /**
- * Set a spell bitflag to ignore a specific set of spell types.
- *
- * \param f is the set of spell flags we're pruning
- * \param types is the spell type(s) we're ignoring
+ * Given the monster, *mon, and cave *c, set *dist to the distance to the
+ * monster's target and *grid to the target's location.  Either dist or grid
+ * may be NULL if that value is not needed.
  */
-void ignore_spells(bitflag *f, int types)
+static void monster_get_target_dist_grid(struct monster *mon, int *dist,
+										 struct loc *grid)
 {
-	const struct mon_spell_info *info;
-
-	for (info = mon_spell_types; info->index < RSF_MAX; info++)
-		if (rsf_has(f, info->index) && (info->type & types))
-			rsf_off(f, info->index);
-}
-
-/**
- * Turn off spells with a side effect or a proj_type that is resisted by
- * something in flags, subject to intelligence and chance.
- *
- * \param spells is the set of spells we're pruning
- * \param flags is the set of object flags we're testing
- * \param pflags is the set of player flags we're testing
- * \param el is what we know about the player's elemental resists
- * \param race is the monster type we're operating on
- */
-void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
-				  struct element_info *el, const struct monster *mon)
-{
-	const struct mon_spell_info *info;
-	bool smart = monster_is_smart(mon);
-
-	for (info = mon_spell_types; info->index < RSF_MAX; info++) {
-		const struct monster_spell *spell = monster_spell_by_index(info->index);
-		const struct effect *effect;
-
-		/* Ignore missing spells */
-		if (!spell) continue;
-		if (!rsf_has(spells, info->index)) continue;
-
-		/* Get the effect */
-		effect = spell->effect;
-
-		/* First we test the elemental spells */
-		if (info->type & (RST_BOLT | RST_BALL | RST_BREATH)) {
-			int element = effect->subtype;
-			int learn_chance = el[element].res_level * (smart ? 50 : 25);
-			if (randint0(100) < learn_chance) {
-				rsf_off(spells, info->index);
-			}
-		} else {
-			/* Now others with resisted effects */
-			while (effect) {
-				/* Timed effects */
-				if ((smart || !one_in_(3)) &&
-						effect->index == EF_TIMED_INC &&
-						of_has(flags, timed_effects[effect->subtype].fail))
-					break;
-
-				/* Mana drain */
-				if ((smart || one_in_(2)) &&
-						effect->index == EF_DRAIN_MANA &&
-						pf_has(pflags, PF_NO_MANA))
-					break;
-
-				effect = effect->next;
-			}
-			if (effect)
-				rsf_off(spells, info->index);
-		}
+	if (dist) {
+		*dist = mon->cdis;
+	}
+	if (grid) {
+		*grid = player->grid;
 	}
 }
 
 /**
- * Determine the damage of a spell attack which ignores monster hp
- * (i.e. bolts and balls, including arrows/boulders/storms/etc.)
+ * Remove the "bad" spells from a spell list.
  *
- * \param spell is the attack type
- * \param race is the monster race of the attacker
- * \param dam_aspect is the damage calc required (min, avg, max, random)
+ * This includes spells which are too expensive for the monster to cast and
+ * spells which have no benefit.
  */
-static int nonhp_dam(const struct monster_spell *spell,
-					 const struct monster_race *race, aspect dam_aspect)
+void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 {
-	int dam = 0;
-	struct effect *effect = spell->effect;
+	bitflag f2[RSF_SIZE];
+	int tdist;
+	struct loc tgrid;
+	struct monster_spell *spell;
+	int path;
 
-	/* Set the reference race for calculations */
-	ref_race = race;
+	/* Get distance from the player */
+	monster_get_target_dist_grid(mon, &tdist, &tgrid);
 
-	/* Now add the damage for each effect */
-	while (effect) {
-		random_value rand;
-		/* Lash needs special treatment bacause it depends on monster blows */
-		if (effect->index == EF_LASH) {
-			int i;
-
-			/* Scan through all blows for damage */
-			for (i = 0; i < z_info->mon_blows_max; i++) {
-				/* Extract the attack infomation */
-				random_value dice = race->blow[i].dice;
-
-				/* Full damage of first blow, plus half damage of others */
-				dam += randcalc(dice, race->level, dam_aspect) / (i ? 2 : 1);
-			}
-		} else if (effect->dice && (effect->index != EF_TIMED_INC)) {
-			/* Timed effects increases don't count as damage in lore */
-			dice_roll(effect->dice, &rand);
-			dam += randcalc(rand, 0, dam_aspect);
-		}
-		effect = effect->next;
+	/* Do we have the player in sight at all? */
+	path = projectable(cave, mon->grid, tgrid, PROJECT_STOP);
+	if (path == PROJECT_PATH_NO) {
+		rsf_wipe(f);
+		return;
 	}
 
-	ref_race = NULL;
+	/* Take working copy of spell flags */
+	rsf_copy(f2, f);
 
-	return dam;
+	/* Iterate through the spells */
+	for (spell = monster_spells; spell; spell = spell->next) {
+		int index = spell->index;
+
+		/* Check for a clean bolt shot */
+		if (mon_spell_is_archery(index) && (path == PROJECT_PATH_NOT_CLEAR)) {
+			rsf_off(f2, index);
+		}
+
+		/* Remove unaffordable spells */
+		if (spell->mana > mon->mana) {
+			rsf_off(f2, index);
+		}
+
+		/* Some attacks have limited range */
+		if (tdist > spell->max_range) {
+			rsf_off(f2, index);
+		}
+
+		/* Make sure that missile attacks are never done at melee range or
+		 * when afraid */
+		if (((tdist == 1) || (mon->stance == STANCE_FLEEING) || player->truce)
+			&& (mon_spell_is_distant(index))) {
+			rsf_off(f2, index);
+		}
+
+		/* Make sure that fleeing monsters never use breath attacks */
+		if ((mon->stance == STANCE_FLEEING) && mon_spell_is_breath(index)) {
+			rsf_off(f2, index);
+		}
+
+		/* No songs during the truce, or by Morgoth until uncrowned */
+		if (mon_spell_is_song(index)) {
+			const struct artifact *crown = lookup_artifact_name("of Morgoth");
+			if (player->truce) {
+				rsf_off(f2, index);
+			}
+			if (rf_has(mon->race->flags, RF_QUESTOR) &&
+				!is_artifact_created(crown)) {
+				rsf_off(f2, index);
+			}
+		}
+
+		/* Earthquake is only useful if there is no monster in the
+		 * smashed square */
+		if (index == RSF_EARTHQUAKE) {
+			struct loc grid = player->grid;
+			if (mon->grid.y > grid.y) {
+				grid.y--;
+			} else if (mon->grid.y < grid.y) {
+				grid.y++;
+			}
+			if (mon->grid.x > grid.x) {
+				grid.x--;
+			} else if (mon->grid.x < grid.x) {
+				grid.x++;
+			}
+			if (square_monster(cave, grid)) {
+				rsf_off(f2, index);
+			}
+		}
+
+		/* Darkness is only useful if the player's square is lit */
+		if ((index == RSF_DARKNESS) && !square_islit(cave, player->grid)) {
+			rsf_off(f2, index);
+		}
+	}
+
+	/* Use working copy of spell flags */
+	rsf_copy(f, f2);
 }
-
-/**
- * Determine the damage of a monster breath attack
- *
- * \param type is the attack element type
- * \param hp is the monster's hp
- */
-int breath_dam(int type, int hp)
-{
-	struct projection *element = &projections[type];
-	int dam;
-
-	/* Damage is based on monster's current hp */
-	dam = hp / element->divisor;
-
-	/* Check for maximum damage */
-	if (dam > element->damage_cap)
-		dam = element->damage_cap;
-
-	return dam;
-}
-
-/**
- * Calculate the damage of a monster spell.
- *
- * \param index is the index of the spell in question.
- * \param hp is the hp of the casting monster.
- * \param race is the race of the casting monster.
- * \param dam_aspect is the damage calc we want (min, max, avg, random).
- */
-static int mon_spell_dam(int index, int hp, const struct monster_race *race,
-						 aspect dam_aspect)
-{
-	const struct monster_spell *spell = monster_spell_by_index(index);
-
-	if (monster_spell_is_breath(index))
-		return breath_dam(spell->effect->subtype, hp);
-	else
-		return nonhp_dam(spell, race, dam_aspect);
-}
-
 
 /**
  * Create a mask of monster spell flags of a specific type.
@@ -623,13 +515,16 @@ const char *mon_spell_lore_description(int index,
 	}
 }
 
-int mon_spell_lore_damage(int index, const struct monster_race *race,
-		bool know_hp)
+random_value mon_spell_lore_damage(int index)
 {
-	if (mon_spell_is_valid(index) && mon_spell_has_damage(index)) {
-		int hp = know_hp ? race->avg_hp : 0;
-		return mon_spell_dam(index, hp, race, MAXIMISE);
-	} else {
-		return 0;
+	random_value val = { 0, 0, 0, 0 };
+	if (mon_spell_is_valid(index) &&
+		(mon_spell_is_innate(index) || mon_spell_is_breath(index))) {
+		const struct monster_spell *spell = monster_spell_by_index(index);
+		
+		if (spell->effect->dice != NULL) {
+			(void) dice_roll(spell->effect->dice, &val);
+		}
 	}
+	return val;
 }

@@ -22,18 +22,21 @@
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-calcs.h"
 #include "mon-make.h"
 #include "mon-move.h"
 #include "mon-util.h"
-#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "player-history.h"
+#include "player-quest.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "songs.h"
 #include "source.h"
 #include "target.h"
 #include "trap.h"
@@ -139,117 +142,56 @@ int turn_energy(int speed)
 }
 
 /**
- * If player has inscribed the object with "!!", let him know when it's
- * recharged. -LM-
- * Also inform player when first item of a stack has recharged. -HK-
- * Notify all recharges w/o inscription if notify_recharge option set -WP-
+ * Determines how many points of health/song is regenerated next round
+ * assuming it increases by 'max' points every 'period'.
+ * Note that players use 'player->turn' and monsters use 'turn'.
+ * This lets hasted players regenerate at the right speed.
  */
-static void recharged_notice(const struct object *obj, bool all)
+int regen_amount(int turn_number, int max, int period)
 {
-	char o_name[120];
+	int regen_so_far, regen_next;
 
-	const char *s;
-
-	bool notify = false;
-
-	if (OPT(player, notify_recharge)) {
-		notify = true;
-	} else if (obj->note) {
-		/* Find a '!' */
-		s = strchr(quark_str(obj->note), '!');
-
-		/* Process notification request */
-		while (s) {
-			/* Find another '!' */
-			if (s[1] == '!') {
-				notify = true;
-				break;
-			}
-
-			/* Keep looking for '!'s */
-			s = strchr(s + 1, '!');
-		}
+	if (turn_number == 0) {
+		/* Do nothing on the first turn of the game */
+		return 0;
+	}
+	if ((turn_number % period) > 0) {
+		regen_so_far = (max * ((turn_number - 1) % period)) / period;
+		regen_next = (max * (turn_number % period)) / period;
+	} else {
+		regen_so_far = (max * ((turn_number - 1) % period)) / period;
+		regen_next = (max * period) / period;
 	}
 
-	if (!notify) return;
-
-	/* Describe (briefly) */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
-
-	/* Disturb the player */
-	disturb(player);
-
-	/* Notify the player */
-	if (obj->number > 1) {
-		if (all) msg("Your %s have recharged.", o_name);
-		else msg("One of your %s has recharged.", o_name);
-	} else if (obj->artifact)
-		msg("The %s has recharged.", o_name);
-	else
-		msg("Your %s has recharged.", o_name);
+	return regen_next - regen_so_far;
 }
-
 
 /**
- * Recharge activatable objects in the player's equipment
- * and rods in the inventory and on the ground.
+ * Represents the different levels of health.
+ * Note that it is a bit odd with fewer health levels in the SOMEWHAT_WOUNDED
+ * category. This is due to a rounding off tension between the natural way to
+ * do the colours (perfect having its own) and the natural way to do the stars
+ * for the health bar (zero having its own).
+ * It should be unnoticeable to the player.
  */
-static void recharge_objects(void)
+int health_level(int current, int max)
 {
-	int i;
-	bool discharged_stack;
-	struct object *obj;
+	int level;
 
-	/* Recharge carried gear */
-	for (obj = player->gear; obj; obj = obj->next) {
-		/* Skip non-objects */
-		assert(obj->kind);
-
-		/* Recharge equipment */
-		if (object_is_equipped(player->body, obj)) {
-			/* Recharge activatable objects */
-			if (recharge_timeout(obj)) {
-				/* Message if an item recharged */
-				recharged_notice(obj, true);
-
-				/* Window stuff */
-				player->upkeep->redraw |= (PR_EQUIP);
-			}
-		} else {
-			/* Recharge the inventory */
-			discharged_stack =
-				(number_charging(obj) == obj->number) ? true : false;
-
-			/* Recharge rods, and update if any rods are recharged */
-			if (tval_can_have_timeout(obj) && recharge_timeout(obj)) {
-				/* Entire stack is recharged */
-				if (obj->timeout == 0)
-					recharged_notice(obj, true);
-
-				/* Previously exhausted stack has acquired a charge */
-				else if (discharged_stack)
-					recharged_notice(obj, false);
-
-				/* Combine pack */
-				player->upkeep->notice |= (PN_COMBINE);
-
-				/* Redraw stuff */
-				player->upkeep->redraw |= (PR_INVEN);
-			}
+	if (current == max) { 
+		level = HEALTH_UNHURT;
+	} else {
+		switch ((4 * current + max - 1 ) / max) {
+			case 4: level = HEALTH_SOMEWHAT_WOUNDED; break; /* 76% - 99% */
+			case 3: level = HEALTH_WOUNDED         ; break; /* 51% - 75% */
+			case 2: level = HEALTH_BADLY_WOUNDED   ; break; /* 26% - 50% */
+			case 1:	level = HEALTH_ALMOST_DEAD     ; break; /* 1% - 25% */
+			default:level = HEALTH_DEAD            ; break; /* 0% */
 		}
 	}
 
-	/* Recharge other level objects */
-	for (i = 1; i < cave->obj_max; i++) {
-		obj = cave->objects[i];
-		if (!obj) continue;
-
-		/* Recharge rods */
-		if (tval_can_have_timeout(obj))
-			recharge_timeout(obj);
-	}
+	return (level);
 }
-
 
 /**
  * Play an ambient sound dependent on dungeon level, and day or night in town
@@ -279,167 +221,202 @@ void play_ambient_sound(void)
  */
 static void decrease_timeouts(void)
 {
-	int adjust = (adj_con_fix[player->state.stat_ind[STAT_CON]] + 1);
 	int i;
 
 	/* Most timed effects decrement by 1 */
 	for (i = 0; i < TMD_MAX; i++) {
-		int decr = 1;
+		int decr = player_timed_decrement_amount(player, i);
 		if (!player->timed[i])
 			continue;
 
-		/* Special cases */
-		switch (i) {
-            case TMD_FOOD:
-            {
-                /* Handled separately */
-                decr = 0;
-                break;
-            }
-
-			case TMD_CUT:
-			{
-				/* Check for truly "mortal" wound */
-				if (player_timed_grade_eq(player, i, "Mortal Wound")) {
-					decr = 0;
-				} else {
-					decr = adjust;
-				}
-
-				/* Rock players just maintain */
-				if (player_has(player, PF_ROCK)) {
-					decr = 0;
-				}
-
-				break;
-			}
-
-			case TMD_POISONED:
-			case TMD_STUN:
-			{
-				decr = adjust;
-				break;
-			}
-
-			case TMD_COMMAND:
-			{
-				struct monster *mon = get_commanded_monster();
-				if (!los(cave, player->grid, mon->grid)) {
-					/* Out of sight is out of mind */
-					mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY);
-					player_clear_timed(player, TMD_COMMAND, true);
-				} else {
-					/* Keep monster timer aligned */
-					mon_dec_timed(mon, MON_TMD_COMMAND, decr, 0);
-				}
-				break;
-			}
-		}
 		/* Decrement the effect */
 		player_dec_timed(player, i, decr, false);
 	}
-
-	/* Curse effects always decrement by 1 */
-	for (i = 0; i < player->body.count; i++) {
-		struct curse_data *curse = NULL;
-		if (player->body.slots[i].obj == NULL) {
-			continue;
-		}
-		curse = player->body.slots[i].obj->curses;
-		if (curse) {
-			int j;
-			for (j = 0; j < z_info->curse_max; j++) {
-				if (curse[j].power) {
-					curse[j].timeout--;
-					if (!curse[j].timeout) {
-						struct curse *c = &curses[j];
-						if (do_curse_effect(j, player->body.slots[i].obj)) {
-							player_learn_curse(player, c);
-						}
-						curse[j].timeout = randcalc(c->obj->time, 0, RANDOMISE);
-					}
-				}
-			}
-		}
-	}
-
-	return;
 }
 
 
 /**
- * Every turn, the character makes enough noise that nearby monsters can use
- * it to home in.
- *
- * This function actually just computes distance from the player; this is
- * used in combination with the player's stealth value to determine what
- * monsters can hear.  We mark the player's grid with 0, then fill in the noise
- * field of every grid that the player can reach with that "noise"
- * (actally distance) plus the number of steps needed to reach that grid
- * - so higher values mean further from the player.
- *
- * Monsters use this information by moving to adjacent grids with lower noise
- * values, thereby homing in on the player even though twisty tunnels and
- * mazes.  Monsters have a hearing value, which is the largest sound value
- * they can detect.
+ * Get the additional cost to monster or noise flow due to terrain
  */
-static void make_noise(struct player *p)
+static int square_flow_cost(struct chunk *c, struct loc grid,
+							struct monster *mon)
 {
-	struct loc next = p->grid;
+	int cost = 0;
+
+	/* Deal with monster pathfinding */
+	if (mon) {
+		bool bash = false;
+		/* Get the percentage chance of the monster being able
+		 * to move onto that square */
+		int chance = monster_entry_chance(c, mon, grid, &bash);
+
+		/* If there is any chance, then convert it to a number of turns */
+		if (chance > 0) {
+			cost += (100 / chance) - 1;
+
+			/* Add an extra turn for unlocking/opening doors as
+			 * this action doesn't move the monster */
+			if (square_iscloseddoor(c, grid) && !bash) {
+				if (!(rf_has(mon->race->flags, RF_PASS_DOOR) ||
+					  rf_has(mon->race->flags, RF_PASS_WALL))) {
+					cost += 1;
+				}
+			} else if (!square_isprojectable(c, grid) &&
+					   rf_has(mon->race->flags, RF_TUNNEL_WALL)) {
+				/* Add extra turn(s) for tunneling through rubble/walls as
+				 * this action doesn't move the monster */
+				if (square_isrubble(c, grid)) {
+					/* An extra turn to dig through */
+					cost += 1;
+				} else {
+					/* Two extra turns to dig through granite/quartz */
+					cost += 2;
+				}
+			} else if (!square_isprojectable(c, grid) &&
+					   rf_has(mon->race->flags, RF_KILL_WALL)) {
+				/* Pretend it would take an extra turn (to prefer routes
+				 * with less wall destruction */
+				cost += 1; 
+			}
+		} else {
+			/* If there is no chance, just skip this square */
+			return -1;
+		}
+	} else {
+		/* Deal with noise flows */
+		/* Ignore walls */
+		if (square_iswall(c, grid)) {
+			return -1;
+		}
+ 
+		/* Penalize doors by 5 when calculating the real noise*/
+		if (square_iscloseddoor(c, grid) || square_issecretdoor(c, grid)){
+			cost += 5;
+		}
+	}
+	return cost;
+}
+
+/**
+ * Used to convert grid into an array index (i) in a chunk of width w.
+ * \param grid location
+ * \param w area width
+ * \return index
+ */
+static int grid_to_i(struct loc grid, int w)
+{
+	return grid.y * w + grid.x;
+}
+
+/**
+ * Used to convert an array index (i) into grid in a chunk of width w.
+ * \param i grid index
+ * \param w area width
+ * \param grid location
+ */
+static void i_to_grid(int i, int w, struct loc *grid)
+{
+	grid->y = i / w;
+	grid->x = i % w;
+}
+
+/**
+ * Sil needs various 'flows', which are arrays of the same size as the map,
+ * with a number for each map square.
+ *
+ * One of these flows is used to represent the from the player noise at each
+ * location.
+ * Another is used to represent the noise from a particular monster.
+ *
+ * Each monster has a flow which it uses for alert pathfinding, representing the
+ * shortest route each monster could take to get to the player.
+ *
+ * Flows are also used for the pathfinding of unwary monsters who move in their
+ * initial groups to various locations around the map.
+ *
+ * Note that the noise is generated around the centre.
+ * This is often the player, but can be a monster (for FLOW_MONSTER_NOISE)
+ */
+void update_flow(struct chunk *c, struct flow *flow, struct monster *mon)
+{
+	struct loc next = flow->centre;
 	int y, x, d;
-	int noise = 0;
-	int noise_increment = p->timed[TMD_COVERTRACKS] ? 4 : 1;
-    struct queue *queue = q_new(cave->height * cave->width);
+	int value = 0;
+    struct queue *queue = q_new(c->height * c->width);
 
-	/* Set all the grids to silence */
-	for (y = 1; y < cave->height - 1; y++) {
-		for (x = 1; x < cave->width - 1; x++) {
-			cave->noise.grids[y][x] = 0;
+	/* Set all the grids to maximum */
+	for (y = 1; y < c->height - 1; y++) {
+		for (x = 1; x < c->width - 1; x++) {
+			flow->grids[y][x] = z_info->flow_max;
 		}
 	}
 
-	/* Player makes noise */
-	cave->noise.grids[next.y][next.x] = noise;
-	q_push_int(queue, grid_to_i(next, cave->width));
-	noise += noise_increment;
+	if (loc_eq(next, loc(0, 0))) {
+		quit("Flow has no centre!");
+	}
 
-	/* Propagate noise */
+	/* Set the centre value to zero, push it onto the queue */
+	flow->grids[next.y][next.x] = 0;
+	q_push_int(queue, grid_to_i(next, c->width));
+	value++;
+
+	/* Propagate outwards */
 	while (q_len(queue) > 0) {
-		/* Get the next grid */
-		i_to_grid(q_pop_int(queue), cave->width, &next);
+		/* Process only the grids currently on the queue */
+		int count = q_len(queue);
+		while (count) {
+			/* Get the next grid, count it */
+			i_to_grid(q_pop_int(queue), c->width, &next);
+			count--;
 
-		/* If we've reached the current noise level, put it back and step */
-		if (cave->noise.grids[next.y][next.x] == noise) {
-			q_push_int(queue, grid_to_i(next, cave->width));
-			noise += noise_increment;
-			continue;
+			/* If it costs more the current value, put it back on the queue */
+			if (flow->grids[next.y][next.x] > value) {
+				q_push_int(queue, grid_to_i(next, c->width));
+				continue;
+			}
+
+			/* Iterate over the current grid's children */
+			for (d = 0; d < 8; d++)	{
+				/* Child location */
+				struct loc grid = loc_sum(next, ddgrid_ddd[d]);
+
+				/* Extra cost of the grid */
+				int cost = square_flow_cost(c, grid, mon);
+
+				/* Monster on this grid */
+				struct monster *grid_mon = square_monster(c, grid);
+
+				/* Legal grids only */
+				if (!square_in_bounds(c, grid)) continue;
+
+				/* Skip grids that have already been processed */
+				if (flow->grids[grid.y][grid.x] < z_info->flow_max) continue;
+
+				/* Ignore features that block flow */
+				if (cost < 0) continue;
+
+				/* Save the flow value */
+				flow->grids[grid.y][grid.x] = value + cost;
+
+				/* Enqueue that child */
+				q_push_int(queue, grid_to_i(grid, c->width));
+
+				/* Monsters at this site need to re-consider their targets */
+				if (grid_mon) {
+					grid_mon->target.grid = loc(0, 0);
+				}
+			}
 		}
-
-		/* Assign noise to the children and enqueue them */
-		for (d = 0; d < 8; d++)	{
-			/* Child location */
-			struct loc grid = loc_sum(next, ddgrid_ddd[d]);
-
-			if (!square_in_bounds(cave, grid)) continue;
-
-			/* Ignore features that don't transmit sound */
-			if (square_isnoflow(cave, grid)) continue;
-
-			/* Skip grids that already have noise */
-			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
-
-			/* Skip the player grid */
-			if (loc_eq(p->grid, grid)) continue;
-
-			/* Save the noise */
-			cave->noise.grids[grid.y][grid.x] = noise;
-
-			/* Enqueue that entry */
-			q_push_int(queue, grid_to_i(grid, cave->width));
-		}
+		value++;
 	}
+}
 
-	q_free(queue);
+/**
+ * Determines how far a grid is from the source using the given flow.
+ */
+int flow_dist(struct flow flow, struct loc grid)
+{
+	return flow.grids[grid.y][grid.x];
 }
 
 /**
@@ -451,41 +428,54 @@ static void make_noise(struct player *p)
  * but not to run away.
  *
  * Scent is valued according to age.  When a character takes his turn,
- * scent is aged by one, and new scent is laid down.  Monsters have a smell
- * value which indicates the oldest scent they can detect.  Grids where the
- * player has never been will have scent 0.  The player's grid will also have
- * scent 0, but this is OK as no monster will ever be smelling it.
+ * scent is aged by one, and new scent of the current age is laid down.
+ * Speedy characters leave more scent, true, but it also ages faster,
+ * which makes it harder to hunt them down.
+ *
+ * Whenever the age count loops, most of the scent trail is erased and
+ * the age of the remainder is recalculated.
  */
 static void update_scent(void)
 {
 	int y, x;
 	int scent_strength[5][5] = {
-		{2, 2, 2, 2, 2},
-		{2, 1, 1, 1, 2},
-		{2, 1, 0, 1, 2},
-		{2, 1, 1, 1, 2},
-		{2, 2, 2, 2, 2},
+		{250, 2, 2, 2, 250},
+		{  2, 1, 1, 1,   2},
+		{  2, 1, 0, 1,   2},
+		{  2, 1, 1, 1,   2},
+		{250, 2, 2, 2, 250},
 	};
 
-	/* Update scent for all grids */
-	for (y = 1; y < cave->height - 1; y++) {
-		for (x = 1; x < cave->width - 1; x++) {
-			if (cave->scent.grids[y][x] > 0) {
-				cave->scent.grids[y][x]++;
+	/* Scent becomes "younger" */
+	cave->scent_age--;
+
+	/* Loop the age and adjust scent values when necessary */
+	if (cave->scent_age <= 0) {
+		/* Update scent for all grids */
+		for (y = 1; y < cave->height - 1; y++) {
+			for (x = 1; x < cave->width - 1; x++) {
+				/* Ignore non-existent scent */
+				if (cave->scent.grids[y][x] == 0) continue;
+
+				/* Erase the earlier part of the previous cycle */
+				if (cave->scent.grids[y][x] > SMELL_STRENGTH) {
+					cave->scent.grids[y][x] = 0;
+				} else {
+					/* Reset the ages of the most recent scent */
+					cave->scent.grids[y][x] += 250 - SMELL_STRENGTH;
+				}
 			}
 		}
-	}
 
-	/* Scentless player */
-	if (player->timed[TMD_COVERTRACKS]) return;
+		/* Reset the age value */
+		cave->scent_age = 250 - SMELL_STRENGTH;
+	}
 
 	/* Lay down new scent around the player */
 	for (y = 0; y < 5; y++) {
 		for (x = 0; x < 5; x++) {
 			struct loc scent;
 			int new_scent = scent_strength[y][x];
-			int d;
-			bool add_scent = false;
 
 			/* Initialize */
 			scent.y = y + player->grid.y - 2;
@@ -495,34 +485,44 @@ static void update_scent(void)
 			if (!square_in_bounds(cave, scent)) continue;
 			if (square_isnoscent(cave, scent)) continue;
 
-			/* Check scent is spreading on floors, not going through walls */
-			for (d = 0; d < 8; d++)	{
-				struct loc adj = loc_sum(scent, ddgrid_ddd[d]);
+			/* Grid must not be blocked by walls from the character */
+			if (!los(cave, player->grid, loc(x, y))) continue;
 
-				if (!square_in_bounds(cave, adj)) {
-					continue;
-				}
-
-				/* Player grid is always valid */
-				if (x == 2 && y == 2) {
-					add_scent = true;
-				}
-
-				/* Adjacent to a closer grid, so valid */
-				if (cave->scent.grids[adj.y][adj.x] == new_scent - 1) {
-					add_scent = true;
-				}
-			}
-
-			/* Not valid */
-			if (!add_scent) {
-				continue;
-			}
+			/* Note grids that are too far away */
+			if (scent_strength[y][x] == 250) continue;
 
 			/* Mark the scent */
-			cave->scent.grids[scent.y][scent.x] = new_scent;
+			cave->scent.grids[scent.y][scent.x] = cave->scent_age + new_scent;
 		}
 	}
+}
+
+/**
+ * Get and return the strength (age) of scent in a given grid.
+ *
+ * Return "-1" if no scent exists in the grid.
+ */
+int get_scent(struct chunk *c, struct loc grid)
+{
+	int age;
+	int scent;
+
+	/* Check Bounds */
+	if (!square_in_bounds(c, grid)) return -1;
+
+	/* Sent trace? */
+	scent = c->scent.grids[grid.y][grid.x];
+
+	/* No scent at all */
+	if (!c->scent.grids[grid.y][grid.x]) return -1;
+
+	/* Get age of scent */
+	age = scent - c->scent_age;
+
+	if (age > SMELL_STRENGTH) return -1;
+
+	/* Return the age of the scent */
+	return age;
 }
 
 /**
@@ -530,8 +530,6 @@ static void update_scent(void)
  */
 void process_world(struct chunk *c)
 {
-	int i, y, x;
-
 	/* Compact the monster list if we're approaching the limit */
 	if (cave_monster_count(c) + 32 > z_info->level_monster_max)
 		compact_monsters(c, 64);
@@ -546,259 +544,38 @@ void process_world(struct chunk *c)
 	if (!(turn % ((10L * z_info->day_length) / 4)))
 		play_ambient_sound();
 
-	/* Handle stores and sunshine */
+	/* Handle  the "surface" */
 	if (!player->depth) {
-		/* Daybreak/Nighfall in town */
-		if (!(turn % ((10L * z_info->day_length) / 2))) {
-			/* Check for dawn */
-			bool dawn = (!(turn % (10L * z_info->day_length)));
-
-			if (dawn) {
-				/* Day breaks */
-				msg("The sun has risen.");
-			} else {
-				/* Night falls */
-				msg("The sun has fallen.");
-			}
-
-			/* Illuminate */
-			cave_illuminate(c, dawn);
+		if (percent_chance(10)) {
+			/* Make a new monster */
+			(void)pick_and_place_monster_on_stairs(c, player, true, 0, false);
 		}
-	} else {
-		/* Update the stores once a day (while in the dungeon).
-		   The changes are not actually made until return to town,
-		   to avoid giving details away in the knowledge menu. */
-		if (!(turn % (10L * z_info->store_turns))) daycount++;
-	}
-
-	/* Check for light change */
-	if (player_has(player, PF_UNLIGHT)) {
-		player->upkeep->update |= PU_BONUS;
 	}
 
 	/* Check for creature generation */
-	if (one_in_(z_info->alloc_monster_chance))
-		(void)pick_and_place_distant_monster(c, player, z_info->max_sight + 5,
-											 true, player->depth);
-
-	/*** Damage (or healing) over Time ***/
-
-	/* Take damage from poison */
-	if (player->timed[TMD_POISONED])
-		take_hit(player, 1, "poison");
-
-	/* Take damage from cuts, worse from serious cuts */
-	if (player->timed[TMD_CUT]) {
-		if (player_has(player, PF_ROCK)) {
-			/* Rock players just maintain */
-			i = 0;
-		} else if (player_timed_grade_eq(player, TMD_CUT, "Mortal Wound") ||
-				   player_timed_grade_eq(player, TMD_CUT, "Deep Gash")) {
-			i = 3;
-		} else if (player_timed_grade_eq(player, TMD_CUT, "Severe Cut")) {
-			i = 2;
-		} else {
-			i = 1;
+	if (silmarils_possessed(player) >= 2) {
+		/* Vastly more wandering monsters during the endgame when you have
+		 * 2 or 3 Silmarils */
+		int percent = (c->height * c->width)
+			/ (z_info->block_hgt * z_info->block_wid);
+		if (percent_chance(percent)) {
+			(void)pick_and_place_monster_on_stairs(c, player, true, c->depth,
+												   false);
 		}
-
-		/* Take damage */
-		take_hit(player, i, "a fatal wound");
+	} else if (one_in_(z_info->alloc_monster_chance)) {
+		/* Normal wandering monster generation */
+		(void)pick_and_place_monster_on_stairs(c, player, true, c->depth,
+											   false);
 	}
 
-	/* Side effects of diminishing bloodlust */
-	if (player->timed[TMD_BLOODLUST]) {
-		player_over_exert(player, PY_EXERT_HP | PY_EXERT_CUT | PY_EXERT_SLOW,
-						  MAX(0, 10 - player->timed[TMD_BLOODLUST]),
-						  player->chp / 10);
+	/* Players with the haunted curse attract wraiths */
+	if (percent_chance(player->state.flags[OF_HAUNTED])) {
+		/* Make a new wraith */
+		(void)pick_and_place_monster_on_stairs(c, player, true, c->depth, true);
 	}
-
-	/* Timed healing */
-	if (player->timed[TMD_HEAL]) {
-		bool ident = false;
-		effect_simple(EF_HEAL_HP, source_player(), "30", 0, 0, 0, 0, 0, &ident);
-	}
-
-	/* Effects of Black Breath */
-	if (player->timed[TMD_BLACKBREATH]) {
-		if (one_in_(2)) {
-			msg("The Black Breath sickens you.");
-			player_stat_dec(player, STAT_CON, false);
-		}
-		if (one_in_(2)) {
-			msg("The Black Breath saps your strength.");
-			player_stat_dec(player, STAT_STR, false);
-		}
-		if (one_in_(2)) {
-			/* Life draining */
-			int drain = 100 + (player->exp / 100) * z_info->life_drain_percent;
-			msg("The Black Breath dims your life force.");
-			player_exp_lose(player, drain, false);
-		}
-	}
-
-	/*** Check the Food, and Regenerate ***/
-
-	/* Digest */
-	if (!player_timed_grade_eq(player, TMD_FOOD, "Full")) {
-		/* Digest normally */
-		if (!(turn % 100)) {
-			/* Basic digestion rate based on speed */
-			i = turn_energy(player->state.speed);
-
-			/* Adjust for food value */
-			i = (i * 100) / z_info->food_value;
-
-			/* Regeneration takes more food */
-			if (player_of_has(player, OF_REGEN)) i *= 2;
-
-			/* Slow digestion takes less food */
-			if (player_of_has(player, OF_SLOW_DIGEST)) i /= 2;
-
-			/* Minimal digestion */
-			if (i < 1) i = 1;
-
-			/* Digest some food */
-			player_dec_timed(player, TMD_FOOD, i, false);
-		}
-
-		/* Fast metabolism */
-		if (player->timed[TMD_HEAL]) {
-			player_dec_timed(player, TMD_FOOD, 8 * z_info->food_value, false);
-			if (player->timed[TMD_FOOD] < PY_FOOD_HUNGRY) {
-				player_set_timed(player, TMD_HEAL, 0, true);
-			}
-		}
-	} else {
-		/* Digest quickly when gorged */
-		player_dec_timed(player, TMD_FOOD, 5000 / z_info->food_value, false);
-		player->upkeep->update |= PU_BONUS;
-	}
-
-	/* Faint or starving */
-	if (player_timed_grade_eq(player, TMD_FOOD, "Faint")) {
-		/* Faint occasionally */
-		if (!player->timed[TMD_PARALYZED] && one_in_(10)) {
-			/* Message */
-			msg("You faint from the lack of food.");
-			disturb(player);
-
-			/* Faint (bypass free action) */
-			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5),
-								   true, false);
-		}
-	} else if (player_timed_grade_eq(player, TMD_FOOD, "Starving")) {
-		/* Calculate damage */
-		i = (PY_FOOD_STARVE - player->timed[TMD_FOOD]) / 10;
-
-		/* Take damage */
-		take_hit(player, i, "starvation");
-	}
-
-	/* Regenerate Hit Points if needed */
-	if (player->chp < player->mhp)
-		player_regen_hp(player);
-
-	/* Regenerate or lose mana */
-	player_regen_mana(player);
-
-	/* Timeout various things */
-	decrease_timeouts();
 
 	/* Process light */
 	player_update_light(player);
-
-	/* Update noise and scent (not if resting) */
-	if (!player_is_resting(player)) {
-		make_noise(player);
-		update_scent();
-	}
-
-
-	/*** Process Inventory ***/
-
-	/* Handle experience draining */
-	if (player_of_has(player, OF_DRAIN_EXP)) {
-		if ((player->exp > 0) && one_in_(10)) {
-			int32_t d = damroll(10, 6) +
-				(player->exp / 100) * z_info->life_drain_percent;
-			player_exp_lose(player, d / 10, false);
-		}
-
-		equip_learn_flag(player, OF_DRAIN_EXP);
-	}
-
-	/* Recharge activatable objects and rods */
-	recharge_objects();
-
-	/* Notice things after time */
-	if (!(turn % 100))
-		equip_learn_after_time(player);
-
-	/* Decrease trap timeouts */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			struct loc grid = loc(x, y);
-			struct trap *trap = square(c, grid)->trap;
-			while (trap) {
-				if (trap->timeout) {
-					trap->timeout--;
-					if (!trap->timeout)
-						square_light_spot(c, grid);
-				}
-				trap = trap->next;
-			}
-		}
-	}
-
-
-	/*** Involuntary Movement ***/
-
-	/* Delayed Word-of-Recall */
-	if (player->word_recall) {
-		/* Count down towards recall */
-		player->word_recall--;
-
-		/* Activate the recall */
-		if (!player->word_recall) {
-			/* Disturbing! */
-			disturb(player);
-
-			/* Determine the level */
-			if (player->depth) {
-				msgt(MSG_TPLEVEL, "You feel yourself yanked upwards!");
-				dungeon_change_level(player, 0);
-			} else {
-				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
-				player_set_recall_depth(player);
-				dungeon_change_level(player, player->recall_depth);
-			}
-		}
-	}
-
-	/* Delayed Deep Descent */
-	if (player->deep_descent) {
-		/* Count down towards descent */
-		player->deep_descent--;
-
-		/* Activate the descent */
-		if (player->deep_descent == 0) {
-			/* Calculate target depth */
-			int target_increment = (4 / z_info->stair_skip) + 1;
-			int target_depth = dungeon_get_next_level(player,
-				player->max_depth, target_increment);
-			disturb(player);
-
-			/* Determine the level */
-			if (target_depth > player->depth) {
-				msgt(MSG_TPLEVEL, "The floor opens beneath you!");
-				dungeon_change_level(player, target_depth);
-			} else {
-				/* Otherwise do something disastrous */
-				msgt(MSG_TPLEVEL, "You are thrown back in an explosion!");
-				effect_simple(EF_DESTRUCTION, source_none(), "0", 0, 5, 0, 0, 0, NULL);
-			}
-		}
-	}
 }
 
 
@@ -809,6 +586,22 @@ static void process_player_cleanup(void)
 {
 	int i;
 
+	/* Check for greater vault squares */
+	if (square_isgreatervault(cave, player->grid) && cave->vault_name) {
+		char note[120];
+		char *fmt = "Entered %s";
+
+		strnfmt(note, sizeof(note), fmt, cave->vault_name);
+		history_add(player, note, HIST_VAULT_ENTERED);
+
+		/* Give a message unless it is the Gates or the Throne Room */
+		if (player->depth > 0 && player->depth < 20) {
+			msg("You have entered %s.", cave->vault_name);
+		}
+		string_free(cave->vault_name);
+		cave->vault_name = NULL;
+	}
+
 	/* Significant */
 	if (player->upkeep->energy_use) {
 		/* Use some energy */
@@ -816,9 +609,6 @@ static void process_player_cleanup(void)
 
 		/* Increment the total energy counter */
 		player->total_energy += player->upkeep->energy_use;
-
-		/* Player can be damaged by terrain */
-		player_take_terrain_damage(player, player->grid);
 
 		/* Do nothing else if player has auto-dropped stuff */
 		if (!player->upkeep->dropping) {
@@ -836,10 +626,9 @@ static void process_player_cleanup(void)
 				square_light_spot(cave, mon->grid);
 			}
 
-			/* Clear NICE flag, and show marked monsters */
+			/* Show marked monsters */
 			for (i = 1; i < cave_monster_max(cave); i++) {
 				struct monster *mon = cave_monster(cave, i);
-				mflag_off(mon->mflag, MFLAG_NICE);
 				if (mflag_has(mon->mflag, MFLAG_MARK)) {
 					if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
 						mflag_off(mon->mflag, MFLAG_MARK);
@@ -881,9 +670,61 @@ static void process_player_cleanup(void)
  */
 void process_player(void)
 {
+	int i;
+
+	/* Reset the riposte flag */
+	player->upkeep->riposte = false;
+
+	/* Reset the was_entranced flag */
+	player->upkeep->was_entranced = false;
+
+	/* Update the player's light radius */
+	calc_light(player);
+
 	/* Check for interrupts */
 	player_resting_complete_special(player);
 	event_signal(EVENT_CHECK_INTERRUPT);
+
+	/* Make the stealth-modified noise (has to occur after monsters have
+	 * had a chance to move) */
+	monsters_hear(true, true, player->stealth_score);
+
+	/* Stop stealth mode if something happened */
+	if (player->stealth_mode == STEALTH_MODE_STOPPING) {
+		/* Cancel */
+		player->stealth_mode = STEALTH_MODE_OFF;
+
+		/* Recalculate bonuses */
+		player->upkeep->update |= (PU_BONUS);
+
+		/* Redraw the state */
+		player->upkeep->redraw |= (PR_STATE);			
+	}
+
+	/* Morgoth will announce a challenge if adjacent */
+	if (player->truce && (player->depth == z_info->dun_depth)) {
+		check_truce(player);
+	}
+
+	/* List all challenge options at the start of the game */
+	if (player->turn == 1) {
+		options_list_challenge();
+	}
+
+	/* Shuffle along the array of previous actions */
+	for (i = MAX_ACTION - 1; i > 0; i--) {
+		player->previous_action[i] = player->previous_action[i - 1];
+	}
+
+	/* Put in a default for this turn */
+	player->previous_action[0] = ACTION_NOTHING;
+
+	/* Redraw stuff (if needed) */
+	redraw_stuff(player);
+
+	/* Have to update the player bonuses at every turn with sprinting, dodging
+	 * etc. This might cause annoying slowdowns, I'm not sure */
+	player->upkeep->update |= (PU_BONUS);
 
 	/* Repeat until energy is reduced */
 	do {
@@ -898,23 +739,25 @@ void process_player(void)
 		/* Assume free turn */
 		player->upkeep->energy_use = 0;
 
-		/* Dwarves detect treasure */
-		if (player_has(player, PF_SEE_ORE)) {
-			/* Only if they are in good shape */
-			if (!player->timed[TMD_IMAGE] &&
-				!player->timed[TMD_CONFUSED] &&
-				!player->timed[TMD_AMNESIA] &&
-				!player->timed[TMD_STUN] &&
-				!player->timed[TMD_PARALYZED] &&
-				!player->timed[TMD_TERROR] &&
-				!player->timed[TMD_AFRAID])
-				effect_simple(EF_DETECT_GOLD, source_none(), "0", 0, 0, 0, 3, 3, NULL);
-		}
+		/* Reset number of attacks this turn */
+		event_signal(EVENT_COMBAT_RESET);
+
+		/* Get base stealth score for the round; this will get modified by
+		 * the type of action */
+		player->stealth_score = player->state.skill_use[SKILL_STEALTH];
+
+        /* Leaping */
+        if (player->upkeep->leaping) {
+            player_continue_leap(player);
+        }
 
 		/* Paralyzed or Knocked Out player gets no turn */
-		if (player->timed[TMD_PARALYZED] ||
+		if (player->timed[TMD_ENTRANCED] ||
 			player_timed_grade_eq(player, TMD_STUN, "Knocked Out")) {
 			cmdq_push(CMD_SLEEP);
+		} else if (player->upkeep->knocked_back) {
+			/* Knocked back player needs to recover footing */
+			cmdq_push(CMD_SKIP);
 		}
 
 		/* Prepare for the next command */
@@ -943,6 +786,117 @@ void process_player(void)
 
 	/* Notice stuff (if needed) */
 	notice_stuff(player);
+
+    /* If the player is exiting the the game in some manner, stop processing */
+    if (player->is_dead || player->upkeep->generate_level) return;
+
+	/* Do song effects */
+	player_sing(player);
+
+	/* Make less noise if you did nothing at all (+7 in total whether or
+	 * not stealth mode is used) */
+	if (player_is_resting(player)) {
+		player->stealth_score += (player->stealth_mode) ? 2 : 7;
+	}
+
+	/* Make much more noise when smithing */
+	if (player->upkeep->smithing) {
+		/* Make a lot of noise */
+		monsters_hear(true, false, -10);
+	}
+
+	/* Update noise and scent */
+	cave->player_noise.centre = player->grid;
+	update_flow(cave, &cave->player_noise, NULL);
+	update_scent();
+
+	/* Possibly identify passive abilities every so often*/
+	if (one_in_(500)) {
+		ident_passive(player);
+	}
+
+	/*** Damage over Time ***/
+
+	/* Take damage from poison */
+	if (player->timed[TMD_POISONED]) {
+		/* Amount is one fifth of the poison, rounding up */
+		take_hit(player, (player->timed[TMD_POISONED] + 4) / 5, "poison");
+	}
+
+	/* Take damage from cuts, worse from serious cuts */
+	if (player->timed[TMD_CUT]) {
+		/* Take damage */
+		take_hit(player, (player->timed[TMD_CUT] + 4) / 5, "a fatal wound");
+	}
+
+	/* Reduce the wrath counter */
+	if (player->wrath) {
+		int amount = (player->wrath / 100) * (player->wrath / 100);
+
+		/* Half as fast if still singing the song */
+		if (player_is_singing(player, lookup_song("Slaying"))) {
+			player->wrath -= MAX(amount / 2, 1);
+		} else {
+			player->wrath -= MAX(amount, 1);
+		}
+		player->upkeep->update |= (PU_BONUS);
+		player->upkeep->redraw |= (PR_SONG);
+	}
+
+	/*** Check the Food, and Regenerate ***/
+
+	/* Digest */
+	player_digest(player);
+
+	/* Regenerate Hit Points if needed */
+	if (player->chp < player->mhp) {
+		player_regen_hp(player);
+	}
+
+	/* Regenerate voice if needed */
+	if (player->csp < player->msp) {
+		player_regen_mana(player);
+	}
+
+	/* Timeout various things */
+	decrease_timeouts();
+
+	/* Lower the staircasiness */
+	if (player->staircasiness > 0) {
+		int amount; 
+
+        /* Decreases much faster on the escape */
+        if (player->on_the_run) {
+            /* Amount is one hundredth of the current value, rounding up */
+            amount = (player->staircasiness + 99) / 100;
+        } else {
+            /* Amount is one thousandth of the current value, rounding up */
+            amount = (player->staircasiness + 999) / 1000;
+        }
+
+		player->staircasiness -= amount;
+	}
+
+	/* Increase the time since the last forge */
+	player->forge_drought++;
+
+	/* Reset the focus flag if the player didn't 'pass' this turn */
+	if (player->previous_action[0] != ACTION_STAND) {
+		player->focused = false;
+	}
+
+	/* Reset the consecutive attacks if the player didn't attack or 'pass' */
+	if (!player->attacked && (player->previous_action[0] != ACTION_STAND)) {
+		player->consecutive_attacks = 0;
+		player->last_attack_m_idx = 0;
+	}
+
+	/* Check for radiance */
+	if (player_radiates(player)) {
+		sqinfo_on(square(cave, player->grid)->info, SQUARE_GLOW);
+	}
+
+	player->turn++;
 }
 
 /**
@@ -950,34 +904,28 @@ void process_player(void)
  */
 void on_new_level(void)
 {
-	/* Arena levels are not really a level change */
-	if (!player->upkeep->arena_level) {
-		/* Play ambient sound on change of level. */
-		play_ambient_sound();
-
-		/* Cancel the target */
-		target_set_monster(0);
-
-		/* Cancel the health bar */
-		health_track(player->upkeep, NULL);
-	}
+	int i;
 
 	/* Disturb */
-	disturb(player);
-
-	/* Track maximum player level */
-	if (player->max_lev < player->lev)
-		player->max_lev = player->lev;
-
-	/* Track maximum dungeon level */
-	if (player->max_depth < player->depth)
-		player->max_depth = player->recall_depth = player->depth;
+	disturb(player, false);
 
 	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Update display */
 	event_signal(EVENT_NEW_LEVEL_DISPLAY);
+
+	/* Track maximum dungeon level */
+	if (player->max_depth < player->depth) {
+		for (i = player->max_depth + 1; i <= player->depth; i++) {
+			if (i > 1) {
+				int new_exp = i * 50;
+				player_exp_gain(player, new_exp);
+				player->descent_exp += new_exp;
+			}
+		}
+		player->max_depth = player->depth;
+	}
 
 	/* Update player */
 	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS | PU_INVEN);
@@ -989,30 +937,19 @@ void on_new_level(void)
 	/* Refresh */
 	event_signal(EVENT_REFRESH);
 
-	if (player->upkeep->arena_level) {
-		return;
+	/* Explain the truce for the final level */
+	if ((player->depth == z_info->dun_depth) && player->truce) {
+		msg("There is a strange tension in the air.");
+		if (player->state.skill_use[SKILL_PERCEPTION] >= 15) {
+			msg("You feel that Morgoth's servants are reluctant to attack before he delivers judgment.");	
+		}
 	}
-
-	/* Announce (or repeat) the feeling */
-	if (player->depth)
-		display_feeling(false);
-
-	/* Check the surroundings */
-	search(player);
-
-	/* Give player minimum energy to start a new level, but do not reduce
-	 * higher value from savefile for level in progress */
-	if (player->energy < z_info->move_energy)
-		player->energy = z_info->move_energy;
 }
 
 /**
  * Housekeeping on leaving a level
  */
 static void on_leave_level(void) {
-	/* Cancel any command */
-	player_clear_timed(player, TMD_COMMAND, false);
-
 	/* Don't allow command repeat if moved away from item used. */
 	cmd_disable_repeat_floor_item();
 
@@ -1116,26 +1053,12 @@ void run_game_loop(void)
 
 		/* Make a new level if requested */
 		if (player->upkeep->generate_level) {
-			bool arena = false;
 			if (character_dungeon) {
 				on_leave_level();
-				if (cave->name && streq(cave->name, "arena")) {
-					arena = true;
-				}
 			}
-
 			prepare_next_level(player);
 			on_new_level();
-
 			player->upkeep->generate_level = false;
-
-			/* Kill arena monster */
-			if (arena) {
-				player->upkeep->arena_level = false;
-				if (player->upkeep->health_who) {
-					kill_arena_monster(player->upkeep->health_who);
-				}
-			}
 		}
 
 		/* If the player has enough energy to move they now do so, after

@@ -25,7 +25,6 @@
 #include "monster.h"
 #include "obj-init.h"
 #include "obj-pile.h"
-#include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -85,9 +84,6 @@ bool regen = false;
 /* total number of artifacts found */
 static int art_it[TRIES_SIZE];
 
-/*** handle gold separately ***/
-/* gold */
-static double gold_total[MAX_LVL], gold_floor[MAX_LVL], gold_mon[MAX_LVL];
 
 
 typedef enum stat_code
@@ -109,8 +105,7 @@ typedef enum stat_code
 	ST_AVERAGE_ARMOR,
 	ST_GOOD_ARMOR,	
 	ST_STR_ARMOR,
-	ST_INT_ARMOR,
-	ST_WIS_ARMOR,
+	ST_GRA_ARMOR,
 	ST_DEX_ARMOR,
 	ST_CON_ARMOR,
 	ST_CURSED_ARMOR,
@@ -149,7 +144,7 @@ typedef enum stat_code
 	ST_SCROLLS,
 	ST_ENDGAME_SCROLLS,
 	ST_ACQUIRE_SCROLLS,
-	ST_RODS,
+	ST_HORNS,
 	ST_UTILITY_RODS,
 	ST_TELEPOTHER_RODS,
 	ST_DETECTALL_RODS,
@@ -225,8 +220,7 @@ static const struct stat_data stat_message[] =
 	{ST_AVERAGE_ARMOR, " Average     "},
 	{ST_GOOD_ARMOR, " Good        "},	
 	{ST_STR_ARMOR, " +Strength   "},
-	{ST_INT_ARMOR, " +Intel.     "},
-	{ST_WIS_ARMOR, " +Wisdom     "},
+	{ST_GRA_ARMOR, " +Grace     "},
 	{ST_DEX_ARMOR, " +Dexterity  "},
 	{ST_CON_ARMOR, " +Const.     "},
 	{ST_CURSED_ARMOR, " Cursed       "},
@@ -265,7 +259,7 @@ static const struct stat_data stat_message[] =
 	{ST_SCROLLS, "\n ***SCROLLS***   \n All:        "},
 	{ST_ENDGAME_SCROLLS, " Endgame     "},// destruction, banish, mass banish, rune
 	{ST_ACQUIRE_SCROLLS, " Acquire.    "},
-	{ST_RODS, "\n ***RODS***      \n All:        "},
+	{ST_HORNS, "\n ***RODS***      \n All:        "},
 	{ST_UTILITY_RODS, " Utility     "},//dtrap, dstairs, dobj, light, illum
 	{ST_TELEPOTHER_RODS, " Tele Other  "},
 	{ST_DETECTALL_RODS, " Detect all  "},
@@ -466,8 +460,6 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 	static int lvl;
 	const struct artifact *art;
 
-	double gold_temp = 0;
-
 	assert(obj->kind);
 
 	/* get player depth */
@@ -496,34 +488,13 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 		first_find(ST_FF_SI);
 	}
 	/* has at least one basic resist */
- 	if ((obj->el_info[ELEM_ACID].res_level == 1) ||
-		(obj->el_info[ELEM_ELEC].res_level == 1) ||
+ 	if ((obj->el_info[ELEM_POIS].res_level == 1) ||
 		(obj->el_info[ELEM_COLD].res_level == 1) ||
 		(obj->el_info[ELEM_FIRE].res_level == 1)){
 
 			add_stats(ST_RESIST_EQUIPMENT, vault, mon, number);
 	}
 
-	/* has rbase */
-	if ((obj->el_info[ELEM_ACID].res_level == 1) &&
-		(obj->el_info[ELEM_ELEC].res_level == 1) &&
-		(obj->el_info[ELEM_COLD].res_level == 1) &&
-		(obj->el_info[ELEM_FIRE].res_level == 1))
-		add_stats(ST_RBASE_EQUIPMENT, vault, mon, number);
-
-	/* has resist poison */
-	if (obj->el_info[ELEM_POIS].res_level == 1){
-
-		add_stats(ST_RPOIS_EQUIPMENT, vault, mon, number);
-		first_find(ST_FF_RPOIS);
-		
-	}
-	/* has resist nexus */
-	if (obj->el_info[ELEM_NEXUS].res_level == 1){
-
-		add_stats(ST_RNEXUS_EQUIPMENT, vault, mon, number);
-		first_find(ST_FF_RNEXUS);
-	}
 	/* has resist blind */
 	if (of_has(obj->flags, OF_PROT_BLIND)){
 
@@ -538,17 +509,6 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 		first_find(ST_FF_RCONF);
 	}
 
-	/* has speed */
-	if (obj->modifiers[OBJ_MOD_SPEED] != 0)
-		add_stats(ST_SPEED_EQUIPMENT, vault, mon, number);
-
-	/* has telepathy */
-	if (of_has(obj->flags, OF_TELEPATHY)){
-
-		add_stats(ST_TELEP_EQUIPMENT, vault, mon, number);
-		first_find(ST_FF_TELEP);
-	}
-
 	switch(obj->tval){
 
 		/* armor */
@@ -559,8 +519,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 		case TV_SHIELD:
 		case TV_CLOAK:
 		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:{
+		case TV_MAIL:{
 
 			/* do not include artifacts */
 			if (obj->artifact) break;
@@ -569,11 +528,9 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			add_stats(ST_ARMORS, vault, mon, number);
 
 			/* check if bad, good, or average */
-			if (obj->to_a < 0)
-				add_stats(ST_BAD_ARMOR, vault, mon, number);
-			if (obj->to_h == 0)
+			if (obj->evn == 0)
 				add_stats(ST_AVERAGE_ARMOR, vault, mon, number);
-			if (obj->to_h > 0)
+			if (obj->evn > 0)
 				add_stats(ST_GOOD_ARMOR, vault, mon, number);
 
 			/* has str boost */
@@ -585,17 +542,11 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				add_stats(ST_DEX_ARMOR, vault, mon, number);
 
 			/* has int boost */
-			if (obj->modifiers[OBJ_MOD_INT] != 0)
-				add_stats(ST_INT_ARMOR, vault, mon, number);
-
-			if (obj->modifiers[OBJ_MOD_WIS] != 0)
-				add_stats(ST_WIS_ARMOR, vault, mon, number);
-
 			if (obj->modifiers[OBJ_MOD_CON] != 0)
 				add_stats(ST_CON_ARMOR, vault, mon, number);
 
-			if (obj->curses)
-				add_stats(ST_CURSED_ARMOR, vault, mon, number);
+			if (obj->modifiers[OBJ_MOD_GRA] != 0)
+				add_stats(ST_GRA_ARMOR, vault, mon, number);
 
 			break;
 		}
@@ -611,15 +562,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 
 			/* add to weapon total */
 			add_stats(ST_WEAPONS, vault, mon, number);
-
-			/* check if bad, good, or average */
-			if ((obj->to_h < 0)  && (obj->to_d < 0))
-				add_stats(ST_BAD_WEAPONS, vault, mon, number);
-			if ((obj->to_h == 0) && (obj->to_d == 0))
-				add_stats(ST_AVERAGE_WEAPONS, vault, mon, number);
-			if ((obj->to_h > 0) && (obj->to_d > 0))
-				add_stats(ST_GOOD_WEAPONS, vault, mon, number);
-
+#if 0
 			/* Egos by name - changes results a little */
 			if (obj->ego) {
 				/* slay evil */
@@ -634,7 +577,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 					add_stats(ST_KILL_WEAPONS, vault, mon, number);
 
 				/* determine westernesse by flags */
-				if (strstr(obj->ego->name, "Westernesse"))
+				if (strstr(obj->ego->name, "Doriath"))
 					add_stats(ST_WESTERNESSE_WEAPONS, vault, mon, number);
 
 				/* determine defender by flags */
@@ -680,7 +623,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				add_stats(ST_UBWE, vault, mon, number); */
 
 			}
-
+#endif
 			break;
 		}
 
@@ -692,7 +635,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 
 			/* add to launcher total */
 			add_stats(ST_BOWS, vault, mon, number);
-
+#if 0
 			/* check if bad, average, good, or very good */
 			if ((obj->to_h < 0) && (obj->to_d < 0))
 				add_stats(ST_BAD_BOWS, vault, mon, number);
@@ -719,14 +662,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				(obj->modifiers[OBJ_MOD_MIGHT] > 0) &&
 				(obj->modifiers[OBJ_MOD_SHOTS] > 0))
 					add_stats(ST_BUCKLAND_BOWS, vault, mon, number);
-
-			/* has telep */
-			if (of_has(obj->flags, OF_TELEPATHY))
-				add_stats(ST_TELEP_BOWS, vault, mon, number);
-
-			/* is cursed */
-			if (obj->curses)
-				add_stats(ST_CURSED_BOWS, vault, mon, number);
+#endif
 			break;
 		}
 
@@ -739,11 +675,12 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			/* Stat gain */
 			if (strstr(obj->kind->name, "Strength") ||
 				strstr(obj->kind->name, "Intelligence") ||
-				strstr(obj->kind->name, "Wisdom") ||
-				strstr(obj->kind->name, "Dexterity") ||
+				strstr(obj->kind->name, "Grace") ||
 				strstr(obj->kind->name, "Constitution")) {
 				add_stats(ST_GAINSTAT_POTIONS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Augmentation")) {
+			}
+#if 0
+			else if (strstr(obj->kind->name, "Augmentation")) {
 				/* Augmentation counts as 5 stat gain pots */
 				add_stats(ST_GAINSTAT_POTIONS, vault, mon, number * 5);
 			} else if (strstr(obj->kind->name, "*Enlightenment*")) {
@@ -757,35 +694,16 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			} else if (strstr(obj->kind->name, "Healing")) {
 				add_stats(ST_HEALING_POTIONS, vault, mon, number);
 			}
-			break;
-		}
-
-		/* scrolls */
-		case TV_SCROLL:{
-
-			/* add total amounts */
-			add_stats(ST_SCROLLS, vault, mon, number);
-
-			if (strstr(obj->kind->name, "Banishment") ||
-				strstr(obj->kind->name, "Mass Banishment") ||
-				strstr(obj->kind->name, "Rune of Protection") ||
-				strstr(obj->kind->name, "*Destruction*")) {
-				add_stats(ST_ENDGAME_SCROLLS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "Acquirement")) {
-				add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number);
-			} else if (strstr(obj->kind->name, "*Acquirement*")) {
-				/* do the effect of 2 acquires */
-				add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number * 2);
-			}
+#endif			
 			break;
 		}
 
 		/* rods */
-		case TV_ROD:{
+		case TV_HORN:{
 
 			/* add to total */
-			add_stats(ST_RODS, vault, mon, number);
-
+			add_stats(ST_HORNS, vault, mon, number);
+#if 0
 			if (strstr(obj->kind->name, "Trap Detection") ||
 				strstr(obj->kind->name, "Treasure Detection") ||
 				strstr(obj->kind->name, "Door/Stair Location") ||
@@ -800,6 +718,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 					   strstr(obj->kind->name, "Healing")) {
 				add_stats(ST_ENDGAME_RODS, vault, mon, number);
 			}
+#endif			
 			break;
 		}
 
@@ -807,7 +726,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 		case TV_STAFF:{
 
 			add_stats(ST_STAVES, vault, mon, number);
-
+#if 0
 			if (strstr(obj->kind->name, "Speed")) {
 				add_stats(ST_SPEED_STAVES, vault, mon, number);
 			} else if (strstr(obj->kind->name, "*Destruction*")) {
@@ -821,25 +740,14 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 					   strstr(obj->kind->name, "the Magi")) {
 				add_stats(ST_ENDGAME_STAVES, vault, mon, number);
 			}
-			break;
-		}
-
-		case TV_WAND:{
-
-			add_stats(ST_WANDS, vault, mon, number);
-
-			if (strstr(obj->kind->name, "Teleport Other"))
-				add_stats(ST_TELEPOTHER_WANDS, vault, mon, number);
+#endif			
 			break;
 		}
 
 		case TV_RING:{
 
 			add_stats(ST_RINGS, vault, mon, number);
-
-			/* is it cursed */
-			if (obj->curses)
-				add_stats(ST_CURSED_RINGS, vault, mon, number);
+#if 0
 
 			if (strstr(obj->kind->name, "Speed")) {
 				add_stats(ST_SPEEDS_RINGS, vault, mon, number);
@@ -867,14 +775,14 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				add_stats(ST_ONE_RINGS, vault, mon, number);
 			}
 
-
+#endif
 			break;
 		}
 
 		case TV_AMULET:{
 
 			add_stats(ST_AMULETS, vault, mon, number);
-
+#if 0
 			if (strstr(obj->kind->name, "Wisdom")) {
 				add_stats(ST_WIS_AMULETS, vault, mon, number);
 			} else if ((strstr(obj->kind->name, "Magi")) || 
@@ -888,16 +796,14 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			/* is cursed */
 			if (obj->curses)
 				add_stats(ST_CURSED_AMULETS, vault, mon, number);
-
+#endif
 			break;
 		}
 
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:{
+		case TV_ARROW:{
 
 			add_stats(ST_AMMO, vault, mon, number);
-
+#if 0
 			/* check if bad, average, good */
 			if ((obj->to_h < 0) && (obj->to_d < 0))
 				add_stats(ST_BAD_AMMO, vault, mon, number);
@@ -926,83 +832,11 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 						add_stats(ST_HOLY_AMMO, vault, mon, number);
 				}
 			}
-			break;
-		}
-
-		/* books have the same probability, only track one realm of them */
-		case TV_MAGIC_BOOK:{
-
-			switch(obj->sval){
-
-				/* svals begin at 0 and end at 8 */
-				case 0:{
-
-					add_stats(ST_1ST_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK1);
-					break;
-				}
-
-				case 1:{
-
-					add_stats(ST_2ND_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK2);
-					break;
-				}
-
-				case 2:{
-
-					add_stats(ST_3RD_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK3);
-					break;
-				}
-
-				case 3:{
-
-					add_stats(ST_4TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK4);
-					break;
-				}
-
-				case 4:{
-
-					add_stats(ST_5TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK5);
-					break;
-				}
-
-				case 5:{
-
-					add_stats(ST_6TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK6);
-					break;
-				}
-
-				case 6:{
-
-					add_stats(ST_7TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK7);
-					break;
-				}
-
-				case 7:{
-
-					add_stats(ST_8TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK8);
-					break;
-				}
-
-				case 8:{
-
-					add_stats(ST_9TH_BOOKS, vault, mon, number);
-					first_find(ST_FF_BOOK9);
-					break;
-				}
-
-
-			}
+#endif
 			break;
 		}
 	}
+
 	/* check to see if we have an artifact */
 	if (obj->artifact){
 
@@ -1019,14 +853,14 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 		//msg_format("Found artifact %s",art->name);
 
 		/* artifact is shallow */
-		if (art->alloc_min < (player->depth - 20)) art_shal[lvl] += addval;
+		if (art->level < (player->depth - 5)) art_shal[lvl] += addval;
 
 		/* artifact is close to the player depth */
-		if ((art->alloc_min >= player->depth - 20) &&
-			(art->alloc_min <= player->depth )) art_ave[lvl] += addval;
+		if ((art->level >= player->depth - 5) &&
+			(art->level <= player->depth )) art_ave[lvl] += addval;
 
 		/* artifact is out of depth */
-		if (art->alloc_min > (player->depth)) art_ood[lvl] += addval;
+		if (art->level > (player->depth)) art_ood[lvl] += addval;
 
 		/* check to see if it's a special artifact */
 		if ((obj->tval == TV_LIGHT) || (obj->tval == TV_AMULET)
@@ -1059,18 +893,6 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 		if (!(clearing)) mark_artifact_created(art, false);
 	}
 
-	/* Get info on gold. */
-	if (obj->tval == TV_GOLD){
-
-		int temp = obj->pval;
-		gold_temp = temp;
-	    gold_total[lvl] += (gold_temp / tries);
-
-		/*From a monster? */
-		if ((mon) || (uniq)) gold_mon[lvl] += (gold_temp / tries);
-		else gold_floor[lvl] += (gold_temp / tries);
-	}
-
 }
 
 
@@ -1095,9 +917,6 @@ static void monster_death_stats(int m_idx)
 	/* Check if monster is UNIQUE */
 	uniq = rf_has(mon->race->flags,RF_UNIQUE);
 
-	/* Mimicked objects will have already been counted as floor objects */
-	mon->mimicked_obj = NULL;
-
 	/* Drop objects being carried */
 	obj = mon->held_obj;
 	while (obj) {
@@ -1111,7 +930,7 @@ static void monster_death_stats(int m_idx)
 
 		/* Delete the object */
 		delist_object(cave, obj);
-		object_delete(cave, player->cave, &obj);
+		object_delete(cave, &obj);
 
 		/* Next */
 		obj = next;
@@ -1177,7 +996,7 @@ static bool stats_monster(struct monster *mon, int i)
 	monster_death_stats(i);
 
 	/* remove the monster */
-	delete_monster_idx(i);
+	delete_monster_idx(cave, i);
 
 	/* success */
 	return true;
@@ -1455,7 +1274,7 @@ static void stats_collect_level(void)
  * This code will go through the artifact list and make each artifact
  * uncreated so that our sim player can find them again!
  */
-static void uncreate_artifacts(void)
+static void uncreate_all_artifacts(void)
 {
 	int i;
 
@@ -1518,24 +1337,10 @@ static void clearing_stats(void)
 	/* Do many iterations of the game */
 	for (iter = 0; iter < tries; iter++) {
 		/* Move all artifacts to uncreated */
-		uncreate_artifacts();
+		uncreate_all_artifacts();
 
 		/* Move all uniques to alive */
 		revive_uniques();
-
-		/* Do randart regen */
-		if ((regen) && (iter<tries)) {
-			/* Get seed */
-			int seed_randart = randint0(0x10000000);
-
-			/* Restore the standard artifacts */
-			cleanup_parser(&randart_parser);
-			deactivate_randart_file();
-			run_parser(&artifact_parser);
-
-			/* regen randarts */
-			do_randart(seed_randart, false);
-		}
 
 		/* Do game iterations */
 		for (depth = 1 ; depth < MAX_LVL; depth++) {
@@ -1553,18 +1358,6 @@ static void clearing_stats(void)
 		}
 
 		msg("Iteration %d complete",iter);
-	}
-
-	/* Restore original artifacts */
-	if (regen) {
-		cleanup_parser(&randart_parser);
-		if (OPT(player, birth_randarts)) {
-			activate_randart_file();
-			run_parser(&randart_parser);
-			deactivate_randart_file();
-		} else {
-			run_parser(&artifact_parser);
-		}
 	}
 
 	/* Print to file */
@@ -1765,55 +1558,6 @@ static void calc_cave_distances(int **cave_dist)
 
 	mem_free(ngrids);
 	mem_free(ogrids);
-}
-
-/**
- * Generate several pits and collect statistics about the type of inhabitants.
- *
- * \param nsim Is the number of pits to generate.
- * \param pittype Must be 1 (pit), 2 (nest), or 3 (other).
- * \param depth Is the depth to use for the simulations.
- */
-void pit_stats(int nsim, int pittype, int depth)
-{
-	int *hist;
-	int j, p;
-
-	/* Initialize hist */
-	hist = mem_zalloc(z_info->pit_max * sizeof(*hist));
-
-	for (j = 0; j < nsim; j++) {
-		int i;
-		int pit_idx = 0;
-		int pit_dist = 999;
-
-		for (i = 0; i < z_info->pit_max; i++) {
-			int offset, dist;
-			struct pit_profile *pit = &pit_info[i];
-
-			if (!pit->name || pit->room_type != pittype) continue;
-
-			offset = Rand_normal(pit->ave, 10);
-			dist = ABS(offset - depth);
-
-			if (dist < pit_dist && one_in_(pit->rarity)) {
-				pit_idx = i;
-				pit_dist = dist;
-			}
-		}
-
-		hist[pit_idx]++;
-	}
-
-	for (p = 0; p < z_info->pit_max; p++) {
-		struct pit_profile *pit = &pit_info[p];
-		if (pit->name)
-			msg("Type: %s, Number: %d.", pit->name, hist[p]);
-	}
-
-	mem_free(hist);
-
-	return;
 }
 
 struct tunnel_instance {
@@ -2789,17 +2533,9 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 		bool has_bad_start, use_stairs;
 
 		/*
-		 * 50% of the time act as if came in via a down staircase;
-		 * otherwise come in as if by word of recall/trap door/teleport
-		 * level.
+		 * 100% of the time act as if came in via a down staircase.
 		 */
-		if (one_in_(2)) {
-			player->upkeep->create_up_stair = true;
-			player->upkeep->create_down_stair = false;
-			use_stairs = OPT(player, birth_connect_stairs);
-		} else {
-			use_stairs = false;
-		}
+		use_stairs = true;
 
 		/* Make a new cave */
 		prepare_next_level(player);
@@ -2961,9 +2697,6 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 {
 }
 
-void pit_stats(int nsim, int pittype, int depth)
-{
-}
 #endif /* USE_STATS */
 
 /**
@@ -3077,26 +2810,6 @@ static bool is_easily_traversed(struct chunk *c, struct loc grid)
 		square_isrubble(c, grid);
 }
 
-static bool is_impassable_rubble(struct chunk *c, struct loc grid)
-{
-	return !square_ispassable(c, grid) && square_isrubble(c, grid);
-}
-
-static bool is_passable_rubble(struct chunk *c, struct loc grid)
-{
-	return square_ispassable(c, grid) && square_isrubble(c, grid);
-}
-
-static bool is_magma_treasure(struct chunk *c, struct loc grid)
-{
-	return square_ismagma(c, grid) && square_hasgoldvein(c, grid);
-}
-
-static bool is_quartz_treasure(struct chunk *c, struct loc grid)
-{
-	return square_isquartz(c, grid) && square_hasgoldvein(c, grid);
-}
-
 /**
  * Use stat_grid_counter() to get the grid counts and immediate neighborhood
  * characteristics most likely to be useful for assessing map quality and
@@ -3120,11 +2833,8 @@ void stat_grid_counter_simple(struct chunk *c, struct grid_counts counts[3])
 		{ square_isupstairs, 0, 0, 0 },
 		{ square_isdownstairs, 0, 0, 0 },
 		{ square_istrap, 0, 0, 0 },
-		{ square_isfiery, 0, 0, 0 },
-		{ is_impassable_rubble, 0, 0, 0 },
-		{ is_passable_rubble, 0, 0, 0 },
-		{ is_magma_treasure, 0, 0, 0 },
-		{ is_quartz_treasure, 0, 0, 0 },
+		{ square_isforge, 0, 0, 0 },
+		{ square_isrubble, 0, 0, 0 },
 		{ square_isopendoor, 0, 0, 0 },
 		{ square_iscloseddoor, 0, 0, 0 },
 		{ square_isbrokendoor, 0, 0, 0 },

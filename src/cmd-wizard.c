@@ -26,13 +26,11 @@
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-util.h"
-#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
-#include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -151,7 +149,7 @@ static struct object *wiz_create_object_from_artifact(const struct artifact *art
 
 	/* Create the artifact */
 	obj = object_new();
-	object_prep(obj, kind, art->alloc_min, RANDOMISE);
+	object_prep(obj, kind, art->level, RANDOMISE);
 	obj->artifact = art;
 	copy_artifact_data(obj, art);
 
@@ -171,15 +169,11 @@ static struct object *wiz_create_object_from_kind(struct object_kind *kind)
 {
 	struct object *obj;
 
-	if (tval_is_money_k(kind)) {
-		obj = make_gold(player->depth, kind->name);
-	} else {
-		obj = object_new();
-		object_prep(obj, kind, player->depth, RANDOMISE);
+	obj = object_new();
+	object_prep(obj, kind, player->depth, RANDOMISE);
 
-		/* Apply magic (no messages, no artifacts) */
-		apply_magic(obj, player->depth, false, false, false, false);
-	}
+	/* Apply magic (no messages, no artifacts) */
+	apply_magic(obj, player->depth, false, false, false);
 
 	return obj;
 }
@@ -204,8 +198,6 @@ static void wiz_display_item(const struct object *obj, bool all,
 	/* Extract the flags. */
 	if (all) {
 		object_flags(obj, f);
-	} else {
-		object_flags_known(obj, f);
 	}
 
 	/* Clear screen. */
@@ -217,8 +209,8 @@ static void wiz_display_item(const struct object *obj, bool all,
 
 	prt(buf, 2, j);
 
-	prt(format("combat = (%dd%d) (%+d,%+d) [%d,%+d]",
-		obj->dd, obj->ds, obj->to_h, obj->to_d, obj->ac, obj->to_a),
+	prt(format("combat = (%+d,%dd%d) [%+d,%dd%d]",
+		obj->att, obj->ds, obj->dd, obj->evn, obj->ps, obj->pd),
 		4, j);
 
 	prt(format("kind = %-5d  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
@@ -229,7 +221,7 @@ static void wiz_display_item(const struct object *obj, bool all,
 		obj->number, obj->pval,
 		obj->artifact ? obj->artifact->aidx : 0,
 		obj->ego ? (int) obj->ego->eidx : -1,
-		(long)object_value(obj, 1)), 6, j);
+		(long)object_value(obj)), 6, j);
 
 	nflg = MIN(OF_MAX - FLAG_START, 80);
 
@@ -278,9 +270,6 @@ static void wiz_display_item(const struct object *obj, bool all,
 	mem_free(labelsDone);
 
 	prt_binary(f, 0, 22, j, L'*', nflg);
-	if (obj->known) {
-		prt_binary(obj->known->flags, 0, 23, j, L'+', nflg);
-	}
 }
 
 
@@ -389,6 +378,7 @@ static void wiz_play_item_standard_upkeep(struct player *p, struct object *obj)
 void do_cmd_wiz_acquire(struct command *cmd)
 {
 	int n, great;
+	struct object *nice_obj;
 
 	if (cmd_get_arg_choice(cmd, "choice", &great) != CMD_OK) {
 		great = (get_check("Acquire great objects? ")) ? 1 : 0;
@@ -403,26 +393,27 @@ void do_cmd_wiz_acquire(struct command *cmd)
 		cmd_set_arg_number(cmd, "quantity", n);
 	}
 
-	acquirement(player->grid, player->depth, n, great);
+	/* Acquirement */
+	while (n--) {
+		/* Make a good (or great) object (if possible) */
+		nice_obj = make_object(cave, player->depth, true, great, NULL);
+		if (!nice_obj) continue;
+
+		nice_obj->origin = ORIGIN_ACQUIRE;
+		nice_obj->origin_depth = convert_depth_to_origin(player->depth);
+
+		/* Drop the object */
+		drop_near(cave, &nice_obj, 0, player->grid, true, false);
+	}
 }
 
 
 /**
- * Advance the player to level 50 with max stats and other bonuses
- * (CMD_WIZ_ADVANCE).  Takes no arguments from cmd.
+ * Advance the player to max exp (CMD_WIZ_ADVANCE).
+ *  Takes no arguments from cmd.
  */
 void do_cmd_wiz_advance(struct command *cmd)
 {
-	int i;
-
-	/* Max stats */
-	for (i = 0; i < STAT_MAX; i++) {
-		player->stat_cur[i] = player->stat_max[i] = 118;
-	}
-
-	/* Lots of money */
-	player->au = 1000000L;
-
 	/* Level 50 */
 	player_exp_gain(player, PY_MAX_EXP);
 
@@ -434,11 +425,8 @@ void do_cmd_wiz_advance(struct command *cmd)
 	player->csp = player->msp;
 	player->csp_frac = 0;
 
-	/* Get some awesome equipment */
-	/* Artifacts: 3, 5, 12, ... */
-
 	/* Flag update and redraw for things not handled in player_exp_gain() */
-	player->upkeep->redraw |= PR_GOLD | PR_HP | PR_MANA;
+	player->upkeep->redraw |= PR_HP | PR_MANA;
 }
 
 
@@ -466,7 +454,7 @@ void do_cmd_wiz_banish(struct command *cmd)
 		if (mon->cdis > d) continue;
 
 		/* Delete the monster */
-		delete_monster_idx(i);
+		delete_monster_idx(cave, i);
 	}
 
 	/* Update monster list window */
@@ -540,12 +528,9 @@ void do_cmd_wiz_change_item_quantity(struct command *cmd)
 	n = MAX(1, MIN(nmax, n));
 
 	if (n != obj->number) {
-		/* Adjust charges or timeouts for devices. */
+		/* Adjust charges for devices. */
 		if (tval_can_have_charges(obj) && obj->number > 0) {
 			obj->pval = (obj->pval * n) / obj->number;
-		}
-		if (tval_can_have_timeout(obj) && obj->number > 0) {
-			obj->timeout = (obj->timeout * n) / obj->number;
 		}
 
 		/* Accept change. */
@@ -656,53 +641,6 @@ void do_cmd_wiz_collect_obj_mon_stats(struct command *cmd)
 	default_simtype = (simtype == 1) ? 1 : 2;
 
 	stats_collect(nsim, simtype);
-}
-
-
-/**
- * Generate several pits and collect statistics about the types of monsters
- * used (CMD_WIZ_COLLECT_PIT_STATS).  Can take the number of simulations from
- * the argument, "quantity", of type number in cmd.  Can take the depth to use
- * for the simulations from the argument, "depth", of type number in cmd.  Can
- * take the type of pit (pit (1), nest (2), or other (3)) from the argument,
- * "choice", of type choice in cmd.
- */
-void do_cmd_wiz_collect_pit_stats(struct command *cmd)
-{
-	int nsim, depth, pittype;
-	char s[80];
-
-	if (!stats_are_enabled()) return;
-
-	if (cmd_get_arg_number(cmd, "quantity", &nsim) != CMD_OK) {
-		/* Set default. */
-		strnfmt(s, sizeof(s), "%d", 1000);
-
-		if (!get_string("Number of simulations: ", s, sizeof(s))) return;
-		if (!get_int_from_string(s, &nsim) || nsim < 1) return;
-		cmd_set_arg_number(cmd, "quantity", nsim);
-	}
-
-	if (cmd_get_arg_choice(cmd, "choice", &pittype) != CMD_OK) {
-		/* Set default. */
-		strnfmt(s, sizeof(s), "%d", 1);
-
-		if (!get_string("Pit type (1-3): ", s, sizeof(s))) return;
-		if (!get_int_from_string(s, &pittype) || pittype < 1 ||
-			pittype > 3) return;
-		cmd_set_arg_choice(cmd, "choice", pittype);
-	}
-
-	if (cmd_get_arg_number(cmd, "depth", &depth) != CMD_OK) {
-		/* Set default. */
-		strnfmt(s, sizeof(s), "%d", player->depth);
-
-		if (!get_string("Depth: ", s, sizeof(s))) return;
-		if (!get_int_from_string(s, &depth) || depth < 1) return;
-		cmd_set_arg_number(cmd, "depth", depth);
-	}
-
-	pit_stats(nsim, pittype, depth);
 }
 
 
@@ -922,45 +860,46 @@ void do_cmd_wiz_create_trap(struct command *cmd)
  */
 void do_cmd_wiz_cure_all(struct command *cmd)
 {
-	int i;
+	int i, flag;
 
-	/* Remove curses */
+	/* Remove bad properties from all objects */
 	for (i = 0; i < player->body.count; i++) {
-		if (player->body.slots[i].obj &&
-				player->body.slots[i].obj->curses) {
-			mem_free(player->body.slots[i].obj->curses);
-			player->body.slots[i].obj->curses = NULL;
+		if (player->body.slots[i].obj) {
+			struct object *obj = player->body.slots[i].obj;
+			for (flag = FLAG_START; flag != FLAG_END;
+				 flag = of_next(obj->flags, flag)) {
+				struct obj_property *prop =
+					lookup_obj_property(OBJ_PROPERTY_FLAG, flag);
+				if (prop->type == OFT_BAD) {
+					of_off(obj->flags, flag);
+				}
+			}
 		}
 	}
 
 	/* Restore stats */
 	for (i = 0; i < STAT_MAX; i++) {
 		effect_simple(EF_RESTORE_STAT, source_player(), "0", i,
-			0, 0, 0, 0, NULL);
+			0, 0, NULL);
 	}
-
-	/* Restore the level */
-	effect_simple(EF_RESTORE_EXP, source_none(), "0", 0, 0, 0, 0, 0, NULL);
 
 	/* Heal the player */
 	player->chp = player->mhp;
-	player->chp_frac = 0;
 
 	/* Restore mana */
 	player->csp = player->msp;
-	player->csp_frac = 0;
 
 	/* Cure stuff */
 	(void) player_clear_timed(player, TMD_BLIND, true);
 	(void) player_clear_timed(player, TMD_CONFUSED, true);
 	(void) player_clear_timed(player, TMD_POISONED, true);
 	(void) player_clear_timed(player, TMD_AFRAID, true);
-	(void) player_clear_timed(player, TMD_PARALYZED, true);
+	(void) player_clear_timed(player, TMD_ENTRANCED, true);
 	(void) player_clear_timed(player, TMD_IMAGE, true);
 	(void) player_clear_timed(player, TMD_STUN, true);
 	(void) player_clear_timed(player, TMD_CUT, true);
 	(void) player_clear_timed(player, TMD_SLOW, true);
-	(void) player_clear_timed(player, TMD_AMNESIA, true);
+	(void) player_clear_timed(player, TMD_DARKENED, true);
 
 	/* No longer hungry */
 	player_set_timed(player, TMD_FOOD, PY_FOOD_FULL - 1, false);
@@ -975,94 +914,19 @@ void do_cmd_wiz_cure_all(struct command *cmd)
 
 
 /**
- * Change a curse on an item (CMD_WIZ_CURSE_ITEM).  Can take the item to use
- * from the argument, "item", of type item.  Can take the index of the curse
- * to use from the argument, "index", of type number.  Can take the power of
- * the curse from the argument, "power", of type number.  Using a power of
- * zero will remove a curse.  Takes whether to update player information
- * from the argument, "update", of type choice; when update is zero, something
- * else, presumably do_cmd_wiz_play_item(), handles the update.
- */
-void do_cmd_wiz_curse_item(struct command *cmd)
-{
-	struct object *obj;
-	int curse_index, power;
-	char s[80];
-	int update;
-
-	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK) {
-		if (!get_item(&obj, "Change curse on which item? ",
-				"You have nothing to change.", cmd->code,
-				NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER |
-				USE_FLOOR))) {
-			return;
-		}
-		cmd_set_arg_item(cmd, "item", obj);
-	}
-
-	/* Get curse. */
-	if (cmd_get_arg_number(cmd, "index", &curse_index) != CMD_OK) {
-		strnfmt(s, sizeof(s), "0");
-		if (!get_string("Enter curse name or index: ",
-				s, sizeof(s))) return;
-		if (!get_int_from_string(s, &curse_index)) {
-			curse_index = lookup_curse(s);
-		}
-		cmd_set_arg_number(cmd, "index", curse_index);
-	}
-	if (curse_index <= 0 || curse_index >= z_info->curse_max) {
-		return;
-	}
-
-	/* Get power for curse. */
-	if (cmd_get_arg_number(cmd, "power", &power) != CMD_OK) {
-		strnfmt(s, sizeof(s), "0");
-		if (!get_string("Enter curse power (0 removes): ", s,
-				sizeof(s)) || !get_int_from_string(s, &power)) {
-			return;
-		}
-		cmd_set_arg_number(cmd, "power", power);
-	}
-	if (power < 0) {
-		return;
-	}
-
-	/* Apply. */
-	if (power) {
-		append_object_curse(obj, curse_index, power);
-	} else if (!remove_object_curse(obj, curse_index, false)) {
-		return;
-	}
-
-	update = 0;
-	if (cmd_get_arg_choice(cmd, "update", &update) != CMD_OK || update) {
-		wiz_play_item_standard_upkeep(player, obj);
-	} else {
-		wiz_play_item_notify_changed();
-	}
-}
-
-
-/**
  * Detect everything nearby (CMD_WIZ_DETECT_ALL_LOCAL).  Takes no arguments
  * from cmd.
  */
 void do_cmd_wiz_detect_all_local(struct command *cmd)
 {
 	effect_simple(EF_DETECT_TRAPS, source_player(), "0",
-		0, 0, 0, 22, 40, NULL);
+		0, 0, 0, NULL);
 	effect_simple(EF_DETECT_DOORS, source_player(), "0",
-		0, 0, 0, 22, 40, NULL);
-	effect_simple(EF_DETECT_STAIRS, source_player(), "0",
-		0, 0, 0, 22, 40, NULL);
-	effect_simple(EF_DETECT_GOLD, source_player(), "0",
-		0, 0, 0, 22, 40, NULL);
+		0, 0, 0, NULL);
 	effect_simple(EF_DETECT_OBJECTS, source_player(), "0",
-		0, 0, 0, 22, 40, NULL);
-	effect_simple(EF_DETECT_VISIBLE_MONSTERS, source_player(), "0",
-		0, 0, 0, 22, 40, NULL);
-	effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "0",
-		0, 0, 0, 22, 40, NULL);
+		0, 0, 0, NULL);
+	effect_simple(EF_DETECT_MONSTERS, source_player(), "0",
+		0, 0, 0, NULL);
 }
 
 
@@ -1072,10 +936,8 @@ void do_cmd_wiz_detect_all_local(struct command *cmd)
  */
 void do_cmd_wiz_detect_all_monsters(struct command *cmd)
 {
-	effect_simple(EF_DETECT_VISIBLE_MONSTERS, source_player(), "0",
-		0, 0, 0, 500, 500, NULL);
-	effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "0",
-		0, 0, 0, 500, 500, NULL);
+	effect_simple(EF_DETECT_MONSTERS, source_player(), "0",
+		0, 0, 0, NULL);
 }
 
 
@@ -1188,40 +1050,8 @@ void do_cmd_wiz_edit_player_exp(struct command *cmd)
 	if (newv > player->exp) {
 		player_exp_gain(player, newv - player->exp);
 	} else {
-		player_exp_lose(player, player->exp - newv, false);
+		player_exp_lose(player, player->exp - newv);
 	}
-}
-
-
-/**
- * Edit the player's amount of gold (CMD_WIZ_EDIT_PLAYER_GOLD).  Takes no
- * arguments from cmd.
- */
-void do_cmd_wiz_edit_player_gold(struct command *cmd)
-{
-	char s[80];
-	long newv;
-
-	if (edit_player_state == EDIT_PLAYER_BREAK) return;
-
-	/* Set default value. */
-	strnfmt(s, sizeof(s), "%ld", (long)(player->au));
-
-	if (!get_string("Gold: ", s, sizeof(s)) ||
-			!get_long_from_string(s, &newv)) {
-		/* Set next editing stage to break. */
-		edit_player_state = EDIT_PLAYER_BREAK;
-		return;
-	}
-
-	/*
-	 * Keep in the bounds of [0, maximum int32_t].  Assumes a two's
-	 * complement representation.
-	 */
-	player->au = MIN((int32_t)((1UL << 31) - 1), MAX(0, newv));
-
-	/* Flag what needs to be updated or redrawn. */
-	player->upkeep->redraw |= PR_GOLD;
 }
 
 
@@ -1250,11 +1080,6 @@ void do_cmd_wiz_edit_player_start(struct command *cmd)
 			return;
 		}
 		cmd_set_arg_choice(cmdq_peek(), "choice", i);
-	}
-	if (cmdq_push(CMD_WIZ_EDIT_PLAYER_GOLD) != 0) {
-		/* Failed.  Skip any queued edit commands. */
-		edit_player_state = EDIT_PLAYER_BREAK;
-		return;
 	}
 	if (cmdq_push(CMD_WIZ_EDIT_PLAYER_EXP) != 0) {
 		/* Failed.  Skip any queued edit commands. */
@@ -1304,10 +1129,10 @@ void do_cmd_wiz_edit_player_stat(struct command *cmd)
 		return;
 	}
 
-	strnfmt(prompt, sizeof(prompt), "%s (3-118): ", stat_idx_to_name(stat));
+	strnfmt(prompt, sizeof(prompt), "%s (0-20): ", stat_idx_to_name(stat));
 
 	/* Set default value. */
-	strnfmt(s, sizeof(s), "%d", player->stat_max[stat]);
+	strnfmt(s, sizeof(s), "%d", player->stat_base[stat]);
 
 	if (!get_string(prompt, s, sizeof(s)) ||
 			!get_int_from_string(s, &newv)) {
@@ -1317,9 +1142,9 @@ void do_cmd_wiz_edit_player_stat(struct command *cmd)
 	}
 
 	/* Limit to the range of [3, 118]. */
-	newv = MIN(118, MAX(3, newv));
+	newv = MIN(20, MAX(0, newv));
 
-	player->stat_cur[stat] = player->stat_max[stat] = newv;
+	player->stat_base[stat] = newv;
 
 	/* Flag what needs to be updated or redrawn. */
 	player->upkeep->update |= (PU_BONUS);
@@ -1334,7 +1159,7 @@ void do_cmd_wiz_edit_player_stat(struct command *cmd)
 void do_cmd_wiz_hit_all_los(struct command *cmd)
 {
 	effect_simple(EF_PROJECT_LOS, source_player(), "10000", PROJ_DISP_ALL,
-		0, 0, 0, 0, NULL);
+		0, 0, NULL);
 }
 
 
@@ -1437,7 +1262,6 @@ void do_cmd_wiz_learn_object_kinds(struct command *cmd)
 		}
 	}
 
-	update_player_object_knowledge(player);
 	msg("You now know about many items!");
 }
 
@@ -1448,7 +1272,7 @@ void do_cmd_wiz_learn_object_kinds(struct command *cmd)
  */
 void do_cmd_wiz_magic_map(struct command *cmd)
 {
-	effect_simple(EF_MAP_AREA, source_player(), "0", 0, 0, 0, 22, 40, NULL);
+	effect_simple(EF_MAP_AREA, source_player(), "0", 0, 0, 0, NULL);
 }
 
 
@@ -1467,7 +1291,7 @@ void do_cmd_wiz_magic_map(struct command *cmd)
 static void wiz_hack_map_peek_noise(struct chunk *c, void *closure,
 	struct loc grid, bool *show, uint8_t *color)
 {
-	if (c->noise.grids[grid.y][grid.x] == *((int*)closure)) {
+	if (c->player_noise.grids[grid.y][grid.x] == *((int*)closure)) {
 		*show = true;
 		*color = COLOUR_RED;
 	} else {
@@ -1558,7 +1382,6 @@ void do_cmd_wiz_perform_effect(struct command *cmd)
 	char dice[80] = "0";
 	int index = -1;
 	int p1 = 0, p2 = 0, p3 = 0;
-	int y = 0, x = 0;
 	bool ident = false;
 
 	/* Avoid the prompt getting in the way */
@@ -1597,13 +1420,11 @@ void do_cmd_wiz_perform_effect(struct command *cmd)
 	/* Get the parameters */
 	p2 = get_quantity("Enter second parameter (radius): ", 100);
 	p3 = get_quantity("Enter third parameter (other): ", 100);
-	y = get_quantity("Enter y parameter: ", 100);
-	x = get_quantity("Enter x parameter: ", 100);
 
 	/* Reload the screen */
 	screen_load();
 
-	effect_simple(index, source_player(), dice, p1, p2, p3, y, x, &ident);
+	effect_simple(index, source_player(), dice, p1, p2, p3, &ident);
 
 	if (ident) {
 		msg("Identified!");
@@ -1703,7 +1524,7 @@ void do_cmd_wiz_play_item(struct command *cmd)
 	wiz_display_item(obj, display_all_prop != 0, player);
 
 	/* Get choice. */
-	if (get_com("[a]ccept [s]tatistics [r]eroll [t]weak [c]urse [q]uantity [k]nown? ", &ch)) {
+	if (get_com("[a]ccept [s]tatistics [r]eroll [t]weak [q]uantity [k]nown? ", &ch)) {
 		bool queue_failed = false;
 
 		switch (ch) {
@@ -1737,19 +1558,6 @@ void do_cmd_wiz_play_item(struct command *cmd)
 					}
 					wiz_play_item_standard_upkeep(player,
 						obj);
-				}
-				break;
-
-			case 'C':
-			case 'c':
-				/* Change a curse on the item. */
-				if (cmdq_push(CMD_WIZ_CURSE_ITEM) == 0) {
-					cmd_set_arg_item(cmdq_peek(), "item",
-						obj);
-					cmd_set_arg_choice(cmdq_peek(),
-						"update", 0);
-				} else {
-					queue_failed = true;
 				}
 				break;
 
@@ -1857,8 +1665,6 @@ void do_cmd_wiz_play_item(struct command *cmd)
 			obj->slays = NULL;
 			mem_free(obj->brands);
 			obj->brands = NULL;
-			mem_free(obj->curses);
-			obj->curses = NULL;
 
 			object_copy(obj, orig_obj);
 			obj->prev = prev;
@@ -1866,7 +1672,7 @@ void do_cmd_wiz_play_item(struct command *cmd)
 		}
 
 		/* Release the preserved copy. */
-		object_delete(cave, player->cave, &orig_obj);
+		object_delete(cave, &orig_obj);
 
 		/*
 		 * Reset the original_item and changed arguments so repeating
@@ -1896,7 +1702,7 @@ void do_cmd_wiz_push_object(struct command *cmd)
 	struct loc grid;
 
 	if (cmd_get_arg_point(cmd, "point", &grid) != CMD_OK) {
-		if (!target_set_interactive(TARGET_KILL, -1, -1)) return;
+		if (!target_set_interactive(TARGET_KILL, -1, -1, 0)) return;
 		target_get(&grid);
 		cmd_set_arg_point(cmd, "point", grid);
 	}
@@ -1960,19 +1766,20 @@ void do_cmd_wiz_query_feature(struct command *cmd)
 	const int featf[] = { FEAT_FLOOR };
 	const int feato[] = { FEAT_OPEN };
 	const int featb[] = { FEAT_BROKEN };
-	const int featu[] = { FEAT_LESS };
-	const int featz[] = { FEAT_MORE };
-	const int featt[] = { FEAT_LESS, FEAT_MORE };
+	const int featu[] = { FEAT_LESS, FEAT_LESS_SHAFT };
+	const int featz[] = { FEAT_MORE, FEAT_MORE_SHAFT };
+	const int featt[] = { FEAT_LESS, FEAT_MORE, FEAT_LESS_SHAFT,
+						  FEAT_MORE_SHAFT };
 	const int featc[] = { FEAT_CLOSED };
 	const int featd[] = { FEAT_CLOSED, FEAT_OPEN, FEAT_BROKEN,
 		FEAT_SECRET };
 	const int feath[] = { FEAT_SECRET };
-	const int featm[] = { FEAT_MAGMA, FEAT_MAGMA_K };
-	const int featq[] = { FEAT_QUARTZ, FEAT_QUARTZ_K };
+	const int featm[] = { FEAT_FORGE, FEAT_FORGE_GOOD, FEAT_FORGE_UNIQUE };
+	const int featq[] = { FEAT_QUARTZ };
 	const int featg[] = { FEAT_GRANITE };
 	const int featp[] = { FEAT_PERM };
 	const int featr[] = { FEAT_RUBBLE };
-	const int feata[] = { FEAT_PASS_RUBBLE };
+	const int feata[] = { FEAT_CHASM };
 
 	if (cmd_get_arg_choice(cmd, "choice", &feature_class) != CMD_OK) {
 		char choice;
@@ -2037,7 +1844,7 @@ void do_cmd_wiz_query_feature(struct command *cmd)
 			selected.n = (int) N_ELEMENTS(feath);
 			break;
 
-		/* Magma */
+		/* Forges */
 		case 'm':
 			selected.features = featm;
 			selected.n = (int) N_ELEMENTS(featm);
@@ -2067,7 +1874,7 @@ void do_cmd_wiz_query_feature(struct command *cmd)
 			selected.n = (int) N_ELEMENTS(featr);
 			break;
 
-		/* Passable rubble */
+		/* Chasms */
 		case 'a':
 			selected.features = feata;
 			selected.n = (int) N_ELEMENTS(feata);
@@ -2134,7 +1941,7 @@ void do_cmd_wiz_query_square_flag(struct command *cmd)
 	if (cmd_get_arg_choice(cmd, "choice", &flag) != CMD_OK) {
 		char c;
 
-		if (!get_com("Debug Command Query [grasvwdftniolx]: ", &c))
+		if (!get_com("Debug Command Query [grasvwftniolx]: ", &c))
 			return;
 		switch (c) {
 			case 'g': flag = SQUARE_GLOW; break;
@@ -2143,14 +1950,12 @@ void do_cmd_wiz_query_square_flag(struct command *cmd)
 			case 's': flag = SQUARE_SEEN; break;
 			case 'v': flag = SQUARE_VIEW; break;
 			case 'w': flag = SQUARE_WASSEEN; break;
-			case 'd': flag = SQUARE_DTRAP; break;
-			case 'f': flag = SQUARE_FEEL; break;
+			case 'f': flag = SQUARE_FIRE; break;
 			case 't': flag = SQUARE_TRAP; break;
 			case 'n': flag = SQUARE_INVIS; break;
 			case 'i': flag = SQUARE_WALL_INNER; break;
 			case 'o': flag = SQUARE_WALL_OUTER; break;
 			case 'l': flag = SQUARE_WALL_SOLID; break;
-			case 'x': flag = SQUARE_MON_RESTRICT; break;
 		}
 		cmd_set_arg_choice(cmd, "choice", flag);
 	}
@@ -2228,48 +2033,6 @@ void do_cmd_wiz_recall_monster(struct command *cmd)
 
 
 /**
- * Rerate the player's hit points (CMD_WIZ_RERATE).  Takes no arguments from
- * cmd.
- */
-void do_cmd_wiz_rerate(struct command *cmd)
-{
-	int min_value, max_value, percent;
-
-	min_value = (PY_MAX_LEVEL * 3 * (player->hitdie - 1)) / 8;
-	min_value += PY_MAX_LEVEL;
-
-	max_value = (PY_MAX_LEVEL * 5 * (player->hitdie - 1)) / 8;
-	max_value += PY_MAX_LEVEL;
-
-	player->player_hp[0] = player->hitdie;
-
-	/* Rerate */
-	while (1) {
-		int i;
-
-		/* Collect values */
-		for (i = 1; i < PY_MAX_LEVEL; i++) {
-			player->player_hp[i] = randint1(player->hitdie);
-			player->player_hp[i] += player->player_hp[i - 1];
-		}
-
-		/* Legal values */
-		if (player->player_hp[PY_MAX_LEVEL - 1] >= min_value &&
-			player->player_hp[PY_MAX_LEVEL - 1] <= max_value) break;
-	}
-
-	percent = (int)(((long)player->player_hp[PY_MAX_LEVEL - 1] * 200L) /
-		(player->hitdie + ((PY_MAX_LEVEL - 1) * player->hitdie)));
-
-	/* Update and redraw hitpoints */
-	player->upkeep->update |= PU_HP;
-	player->upkeep->redraw |= PR_HP;
-
-	msg("Current Life Rating is %d/100.", percent);
-}
-
-
-/**
  * Reroll an item (CMD_WIZ_REROLL_ITEM).  Can take the item to use from
  * the argument, "item", of type item in cmd.  Can take the type of roll
  * to use from the argument, "choice", of type choice in cmd:  0 means set
@@ -2337,34 +2100,32 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 
 	/* Reroll based on old kind and player's depth.  Then apply magic. */
 	object_prep(new, obj->kind, player->depth, RANDOMISE);
-	apply_magic(new, player->depth, false, good, great, false);
+	apply_magic(new, player->depth, false, good, great);
 
 	/* Copy over changes to the original. */
 	{
 		/* Record old pile information. */
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
-		struct object *known_obj = obj->known;
 		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
+		bool marked = obj->marked;
 
 		/* Free slays, brands, and curses on the old object by hand. */
 		mem_free(obj->slays);
 		obj->slays = NULL;
 		mem_free(obj->brands);
 		obj->brands = NULL;
-		mem_free(obj->curses);
-		obj->curses = NULL;
 
 		/* Copy over; pile information needs to be restored. */
 		object_copy(obj, new);
 		obj->prev = prev;
 		obj->next = next;
-		obj->known = known_obj;
 		obj->oidx = oidx;
 		obj->grid = grid;
 		obj->notice = notice;
+		obj->marked = marked;
 	}
 
 	/* Mark as cheat */
@@ -2378,7 +2139,7 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 	}
 
 	/* Free the copy. */
-	object_delete(cave, player->cave, &new);
+	object_delete(cave, &new);
 }
 
 
@@ -2519,7 +2280,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		}
 
 		/* Create an object. */
-		test_obj = make_object(cave, level, good, great, false, NULL, 0);
+		test_obj = make_object(cave, level, good, great, NULL);
 
 		/*
 		 * Allow multiple artifacts, because breaking the game is OK
@@ -2535,7 +2296,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		/* Test for same tval and sval. */
 		if (obj->tval != test_obj->tval ||
 				obj->sval != test_obj->sval) {
-			object_delete(cave, player->cave, &test_obj);
+			object_delete(cave, &test_obj);
 			continue;
 		}
 
@@ -2552,19 +2313,28 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		}
 
 		/* Check for match over all the tested properties. */
-		if (ismatch && test_obj->to_a == obj->to_a &&
-				test_obj->to_h == obj->to_h &&
-				test_obj->to_d == obj->to_d) {
+		if (ismatch && test_obj->att == obj->att &&
+				test_obj->ds == obj->ds &&
+				test_obj->dd == obj->dd &&
+				test_obj->evn == obj->evn &&
+				test_obj->ps == obj->ps &&
+				test_obj->pd == obj->pd) {
 			++matches;
 		/* Check for same or better over all the tested properties. */
-		} else if (isbetter && test_obj->to_a >= obj->to_a &&
-				test_obj->to_h >= obj->to_h &&
-				test_obj->to_d >= obj->to_d) {
+		} else if (isbetter && test_obj->att > obj->att &&
+				test_obj->ds > obj->ds &&
+				test_obj->dd > obj->dd &&
+				test_obj->evn > obj->evn &&
+				test_obj->ps > obj->ps &&
+				test_obj->pd > obj->pd) {
 			++better;
 		/* Check for same or worse over all the tested properties. */
-		} else if (isworse && test_obj->to_a <= obj->to_a &&
-				test_obj->to_h <= obj->to_h &&
-				test_obj->to_d <= obj->to_d) {
+		} else if (isworse && test_obj->att <= obj->att &&
+				test_obj->ds <= obj->ds &&
+				test_obj->dd <= obj->dd &&
+				test_obj->evn <= obj->evn &&
+				test_obj->ps <= obj->ps &&
+				test_obj->pd <= obj->pd) {
 			++worse;
 		/* Everything else is merely different. */
 		} else {
@@ -2572,7 +2342,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		}
 
 		/* Nuke the test object. */
-		object_delete(cave, player->cave, &test_obj);
+		object_delete(cave, &test_obj);
 	}
 
 	/* Final dump */
@@ -2662,31 +2432,8 @@ void do_cmd_wiz_summon_random(struct command *cmd)
 
 	for (i = 0; i < n; i++) {
 		effect_simple(EF_SUMMON, source_player(), "1",
-			0, 0, 0, 0, 0, NULL);
+			0, 0, 0, NULL);
 	}
-}
-
-
-/**
- * Teleport the player randomly with a given approximate range
- * (CMD_WIZ_TELEPORT_RANDOM).  Can take the range from the argument, "range",
- * of type number in cmd.
- */
-void do_cmd_wiz_teleport_random(struct command *cmd)
-{
-	int range;
-	char sr[30];
-
-	if (cmd_get_arg_number(cmd, "range", &range) != CMD_OK) {
-		char s[80] = "100";
-
-		if (!get_string("Teleport range? ", s, sizeof(s))) return;
-		if (!get_int_from_string(s, &range) || range < 1) return;
-		cmd_set_arg_number(cmd, "range", range);
-	}
-
-	strnfmt(sr, sizeof(sr), "%d", range);
-	effect_simple(EF_TELEPORT, source_player(), sr, 0, 0, 0, 0, 0, NULL);
 }
 
 
@@ -2700,7 +2447,7 @@ void do_cmd_wiz_teleport_to(struct command *cmd)
 
 	if (cmd_get_arg_point(cmd, "point", &grid) != CMD_OK) {
 		/* Use the targeting function. */
-		if (!target_set_interactive(TARGET_LOOK, -1, -1)) return;
+		if (!target_set_interactive(TARGET_LOOK, -1, -1, 0)) return;
 
 		/* Grab the target coordinates. */
 		target_get(&grid);
@@ -2712,8 +2459,7 @@ void do_cmd_wiz_teleport_to(struct command *cmd)
 	/* Test for passable terrain. */
 	if (square_ispassable(cave, grid)) {
 		/* Teleport to the target */
-		effect_simple(EF_TELEPORT_TO, source_player(), "0", 0, 0, 0,
-			grid.y, grid.x, NULL);
+		effect_simple(EF_TELEPORT_TO, source_player(), "0", 0, 0, 0, NULL);
 	} else {
 		msg("The square you are aiming for is impassable.");
 	}
@@ -2721,8 +2467,8 @@ void do_cmd_wiz_teleport_to(struct command *cmd)
 
 
 /**
- * Tweak an item:  make it ego or artifact, give values for modifiers, to_a,
- * to_h, or to_d.  Can take the item to modify from the argument, "item", of
+ * Tweak an item:  make it ego or artifact, give values for modifiers, att,
+ * evn, or dice.  Can take the item to modify from the argument, "item", of
  * type item in cmd.  Takes whether to update player information from the
  * argument, "update", of type choice in cmd.
  */
@@ -2786,7 +2532,6 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		struct ego_item *e = obj->ego;
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
-		struct object *known = obj->known;
 		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
@@ -2795,7 +2540,6 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		obj->ego = e;
 		obj->prev = prev;
 		obj->next = next;
-		obj->known = known;
 		obj->oidx = oidx;
 		obj->grid = grid;
 		obj->notice = notice;
@@ -2832,17 +2576,15 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		const struct artifact *a = obj->artifact;
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
-		struct object *known = obj->known;
 		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
 
 		obj->ego = NULL;
-		object_prep(obj, obj->kind, obj->artifact->alloc_min, RANDOMISE);
+		object_prep(obj, obj->kind, obj->artifact->level, RANDOMISE);
 		obj->artifact = a;
 		obj->prev = prev;
 		obj->next = next;
-		obj->known = known;
 		obj->oidx = oidx;
 		obj->grid = grid;
 		obj->notice = notice;
@@ -2870,9 +2612,12 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		WIZ_TWEAK(modifiers[i], obj_mods[i]);
 	}
-	WIZ_TWEAK(to_a, "AC bonus");
-	WIZ_TWEAK(to_h, "to-hit");
-	WIZ_TWEAK(to_d, "to-dam");
+	WIZ_TWEAK(att, "Attack");
+	WIZ_TWEAK(dd, "Damage dice");
+	WIZ_TWEAK(ds, "Damage sides");
+	WIZ_TWEAK(evn, "Evasion");
+	WIZ_TWEAK(pd, "Protection dice");
+	WIZ_TWEAK(ps, "Protection sides");
 
 	if (update) {
 		wiz_play_item_standard_upkeep(player, obj);
@@ -2937,5 +2682,5 @@ void do_cmd_wiz_wipe_recall(struct command *cmd)
  */
 void do_cmd_wiz_wizard_light(struct command *cmd)
 {
-	wiz_light(cave, player, true);
+	wiz_light(cave, player);
 }

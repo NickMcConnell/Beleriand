@@ -19,17 +19,60 @@
 #include "buildid.h"
 #include "game-world.h"
 #include "init.h"
+#include "player-quest.h"
 #include "score.h"
 
 
 /**
- * Calculates the total number of points earned (wow - NRM)
+ * An integer value representing the player's "points".
+ *
+ * In reality it isn't so much a score as a number that has the same ordering
+ * as the scores.
+ *
+ * It ranges from 100,000 to 141,399,999
  */
-static long total_points(const struct player *p)
+int score_points(const struct high_score *score)
 {
-	return p->max_exp + 100 * p->max_depth;
-}
+	int points = 0;
+	int silmarils;
+	
+	int maxturns = 100000;
+	int silmarils_factor = maxturns;
+	int depth_factor = silmarils_factor * 10;
+	int morgoth_factor = depth_factor * 100;
 
+	/* Points from turns taken (00000 to 99999)  */
+	points = maxturns - atoi(score->turns);
+	if (points < 0) {
+		points = 0;
+	}
+	if (points >= maxturns)	{
+		points = maxturns - 1;
+	}
+
+	/* Points from silmarils (0 00000 to 3 00000) */
+	silmarils = atoi(score->silmarils);
+	points += silmarils_factor * silmarils;
+
+	/* Points from depth (01 0 00000 to 40 0 00000) */
+	if (silmarils == 0) {
+		points += depth_factor * atoi(score->cur_dun);
+	} else {
+		points += depth_factor * (40 - atoi(score->cur_dun));
+	}
+
+	/* Points for escaping (changes 40 0 00000 to 41 0 00000) */
+	if (score->escaped[0] == 't') {
+		points += depth_factor;
+	}
+
+	/* points slaying Morgoth  (0 00 0 00000 to 1 00 0 00000) */
+	if (score->morgoth_slain[0] == 't') {
+		points += morgoth_factor;
+	}
+
+	return points;
+}
 
 /**
  * Read in a highscore file.
@@ -72,16 +115,8 @@ size_t highscore_where(const struct high_score *entry,
 
 	/* Read until we get to a higher score */
 	for (i = 0; i < sz; i++) {
-		long entry_pts = strtoul(entry->pts, NULL, 0);
-		long score_pts = strtoul(scores[i].pts, NULL, 0);
-		bool entry_winner = streq(entry->how, "Ripe Old Age");
-		bool score_winner = streq(scores[i].how, "Ripe Old Age");
-
-		if (entry_winner && !score_winner)
-			return i;
-
-		if (!entry_winner && score_winner)
-			continue;
+		int entry_pts = score_points(entry);
+		int score_pts = score_points(&scores[i]);
 
 		if (entry_pts >= score_pts)
 			return i;
@@ -227,12 +262,6 @@ void build_score(struct high_score *entry, const struct player *p,
 	/* Save the version */
 	strnfmt(entry->what, sizeof(entry->what), "%s", buildid);
 
-	/* Calculate and save the points */
-	strnfmt(entry->pts, sizeof(entry->pts), "%9u", total_points(p));
-
-	/* Save the current gold */
-	strnfmt(entry->gold, sizeof(entry->gold), "%9u", p->au);
-
 	/* Save the current turn */
 	strnfmt(entry->turns, sizeof(entry->turns), "%9u", turn);
 
@@ -248,17 +277,32 @@ void build_score(struct high_score *entry, const struct player *p,
 
 	/* Save the player info XXX XXX XXX */
 	strnfmt(entry->uid, sizeof(entry->uid), "%7u", player_uid);
+	strnfmt(entry->p_s, sizeof(entry->p_s), "%2d", p->sex->sidx);
 	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", p->race->ridx);
-	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", p->class->cidx);
+	strnfmt(entry->p_h, sizeof(entry->p_h), "%2d", p->house->hidx);
 
 	/* Save the level and such */
-	strnfmt(entry->cur_lev, sizeof(entry->cur_lev), "%3d", p->lev);
 	strnfmt(entry->cur_dun, sizeof(entry->cur_dun), "%3d", p->depth);
-	strnfmt(entry->max_lev, sizeof(entry->max_lev), "%3d", p->max_lev);
 	strnfmt(entry->max_dun, sizeof(entry->max_dun), "%3d", p->max_depth);
 
 	/* No cause of death */
 	my_strcpy(entry->how, died_from, sizeof(entry->how));
+
+	/* Save the number of silmarils, whether morgoth is slain,
+	 * whether the player has escaped */
+	strnfmt(entry->silmarils, sizeof(entry->silmarils), "%1d",
+			silmarils_possessed((struct player *)p));
+
+	if (p->morgoth_slain) {
+		strnfmt(entry->morgoth_slain, sizeof(entry->morgoth_slain), "t");
+	} else {
+		strnfmt(entry->morgoth_slain, sizeof(entry->morgoth_slain), "f");
+	}
+	if (p->escaped) {
+		strnfmt(entry->escaped, sizeof(entry->escaped), "t");
+	} else {
+		strnfmt(entry->escaped, sizeof(entry->escaped), "f");
+	}
 }
 
 
@@ -291,10 +335,10 @@ void enter_score(const struct player *p, const time_t *death_time)
 	if (p->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG)) {
 		msg("Score not registered for wizards.");
 		event_signal(EVENT_MESSAGE_FLUSH);
-	} else if (!p->total_winner && streq(p->died_from, "Interrupting")) {
+	} else if (streq(p->died_from, "Interrupting")) {
 		msg("Score not registered due to interruption.");
 		event_signal(EVENT_MESSAGE_FLUSH);
-	} else if (!p->total_winner && streq(p->died_from, "Quitting")) {
+	} else if (streq(p->died_from, "Quitting")) {
 		msg("Score not registered due to quitting.");
 		event_signal(EVENT_MESSAGE_FLUSH);
 	} else {

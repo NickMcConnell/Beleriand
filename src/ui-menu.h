@@ -28,7 +28,8 @@
 enum
 {
 	CURS_UNKNOWN = 0,		/* Use gray / dark blue for cursor */
-	CURS_KNOWN = 1			/* Use white / light blue for cursor */
+	CURS_KNOWN = 1,			/* Use white / light blue for cursor */
+	CURS_MAYBE = 2			/* Use red / light red for cursor */
 };
 
 /**
@@ -37,6 +38,7 @@ enum
 typedef enum _menu_row_style_t {
 	MN_ROW_STYLE_DISABLED = CURS_UNKNOWN,
 	MN_ROW_STYLE_ENABLED = CURS_KNOWN,
+	MN_ROW_STYLE_CONDITIONAL = CURS_MAYBE,
 } menu_row_style_t;
 
 /**
@@ -46,10 +48,11 @@ typedef enum _menu_row_validity_t {
 	MN_ROW_INVALID = 0,
 	MN_ROW_VALID = 1,
 	MN_ROW_HIDDEN = 2,
+	MN_ROW_MAYBE = 3,
 } menu_row_validity_t;
 
 /* Cursor colours for different states */
-extern const uint8_t curs_attrs[2][2];
+extern const uint8_t curs_attrs[3][2];
 
 /* Standard menu orderings */
 extern const char lower_case[];			/* abc..z */
@@ -109,6 +112,7 @@ typedef struct
  */
 #define MN_ACT_GRAYED     0x0001 /* Allows selection but no action */
 #define MN_ACT_HIDDEN     0x0002 /* Row is hidden, but may be selected via tag */
+#define MN_ACT_MAYBE      0x0004 /* Allows selection with conditions */
 
 
 /**

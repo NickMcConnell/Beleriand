@@ -25,6 +25,7 @@
 #include "mon-predicate.h"
 #include "monster.h"
 #include "obj-desc.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-attack.h"
@@ -90,10 +91,14 @@ int target_dir_allow(struct keypress ch, bool allow_5)
 		int mode;
 		const struct keypress *act;
 
-		if (OPT(player, rogue_like_commands))
-			mode = KEYMAP_MODE_ROGUE;
+		if (OPT(player, angband_keyset))
+			mode = KEYMAP_MODE_ANGBAND;
 		else
 			mode = KEYMAP_MODE_ORIG;
+
+		if (OPT(player, hjkl_movement)) {
+			mode |= KEYMAP_MODE_ROGUE;
+		}
 
 		/* XXX see if this key has a digit in the keymap we can use */
 		act = keymap_find(mode, ch);
@@ -120,6 +125,11 @@ void target_display_help(bool monster, bool object, bool free)
 {
 	/* Determine help location */
 	int wid, hgt, help_loc;
+	int mode = OPT(player, angband_keyset) ? KEYMAP_MODE_ANGBAND :
+		KEYMAP_MODE_ORIG;
+	if (OPT(player, hjkl_movement)) {
+		mode |= KEYMAP_MODE_ROGUE;
+	}
 	Term_get_size(&wid, &hgt);
 	help_loc = hgt - HELP_HEIGHT;
 	
@@ -164,9 +174,7 @@ void target_display_help(bool monster, bool object, bool free)
 	}
 
 	if (object) {
-		unsigned char key = cmd_lookup_key(CMD_IGNORE,
-			(OPT(player, rogue_like_commands)) ?
-			KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG);
+		unsigned char key = cmd_lookup_key(CMD_IGNORE, mode);
 		char label[3];
 
 		if (KTRL(key) == key) {
@@ -192,9 +200,13 @@ void target_display_help(bool monster, bool object, bool free)
  */
 static bool is_running_keymap(struct keypress ch)
 {
-	int mode = (OPT(player, rogue_like_commands)) ?
-		KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = (OPT(player, angband_keyset)) ?
+		KEYMAP_MODE_ANGBAND : KEYMAP_MODE_ORIG;
 	const struct keypress *act = keymap_find(mode, ch);
+
+	if (OPT(player, hjkl_movement)) {
+		mode |= KEYMAP_MODE_ROGUE;
+	}
 
 	if (act) {
 		unsigned char run_key = cmd_lookup_key(CMD_RUN, mode);
@@ -311,7 +323,8 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 			if (player->wizard) {
 				strnfmt(out_val, TARGET_OUT_VAL_SIZE,
 						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
-						o_name, coords, y, x, (int)cave->noise.grids[y][x],
+						o_name, coords, y, x,
+						(int)cave->player_noise.grids[y][x],
 						(int)cave->scent.grids[y][x]);
 			} else {
 				strnfmt(out_val, TARGET_OUT_VAL_SIZE,
@@ -388,7 +401,7 @@ static bool aux_hallucinate(struct chunk *c, struct player *p,
 			auxst->coord_desc,
 			auxst->grid.y,
 			auxst->grid.x,
-			(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+			(int)c->player_noise.grids[auxst->grid.y][auxst->grid.x],
 			(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
 	} else {
 		strnfmt(out_val, sizeof(out_val), "%s%s%s, %s.",
@@ -424,7 +437,7 @@ static bool aux_monster(struct chunk *c, struct player *p,
 	if (square(c, auxst->grid)->mon <= 0) return false;
 
 	mon = square_monster(c, auxst->grid);
-	if (!monster_is_obvious(mon)) return false;
+	if (!monster_is_visible(mon)) return false;
 
 	/* Actual visible monsters */
 	lore = get_lore(mon->race);
@@ -465,7 +478,7 @@ static bool aux_monster(struct chunk *c, struct player *p,
 					auxst->coord_desc,
 					auxst->grid.y,
 					auxst->grid.x,
-					(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+					(int)c->player_noise.grids[auxst->grid.y][auxst->grid.x],
 					(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
 			} else {
 				strnfmt(out_val, sizeof(out_val),
@@ -551,7 +564,7 @@ static bool aux_monster(struct chunk *c, struct player *p,
 				auxst->coord_desc,
 				auxst->grid.y,
 				auxst->grid.x,
-				(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+				(int)c->player_noise.grids[auxst->grid.y][auxst->grid.x],
 				(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
 
 			prt(out_val, 0, 0);
@@ -623,7 +636,7 @@ static bool aux_trap(struct chunk *c, struct player *p,
 				auxst->coord_desc,
 				auxst->grid.y,
 				auxst->grid.x,
-				(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+				(int)c->player_noise.grids[auxst->grid.y][auxst->grid.x],
 				(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
 		} else {
 			strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.",
@@ -696,7 +709,7 @@ static bool aux_object(struct chunk *c, struct player *p,
 					auxst->coord_desc,
 					auxst->grid.y,
 					auxst->grid.x,
-					(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+					(int)c->player_noise.grids[auxst->grid.y][auxst->grid.x],
 					(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
 			} else {
 				strnfmt(out_val, sizeof(out_val),
@@ -800,16 +813,16 @@ static bool aux_terrain(struct chunk *c, struct player *p,
 		return false;
 
 	/* Terrain feature if needed */
-	name = square_apparent_name(c, p, auxst->grid);
+	name = square_apparent_name(c, auxst->grid);
 
 	/* Hack -- handle unknown grids */
 
 	/* Pick a preposition if needed */
 	lphrase2 = (*auxst->phrase2) ?
-		square_apparent_look_in_preposition(c, p, auxst->grid) : "";
+		square_apparent_look_in_preposition(c, auxst->grid) : "";
 
 	/* Pick prefix for the name */
-	lphrase3 = square_apparent_look_prefix(c, p, auxst->grid);
+	lphrase3 = square_apparent_look_prefix(c, auxst->grid);
 
 	/* Display a message */
 	if (p->wizard) {
@@ -822,7 +835,7 @@ static bool aux_terrain(struct chunk *c, struct player *p,
 			auxst->coord_desc,
 			auxst->grid.y,
 			auxst->grid.x,
-			(int)c->noise.grids[auxst->grid.y][auxst->grid.x],
+			(int)c->player_noise.grids[auxst->grid.y][auxst->grid.x],
 			(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
 	} else {
 		strnfmt(out_val, sizeof(out_val),
@@ -922,7 +935,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
  */
 void textui_target(void)
 {
-	if (target_set_interactive(TARGET_KILL, -1, -1))
+	if (target_set_interactive(TARGET_KILL, -1, -1, 0))
 		msg("Target Selected.");
 	else
 		msg("Target Aborted.");
@@ -993,7 +1006,7 @@ static int draw_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a,
 		/* Find the co-ordinates on the level. */
 		struct loc grid = path_g[i];
 		struct monster *mon = square_monster(cave, grid);
-		struct object *obj = square_object(player->cave, grid);
+		struct object *obj = square_object(cave, grid);
 
 		/*
 		 * As path[] is a straight line and the screen is oblong,
@@ -1020,13 +1033,9 @@ static int draw_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a,
 			 * if we will reach later squares */
 			colour = COLOUR_L_DARK;
 		} else if (mon && monster_is_visible(mon)) {
-			/* Mimics act as objects */
-			if (monster_is_camouflaged(mon)) 
-				colour = COLOUR_YELLOW;
-			else
-				/* Visible monsters are red. */
-				colour = COLOUR_L_RED;
-		} else if (obj)
+			/* Visible monsters are red. */
+			colour = COLOUR_L_RED;
+		} else if (obj && obj->marked)
 			/* Known objects are yellow. */
 			colour = COLOUR_YELLOW;
 
@@ -1088,7 +1097,7 @@ static bool pile_is_tracked(const struct object *obj) {
 static bool pile_has_known(const struct object *obj) {
 	for (const struct object *o = obj; o != NULL; o = o->next) {
 		struct object *base_obj = cave->objects[o->oidx];
-		if (!is_unknown(base_obj)) {
+		if (object_is_known(base_obj)) {
 			return true;
 		}
 	}
@@ -1139,23 +1148,29 @@ static bool pile_has_known(const struct object *obj) {
  * or -1 if no location is specified.
  * Returns true if a target has been successfully set, false otherwise.
  */
-bool target_set_interactive(int mode, int x, int y)
+bool target_set_interactive(int mode, int x, int y, int range)
 {
 	int path_n;
 	struct loc path_g[256];
 
 	int wid, hgt, help_prompt_loc;
+	int adjusted_range = range ? range : z_info->max_range;
+	int key_mode = OPT(player, angband_keyset) ? KEYMAP_MODE_ANGBAND :
+		KEYMAP_MODE_ORIG;
 
 	bool done = false;
 	bool show_interesting = true;
 	bool help = false;
-	keycode_t ignore_key = cmd_lookup_key(CMD_IGNORE,
-		(OPT(player, rogue_like_commands)) ?
-		KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG);
+	keycode_t ignore_key;
 
 	/* These are used for displaying the path to the target */
-	wchar_t *path_char = mem_zalloc(z_info->max_range * sizeof(wchar_t));
-	int *path_attr = mem_zalloc(z_info->max_range * sizeof(int));
+	wchar_t *path_char = mem_zalloc(adjusted_range * sizeof(wchar_t));
+	int *path_attr = mem_zalloc(adjusted_range * sizeof(int));
+
+	if (OPT(player, hjkl_movement)) {
+		key_mode |= KEYMAP_MODE_ROGUE;
+	}
+	ignore_key = cmd_lookup_key(CMD_IGNORE, key_mode);
 
 	/* If we haven't been given an initial location, start on the
 	   player, otherwise  honour it by going into "free targetting" mode. */
@@ -1188,6 +1203,7 @@ bool target_set_interactive(int mode, int x, int y)
 		bool path_drawn = false;
 		bool use_interesting_mode = show_interesting && point_set_size(targets);
 		bool use_free_mode = !use_interesting_mode;
+		struct loc grid = loc(x, y);
 
 		/* Use an interesting grid if requested and there are any */
 		if (use_interesting_mode) {
@@ -1200,16 +1216,15 @@ bool target_set_interactive(int mode, int x, int y)
 
 		/* Update help */
 		if (help) {
-			bool has_target = target_able(square_monster(cave, loc(x, y)));
+			bool has_target = target_able(square_monster(cave, grid));
 			bool has_object = !(mode & TARGET_KILL)
-					&& pile_has_known(square_object(cave, loc(x, y)));
+					&& pile_has_known(square_object(cave, grid));
 			target_display_help(has_target, has_object, use_free_mode);
 		}
 
 		/* Find the path. */
-		path_n = project_path(cave, path_g, z_info->max_range,
-			loc(player->grid.x, player->grid.y), loc(x, y),
-			PROJECT_THRU | PROJECT_INFO);
+		path_n = project_path(cave, path_g, adjusted_range, player->grid, &grid,
+							  PROJECT_THRU | PROJECT_INFO);
 
 		/* Draw the path in "target" mode. If there is one */
 		if (mode & (TARGET_KILL))
@@ -1234,7 +1249,7 @@ bool target_set_interactive(int mode, int x, int y)
 				done = true;
 			} else {
 				/* Interesting mode: Try to target a monster and done, or bell */
-				struct monster *m_local = square_monster(cave, loc(x, y));
+				struct monster *m_local = square_monster(cave, grid);
 
 				if (target_able(m_local)) {
 					/* Monster race and health tracked by target_set_interactive_aux() */
@@ -1242,7 +1257,7 @@ bool target_set_interactive(int mode, int x, int y)
 					done = true;
 				} else {
 					bell();
-					if (!square_in_bounds(cave, loc(x, y))) {
+					if (!square_in_bounds(cave, grid)) {
 						x = player->grid.x;
 						y = player->grid.y;
 					}
@@ -1254,7 +1269,7 @@ bool target_set_interactive(int mode, int x, int y)
 			y = KEY_GRID_Y(press);
 			x = KEY_GRID_X(press);
 			cmdq_push(CMD_PATHFIND);
-			cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
+			cmd_set_arg_point(cmdq_peek(), "point", grid);
 			done = true;
 
 		} else if (event_is_mouse(press, 2)) {
@@ -1348,7 +1363,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 				/* Pick the nearest interesting target */
 				for (int i = 0; i < point_set_size(targets); i++) {
-					int dist = distance(loc(x, y), targets->pts[i]);
+					int dist = distance(grid, targets->pts[i]);
 					if (dist < min_dist) {
 						target_index = i;
 						min_dist = dist;
@@ -1360,7 +1375,7 @@ bool target_set_interactive(int mode, int x, int y)
 				|| event_is_key(press, '0') || event_is_key(press, '.')) {
 			/* Set a target and done */
 			if (use_interesting_mode) {
-				struct monster *m_local = square_monster(cave, loc(x, y));
+				struct monster *m_local = square_monster(cave, grid);
 
 				if (target_able(m_local)) {
 					/* Monster race and health tracked by target_set_interactive_aux() */
@@ -1377,13 +1392,13 @@ bool target_set_interactive(int mode, int x, int y)
 		} else if (event_is_key(press, 'g')) {
 			/* Navigate to a location and done */
 			cmdq_push(CMD_PATHFIND);
-			cmd_set_arg_point(cmdq_peek(), "point", loc(x, y));
+			cmd_set_arg_point(cmdq_peek(), "point", grid);
 			done = true;
 
 		} else if (event_is_key(press, ignore_key)) {
 			/* Ignore the tracked object, set by target_set_interactive_aux() */
 			if (!(mode & TARGET_KILL)
-					&& pile_is_tracked(square_object(cave, loc(x, y)))) {
+					&& pile_is_tracked(square_object(cave, grid))) {
 				textui_cmd_ignore_menu(player->upkeep->object);
 				handle_stuff(player);
 

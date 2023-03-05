@@ -565,9 +565,13 @@ static void ui_keymap_pref_append(const char *title, int row)
 static void ui_keymap_query(const char *title, int row)
 {
 	char tmp[1024];
-	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, angband_keyset) ? KEYMAP_MODE_ANGBAND : KEYMAP_MODE_ORIG;
 	struct keypress c;
 	const struct keypress *act;
+
+	if (OPT(player, hjkl_movement)) {
+		mode |= KEYMAP_MODE_ROGUE;
+	}
 
 	prt(title, 13, 0);
 	prt("Key: ", 14, 0);
@@ -601,7 +605,11 @@ static void ui_keymap_create(const char *title, int row)
 
 	struct keypress c;
 	char tmp[1024];
-	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, angband_keyset) ? KEYMAP_MODE_ANGBAND : KEYMAP_MODE_ORIG;
+
+	if (OPT(player, hjkl_movement)) {
+		mode |= KEYMAP_MODE_ROGUE;
+	}
 
 	prt(title, 13, 0);
 	prt("Key: ", 14, 0);
@@ -677,7 +685,11 @@ static void ui_keymap_create(const char *title, int row)
 static void ui_keymap_remove(const char *title, int row)
 {
 	struct keypress c;
-	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, angband_keyset) ? KEYMAP_MODE_ANGBAND : KEYMAP_MODE_ORIG;
+
+	if (OPT(player, hjkl_movement)) {
+		mode |= KEYMAP_MODE_ROGUE;
+	}
 
 	prt(title, 13, 0);
 	prt("Key: ", 14, 0);
@@ -1221,13 +1233,6 @@ static void do_dump_autoinsc(const char *title, int row) {
 }
 
 /**
- * Write character screen customizations to a file.
- */
-static void do_dump_charscreen_opt(const char *title, int row) {
-	dump_pref_file(dump_ui_entry_renderers, "Dump char screen options", 20);
-}
-
-/**
  * Load a pref file.
  */
 static void options_load_pref_file(const char *n, int row)
@@ -1248,7 +1253,7 @@ static void options_load_pref_file(const char *n, int row)
 /**
  * Skip common prefixes in ego-item names.
  */
-static const char *strip_ego_name(const char *name)
+const char *strip_ego_name(const char *name)
 {
 	if (prefix(name, "of the "))
 		return name + 7;
@@ -1625,22 +1630,14 @@ typedef struct
 static tval_desc sval_dependent[] =
 {
 	{ TV_STAFF,			"Staffs" },
-	{ TV_WAND,			"Wands" },
-	{ TV_ROD,			"Rods" },
-	{ TV_SCROLL,		"Scrolls" },
+	{ TV_HORN,			"Horns" },
 	{ TV_POTION,		"Potions" },
 	{ TV_RING,			"Rings" },
 	{ TV_AMULET,		"Amulets" },
 	{ TV_FOOD,			"Food" },
-	{ TV_MUSHROOM,		"Mushrooms" },
-	{ TV_MAGIC_BOOK,	"Magic books" },
-	{ TV_PRAYER_BOOK,	"Prayer books" },
-	{ TV_NATURE_BOOK,	"Nature books" },
-	{ TV_SHADOW_BOOK,	"Shadow books" },
-	{ TV_OTHER_BOOK,	"Mystery books" },
+	{ TV_HERB,			"Herbs" },
 	{ TV_LIGHT,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
-	{ TV_GOLD,			"Money" },
 };
 
 
@@ -1748,8 +1745,7 @@ static int ignore_collect_kind(int tval, ignore_choice **ch)
 			choice[num++].aware = false;
 		}
 
-		if ((kind->everseen && !kf_has(kind->kind_flags, KF_INSTA_ART)) || 
-			tval_is_money_k(kind)) {
+		if (kind->everseen && !kf_has(kind->kind_flags, KF_INSTA_ART)) {
 			/* Do not display the artifact base kinds in this list 
 			 * aware ignore requires everseen 
 			 * do not require awareness for aware ignore, so people can set 
@@ -1786,13 +1782,6 @@ static bool sval_menu(int tval, const char *desc)
 	switch (tval)
 	{
 		case TV_LIGHT:
-		case TV_MAGIC_BOOK:
-		case TV_PRAYER_BOOK:
-		case TV_NATURE_BOOK:
-		case TV_SHADOW_BOOK:
-		case TV_OTHER_BOOK:
-		case TV_DRAG_ARMOR:
-		case TV_GOLD:
 			/* leave sorted by sval */
 			break;
 
@@ -2001,7 +1990,6 @@ static menu_action option_actions[] =
 	{ 0, 0, NULL, NULL },
 	{ 0, 's', "Save subwindow setup to pref file", do_dump_options },
 	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },
-	{ 0, 'u', "Save char screen options to pref file", do_dump_charscreen_opt },
 	{ 0, 0, NULL, NULL },
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
 	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },

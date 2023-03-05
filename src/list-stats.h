@@ -12,7 +12,6 @@
  * Stat properties are defined in lib/gamedata/object_property.txt
  */
 STAT(STR)
-STAT(INT)
-STAT(WIS)
 STAT(DEX)
 STAT(CON)
+STAT(GRA)

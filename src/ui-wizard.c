@@ -23,6 +23,7 @@
 #include "grafmode.h"
 #include "init.h"
 #include "obj-desc.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-util.h"
@@ -104,7 +105,7 @@ static const region wiz_create_item_area = { 0, 0, 0, 0 };
  */
 static void get_art_name(char *buf, int max, int a_idx)
 {
-	struct object *obj, *known_obj;
+	struct object *obj;
 	struct object_kind *kind;
 	const struct artifact *art = &a_info[a_idx];
 
@@ -124,17 +125,12 @@ static void get_art_name(char *buf, int max, int a_idx)
 	obj->artifact = art;
 
 	/* Make it known to us */
-	known_obj = object_new();
-	obj->known = known_obj;
-	object_copy(known_obj, obj);
-	known_obj->notice |= OBJ_NOTICE_IMAGINED;
+	object_know(obj);
 
 	/* Create the artifact description */
 	object_desc(buf, max, obj, ODESC_SINGULAR | ODESC_SPOIL, NULL);
 
-	object_delete(NULL, NULL, &known_obj);
-	obj->known = NULL;
-	object_delete(NULL, NULL, &obj);
+	object_delete(NULL, &obj);
 }
 
 
@@ -444,24 +440,4 @@ void wiz_learn_all_object_kinds(void)
 {
 	cmdq_push(CMD_WIZ_LEARN_OBJECT_KINDS);
 	cmd_set_arg_number(cmdq_peek(), "level", 100);
-}
-
-
-/**
- * Shim for ui-game.c to set up CMD_WIZ_TELEPORT_RANDOM for short distances.
- */
-void wiz_phase_door(void)
-{
-	cmdq_push(CMD_WIZ_TELEPORT_RANDOM);
-	cmd_set_arg_number(cmdq_peek(), "range", 10);
-}
-
-
-/**
- * Shim for ui-game.c to set up CMD_WIZ_TELEPORT_RANDOM for long distances.
- */
-void wiz_teleport(void)
-{
-	cmdq_push(CMD_WIZ_TELEPORT_RANDOM);
-	cmd_set_arg_number(cmdq_peek(), "range", 100);
 }
