@@ -119,11 +119,6 @@ static void exclude_pval(struct object *obj)
 	int i;
 	if (pval_included) object_copy(smith_obj, smith_obj_backup);
 	pval_included = false;
-	//if (!pval) return;
-	//if (ABS(obj->pval) != 1) obj->pval /= pval;
-	//for (i = 0; i < OBJ_MOD_MAX; i++) {
-	//	if (ABS(obj->modifiers[i]) != 1) obj->modifiers[i] /= pval;
-	//}
 }
 
 static void wipe_smithing_objects(void)
@@ -180,7 +175,6 @@ static void show_smith_obj(void)
 
 	/* Object difficulty */
 	text_out_indent = COL_SMT4;
-	//text_out_pad = 1;
 
 	region_erase(&bottom);
 	region_erase(&right);
@@ -811,7 +805,6 @@ static void artefact_display(struct menu *menu, int oid, bool cursor, int row,
 	if (cursor) {
 		object_know(smith_obj);
 		include_pval(smith_obj);
-		//attr = smith_affordable(smith_obj, &dummy) ? COLOUR_WHITE :COLOUR_SLATE;
 		show_smith_obj();
 		exclude_pval(smith_obj);
 	}
@@ -1199,7 +1192,6 @@ static void smithing_menu_browser(int oid, void *data, const region *loc)
 
 	/* Object difficulty */
 	text_out_indent = COL_SMT2;
-	//text_out_pad = 1;
 
 	region_erase(&area);
 	Term_gotoxy(COL_SMT2, ROW_SMT1);
