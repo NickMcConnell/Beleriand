@@ -339,8 +339,8 @@ struct monster_race {
 	char *plural;			/* Optional pluralized name */
 
 	struct monster_base *base;
-	byte hdice;				/* Creatures hit dice count */
-	byte hside;				/* Creatures hit dice sides */
+	uint8_t hdice;				/* Creatures hit dice count */
+	uint8_t hside;				/* Creatures hit dice sides */
 
 	int evn;				/* Bonus to evasion */
 	int pd;				/* Protection dice */

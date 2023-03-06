@@ -82,18 +82,18 @@ struct vinfo_type
 	uint32_t bits_0;
 
 	/* Index of the first LOF slope */
-	byte slope_fire_index1;
+	uint8_t slope_fire_index1;
 
 	/* Index of the (possible) second LOF slope */
-	byte slope_fire_index2;
+	uint8_t slope_fire_index2;
 
 	struct vinfo_type *next_0;
 	struct vinfo_type *next_1;
 
-	byte y;
-	byte x;
-	byte d;
-	byte r;
+	uint8_t y;
+	uint8_t x;
+	uint8_t d;
+	uint8_t r;
 };
 
 

@@ -38,9 +38,9 @@ struct combat_roll {
 	int dam_type;			/* The type of damage (GF_HURT, GF_FIRE etc) */
 
 	char attacker_char;		/* The symbol of the attacker */
-	byte attacker_attr;		/* Default attribute of the attacker */
+	uint8_t attacker_attr;		/* Default attribute of the attacker */
 	char defender_char;		/* The symbol of the defender */
-	byte defender_attr;		/* Default attribute of the defender */
+	uint8_t defender_attr;		/* Default attribute of the defender */
 	int att;				/* The attack bonus */
 	int att_roll;			/* The attack roll (d20 value) */
 	int evn;				/* The evasion bonus */
