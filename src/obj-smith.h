@@ -105,7 +105,7 @@ struct smithing_tval_desc {
 /**
  * A list of tvals and their textual names and smithing categories
  */
-const struct smithing_tval_desc smithing_tvals[MAX_SMITHING_TVALS];
+extern const struct smithing_tval_desc smithing_tvals[MAX_SMITHING_TVALS];
 
 int att_valid(struct object *obj);
 int att_max(struct object *obj, bool assume_artistry);

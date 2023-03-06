@@ -27,8 +27,8 @@ struct monster;
 struct monster_group;
 
 extern const int16_t ddd[9];
-const uint8_t cycle[17];
-const uint8_t chome[10];
+extern const uint8_t cycle[17];
+extern const uint8_t chome[10];
 extern const int16_t ddx[10];
 extern const int16_t ddy[10];
 extern const struct loc ddgrid[10];

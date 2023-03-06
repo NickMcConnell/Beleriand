@@ -19,6 +19,6 @@
 #define INCLUDED_SND_SDL_H
 
 struct sound_hooks;
-errr init_sound_sdl(struct sound_hooks *hooks, int argc, char **argv);
+extern errr init_sound_sdl(struct sound_hooks *hooks, int argc, char **argv);
 
 #endif /* !INCLUDED_SND_H */
