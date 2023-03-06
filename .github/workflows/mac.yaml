@@ -11,9 +11,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build
         run: |
           cd src
-          env OPT=-DSKIP_ANGBAND_OLD_INT_TYPEDEFS make -f Makefile.osx
+          env OPT="-DSKIP_ANGBAND_OLD_INT_TYPEDEFS -DUSE_FUNC_ATTR_FORMAT" make -f Makefile.osx
