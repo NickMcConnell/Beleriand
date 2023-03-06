@@ -736,11 +736,11 @@ static void save_prefs(void)
 
         /* Save the tile width */
         wsprintf(buf, "%d", tile_width);
-        WritePrivateProfileString("Angband", "TileWidth", buf, ini_file);
+        WritePrivateProfileString("Angband", "TileWid", buf, ini_file);
 
         /* Save the tile height */
         wsprintf(buf, "%d", tile_height);
-        WritePrivateProfileString("Angband", "TileHeight", buf, ini_file);
+        WritePrivateProfileString("Angband", "TileHgt", buf, ini_file);
 
 	/* Save window prefs */
 	for (i = 0; i < MAX_TERM_DATA; i++) {
@@ -821,10 +821,10 @@ static void load_prefs(void)
 											 ini_file);
 
 	/* Extract the tile width */
-	tile_width = GetPrivateProfileInt("Angband", "TileWidth", false, ini_file);
+	tile_width = GetPrivateProfileInt("Angband", "TileWid", false, ini_file);
 
 	/* Extract the tile height */
-	tile_height = GetPrivateProfileInt("Angband", "TileHeight", false,
+	tile_height = GetPrivateProfileInt("Angband", "TileHgt", false,
 									   ini_file);
 
 	/* Extract the "arg_wizard" flag */

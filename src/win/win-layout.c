@@ -263,14 +263,14 @@ int default_layout_win(term_data *data, int maxterms)
 	/* Get the basic info from the height of the screen */
 	//if (sy <= 250) {
 	if (1) {
-		main_font = "5x8x.fon";
-		fx = 5;
-		fy = 8;
-		tx = 4;
-		ty = 8;
+		main_font = "8x12x.fon";
+		fx = 8;
+		fy = 12;
+		tx = 8;
+		ty = 12;
 		sub_font = NULL;/* "5x8x.fon"; */
-		fx2 = 4;
-		fy2 = 8;
+		fx2 = 8;
+		fy2 = 12;
 		mode = 0;
 		mult_wid = 1;
 		mult_hgt = 1;
