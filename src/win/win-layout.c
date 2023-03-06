@@ -68,7 +68,8 @@ int default_layout_win(term_data *data, int maxterms)
 
 	bottom = sy - r.bottom;
 
-	if ((sx == 1024) && (sy == 768)) {
+	//if ((sx == 1024) && (sy == 768)) {
+	if (0) {
 		arg_graphics = 3;
 		arg_graphics_nice = 0;
 		tile_width = 4;
@@ -160,7 +161,8 @@ int default_layout_win(term_data *data, int maxterms)
 		/* The rest of the terms were set by the load pref function */
 		return 0;
 	}
-	if ((sx == 1280) && (sy == 1024)) {
+	//if ((sx == 1280) && (sy == 1024)) {
+	if (0) {
 		arg_graphics = 5;
 		arg_graphics_nice = 0;
 		tile_width = 4;
@@ -259,7 +261,8 @@ int default_layout_win(term_data *data, int maxterms)
 	sy = sy - bottom;
 
 	/* Get the basic info from the height of the screen */
-	if (sy <= 250) {
+	//if (sy <= 250) {
+	if (1) {
 		main_font = "5x8x.fon";
 		fx = 5;
 		fy = 8;
