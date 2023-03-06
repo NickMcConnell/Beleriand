@@ -232,7 +232,6 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/save-charoutput.c
         src/savefile.c
         src/score.c
-        src/snd-sdl.c
         src/songs.c
         src/sound-core.c
         src/source.c
