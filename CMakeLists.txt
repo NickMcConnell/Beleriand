@@ -177,18 +177,6 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/guid.c
         src/init.c
         src/load.c
-        src/main.c
-        src/main-gcu.c
-        src/main-nds-arm7.c
-        src/main-nds.c
-        src/main-sdl2.c
-        src/main-sdl.c
-        src/main-spoil.c
-        src/main-stats.c
-        src/main-test.c
-        src/main-win.c
-        src/main-x11.c
-        src/main-xxx.c
         src/message.c
         src/mon-attack.c
         src/mon-blows.c
