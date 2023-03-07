@@ -93,7 +93,7 @@ void possible_follow_through(struct player *p, struct loc grid, int attack_type)
 	int delta_y = grid.y - p->grid.y;
 	int delta_x = grid.x - p->grid.x;
 	
-	if (player_active_ability(p, "Follow Through") && !p->timed[TMD_CONFUSED] &&
+	if (player_active_ability(p, "Follow-Through") && !p->timed[TMD_CONFUSED] &&
 		((attack_type == ATT_MAIN) || (attack_type == ATT_FLANKING) || 
 		 (attack_type == ATT_CONTROLLED_RETREAT) ||
 		 (attack_type == ATT_FOLLOW_THROUGH))) {

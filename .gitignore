@@ -58,7 +58,7 @@ src/*.o
 src/*.o.*
 src/.deps
 src/3ds-build
-src/angband
+src/sil
 src/angband-master
 src/autoconf.h
 src/autoconf.h.in

@@ -442,7 +442,7 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 
 	/* Note curses */
 	if (object_is_cursed(obj) &&
-		(object_is_known(obj) || player_active_ability(player, "Lore Keeper")))
+		(object_is_known(obj) || player_active_ability(player, "Lore-Keeper")))
 		u[n++] = "cursed";
 
 	/* Note ignore */
