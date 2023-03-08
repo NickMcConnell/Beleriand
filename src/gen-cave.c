@@ -94,6 +94,7 @@ bool player_pass(struct chunk *c, struct loc grid, bool ignore_rubble)
 		square_isvault(c, loc(grid.x, grid.y - 1)) &&
 		square_isvault(c, loc(grid.x, grid.y + 1));
 	return square_ispassable(c, grid) || square_issecretdoor(c, grid) ||
+		square_iscloseddoor(c, grid) ||
 		(square_isrubble(c, grid) && ignore_rubble) || vault_interior;
 }
 
@@ -137,7 +138,7 @@ bool check_connectivity(struct chunk *c)
 	for (grid.y = 0; grid.y < c->height; grid.y++) {
 		for (grid.x = 0; grid.x < c->width; grid.x++) {
 			if (player_pass(c, grid, true) && !access[grid.y][grid.x]) {
-				//dump_level_simple(NULL, "Disconnected Level", c);
+				dump_level_simple(NULL, "Disconnected Level", c);
 				//quit("Disconnected Level");
 				return false;
 			}
@@ -1068,11 +1069,11 @@ struct chunk *cave_gen(struct player *p)
 	new_player_spot(c, p);
 
 	/* Check dungeon connectivity */
-	//if (!check_connectivity(c)) {
-	//	if (OPT(player, cheat_room)) msg("Failed connectivity.");
-	//	uncreate_artifacts(c);
-	//	return NULL;
-	//}
+	if (!check_connectivity(c)) {
+		if (OPT(player, cheat_room)) msg("Failed connectivity.");
+		uncreate_artifacts(c);
+		return NULL;
+	}
 
 	if (c->depth == 1) {
 		/* Smaller number of monsters at 50ft */
