@@ -647,6 +647,7 @@ bool new_player_spot(struct chunk *c, struct player *p)
 		effect_simple(EF_EARTHQUAKE, source_grid(grid), "0", 0, 5, 0, NULL);
 	}
 
+	square_set_feat(c, grid, p->upkeep->create_stair);
 	player_place(c, p, grid);
 	return true;
 }

@@ -893,7 +893,9 @@ static bool connect_rooms_stairs(struct chunk *c)
 		}
 
 		/* This is terrible, and needs fixing - NRM */
-		if (!joined) break;
+		if (!joined) {
+			break;
+		}
 
 		/* Cut the dungeon up into connected pieces and count them */
 		pieces = dungeon_pieces();
