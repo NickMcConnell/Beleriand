@@ -393,6 +393,7 @@ void set_terrain(void)
 	FEAT_FLOOR = lookup_feat("open floor");
 	FEAT_CLOSED = lookup_feat("closed door");
 	FEAT_OPEN = lookup_feat("open door");
+	FEAT_BROKEN = lookup_feat("broken door");
 	FEAT_LESS = lookup_feat("up staircase");
 	FEAT_MORE = lookup_feat("down staircase");
 	FEAT_LESS_SHAFT = lookup_feat("up shaft");
@@ -406,6 +407,8 @@ void set_terrain(void)
 	FEAT_FORGE = lookup_feat("forge");
 	FEAT_FORGE_GOOD = lookup_feat("enchanted forge");
 	FEAT_FORGE_UNIQUE = lookup_feat("forge 'Orodruth'");
+	FEAT_PIT = lookup_feat("pit");
+	FEAT_SPIKED_PIT = lookup_feat("spiked pit");
 }
 
 /**
