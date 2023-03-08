@@ -137,7 +137,7 @@ uint8_t total_mds(struct player *p, struct player_state *state,
  */
 int hand_and_a_half_bonus(struct player *p, const struct object *obj)
 {
-	if (of_has(obj->kind->flags, OF_HAND_AND_A_HALF) &&
+	if (p && obj && obj->kind && of_has(obj->kind->flags, OF_HAND_AND_A_HALF) &&
 		(equipped_item_by_slot_name(p, "weapon") == obj) &&
 	    (equipped_item_by_slot_name(p, "shield") == NULL)) {
 		return 2;
