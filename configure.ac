@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Sil, 1.3.0, bugs@rephial.org)
+AC_INIT(NarSil, 1.3.0, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -11,7 +11,7 @@ done
 
 BUILDSYS_INIT
 
-AC_SUBST(PACKAGE, sil)
+AC_SUBST(PACKAGE, narsil)
 
 AC_CONFIG_HEADERS(src/autoconf.h)
 
