@@ -389,6 +389,7 @@ void player_sing(struct player *p)
 	for (i = 0; i < SONG_MAX; i++) {
 		struct song *song = p->song[i];
 		bool dummy;
+		if (!song) continue;
 
 		/* Cost */
 		if (!song->extend || ((p->song_duration % 3) == i - 1)) {

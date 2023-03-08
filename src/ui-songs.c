@@ -26,7 +26,7 @@ struct song_menu_info {
 	bool swap;
 };
 
-static struct song_menu_info **songlist;
+static struct song_menu_info *songlist;
 
 static int get_songs(void)
 {
@@ -35,22 +35,22 @@ static int get_songs(void)
 
 	/* Add the chance to stop singing */
 	if (player->song[SONG_MAIN]) {
-		songlist[count]->swap = false;
-		songlist[count++]->song = NULL;
+		songlist[count].swap = false;
+		songlist[count++].song = NULL;
 	}
 
 	/* Add the chance to exchange themes */
 	if (player->song[SONG_MINOR]) {
-		songlist[count]->swap = true;
-		songlist[count++]->song = NULL;
+		songlist[count].swap = true;
+		songlist[count++].song = NULL;
 	}
 
 	/* Find available songs */
 	while (a) {
 		if ((a->skill == SKILL_SONG) && strstr(a->name, "Song of") &&
 			player_active_ability(player, a->name)) {
-			songlist[count]->swap = false;
-			songlist[count++]->song = lookup_song(a->name);
+			songlist[count].swap = false;
+			songlist[count++].song = lookup_song(a->name + strlen("Song of "));
 		}
 		a = a->next;
 	}
@@ -64,14 +64,14 @@ static int get_songs(void)
 static void song_display(struct menu *menu, int oid, bool cursor, int row,
 						 int col, int width)
 {
-	struct song_menu_info **choice = menu->menu_data;
-	struct song *song = choice[oid]->song;
+	struct song_menu_info *choice = menu->menu_data;
+	struct song *song = choice[oid].song;
 	char *str;
 	uint8_t attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 
 	if (song) {
 		str = song->name;
-	} else if (choice[oid]->swap) {
+	} else if (choice[oid].swap) {
 		str = "Exchange themes";
 	} else {
 		str = "Stop singing";
@@ -84,11 +84,11 @@ static void song_display(struct menu *menu, int oid, bool cursor, int row,
  */
 static bool song_action(struct menu *m, const ui_event *event, int oid)
 {
-	struct song_menu_info **choice = m->menu_data;
-	struct song *song = choice[oid]->song;
+	struct song_menu_info *choice = m->menu_data;
+	struct song *song = choice[oid].song;
 	if (event->type == EVT_SELECT) {
 		if (song == NULL) {
-			if (choice[oid]->swap) {
+			if (choice[oid].swap) {
 				/* Exchange themes */
 				player_change_song(player, NULL, true);
 			} else {
