@@ -2265,23 +2265,25 @@ static enum parser_error parse_artifact_cost(struct parser *p) {
 
 static enum parser_error parse_artifact_attack(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	struct random d = parser_getrand(p, "dice");
+	struct random d;
 	assert(a);
 
+	a->att = parser_getint(p, "att");
+	d = parser_getrand(p, "dice");
 	a->dd = d.dice;
 	a->ds = d.sides;
-	a->att = parser_getint(p, "att");
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_artifact_defence(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	struct random d = parser_getrand(p, "dice");
+	struct random d;
 	assert(a);
 
+	a->evn = parser_getint(p, "evn");
+	d = parser_getrand(p, "dice");
 	a->pd = d.dice;
 	a->ps = d.sides;
-	a->evn = parser_getint(p, "evn");
 	return PARSE_ERROR_NONE;
 }
 
@@ -2417,8 +2419,8 @@ struct parser *init_parse_artifact(void) {
 	parser_reg(p, "rarity int rarity", parse_artifact_rarity);
 	parser_reg(p, "weight int weight", parse_artifact_weight);
 	parser_reg(p, "cost int cost", parse_artifact_cost);
-	parser_reg(p, "attack rand dice int att", parse_artifact_attack);
-	parser_reg(p, "defence rand dice int evn", parse_artifact_defence);
+	parser_reg(p, "attack int att rand dice", parse_artifact_attack);
+	parser_reg(p, "defence int evn rand dice", parse_artifact_defence);
 	parser_reg(p, "flags ?str flags", parse_artifact_flags);
 	parser_reg(p, "values str values", parse_artifact_values);
 	parser_reg(p, "desc str text", parse_artifact_desc);
