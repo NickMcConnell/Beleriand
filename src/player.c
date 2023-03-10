@@ -186,7 +186,7 @@ void check_experience(struct player *p)
 {
 	/* Limits */
 	p->exp = MIN(MAX(p->exp, 0), PY_MAX_EXP);
-	p->new_exp = MIN(MAX(p->exp, 0), PY_MAX_EXP);
+	p->new_exp = MIN(MAX(p->new_exp, 0), PY_MAX_EXP);
 	p->new_exp = MIN(p->new_exp, p->exp);
 
 	/* Redraw experience */
