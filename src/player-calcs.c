@@ -777,9 +777,16 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		if (obj) {
 			int j;
 
-			/* Extract and apply the item flags */
+			/* Extract the item flags */
+			if (known_only) {
+				object_flags_known(obj, f);
+			} else {
+				object_flags(obj, f);
+			}
+
+			/* Apply the item flags */
 			for (j = 0; j < OF_MAX; j++) {
-				if (of_has(f, j) && (object_is_known(obj) || !known_only)) {
+				if (of_has(f, j)) {
 					state->flags[j]++;
 				}
 			}			
