@@ -980,9 +980,9 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 	if (tval_is_light(obj)) {
 		if (of_has(obj->flags, OF_BURNS_OUT)) {
 			if (one_in_(3)) {
-				obj->timeout = rand_range(500, z_info->fuel_torch);
+				obj->timeout = rand_range(500, z_info->default_torch);
 			} else {
-				obj->timeout = z_info->fuel_torch;
+				obj->timeout = z_info->default_torch;
 			}
 		} else if (of_has(obj->flags, OF_TAKES_FUEL)) {
 			if (one_in_(3)) {

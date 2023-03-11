@@ -545,12 +545,14 @@ static enum parser_error parse_constants_obj_make(struct parser *p) {
 		z->great_obj = value;
 	else if (streq(label, "great-spec"))
 		z->great_ego = value;
+	else if (streq(label, "default-torch"))
+		z->default_torch = value;
 	else if (streq(label, "fuel-torch"))
 		z->fuel_torch = value;
-	else if (streq(label, "fuel-lamp"))
-		z->fuel_lamp = value;
 	else if (streq(label, "default-lamp"))
 		z->default_lamp = value;
+	else if (streq(label, "fuel-lamp"))
+		z->fuel_lamp = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 

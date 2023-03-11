@@ -10,17 +10,8 @@
  */
 /* symbol			message */
 KF(NONE,			"")
-KF(RAND_HI_RES,		"")
-KF(RAND_SUSTAIN,	"")
-KF(RAND_POWER,		"")
 KF(INSTA_ART,		"")
 KF(QUEST_ART,		"")
 KF(GOOD,			"")
 KF(SHOW_DICE,		"")
-KF(SHOW_MULT,		"")
-KF(SHOOTS_SHOTS,	"")
-KF(SHOOTS_ARROWS,	"")
-KF(SHOOTS_BOLTS,	"")
-KF(RAND_BASE_RES,	"")
-KF(RAND_RES_POWER,	"")
 KF(MAX,				"")

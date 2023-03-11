@@ -108,9 +108,10 @@ struct angband_constants
 	uint16_t max_obj_depth;	/* Maximum depth used in object allocation */
 	uint16_t great_obj;	/* 1/chance of inflating the requested object level */
 	uint16_t great_ego;	/* 1/chance of inflating the requested ego item level */
+	uint16_t default_torch;	/* Default amount of fuel in a torch  */
 	uint16_t fuel_torch;	/* Maximum amount of fuel in a torch */
-	uint16_t fuel_lamp;	/* Maximum amount of fuel in a lantern */
 	uint16_t default_lamp;	/* Default amount of fuel in a lantern  */
+	uint16_t fuel_lamp;		/* Maximum amount of fuel in a lantern */
 
 	/* Player constants, read from constants.txt */
 	uint16_t max_sight;	/* Maximum visual range */

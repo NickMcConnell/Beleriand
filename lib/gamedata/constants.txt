@@ -144,14 +144,17 @@ obj-make:great-obj:7
 # 1/chance of inflating the requested special item level
 obj-make:great-spec:7
 
+# Default amount of fuel in a torch
+obj-make:default-torch:2000
+
 # Maximum amount of fuel in a torch
-obj-make:fuel-torch:2000
+obj-make:fuel-torch:3000
+
+# Default amount of fuel in a lantern
+obj-make:default-lamp:3000
 
 # Maximum amount of fuel in a lantern
-obj-make:fuel-lamp:3000
-
-# Default amount of fuel in a lantern (?)
-obj-make:default-lamp:3500
+obj-make:fuel-lamp:7000
 
 # Maximum number of self-made artefacts
 #obj-make:self-arts:50

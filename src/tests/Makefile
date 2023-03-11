@@ -7,7 +7,6 @@ all : run
 
 # Sorted alphabetically
 SUITES = \
-	artifact/suite.mk \
 	cave/suite.mk \
 	command/suite.mk \
 	effects/suite.mk \
@@ -45,10 +44,10 @@ run : build
 .c.o :
 	@$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-$(TESTPROGS) : ../angband.o test-utils.o unit-test.o
+$(TESTPROGS) : ../narsil.o test-utils.o unit-test.o
 .o.exe :
 	@$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $< \
-		../angband.o test-utils.o unit-test.o \
+		../narsil.o test-utils.o unit-test.o \
 		$(LDFLAGS) $(LDADD) $(LIBS)
 	@echo "  CC $@"
 

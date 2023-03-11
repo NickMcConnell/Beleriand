@@ -22,14 +22,11 @@
 #include "player-calcs.h"
 #include "project.h"
 
-/* 53 = TMD_MAX */
-static int16_t TEST_DATA test_timed[53] = {
+/* 21 = TMD_MAX */
+static int16_t TEST_DATA test_timed[21] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0
+	0
 };
 
 static struct object_base TEST_DATA sword_base = {
@@ -53,9 +50,9 @@ static struct object_base TEST_DATA flask_base = {
 	.break_perc = 100,
 };
 
-static struct object_base TEST_DATA rod_base = {
-	.name = "Test Rod~",
-	.tval = TV_ROD,
+static struct object_base TEST_DATA horn_base = {
+	.name = "Test Horn~",
+	.tval = TV_HORN,
 	.next = NULL,
 };
 
@@ -65,11 +62,11 @@ static struct artifact TEST_DATA test_artifact_sword = {
 	.aidx = 0,
 	.next = NULL,
 	.tval = TV_SWORD,
-	.sval = 8, //Hack - depends on edit file order - Long Sword (NRM)
-	.to_a = 1,
-	.to_h = 2,
-	.to_d = 3,
-	.ac = 5,
+	.sval = 6, //Hack - depends on edit file order - Longsword (NRM)
+	.att = 1,
+	.evn = 2,
+	.pd = 3,
+	.ps = 5,
 	.dd = 2,
 	.ds = 5,
 	.weight = 16,
@@ -83,61 +80,36 @@ static struct object_kind TEST_DATA test_longsword = {
 	.kidx = 0,
 	.tval = TV_SWORD,
 	.sval = 8, //Hack - depends on edit file order - Long Sword (NRM)
-	.pval = {
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-	},
+	.pval = 0,
 	.modifiers = { 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_DEX] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_CON] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_GRA] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MELEE] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_ARCHERY] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_EVASION] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STEALTH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SEARCH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INFRA] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_PERCEPTION] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_WILL] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SMITHING] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SONG] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAMAGE_SIDES] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_TUNNEL] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SPEED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_BLOWS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
-	.to_h = {
-			.base = 1,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_d = {
-			.base = 1,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_a = {
-			.base = 2,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-
-	.dd = 4,
-	.ds = 6,
-	.weight = 16,
+	.att = 0,
+	.evn = 1,
+	.dd = 2,
+	.ds = 5,
+	.pd = 0,
+	.ps = 0,
+	.weight = 30,
 
 	.cost = 20,
 
 	.d_attr = 0,
 	.d_char = L'|',
 
-	.alloc_prob = 20,
-	.alloc_min = 1,
-	.alloc_max = 10,
 	.level = 0,
 
 	.effect = NULL,
@@ -154,86 +126,36 @@ static struct object_kind TEST_DATA test_torch = {
 	.kidx = 2,
 	.tval = TV_LIGHT,
 	.sval = 1, //Hack - depends on edit file order - Wooden Torch (NRM)
-	.pval = {
-				.base = 5000,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-	},
-
-	.to_h = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_d = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_a = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.ac = 0,
-
-	.dd = 1,
-	.ds = 1,
-	.weight = 22,
+	.pval = 5000,
+	.weight = 20,
 
 	.cost = 1,
 
-	.flags = { 0, 0, 4, 0 },
-	.kind_flags = { 32, 0 },
+	.flags = { 64, 128, 0, 64, 0, 0 },
+	.kind_flags = { 0 },
 
 	.modifiers = { 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_DEX] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_CON] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_GRA] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MELEE] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_ARCHERY] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_EVASION] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STEALTH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SEARCH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INFRA] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_PERCEPTION] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_WILL] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SMITHING] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SONG] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAMAGE_SIDES] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_TUNNEL] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SPEED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_BLOWS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_LIGHT] = { 1, 0, 0, 0 }, 
-		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.el_info = {
 		[ELEM_ACID] = { 0, 0 },
-		[ELEM_ELEC] = { 0, 0 },
 		[ELEM_FIRE] = { 0, 0 },
 		[ELEM_COLD] = { 0, 0 },
 		[ELEM_POIS] = { 0, 0 },
-		[ELEM_LIGHT] = { 0, 0 },
 		[ELEM_DARK] = { 0, 0 },
-		[ELEM_SOUND] = { 0, 0 },
-		[ELEM_SHARD] = { 0, 0 },
-		[ELEM_NEXUS] = { 0, 0 },
-		[ELEM_NETHER] = { 0, 0 },
-		[ELEM_CHAOS] = { 0, 0 },
-		[ELEM_DISEN] = { 0, 0 },
-		[ELEM_WATER] = { 0, 0 },
-		[ELEM_ICE] = { 0, 0 },
-		[ELEM_GRAVITY] = { 0, 0 },
-		[ELEM_INERTIA] = { 0, 0 },
-		[ELEM_FORCE] = { 0, 0 },
-		[ELEM_TIME] = { 0, 0 },
-		[ELEM_PLASMA] = { 0, 0 },
-		[ELEM_METEOR] = { 0, 0 },
-		[ELEM_MISSILE] = { 0, 0 },
-		[ELEM_MANA] = { 0, 0 },
-		[ELEM_HOLY_ORB] = { 0, 0 },
-		[ELEM_ARROW] = { 0, 0 },
 	},
 
 	.brands = NULL,
@@ -242,20 +164,11 @@ static struct object_kind TEST_DATA test_torch = {
 	.d_attr = 7,
 	.d_char = L'~',
 
-	.alloc_prob = 70,
-	.alloc_min = 1,
-	.alloc_max = 40,
 	.level = 1,
+	.alloc = NULL,
 
 	.effect = NULL,
-	.power = 0,
 	.effect_msg = NULL,
-	.time = {
-		.base = 0,
-		.dice = 0,
-		.sides = 0,
-		.m_bonus = 0,
-	},
 	.charge = {
 		.base = 0,
 		.dice = 0,
