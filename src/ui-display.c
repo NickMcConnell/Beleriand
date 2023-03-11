@@ -502,6 +502,52 @@ static void prt_health(int row, int col)
 	prt_health_aux(row, col);
 }
 
+/**
+ * Displays the amount of bleeding.
+ * This is a bit tricky as it is in the same row as poison, *unless* you have
+ * both, in which case it is the row above.
+ */
+static void prt_cut(int row, int col)
+{
+	int c = player->timed[TMD_CUT];
+	char buf[20];
+	int r = row;
+
+	if (player->timed[TMD_POISONED]) r--;
+
+	put_str("            ", r, col);
+
+	if (c > 100) {
+		c_put_str(COLOUR_RED, "Mortal wound", r, col);
+	} else if (c > 20) {
+		my_strcpy(buf, format("Bleeding %-2d", c), sizeof(buf));
+		c_put_str(COLOUR_RED, buf, r, col);
+	} else if (c > 0) {
+		my_strcpy(buf, format("Bleeding %-2d", c), sizeof(buf));
+		c_put_str(COLOUR_L_RED, buf, r, col);
+	}
+}
+
+
+
+/**
+ * Prints Poisoned status
+ */
+static void prt_poisoned(int row, int col)
+{
+	int p = player->timed[TMD_POISONED];
+	char buf[20];
+
+	if (p > 20) {
+		my_strcpy(buf, format("Poisoned %-3d", p), sizeof(buf));
+		c_put_str(COLOUR_L_GREEN, buf, row, col);
+	} else if (p > 0) {
+		my_strcpy(buf, format("Poisoned %-3d", p), sizeof(buf));
+		c_put_str(COLOUR_GREEN, buf, row, col);
+	} else {
+		put_str("            ", row, col);
+	}
+}
 
 
 
@@ -654,8 +700,8 @@ static const struct side_handler_t
 	{ prt_health,  11, EVENT_MONSTERHEALTH },/* May overlap downwards */
 	{ NULL,        19, 0 },
 	{ NULL,        19, 0 },
-	//{ prt_cut,     10, EVENT_STATUS },/* May overlap upwards */
-	//{ prt_poisoned,10, EVENT_STATUS },
+	{ prt_cut,     10, EVENT_STATUS },/* May overlap upwards */
+	{ prt_poisoned,10, EVENT_STATUS },
 	{ prt_song,    11, EVENT_SONG },/* May overlap downwards */
 };
 

@@ -153,10 +153,12 @@ static enum parser_error parse_player_timed_change_increase(struct parser *p)
 	if (!current) {
 		t->increase = mem_zalloc(sizeof(struct timed_change));
 		current = t->increase;
-	}
-
-	/* Move to the highest change so far */
-	while (current->next) {
+	} else {
+		/* Move to the highest change so far */
+		while (current->next) {
+			current = current->next;
+		}
+		current->next = mem_zalloc(sizeof(struct timed_change));
 		current = current->next;
 	}
 
