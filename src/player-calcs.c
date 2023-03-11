@@ -441,7 +441,7 @@ void calc_voice(struct player *p, bool update)
 		}
 
 		/* Display mana later */
-		p->upkeep->redraw |= (PR_VOICE);
+		p->upkeep->redraw |= (PR_MANA);
 	}
 }
 

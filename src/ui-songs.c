@@ -70,7 +70,7 @@ static void song_display(struct menu *menu, int oid, bool cursor, int row,
 	uint8_t attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 
 	if (song) {
-		str = song->name;
+		str = format("Song of %s", song->name);
 	} else if (choice[oid].swap) {
 		str = "Exchange themes";
 	} else {
@@ -99,16 +99,16 @@ static bool song_action(struct menu *m, const ui_event *event, int oid)
 			/* Start singing */
 			player_change_song(player, song, false);
 		}
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 void textui_change_song(void)
 {
 	struct menu menu;
 	menu_iter menu_f = { NULL, NULL, song_display, song_action, NULL };
-	region area = { 2, 2, 0, 0 };
+	region area = { 10, 2, 0, 0 };
 	int count;
 
 	songlist = mem_zalloc(100 * sizeof(struct song_menu_info));
@@ -121,11 +121,12 @@ void textui_change_song(void)
 
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
 	menu.title = "Songs";
+	menu.selections = lower_case;
+	menu.flags = MN_CASELESS_TAGS;
 
-	if (count) {
-		menu_setpriv(&menu, count, songlist);
-		menu_layout(&menu, &area);
-		menu_select(&menu, 0, true);
-	}
+	menu_setpriv(&menu, count, songlist);
+	menu_layout(&menu, &area);
+	menu_select(&menu, 0, true);
+
 	mem_free(songlist);
 }

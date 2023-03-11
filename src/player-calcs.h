@@ -49,7 +49,7 @@
  * Bit flags for the "player->upkeep->redraw" variable
  */
 #define PR_MISC			0x00000001L	/* Display Race/Class */
-#define PR_VOICE		0x00000002L	/* Display Title */
+#define PR_TITLE		0x00000002L	/* Display Title */
 #define PR_TERRAIN		0x00000004L	/* Display Level */
 #define PR_EXP			0x00000008L	/* Display Experience */
 #define PR_STATS		0x00000010L	/* Display Stats */
@@ -80,9 +80,8 @@
  * Display Basic Info
  */
 #define PR_BASIC \
-	(PR_MISC | PR_VOICE | PR_STATS | PR_TERRAIN |\
-	 PR_EXP | PR_SONG | PR_ARMOR | PR_HP | PR_MELEE | PR_ARC |\
-	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_SPEED)
+	(PR_MISC | PR_STATS | PR_TERRAIN | PR_EXP | PR_SONG | PR_ARMOR \
+	 | PR_HP | PR_MELEE | PR_ARC | PR_MANA | PR_DEPTH | PR_HEALTH | PR_SPEED)
 
 /**
  * Display Extra Info

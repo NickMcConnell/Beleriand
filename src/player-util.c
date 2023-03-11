@@ -309,7 +309,7 @@ void player_regen_mana(struct player *p)
 
 	/* Notice changes */
 	if (old_csp != p->csp) {
-		p->upkeep->redraw |= (PR_VOICE);
+		p->upkeep->redraw |= (PR_MANA);
 	}
 }
 

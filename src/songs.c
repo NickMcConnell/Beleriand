@@ -323,7 +323,7 @@ void player_change_song(struct player *p, struct song *song, bool exchange)
 	}
 
 	/* Add a message */
-	if (song->msg) {
+	if (song && song->msg) {
 		msg(song->msg);
 	}
 
@@ -392,7 +392,7 @@ void player_sing(struct player *p)
 		if (!song) continue;
 
 		/* Cost */
-		if (!song->extend || ((p->song_duration % 3) == i - 1)) {
+		if (!song->extend || ((p->song_duration % 3) == i)) {
 			cost++;
 		}
 
@@ -406,7 +406,7 @@ void player_sing(struct player *p)
 	/* Pay costs */
 	p->csp -= MIN(cost, p->csp);
 
-	p->upkeep->redraw |= (PR_VOICE);
+	p->upkeep->redraw |= (PR_MANA);
 }
 
 /**
