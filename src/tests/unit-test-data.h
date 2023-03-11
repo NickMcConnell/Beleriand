@@ -126,7 +126,7 @@ static struct object_kind TEST_DATA test_torch = {
 	.kidx = 2,
 	.tval = TV_LIGHT,
 	.sval = 1, //Hack - depends on edit file order - Wooden Torch (NRM)
-	.pval = 5000,
+	.pval = 3000,
 	.weight = 20,
 
 	.cost = 1,
@@ -194,86 +194,37 @@ static struct object_kind TEST_DATA test_lantern = {
  	.kidx = 3,
 	.tval = TV_LIGHT,
 	.sval = 2, //Hack - depends on edit file order -  Lantern (NRM)
-	.pval = {
-		.base = 5000,
-		.dice = 0,
-		.sides = 0,
-		.m_bonus = 0,
-	},
+	.pval = 7000,
 
-	.to_h = {
-		.base = 0,
-		.dice = 0,
-		.sides = 0,
-		.m_bonus = 0,
-	},
-	.to_d = {
-		.base = 0,
-		.dice = 0,
-		.sides = 0,
-		.m_bonus = 0,
-	},
-	.to_a = {
-		.base = 0,
-		.dice = 0,
-		.sides = 0,
-		.m_bonus = 0,
-	},
-	.ac = 0,
-
-	.dd = 1,
-	.ds = 1,
-	.weight = 50,
+	.weight = 30,
 
 	.cost = 1,
 
-	.flags = { 0, 0, 8, 0 }, /* OF_TAKES_FUEL */
-	.kind_flags = { 32, 0 },
+	.flags = { 0, 0, 0, 128, 0, 0 }, /* OF_TAKES_FUEL */
+	.kind_flags = { 0 },
 
 	.modifiers = { 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_DEX] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_CON] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_GRA] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MELEE] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_ARCHERY] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_EVASION] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STEALTH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SEARCH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INFRA] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_PERCEPTION] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_WILL] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SMITHING] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SONG] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAMAGE_SIDES] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_TUNNEL] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SPEED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_BLOWS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_LIGHT] = { 2, 0, 0, 0 }, 
-		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.el_info = {
 		[ELEM_ACID] = { 0, 0 },
-		[ELEM_ELEC] = { 0, 0 },
-		[ELEM_FIRE] = { 0, 4 },
+		[ELEM_FIRE] = { 0, 0 },
 		[ELEM_COLD] = { 0, 0 },
 		[ELEM_POIS] = { 0, 0 },
-		[ELEM_LIGHT] = { 0, 0 },
 		[ELEM_DARK] = { 0, 0 },
-		[ELEM_SOUND] = { 0, 0 },
-		[ELEM_SHARD] = { 0, 0 },
-		[ELEM_NEXUS] = { 0, 0 },
-		[ELEM_NETHER] = { 0, 0 },
-		[ELEM_CHAOS] = { 0, 0 },
-		[ELEM_DISEN] = { 0, 0 },
-		[ELEM_WATER] = { 0, 0 },
-		[ELEM_ICE] = { 0, 0 },
-		[ELEM_GRAVITY] = { 0, 0 },
-		[ELEM_INERTIA] = { 0, 0 },
-		[ELEM_FORCE] = { 0, 0 },
-		[ELEM_TIME] = { 0, 0 },
-		[ELEM_PLASMA] = { 0, 0 },
-		[ELEM_METEOR] = { 0, 0 },
-		[ELEM_MISSILE] = { 0, 0 },
-		[ELEM_MANA] = { 0, 0 },
-		[ELEM_HOLY_ORB] = { 0, 0 },
-		[ELEM_ARROW] = { 0, 0 },
 	},
 
 	.brands = NULL,
@@ -282,20 +233,11 @@ static struct object_kind TEST_DATA test_lantern = {
 	.d_attr = 0,
 	.d_char = L'~',
 
-	.alloc_prob = 10,
-	.alloc_min = 1,
-	.alloc_max = 10,
-	.level = 0,
+	.level = 1,
+	.alloc = NULL,
 
 	.effect = NULL,
-	.power = 0,
 	.effect_msg = NULL,
-	.time = {
-		.base = 0,
-		.dice = 0,
-		.sides = 0,
-		.m_bonus = 0,
-	},
 	.charge = {
 		.base = 0,
 		.dice = 0,
@@ -320,52 +262,31 @@ static struct object_kind TEST_DATA test_flask = {
 	.kidx = 1,
 	.tval = TV_FLASK,
 	.sval = 0,
-	.pval = {
-				.base = 7500,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-	},
+	.pval = 3000,
 
 	.modifiers = { 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_DEX] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_CON] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_GRA] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MELEE] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_ARCHERY] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_EVASION] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STEALTH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SEARCH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INFRA] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_PERCEPTION] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_WILL] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SMITHING] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SONG] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAMAGE_SIDES] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_TUNNEL] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SPEED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_BLOWS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
-	.to_h = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
+	.el_info = {
+		[ELEM_ACID] = { 0, 0 },
+		[ELEM_FIRE] = { 0, 0 },
+		[ELEM_COLD] = { 0, 0 },
+		[ELEM_POIS] = { 0, 0 },
+		[ELEM_DARK] = { 0, 0 },
 	},
-	.to_d = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_a = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-
-	.dd = 1,
-	.ds = 4,
 	.weight = 20,
 
 	.cost = 3,
@@ -373,182 +294,46 @@ static struct object_kind TEST_DATA test_flask = {
 	.d_attr = 11,
 	.d_char = L'!',
 
-	.alloc_prob = 50,
-	.alloc_min = 1,
-	.alloc_max = 100,
 	.level = 1,
+	.alloc = NULL,
 
 	.effect = NULL,
+	.effect_msg = NULL,
+	.charge = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
 
 	.gen_mult_prob = 0,
-	.flavor = NULL,
-};
-
-static struct object_kind TEST_DATA test_rod_treasure_location = {
-	.name = "Test Rod of Treasure Location",
-	.text = "A test rod of treasure location.",
-	.base = &rod_base,
-	.kidx = 1,
-	.tval = TV_ROD,
-	.sval = 1,
-	.pval = {
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
+	.stack_size = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
 	},
-
-	.modifiers = { 
-		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_DEX] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_CON] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_STEALTH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SEARCH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INFRA] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_TUNNEL] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SPEED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_BLOWS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
-	},
-	.to_h = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_d = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_a = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-
-	.dd = 0,
-	.ds = 0,
-	.weight = 15,
-
-	.cost = 1000,
-
-	.d_attr = 0,
-	.d_char = L'-',
-
-	.alloc_prob = 30,
-	.alloc_min = 8,
-	.alloc_max = 75,
-	.level = 5,
-
-	.effect = NULL,
-
-	.gen_mult_prob = 0,
-	.flavor = NULL,
-};
-
-static struct object_kind TEST_DATA test_gold = {
-	.name = "Test Gold",
-	.text = "Test gold [2].",
-	.kidx = 2,
-	.tval = TV_GOLD,
-	.sval = 0,
-	.pval = {
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-	},
-
-	.modifiers = { 
-		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_DEX] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_CON] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_STEALTH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SEARCH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INFRA] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_TUNNEL] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SPEED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_BLOWS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
-	},
-	.to_h = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_d = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_a = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-
-	.dd = 1,
-	.ds = 1,
-	.weight = 1,
-
-	.cost = 0,
-
-	.d_attr = 0,
-	.d_char = L'$',
-
-	.alloc_prob = 0,
-	.alloc_min = 0,
-	.alloc_max = 0,
-	.level = 0,
-
-	.effect = NULL,
-
-	.gen_mult_prob = 0,
 	.flavor = NULL,
 };
 
 static struct player_race TEST_DATA test_race = {
 	.name = "TestRace",
-	.r_adj = {
+	.stat_adj = {
 		[STAT_STR] = +2,
 		[STAT_DEX] = +1,
 		[STAT_CON] = +3,
-		[STAT_INT] = -1,
-		[STAT_WIS] = -2,
+		[STAT_GRA] = -1,
 	},
-	.r_skills = {
-		[SKILL_DISARM_PHYS] = 0,
-		[SKILL_DISARM_MAGIC] = 0,
-		[SKILL_DEVICE] = 5,
-		[SKILL_SAVE] = 10,
-		[SKILL_STEALTH] = -5,
-		[SKILL_SEARCH] = -10,
-		[SKILL_TO_HIT_MELEE] = 0,
-		[SKILL_TO_HIT_BOW] = 0,
-		[SKILL_TO_HIT_THROW] = 0,
-		[SKILL_DIGGING] = 0,
+	.skill_adj = {
+		[SKILL_MELEE] = 2,
+		[SKILL_ARCHERY] = 0,
+		[SKILL_EVASION] = -2,
+		[SKILL_STEALTH] = 0,
+		[SKILL_PERCEPTION] = 0,
+		[SKILL_WILL] = 1,
+		[SKILL_SMITHING] = 0,
+		[SKILL_SONG] = -2,
 	},
-
-	.r_mhp = 10,
-	.r_exp = 110,
 
 	.b_age = 14,
 	.m_age = 6,
@@ -558,7 +343,6 @@ static struct player_race TEST_DATA test_race = {
 	.base_wgt = 150,
 	.mod_wgt = 20,
 
-	.infra = 40,
 
 	.history = NULL,
 };
@@ -579,95 +363,12 @@ static struct start_item TEST_DATA start_longsword = {
 	.next = &start_torch,
 };
 
-static struct magic_realm TEST_DATA test_realm = {
-	.next = NULL,
-	.name = "realm",
-	.stat = 1,
-	.verb = "spell_verb",
-	.spell_noun = "spell_noun",
-	.book_noun = "book_noun",
-};
-
-static struct class_book TEST_DATA test_book = {
-	.tval = 10,
-	.sval = 4,
-	.realm = &test_realm,
-	.num_spells = 8,
-	.spells = NULL,
-};
-
-static struct player_class TEST_DATA test_class = {
-	.name = "TestClass",
-	.title = {
-		"TestTitle0",
-		"TestTitle1",
-		"TestTitle2",
-		"TestTitle3",
-		"TestTitle4",
-		"TestTitle5",
-		"TestTitle6",
-		"TestTitle7",
-		"TestTitle8",
-		"TestTitle9",
-	},
-
-	.c_adj = {
-		[STAT_STR] = +1,
-		[STAT_DEX] = +2,
-		[STAT_CON] = -1,
-		[STAT_INT] = -2,
-		[STAT_WIS] = +3,
-	},
-
-	.c_skills = {
-		[SKILL_DISARM_PHYS] = 25,
-		[SKILL_DISARM_MAGIC] = 25,
-		[SKILL_DEVICE] = 18,
-		[SKILL_SAVE] = 18,
-		[SKILL_STEALTH] = 1,
-		[SKILL_SEARCH] = 14,
-		[SKILL_TO_HIT_MELEE] = 70,
-		[SKILL_TO_HIT_BOW] = 55,
-		[SKILL_TO_HIT_THROW] = 55,
-		[SKILL_DIGGING] = 0,
-	},
-
-	.x_skills = {
-		[SKILL_DISARM_PHYS] = 10,
-		[SKILL_DISARM_MAGIC] = 10,
-		[SKILL_DEVICE] = 7,
-		[SKILL_SAVE] = 10,
-		[SKILL_STEALTH] = 0,
-		[SKILL_SEARCH] = 0,
-		[SKILL_TO_HIT_MELEE] = 45,
-		[SKILL_TO_HIT_BOW] = 45,
-		[SKILL_TO_HIT_THROW] = 45,
-		[SKILL_DIGGING] = 0,
-	},
-
-	.c_mhp = 9,
-	.c_exp = 0,
-
-	.max_attacks = 6,
-	.min_weight = 30,
-	.att_multiply = 5,
-
-	.start_items = &start_longsword,
-	.magic =  {
-		.spell_first = 1,
-		.spell_weight = 300,
-		.num_books = 1,
-		.books = &test_book,
-		.total_spells = 8,
-	},
-};
-
 static struct monster_base TEST_DATA test_rb_info = {
 	.next = NULL,
 	.name = "townsfolk",
 	.text = "Townsfolk",
-	.flags = "\0\0\0\0\0\0\0\0\0\0\0",
-	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0",
+	.flags = "\0\0\0\0\0\0\0\0\0\0",
+	.spell_flags = "\0\0\0",
 	.d_char = 116,
 	.pain = NULL,
 	
@@ -683,7 +384,7 @@ static struct blow_method TEST_DATA test_blow_method = {
 	.cut = true,
 	.stun = true,
 	.miss = false,
-	.phys = false,
+	.prt = false,
 	.msgt = 34,
 	.messages = &test_blow_message,
 	.num_messages = 1,
@@ -809,15 +510,19 @@ static struct monster_race TEST_DATA test_r_human = {
 
 	.base = &test_rb_info,
 
-	.avg_hp = 10,
-	.ac = 12,
-	.sleep = 0,
-	.hearing = 20,
-	.smell = 20,
-	.speed = 110,
-	.mexp = 50,
-	.freq_innate = 0,
-	.freq_spell = 0,
+	.hdice = 8,
+	.hside = 4,
+	.evn = 5,
+	.pd = 3,
+	.ps = 4,
+	.sleep = 10,
+	.per = 4,
+	.stl = 3,
+	.wil = 1,
+	.song = 0,
+	.speed = 2,
+	.light = 1,
+	.freq_ranged = 0,
 
 	.blow = &test_blow[0],
 
@@ -825,7 +530,7 @@ static struct monster_race TEST_DATA test_r_human = {
 	.rarity = 1,
 
 	.d_attr = 0,
-	.d_char = 't',
+	.d_char = '@',
 
 	.max_num = 100,
 	.cur_num = 0,
@@ -835,31 +540,29 @@ static struct monster_race TEST_DATA test_r_human = {
 
 static monster_lore TEST_DATA test_lore = {
 	.ridx = 0,
-	.sights = 1,
 	.deaths = 0,
 	.pkills = 0,
+	.psights = 1,
 	.tkills = 5,
-	.wake = 1,
+	.tsights = 10,
+	.notice = 1,
 	.ignore = 4,
-	.drop_gold = 0,
 	.drop_item = 0,
-	.cast_innate = 0,
-	.cast_spell = 0,
+	.ranged = 0,
+	.mana = 0,
+	.spell_power = 0,
 
 	.blows = &test_blow[0],
 
 	.flags = "\0\0\0\0\0\0\0\0\0\0",
-	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0",
+	.spell_flags = "\0\0\0",
 	.drops = NULL,
-	.friends = NULL,
-	.friends_base = NULL,
-	.mimic_kinds = NULL,
 	.all_known = false,
 	.blow_known = &test_blows_known[0],
 	.armour_known = false,
 	.drop_known = false,
 	.sleep_known = false,
-	.spell_freq_known = false
+	.ranged_freq_known = false
 };
 
 static struct angband_constants TEST_DATA test_z_info = {
@@ -869,7 +572,6 @@ static struct angband_constants TEST_DATA test_z_info = {
 	.a_max    = 2,
 	.e_max    = 2,
 	.r_max    = 2,
-	.mp_max   = 2,
 	.s_max    = 2,
 	.pit_max  = 2,
 	.act_max  = 2,
@@ -903,7 +605,6 @@ static struct player_upkeep TEST_DATA test_player_upkeep = {
 	.autosave = 0,
 	.generate_level = 0,
 	.energy_use = 0,
-	.new_spells = 0,
 
 	.health_who = NULL,
 	.monster_race = NULL,
@@ -916,148 +617,62 @@ static struct player_upkeep TEST_DATA test_player_upkeep = {
 
 	.command_wrk = 0,
 
-	.create_up_stair = 0,
-	.create_down_stair = 0,
+	.create_stair = 0,
 
 	.running = 0,
 	.running_withpathfind = 0,
 	.running_firststep = 0,
 
-	.quiver = NULL,
 	.inven = NULL,
 
 	.total_weight = 0,
 	.inven_cnt = 0,
 	.equip_cnt = 0,
-	.quiver_cnt = 0,
 };
-
-static struct object TEST_DATA test_player_knowledge = {
-	.kind = NULL,
-	.ego = NULL,
-	.artifact = NULL,
-	.prev = NULL,
-	.next = NULL,
-	.known = NULL,
-	.oidx = 0,
-	.grid = { 0, 0 },
-	.tval = 0,
-	.sval = 0,
-	.pval = 0,
-	.weight = 0,
-
-	.modifiers = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-	.el_info = {
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 },
-		{ 0, 0 }
-	},
-	.brands = NULL,
-	.slays = NULL,
-
-	.ac = 0,
-	.to_h = 0,
-	.to_d = 0,
-	.to_a = 0,
-
-	.dd = 0,
-	.ds = 0,
-
-	.effect = NULL,
-	.effect_msg = NULL,
-	.activation = NULL,
-	.time = { 0, 0, 0, 0, },
-	.timeout = 0,
-
-	.number = 0,
-	.notice = 0,
-
-	.held_m_idx = 0,
-	.mimicking_m_idx = 0,
-	.origin = 0,
-	.origin_depth = 0,
-	.origin_race = NULL,
-	.note = 0,
-};
-
-static struct player_shape TEST_DATA test_player_shape = {
-	.name = "normal",
-};
-
 
 static struct player TEST_DATA test_player = {
 	.grid = { 1, 1 },
 	.race = &test_race,
-	.class = &test_class,
-	.hitdie = 10,
-	.expfact = 100,
 	.age = 12,
 	.ht = 40,
 	.wt = 80,
-	.au = 500,
 	.max_depth = 10,
 	.depth = 6,
-	.max_lev = 3,
-	.lev = 3,
-	.max_exp = 100,
+	.new_exp = 10,
 	.exp = 80,
 	.mhp = 20,
 	.chp = 14,
 	.msp = 12,
 	.csp = 11,
-	.stat_max = {
-		[STAT_STR] = 14,
-		[STAT_DEX] = 12,
-		[STAT_CON] = 14,
-		[STAT_WIS] = 10,
-		[STAT_INT] = 8,
+	.stat_base = {
+		[STAT_STR] = 1,
+		[STAT_DEX] = 2,
+		[STAT_CON] = 1,
+		[STAT_GRA] = 0,
 	},
-	.stat_cur = {
-		[STAT_STR] = 14,
-		[STAT_DEX] = 11,
-		[STAT_CON] = 14,
-		[STAT_WIS] = 10,
-		[STAT_INT] = 8,
+	.stat_drain = {
+		[STAT_STR] = 1,
+		[STAT_DEX] = 2,
+		[STAT_CON] = 1,
+		[STAT_GRA] = 0,
+	},
+	.skill_base = {
+		[SKILL_MELEE] = 2,
+		[SKILL_ARCHERY] = 0,
+		[SKILL_EVASION] = 2,
+		[SKILL_STEALTH] = 0,
+		[SKILL_PERCEPTION] = 0,
+		[SKILL_WILL] = 2,
+		[SKILL_SMITHING] = 0,
+		[SKILL_SONG] = 6,
 	},
 	.timed = test_timed,
-	.word_recall = 0,
 	.energy = 100,
-	.player_hp = {
-		  5,  10,  15,  20,  25,  30,  35,  40,  45,  50,
-		 55,  60,  65,  70,  75,  80,  85,  90,  95, 100,
-		105, 110, 115, 120, 125, 130, 135, 140, 145, 150,
-		155, 160, 165, 170, 175, 180, 185, 190, 195, 200,
-		205, 210, 215, 220, 225, 230, 235, 240, 245, 250
-	},
 	.history = "no history",
 	.is_dead = 0,
 	.wizard = 0,
 	.upkeep = &test_player_upkeep,
 	.gear = NULL,
-	.gear_k = NULL,
-	.obj_k = &test_player_knowledge,
 };
 
 static struct chunk TEST_DATA test_cave = {
@@ -1065,15 +680,9 @@ static struct chunk TEST_DATA test_cave = {
 	.turn = 1,
 	.depth = 1,
 
-	.feeling = 0,
-	.obj_rating = 0,
-	.mon_rating = 0,
-	.good_item = false,
-
 	.height = 2,
 	.width = 2,
 
-	.feeling_squares = 0,
 	.feat_count = NULL,
 
 	.squares = NULL,
@@ -1092,12 +701,11 @@ static struct projection TEST_DATA test_projections[4] = {
 		.desc = "acid",
 		.player_desc = "acid",
 		.blind_desc = "acid",
-		.numerator = 1,
-		.denominator = {3, 0, 0, 0},
-		.divisor = 3,
-		.damage_cap = 1600,
 		.msgt = 0,
+		.damaging = true,
+		.evade = false,
 		.obvious = true,
+		.wake = true,
 		.color = 2,
 		.next = NULL
 	},
@@ -1108,12 +716,11 @@ static struct projection TEST_DATA test_projections[4] = {
 		.desc = "electricity",
 		.player_desc = "electricity",
 		.blind_desc = "electricity",
-		.numerator = 1,
-		.denominator = {3, 0, 0, 0},
-		.divisor = 3,
-		.damage_cap = 1600,
 		.msgt = 0,
+		.damaging = true,
+		.evade = false,
 		.obvious = true,
+		.wake = true,
 		.color = 6,
 		.next = NULL
 	},
@@ -1124,12 +731,11 @@ static struct projection TEST_DATA test_projections[4] = {
 		.desc = "fire",
 		.player_desc = "fire",
 		.blind_desc = "fire",
-		.numerator = 1,
-		.denominator = {3, 0, 0, 0},
-		.divisor = 3,
-		.damage_cap = 1600,
 		.msgt = 0,
+		.damaging = true,
+		.evade = false,
 		.obvious = true,
+		.wake = true,
 		.color = 4,
 		.next = NULL
 	},
@@ -1140,12 +746,11 @@ static struct projection TEST_DATA test_projections[4] = {
 		.desc = "cold",
 		.player_desc = "cold",
 		.blind_desc = "cold",
-		.numerator = 1,
-		.denominator = {3, 0, 0, 0},
-		.divisor = 3,
-		.damage_cap = 1600,
 		.msgt = 0,
+		.damaging = true,
+		.evade = false,
 		.obvious = true,
+		.wake = true,
 		.color = 1,
 		.next = NULL
 	}
