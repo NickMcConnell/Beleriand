@@ -1,6 +1,6 @@
 key space
-key i
-key i
+key d
+key d
 key c
 key c
 key a
@@ -8,7 +8,9 @@ key enter
 key enter
 key enter
 key enter
+key enter
 # Character birthed.
 player-race?
-player-class?
+player-house?
+player-sex?
 quit

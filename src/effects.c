@@ -353,6 +353,9 @@ bool effect_do(struct effect *effect,
 			return false;
 		}
 
+		if (effect->dice != NULL)
+			(void) dice_roll(effect->dice, &value);
+
 		/* Handle the effect */
 		handler = effects[effect->index].handler;
 		if (handler != NULL) {

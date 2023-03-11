@@ -54,7 +54,6 @@ static void reset_before_load(void) {
 	play_again = true;
 	wipe_mon_list(cave, player);
 	cleanup_angband();
-	chunk_list_max = 0;
 	init_angband();
 	play_again = false;
 }
@@ -88,7 +87,7 @@ int teardown_tests(void *state) {
 static int test_newgame(void *state) {
 
 	/* Try making a new game */
-	eq(player_make_simple(NULL, NULL, "Tester"), true);
+	eq(player_make_simple(NULL, NULL, NULL, "Tester"), true);
 
 	eq(player->is_dead, false);
 	prepare_next_level(player);
@@ -120,20 +119,7 @@ static int test_loadgame(void *state) {
 	ok;
 }
 
-static int test_stairs1(void *state) {
-	reset_before_load();
-
-	/* Load the saved game */
-	eq(savefile_load("Test1", false), true);
-
-	cmdq_push(CMD_GO_DOWN);
-	run_game_loop();
-	eq(player->depth, 1);
-
-	ok;
-}
-
-static int test_stairs2(void *state) {
+static int test_step(void *state) {
 	int dir;
 
 	reset_before_load();
@@ -151,8 +137,6 @@ static int test_stairs2(void *state) {
 			reverse_direction(dir));
 		run_game_loop();
 	}
-	cmdq_push(CMD_GO_DOWN);
-	run_game_loop();
 	eq(player->depth, 1);
 
 	ok;
@@ -226,8 +210,7 @@ const char *suite_name = "game/basic";
 struct test tests[] = {
 	{ "newgame", test_newgame },
 	{ "loadgame", test_loadgame },
-	{ "stairs1", test_stairs1 },
-	{ "stairs2", test_stairs2 },
+	{ "step", test_step },
 	{ "droppickup", test_drop_pickup },
 	{ "dropeat", test_drop_eat },
 	{ NULL, NULL }

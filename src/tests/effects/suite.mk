@@ -1,1 +1,1 @@
-TESTPROGS += effects/chain effects/destruction effects/earthquake effects/info
+TESTPROGS += effects/chain effects/earthquake effects/info

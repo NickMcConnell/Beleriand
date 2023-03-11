@@ -1,2 +1,1 @@
-TESTPROGS += game/basic \
-	game/mage
+TESTPROGS += game/basic

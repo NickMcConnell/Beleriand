@@ -32,11 +32,11 @@ struct ability *abilities;
  * ------------------------------------------------------------------------
  * Initialize abilities
  * ------------------------------------------------------------------------ */
-/* Temporary list to store prerequisite details; 99 should be enough */
+/* Temporary list to store prerequisite details; 199 should be enough */
 static struct {
 	uint8_t skill;
 	char *name;
-} prereq_list[100];
+} prereq_list[200];
 static unsigned int prereq_num = 1;
 
 static unsigned int skill_index;

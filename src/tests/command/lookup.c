@@ -27,27 +27,48 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-/* Regression test for #1330 */
 static int test_cmd_lookup_orig(void *state) {
 	require(cmd_lookup('Z', KEYMAP_MODE_ORIG) == CMD_NULL);
 	require(cmd_lookup('{', KEYMAP_MODE_ORIG) == CMD_INSCRIBE);
-	require(cmd_lookup('u', KEYMAP_MODE_ORIG) == CMD_USE_STAFF);
+	require(cmd_lookup('a', KEYMAP_MODE_ORIG) == CMD_USE_STAFF);
 	require(cmd_lookup('T', KEYMAP_MODE_ORIG) == CMD_TUNNEL);
 	require(cmd_lookup('g', KEYMAP_MODE_ORIG) == CMD_PICKUP);
-	require(cmd_lookup('G', KEYMAP_MODE_ORIG) == CMD_STUDY);
-	require(cmd_lookup('+', KEYMAP_MODE_ORIG) == CMD_ALTER);
+	require(cmd_lookup('r', KEYMAP_MODE_ORIG) == CMD_TAKEOFF);
+	require(cmd_lookup('/', KEYMAP_MODE_ORIG) == CMD_ALTER);
 	
 	ok;
 }
 
-/* Introduced after commit 8871070 added modes to cmd_lookup() calls */
 static int test_cmd_lookup_rogue(void *state) {
 	require(cmd_lookup('{', KEYMAP_MODE_ROGUE) == CMD_INSCRIBE);
-	require(cmd_lookup('Z', KEYMAP_MODE_ROGUE) == CMD_USE_STAFF);
+	require(cmd_lookup('a', KEYMAP_MODE_ROGUE) == CMD_USE_STAFF);
 	require(cmd_lookup(KTRL('T'), KEYMAP_MODE_ROGUE) == CMD_TUNNEL);
 	require(cmd_lookup('g', KEYMAP_MODE_ROGUE) == CMD_PICKUP);
-	require(cmd_lookup('G', KEYMAP_MODE_ROGUE) == CMD_STUDY);
-	require(cmd_lookup('+', KEYMAP_MODE_ROGUE) == CMD_ALTER);
+	require(cmd_lookup('r', KEYMAP_MODE_ROGUE) == CMD_TAKEOFF);
+	require(cmd_lookup('/', KEYMAP_MODE_ROGUE) == CMD_ALTER);
+	
+	ok;
+}
+
+static int test_cmd_lookup_angband(void *state) {
+	require(cmd_lookup('Z', KEYMAP_MODE_ANGBAND) == CMD_NULL);
+	require(cmd_lookup('{', KEYMAP_MODE_ANGBAND) == CMD_INSCRIBE);
+	require(cmd_lookup('u', KEYMAP_MODE_ANGBAND) == CMD_USE_STAFF);
+	require(cmd_lookup('T', KEYMAP_MODE_ANGBAND) == CMD_TUNNEL);
+	require(cmd_lookup('g', KEYMAP_MODE_ANGBAND) == CMD_PICKUP);
+	require(cmd_lookup('t', KEYMAP_MODE_ANGBAND) == CMD_TAKEOFF);
+	require(cmd_lookup('+', KEYMAP_MODE_ANGBAND) == CMD_ALTER);
+	
+	ok;
+}
+
+static int test_cmd_lookup_angrogue(void *state) {
+	require(cmd_lookup('{', KEYMAP_MODE_ANGROGUE) == CMD_INSCRIBE);
+	require(cmd_lookup('u', KEYMAP_MODE_ANGROGUE) == CMD_USE_STAFF);
+	require(cmd_lookup(KTRL('T'), KEYMAP_MODE_ANGROGUE) == CMD_TUNNEL);
+	require(cmd_lookup('g', KEYMAP_MODE_ANGROGUE) == CMD_PICKUP);
+	require(cmd_lookup('t', KEYMAP_MODE_ANGROGUE) == CMD_TAKEOFF);
+	require(cmd_lookup('+', KEYMAP_MODE_ANGROGUE) == CMD_ALTER);
 	
 	ok;
 }
@@ -56,5 +77,7 @@ const char *suite_name = "command/lookup";
 struct test tests[] = {
 	{ "cmd_lookup_orig",  test_cmd_lookup_orig },
 	{ "cmd_lookup_rogue", test_cmd_lookup_rogue },
+	{ "cmd_lookup_angband",  test_cmd_lookup_angband },
+	{ "cmd_lookup_angrogue", test_cmd_lookup_angrogue },
 	{ NULL, NULL }
 };

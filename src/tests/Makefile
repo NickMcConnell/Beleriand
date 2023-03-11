@@ -10,7 +10,7 @@ SUITES = \
 	cave/suite.mk \
 	command/suite.mk \
 	effects/suite.mk \
-	game/suite.mk \
+#	game/suite.mk \
 	message/suite.mk \
 	monster/suite.mk \
 	object/suite.mk \

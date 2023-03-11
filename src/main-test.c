@@ -95,7 +95,7 @@ static void c_player_birth(char *rest) {
 	}
 
 	for (h = houses; h; h = h->next)
-		if (streq(house, h->name))
+		if (streq(house, h->short_name))
 			break;
 
 	if (!h) {
@@ -123,6 +123,10 @@ static void c_player_race(char *rest) {
 	printf("player-race: %s\n", player->race->name);
 }
 
+static void c_player_sex(char *rest) {
+	printf("player-sex: %s\n", player->sex->name);
+}
+
 typedef struct {
 	const char *name;
 	void (*func)(char *args);
@@ -139,6 +143,7 @@ static test_cmd cmds[] = {
 	{ "player-birth", c_player_birth },
 	{ "player-race?", c_player_race },
 	{ "player-house?", c_player_house },
+	{ "player-sex?", c_player_sex },
 
 	{ NULL, NULL }
 };

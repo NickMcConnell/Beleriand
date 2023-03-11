@@ -25,7 +25,7 @@ int setup_tests(void **state) {
 	create_needed_dirs();
 #endif
 
-	if (!player_make_simple(NULL, NULL, "Tester")) {
+	if (!player_make_simple(NULL, NULL, NULL, "Tester")) {
 		cleanup_angband();
 		return 1;
 	}
@@ -62,19 +62,6 @@ static struct chunk *create_empty_cave(int height, int width) {
 	return c;
 }
 
-static void setup_player_cave(struct chunk *c, struct player *p) {
-	int i;
-
-	p->cave = cave_new(c->height, c->width);
-	p->cave->objects = mem_realloc(p->cave->objects, (c->obj_max + 1) *
-		sizeof(struct object*));
-	p->cave->obj_max = c->obj_max;
-	for (i = 0; i <= p->cave->obj_max; ++i) {
-		p->cave->objects[i] = NULL;
-	}
-	p->cave->depth = c->depth;
-}
-
 static struct object *setup_object(int tval, int sval, int num) {
 	struct object_kind *kind = lookup_kind(tval, sval);
 	struct object *obj = NULL;
@@ -83,15 +70,12 @@ static struct object *setup_object(int tval, int sval, int num) {
 		obj = object_new();
 		object_prep(obj, kind, 0, RANDOMISE);
 		obj->number = num;
-		obj->known = object_new();
-		object_set_base_known(player, obj);
-		object_touch(player, obj);
 	}
 	return obj;
 }
 
 static void generate_piles(struct chunk *c, struct player *p) {
-	const int allowed_tvals[] = { TV_BOOTS, TV_LIGHT, TV_SCROLL };
+	const int allowed_tvals[] = { TV_BOOTS, TV_LIGHT, TV_POTION };
 	struct loc grid;
 
 	for (grid.y = 1; grid.y < c->height - 1; ++grid.y) {
@@ -104,11 +88,7 @@ static void generate_piles(struct chunk *c, struct player *p) {
 				bool note = false;
 
 				if (obj && !floor_carry(c, grid, obj, &note)) {
-					if (obj->known) {
-						object_delete(c, p->cave,
-							&obj->known);
-					}
-					object_delete(c, p->cave, &obj);
+					object_delete(c, &obj);
 				}
 			}
 		}
@@ -137,16 +117,13 @@ static int test_obj_pile_simple(void *state) {
 	player->depth = 1;
 	cave = create_empty_cave(11, 15);
 	cave->depth = player->depth;
-	setup_player_cave(cave, player);
 	player_place(cave, player, loc(cave->width / 2, cave->height / 2));
 	character_dungeon = true;
 	on_new_level();
 	generate_piles(cave, player);
 	effect_simple(EF_EARTHQUAKE, source_player(), "0", 0,
-		MAX(cave->width / 2, cave->height / 2), 0, 0, 0, NULL);
+		MAX(cave->width / 2, cave->height / 2), 0, NULL);
 	wiz_light(cave, player);
-	cave_free(player->cave);
-	player->cave = NULL;
 	cave_free(cave);
 	cave = NULL;
 	ok;
@@ -157,17 +134,14 @@ static int test_obj_pile_orphan(void *state) {
 	player->depth = 1;
 	cave = create_empty_cave(11, 15);
 	cave->depth = player->depth;
-	setup_player_cave(cave, player);
 	player_place(cave, player, loc(cave->width / 2, cave->height / 2));
 	character_dungeon = true;
 	on_new_level();
 	generate_piles(cave, player);
 	orphan_piles(cave);
 	effect_simple(EF_EARTHQUAKE, source_player(), "0", 0,
-		MAX(cave->width / 2, cave->height / 2), 0, 0, 0, NULL);
+		MAX(cave->width / 2, cave->height / 2), 0, NULL);
 	wiz_light(cave, player);
-	cave_free(player->cave);
-	player->cave = NULL;
 	cave_free(cave);
 	cave = NULL;
 	ok;
