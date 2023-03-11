@@ -990,7 +990,6 @@ void id_known_specials(void)
 	}
 
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-	handle_stuff(player);
 }
 
 /**
