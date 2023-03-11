@@ -25,6 +25,8 @@
 # name : terrain name
 # graphics : symbol : color
 # mimic : feature to mimic
+# priority : display priority on mini-map
+# flags : terrain flags
 #
 # 'name' indicates the beginning of an entry. The serial number must
 #     increase for each new item.
@@ -52,12 +54,14 @@
 
 name:unknown grid
 graphics: :w
+priority:2
 
 
 # 0x01 --> open floor
 
 name:open floor
 graphics:.:W
+priority:5
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
 desc:An open floor or bare ground.  Can be walked across by anything, and can
 desc: hold traps or items.  Does not break line of sight.
@@ -66,6 +70,7 @@ desc: hold traps or items.  Does not break line of sight.
 
 name:closed door
 graphics:+:U
+priority:17
 flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
 confused-msg:bangs into a door
 desc:Doors may be locked; getting through them may not be easy.  Your
@@ -78,6 +83,7 @@ desc: valuable time by locking them.
 
 name:open door
 graphics:':U
+priority:15
 flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | CLOSABLE | EASY
 look-in-preposition:in
 desc:A door that is already open.  Player, monster, spell and missile can pass
@@ -87,6 +93,7 @@ desc: through as long as it stays open.
 
 name:broken door
 graphics:.:U
+priority:15
 flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | EASY
 look-in-preposition:in
 desc:A door so broken that it cannot be shut.
@@ -95,6 +102,7 @@ desc:A door so broken that it cannot be shut.
 
 name:up staircase
 graphics:<:W
+priority:25
 flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | UPSTAIR
 flags:EASY | TORCH
 desc:A staircase up to a shallower part of the dungeon.
@@ -103,6 +111,7 @@ desc:A staircase up to a shallower part of the dungeon.
 
 name:down staircase
 graphics:>:W
+priority:25
 flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR
 flags:EASY | TORCH
 desc:A staircase down to a deeper part of the dungeon.
@@ -111,6 +120,7 @@ desc:A staircase down to a deeper part of the dungeon.
 
 name:up shaft
 graphics:<:D
+priority:25
 flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | SHAFT | UPSTAIR
 flags:EASY | TORCH
 desc:A shaft up to a shallower part of the dungeon.
@@ -119,6 +129,7 @@ desc:A shaft up to a shallower part of the dungeon.
 
 name:down shaft
 graphics:>:D
+priority:25
 flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | SHAFT | DOWNSTAIR
 flags:EASY | TORCH
 desc:A shaft down to a deeper part of the dungeon.
@@ -127,6 +138,7 @@ desc:A shaft down to a deeper part of the dungeon.
 
 name:chasm
 graphics:%:D
+priority:20
 flags:LOS | PROJECT | PASSABLE
 desc:Empty space - only flying creatures can pass across without falling.  All 
 desc:spells and missiles can pass through.
@@ -140,6 +152,7 @@ die-msg:falling off a precipice
 name:secret door
 graphics:#:z
 mimic:granite wall
+priority:10
 info:0:3:0
 flags:ROCK | DOOR_ANY | DOOR_CLOSED | GRANITE | TORCH
 confused-msg:bashes into a wall
@@ -152,6 +165,7 @@ desc:A door that appears like a granite wall to untrained eyes.
 
 name:pile of rubble
 graphics:::s
+priority:13
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | INTERESTING | TORCH
 info:0:1:0
 confused-msg:bumps into some rocks
@@ -165,6 +179,7 @@ desc: to normal floor.
 
 name:quartz vein
 graphics:%:w
+priority:11
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ | TORCH
 info:0:2:0
 confused-msg:bashes into a wall
@@ -179,6 +194,7 @@ desc: sight.
 
 name:granite wall
 graphics:#:z
+priority:20
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
 info:0:3:0
 confused-msg:bashes into a wall
@@ -194,6 +210,7 @@ desc: sight.
 name:permanent wall
 graphics:#:z
 mimic:granite wall
+priority:20
 flags:WALL | ROCK | GRANITE | PERMANENT | NO_SCENT | NO_FLOW | TORCH
 confused-msg:bashes into a wall
 desc:You can dig through most walls but these are impenetrable.  The dungeon is
@@ -203,6 +220,7 @@ desc: surrounded by these kinds of walls and some special rooms are made of them
 
 name:forge
 graphics:0:s
+priority:20
 info:0:0:0
 flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH
 desc:A forge for smithing objects.
@@ -211,6 +229,7 @@ desc:A forge for smithing objects.
 
 name:enchanted forge
 graphics:0:Y
+priority:20
 info:3:0:0
 flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH
 desc:An enchanted forge for smithing objects.
@@ -219,6 +238,7 @@ desc:An enchanted forge for smithing objects.
 
 name:forge 'Orodruth'
 graphics:0:D
+priority:20
 info:7:0:0
 flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH
 desc:A uniquely enchanted forge for smithing objects.
@@ -227,6 +247,7 @@ desc:A uniquely enchanted forge for smithing objects.
 
 name:pit
 graphics:^:s
+priority:20
 flags:LOS | PROJECT | PASSABLE | PIT | EASY | TORCH
 info:0:0:10
 walk-msg:Are you sure you want to step in the pit? 
@@ -236,175 +257,9 @@ run-msg:A pit blocks your path.  Step into it?
 
 name:spiked pit
 graphics:^:W
+priority:20
 flags:LOS | PROJECT | PASSABLE | PIT | EASY | TORCH
 info:0:0:15
 walk-msg:Are you sure you want to step in the spiked pit? 
 run-msg:A spiked pit blocks your path.  Step into it? 
-
-
-# ## Traps - handled in trap.txt
-
-# # 0x03 --> glyph of warding
-
-# name:glyph of warding
-# graphics:;:t
-
-# # 0x10 --> visible trap -- false floor
-
-# name:false floor
-# graphics:^:U
-
-# # 0x11 --> visible trap -- open pit
-
-# name:pit
-# graphics:^:s
-
-# # 0x12 --> visible trap -- spiked pit
-
-# name:spiked pit
-# graphics:^:W
-
-# # 0x13 --> visible trap -- dart
-
-# name:dart trap
-# graphics:^:v
-
-# # 0x14 --> visible trap -- gas -- confusion
-
-# name:gas trap
-# graphics:^:t
-
-# # 0x15 --> visible trap -- gas -- memory
-
-# name:gas trap
-# graphics:^:Z
-
-# # 0x16 --> visible trap -- alarm
-
-# name:alarm trap
-# graphics:^:M
-
-# # 0x17 --> visible trap -- flash
-
-# name:flash trap
-# graphics:^:y
-
-# # 0x18 --> visible trap -- caltrops
-
-# name:caltrop field
-# graphics:^:w
-
-# # 0x19 --> visible trap -- roost
-
-# name:roost
-# graphics:^:m
-
-# # 0x1A --> visible trap - web
-
-# name:web
-# graphics:^:D
-
-# # 0x1B --> visible trap -- deadfall
-
-# name:deadfall trap
-# graphics:^:r
-
-# # 0x1C --> visible trap -- acid
-
-# name:discoloured spot
-# graphics:^:u
-
-# ## Locked doors - handled by locks
-
-# # 0x21 --> locked door (power 1)
-
-# name:locked door
-# graphics:+:U
-# mimic:door
-
-# # 0x22 --> locked door (power 2)
-
-# name:locked door
-# graphics:+:U
-# mimic:door
-
-# # 0x23 --> locked door (power 3)
-
-# name:locked door
-# graphics:+:U
-# mimic:door
-
-# # 0x24 --> locked door (power 4)
-
-# name:locked door
-# graphics:+:U
-# mimic:door
-
-# # 0x25 --> locked door (power 5)
-
-# name:locked door
-# graphics:+:U
-# mimic:door
-
-# # 0x26 --> locked door (power 6)
-
-# name:locked door
-# graphics:+:U
-# mimic:door
-
-# # 0x27 --> locked door (power 7)
-
-# name:locked door
-# graphics:+:U
-# mimic:door
-
-# ## Jammed doors - handled ??
-
-# # 0x28 --> jammed door (power 0)
-
-# name:jammed door
-# graphics:+:M
-# mimic:door
-
-# # 0x29 --> jammed door (power 1)
-
-# name:jammed door
-# graphics:+:M
-# mimic:door
-
-# # 0x2A --> jammed door (power 2)
-
-# name:jammed door
-# graphics:+:M
-# mimic:door
-
-# # 0x2B --> jammed door (power 3)
-
-# name:jammed door
-# graphics:+:M
-# mimic:door
-
-# # 0x2C --> jammed door (power 4)
-
-# name:jammed door
-# graphics:+:M
-# mimic:door
-
-# # 0x2D --> jammed door (power 5)
-
-# name:jammed door
-# graphics:+:M
-# mimic:door
-
-# # 0x2E --> jammed door (power 6)
-
-# name:jammed door
-# graphics:+:M
-# mimic:door
-
-# # 0x2F --> jammed door (power 7)
-
-# name:jammed door
-# graphics:+:M
-# mimic:door
 

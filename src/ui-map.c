@@ -829,7 +829,7 @@ void display_map(int *cy, int *cx)
 }
 
 
-/*
+/**
  * Display a "small-scale" map of the dungeon.
  *
  * Note that the "player" is always displayed on the map.
