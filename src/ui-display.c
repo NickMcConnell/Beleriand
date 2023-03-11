@@ -407,7 +407,7 @@ static int prt_health_aux(int row, int col)
 		/* Erase the health bar */
 		Term_erase(col, row, 12);
 		/* Erase the morale bar */
-		Term_erase(col, row, 13);
+		Term_erase(col, row + 1, 12);
 		return 0;
 	}
 
@@ -429,17 +429,17 @@ static int prt_health_aux(int row, int col)
 
 		/* Dump the current "health" (handle monster stunning, confusion) */
 		if (mon->m_timed[MON_TMD_CONF] && mon->m_timed[MON_TMD_STUN])
-			Term_putstr(col, row, len, attr, "cscscscs");
+			Term_putstr(col + 2, row, len, attr, "cscscscs");
 		else if (mon->m_timed[MON_TMD_CONF])
-			Term_putstr(col, row, len, attr, "cccccccc");
+			Term_putstr(col + 2, row, len, attr, "cccccccc");
 		else if (mon->m_timed[MON_TMD_STUN])
-			Term_putstr(col, row, len, attr, "ssssssss");
+			Term_putstr(col + 2, row, len, attr, "ssssssss");
 		else
-			Term_putstr(col, row, len, attr, "********");
+			Term_putstr(col + 2, row, len, attr, "********");
 	}
 
 	/* Show the alertness/morale bar */
-	Term_erase(col, row, 13);
+	Term_erase(col, row + 1, 12);
 	if (mon->alertness < ALERTNESS_UNWARY) {
 		my_strcpy(buf, "Sleeping", sizeof(buf));
 		attr = COLOUR_BLUE;
@@ -480,6 +480,7 @@ static int prt_health_aux(int row, int col)
 			}
 		}
 
+		Term_putstr(col, row + 1, 12, COLOUR_DARK, "            ");
 		Term_putstr(col + (13 - len) / 2, row + 1, MIN(len, 12), attr, buf);
 	}
 
