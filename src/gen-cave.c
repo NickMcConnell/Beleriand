@@ -292,10 +292,10 @@ static void build_chasm(struct chunk *c)
             /* Go in a random direction half the time */
             if (one_in_(2)) {
                 /* Choose the random cardinal direction */
-                grid = ddgrid_ddd[randint0(4)];
+                grid = loc_sum(grid, ddgrid_ddd[randint0(4)]);
             } else {
 				/* Go straight ahead the other half */
-				grid = ddgrid[main_dir];
+				grid = loc_sum(grid, ddgrid[main_dir]);
 			}
 
 			/* Stop near dungeon edge */
@@ -387,8 +387,10 @@ static void build_chasm(struct chunk *c)
 	/* Actually place the chasm and clear the flag */
 	for (grid.y = 0; grid.y < c->height; grid.y++) {
 		for (grid.x = 0; grid.x < c->width; grid.x++) {
-			square_set_feat(c, grid, FEAT_CHASM);
-			sqinfo_off(square(c, grid)->info, SQUARE_CHASM);
+			if (sqinfo_has(square(c, grid)->info, SQUARE_CHASM)) {
+				square_set_feat(c, grid, FEAT_CHASM);
+				sqinfo_off(square(c, grid)->info, SQUARE_CHASM);
+			}
 		}
 	}
 }
