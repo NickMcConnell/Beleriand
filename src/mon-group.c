@@ -313,8 +313,11 @@ void monster_group_new_wandering_flow(struct chunk *c, struct monster *mon,
 	struct monster_group *group = monster_group_by_index(c,
 														 mon->group_info.index);
 	struct monster *leader = cave_monster(c, group->leader);
-	struct monster_race *race = leader->race;
+	struct monster_race *race = !!leader ? leader->race : NULL;
 	struct loc grid;
+
+	/* On loading, the leader may not be loaded yet, so set this when it is */
+	if (!leader) return;
 
 	/* Territorial monsters target their creation location; same with
 	 * the tutorial */
