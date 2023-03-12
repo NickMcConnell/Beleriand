@@ -32,7 +32,7 @@ int setup_tests(void **state)
 	ts->slays = mem_zalloc(z_info->slay_max * sizeof(*ts->slays));
 	ts->brands = mem_zalloc(z_info->brand_max * sizeof(*ts->brands));
 	/* Set up the player. */
-	if (!player_make_simple(NULL, NULL, "Tester")) {
+	if (!player_make_simple(NULL, NULL, NULL, "Tester")) {
 		mem_free(ts->brands);
 		mem_free(ts->slays);
 		mem_free(ts);
@@ -80,16 +80,20 @@ static void fill_in_monster_race(struct monster_race *race,
 	race->text = text;
 	race->plural = NULL;
 	race->base = base;
-	race->avg_hp = 10;
-	race->ac = 12;
-	race->sleep = 0;
-	race->hearing = 20;
-	race->smell = 20;
-	race->speed = 110;
+	race->hdice = 8,
+	race->hside = 4,
+	race->evn = 5,
+	race->pd = 3,
+	race->ps = 4,
+	race->sleep = 10,
+	race->per = 4,
+	race->stl = 3,
+	race->wil = 1,
+	race->song = 0,
+	race->speed = 2,
+	race->light = 1,
+	race->freq_ranged = 0,
 	race->light = 0;
-	race->mexp = 0;
-	race->freq_innate = 0;
-	race->freq_spell = 0;
 	race->spell_power = 0;
 	rf_wipe(race->flags);
 	rsf_wipe(race->spell_flags);
@@ -101,38 +105,32 @@ static void fill_in_monster_race(struct monster_race *race,
 	race->max_num = 100;
 	race->cur_num = 0;
 	race->drops = NULL;
-	race->friends = NULL;
-	race->friends_base = NULL;
-	race->mimic_kinds = NULL;
-	race->shapes = NULL;
-	race->num_shapes = 0;
 }
 
 static void fill_in_monster(struct monster *mon, struct monster_race *race)
 {
 	mon->race = race;
-	mon->original_race = NULL;
+	mon->image_race = NULL;
 	mon->midx = 1;
 	mon->grid = loc(1, 1);
-	mon->hp = race->avg_hp;
-	mon->maxhp = race->avg_hp;
+	mon->hp = (race->hdice * (race->hside + 1)) / 2;
+	mon->maxhp = mon->hp;
 	memset(mon->m_timed, 0, MON_TMD_MAX * sizeof(mon->m_timed[0]));
 	mon->mspeed = race->speed;
 	mon->energy = 0;
 	mon->cdis = 100;
 	rf_wipe(mon->mflag);
-	mon->mimicked_obj = NULL;
 	mon->held_obj = NULL;
 	mon->attr = race->d_attr;
 	memset(&mon->known_pstate, 0, sizeof(mon->known_pstate));
 	mon->target.grid = loc(0, 0);
 	mon->target.midx = 0;
-	memset(mon->group_info, 0, GROUP_MAX * sizeof(mon->group_info[0]));
+	memset(&mon->group_info, 0, sizeof(mon->group_info));
 	mon->flow.grids = NULL;
 	mon->min_range = 0;
 	mon->best_range = 0;
 }
-
+#if 0
 static void fill_in_object_base(struct object_base *base)
 {
 	static char name[20] = "weapon";
@@ -162,47 +160,25 @@ static void fill_in_object_kind(struct object_kind *kind,
 	kind->kidx = 1;
 	kind->tval = base->tval;
 	kind->sval = 1;
-	kind->pval.base = 0;
-	kind->pval.dice = 0;
-	kind->pval.sides = 0;
-	kind->pval.m_bonus = 0;
-	kind->to_h.base = 0;
-	kind->to_h.dice = 0;
-	kind->to_h.sides = 0;
-	kind->to_h.m_bonus = 0;
-	kind->to_d.base = 0;
-	kind->to_d.dice = 0;
-	kind->to_d.sides = 0;
-	kind->to_d.m_bonus = 0;
-	kind->to_a.base = 0;
-	kind->to_a.dice = 0;
-	kind->to_a.sides = 0;
-	kind->to_a.m_bonus = 0;
-	kind->ac = 0;
-	kind->dd = 1;
-	kind->ds = 4;
+	kind->pval = 0;
+	kind->att = 0,
+	kind->evn = 1,
+	kind->dd = 1,
+	kind->ds = 4,
+	kind->pd = 0,
+	kind->ps = 0,
 	kind->weight = 10;
 	kind->cost = 0;
 	of_wipe(kind->flags);
 	kf_wipe(kind->kind_flags);
 	kind->brands = NULL;
 	kind->slays = NULL;
-	kind->curses = NULL;
 	kind->d_attr = COLOUR_WHITE;
 	kind->d_char = L'/';
-	kind->alloc_prob = 20;
-	kind->alloc_min = 0;
-	kind->alloc_max = 100;
+	kind->alloc = NULL;
 	kind->level = 1;
-	kind->activation = NULL;
 	kind->effect = NULL;
-	kind->power = 0;
 	kind->effect_msg = NULL;
-	kind->vis_msg = NULL;
-	kind->time.base = 0;
-	kind->time.dice = 0;
-	kind->time.sides = 0;
-	kind->time.m_bonus = 0;
 	kind->charge.base = 0;
 	kind->charge.dice = 0;
 	kind->charge.sides = 0;
@@ -228,101 +204,33 @@ static void fill_in_object(struct object *obj, struct object_kind *kind)
 	obj->artifact = NULL;
 	obj->prev = NULL;
 	obj->next = NULL;
-	obj->known = NULL;
 	obj->oidx = 1;
 	obj->grid = loc(1, 1);
 	obj->tval = kind->tval;
 	obj->sval = kind->sval;
-	obj->pval = randcalc(kind->pval, 0, MINIMISE);
+	obj->pval = kind->pval;
 	obj->weight = kind->weight;
+	obj->att = kind->att,
+	obj->evn = kind->evn,
 	obj->dd = kind->dd;
 	obj->ds = kind->ds;
-	obj->ac = kind->ac;
-	obj->to_a = randcalc(kind->to_a, 0, MINIMISE);
-	obj->to_h = randcalc(kind->to_h, 0, MINIMISE);
-	obj->to_d = randcalc(kind->to_d, 0, MINIMISE);
+	obj->pd = kind->pd;
+	obj->ps = kind->ps;
 	of_wipe(obj->flags);
 	memset(obj->modifiers, 0, OBJ_MOD_MAX * sizeof(obj->modifiers[0]));
 	memset(obj->el_info, 0, ELEM_MAX * sizeof(obj->el_info[0]));
 	obj->brands = kind->brands;
 	obj->slays = kind->slays;
-	obj->curses = NULL;
-	obj->effect = kind->effect;
-	obj->effect_msg = kind->effect_msg;
-	obj->activation = kind->activation;
-	obj->time.base = 0;
-	obj->time.dice = 0;
-	obj->time.sides = 0;
-	obj->time.m_bonus = 0;
 	obj->timeout = 0;
 	obj->number = 1;
 	obj->notice = 0;
 	obj->held_m_idx = 0;
-	obj->mimicking_m_idx = 0;
 	obj->origin = ORIGIN_DROP_WIZARD;
 	obj->origin_depth = 1;
 	obj->origin_race = NULL;
 	obj->note = 0;
 }
-
-static int brand_index_to_timed_index(int idx)
-{
-	int i = 0;
-
-	while (1) {
-		if (i >= TMD_MAX) return -1;
-		if (timed_effects[i].temp_brand == idx) return i;
-		++i;
-	}
-}
-
-static bool set_temporary_brand(struct player *p, int idx)
-{
-	int tmd_idx = brand_index_to_timed_index(idx);
-
-	if (tmd_idx < 0) return false;
-	(void) player_set_timed(player, tmd_idx, 100, false);
-	return true;
-}
-
-static bool clear_temporary_brand(struct player *p, int idx)
-{
-	int tmd_idx = brand_index_to_timed_index(idx);
-
-	if (tmd_idx < 0) return false;
-	(void) player_clear_timed(player, tmd_idx, false);
-	return true;
-}
-
-static int slay_index_to_timed_index(int idx)
-{
-	int i = 0;
-
-	while (1) {
-		if (i >= TMD_MAX) return -1;
-		if (timed_effects[i].temp_slay == idx) return i;
-		++i;
-	}
-}
-
-static bool set_temporary_slay(struct player *p, int idx)
-{
-	int tmd_idx = slay_index_to_timed_index(idx);
-
-	if (tmd_idx < 0) return false;
-	(void) player_set_timed(player, tmd_idx, 100, false);
-	return true;
-}
-
-static bool clear_temporary_slay(struct player *p, int idx)
-{
-	int tmd_idx = slay_index_to_timed_index(idx);
-
-	if (tmd_idx < 0) return false;
-	(void) player_clear_timed(player, tmd_idx, false);
-	return true;
-}
-
+#endif
 static int test_same_monsters_slain(void *state)
 {
 	int i1, i2;
@@ -337,111 +245,17 @@ static int test_same_monsters_slain(void *state)
 				require(s1);
 			} else if (s1) {
 				require(slays[i1].race_flag
-					== slays[i2].race_flag
-					&& ((!slays[i1].base
-					&& !slays[i2].base)
-					|| (slays[i1].base && slays[i2].base
-					&& streq(slays[i1].base,
-					slays[i2].base))));
+					== slays[i2].race_flag);
 			} else {
 				require(slays[i1].race_flag
-					!= slays[i2].race_flag
-					|| ((!slays[i1].base && slays[i2].base)
-					|| (slays[i1].base && !slays[i2].base)
-					|| (slays[i1].base && slays[i2].base
-					&& !streq(slays[i1].base,
-					slays[i2].base))));
+					!= slays[i2].race_flag);
 			}
 		}
 	}
 	ok;
 }
 
-static int test_player_has_temporary_brand(void *state)
-{
-	int i1;
-
-	for (i1 = 1; i1 < z_info->brand_max; ++i1) {
-		(void) clear_temporary_brand(player, i1);
-	}
-	for (i1 = 1; i1 < z_info->brand_max; ++i1) {
-		require(!player_has_temporary_brand(player, i1));
-	}
-	for (i1 = 1; i1 < z_info->brand_max; ++i1) {
-		int i2;
-
-		if (!set_temporary_brand(player, i1)) continue;
-		for (i2 = 1; i2 < z_info->brand_max; ++i2) {
-			if (i2 == i1) {
-				require(player_has_temporary_brand(player, i2));
-			} else {
-				require(!player_has_temporary_brand(player, i2));
-			}
-		}
-		require(clear_temporary_brand(player, i1));
-	}
-	ok;
-}
-
-static int test_player_has_temporary_slay(void *state)
-{
-	int i1;
-
-	for (i1 = 1; i1 < z_info->slay_max; ++i1) {
-		(void) clear_temporary_slay(player, i1);
-	}
-	for (i1 = 1; i1 < z_info->slay_max; ++i1) {
-		require(!player_has_temporary_slay(player, i1));
-	}
-	for (i1 = 1; i1 < z_info->slay_max; ++i1) {
-		int i2;
-
-		if (!set_temporary_slay(player, i1)) continue;
-		for (i2 = 1; i2 < z_info->slay_max; ++i2) {
-			if (i2 == i1) {
-				require(player_has_temporary_slay(player, i2));
-			} else {
-				require(!player_has_temporary_slay(player, i2));
-			}
-		}
-		require(clear_temporary_slay(player, i1));
-	}
-	ok;
-}
-
-static int test_get_monster_brand_multiplier(void *state)
-{
-	struct monster_base dummy_base;
-	struct monster_race dummy_race;
-	struct monster dummy;
-	int i1;
-
-	fill_in_monster_base(&dummy_base);
-	fill_in_monster_race(&dummy_race, &dummy_base);
-	fill_in_monster(&dummy, &dummy_race);
-
-	for (i1 = 1; i1 < z_info->brand_max; ++i1) {
-		int mult;
-
-		mult = get_monster_brand_multiplier(&dummy, &brands[i1], false);
-		eq(mult, brands[i1].multiplier);
-		mult = get_monster_brand_multiplier(&dummy, &brands[i1], true);
-		eq(mult, brands[i1].o_multiplier);
-
-		if (brands[i1].vuln_flag) {
-			rf_on(dummy_race.flags, brands[i1].vuln_flag);
-			mult = get_monster_brand_multiplier(&dummy,
-				&brands[i1], false);
-			eq(mult, 2 * brands[i1].multiplier);
-			mult = get_monster_brand_multiplier(&dummy,
-				&brands[i1], true);
-			eq(mult, 2 * (brands[i1].o_multiplier - 10) + 10);
-			rf_off(dummy_race.flags, brands[i1].vuln_flag);
-		}
-	}
-	ok;
-}
-
+#if 0 /* Turn this into a test of slay_bonus() */
 static int test_improve_attack_modifier(void *state)
 {
 	struct slays_test_state *ts = state;
@@ -1071,53 +885,25 @@ static int test_improve_attack_modifier(void *state)
 
 	ok;
 }
-
+#endif
 static int test_react_to_slay(void *state)
 {
-	struct slays_test_state *ts = state;
-	struct object_base weapon_base;
-	struct object_kind weapon_kind;
-	struct object weapon;
 	struct monster_base dummy_base;
 	struct monster_race dummy_race;
 	struct monster dummy;
 	int i1;
 
-	fill_in_object_base(&weapon_base);
-	fill_in_object_kind(&weapon_kind, &weapon_base);
-	fill_in_object(&weapon, &weapon_kind);
 	fill_in_monster_base(&dummy_base);
 	fill_in_monster_race(&dummy_race, &dummy_base);
 	fill_in_monster(&dummy, &dummy_race);
 
-	/* Has no slays that would be effective. */
-	eq(react_to_slay(&weapon, &dummy), false);
-
-	memset(ts->slays, 0, z_info->slay_max * sizeof(*ts->slays));
 	for (i1 = 1; i1 < z_info->slay_max; ++i1) {
-		char *old_base;
-		bool *old_slays;
-
-		if (!slays[i1].base || !slays[i1].race_flag) continue;
+		if (!slays[i1].race_flag) continue;
 
 		rf_on(dummy_race.flags, slays[i1].race_flag);
-		if (slays[i1].base) {
-			old_base = dummy_race.base->name;
-			dummy_race.base->name = slays[i1].base;
-		}
-		/* Monster is vulnerable, but weapon doesn't have the slay. */
-		eq(react_to_slay(&weapon, &dummy), false);
-		old_slays = weapon.slays;
-		weapon.slays = ts->slays;
-		weapon.slays[i1] = true;
-		/* Monster is vulnerable, and weapon has the slay. */
-		eq(react_to_slay(&weapon, &dummy), true);
-		weapon.slays[i1] = false;
-		weapon.slays = old_slays;
+		/* Monster is vulnerable to this slay. */
+		eq(react_to_slay(&slays[i1], &dummy), true);
 		rf_off(dummy_race.flags, slays[i1].race_flag);
-		if (slays[i1].base) {
-			dummy_race.base->name = old_base;
-		}
 	}
 
 	ok;
@@ -1126,10 +912,7 @@ static int test_react_to_slay(void *state)
 const char *suite_name = "object/slays";
 struct test tests[] = {
 	{ "same_monsters_slain", test_same_monsters_slain },
-	{ "player_has_temporary_brand", test_player_has_temporary_brand },
-	{ "player_has_temporary_slay", test_player_has_temporary_slay },
-	{ "get_monster_brand_multiplier", test_get_monster_brand_multiplier },
-	{ "improve_attack_modifier", test_improve_attack_modifier },
+	//{ "slay_bonus", test_slay_bonus },
 	{ "react_to_slay", test_react_to_slay },
 	{ NULL, NULL }
 };

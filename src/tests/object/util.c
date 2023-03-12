@@ -14,6 +14,7 @@ int setup_tests(void **state) {
 	player->body.slots = &test_slot_light;
 	z_info = mem_zalloc(sizeof(struct angband_constants));
 	z_info->fuel_torch = 5000;
+	z_info->default_torch = 2000;
 	z_info->fuel_lamp = 15000;
 	z_info->default_lamp = 7500;
 
@@ -28,38 +29,41 @@ int teardown_tests(void *state) {
 }
 
 /* Regression test for #1661 */
-static int test_obj_can_refill(void *state) {
-    struct object obj_torch, obj_lantern, obj_candidate;
+static int test_obj_can_refuel(void *state) {
+    struct object obj_torch, obj_lantern, obj_flask;
 
-    /* Torches cannot be refilled */
+    /* Torches can be refueled */
     object_prep(&obj_torch, &test_torch, 1, AVERAGE);
 	player->gear = &obj_torch;
     player->body.slots->obj = &obj_torch; 
-    eq(obj_can_refill(&obj_torch), false);
 
-    /* Lanterns can be refilled */    
+    /* By torches */
+    eq(obj_can_refuel(&obj_torch), true);
+
+    /* Not by flasks of oil */
+    object_prep(&obj_flask, &test_flask, 1, AVERAGE);
+    eq(obj_can_refuel(&obj_flask), false);
+
+    /* Or lanterns */    
     object_prep(&obj_lantern, &test_lantern, 1, AVERAGE);
+    eq(obj_can_refuel(&obj_lantern), false);
+
+    /* Lanterns can be refueled */    
 	player->gear = &obj_lantern;
     player->body.slots->obj = &obj_lantern; 
 
     /* Not by torches */
-    eq(obj_can_refill(&obj_torch), false);
+    eq(obj_can_refuel(&obj_torch), false);
 
-    /* Lanterns can be refilled by other lanterns */
-    eq(obj_can_refill(&obj_lantern), true);
+    /* Lanterns can be refueled by other lanterns */
+    eq(obj_can_refuel(&obj_lantern), true);
 
     /* ...but not by empty lanterns */
     obj_lantern.timeout = 0;
-    eq(obj_can_refill(&obj_lantern), false);
+    eq(obj_can_refuel(&obj_lantern), false);
 
-    /* Lanterns can be refilled by flasks of oil */
-    object_prep(&obj_candidate, &test_flask, 1, AVERAGE);
-    eq(obj_can_refill(&obj_candidate), true);
-
-    /* Lanterns cannot be refilled by charging rods of treasure detection */
-    object_prep(&obj_candidate, &test_rod_treasure_location, 1, AVERAGE);
-    obj_candidate.timeout = 50;
-    eq(obj_can_refill(&obj_candidate), false);
+    /* Lanterns can be refueled by flasks of oil */
+    eq(obj_can_refuel(&obj_flask), true);
     ok;
 }
 
@@ -110,7 +114,7 @@ static int test_basic_check_for_inscrip_with_int(void *state) {
 
 const char *suite_name = "object/util";
 struct test tests[] = {
-    { "obj_can_refill", test_obj_can_refill },
+    { "obj_can_refuel", test_obj_can_refuel },
     { "basic_check_for_inscrip_with_uint", test_basic_check_for_inscrip_with_int },
     { NULL, NULL }
 };

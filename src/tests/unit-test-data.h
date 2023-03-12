@@ -131,7 +131,7 @@ static struct object_kind TEST_DATA test_torch = {
 
 	.cost = 1,
 
-	.flags = { 64, 128, 0, 64, 0, 0 },
+	.flags = { 0, 0, 64, 0, 128, 64 },
 	.kind_flags = { 0 },
 
 	.modifiers = { 
@@ -200,7 +200,7 @@ static struct object_kind TEST_DATA test_lantern = {
 
 	.cost = 1,
 
-	.flags = { 0, 0, 0, 128, 0, 0 }, /* OF_TAKES_FUEL */
+	.flags = { 0, 0, 128, 0, 0, 0 }, /* OF_TAKES_FUEL */
 	.kind_flags = { 0 },
 
 	.modifiers = { 

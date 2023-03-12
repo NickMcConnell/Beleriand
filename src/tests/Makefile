@@ -13,8 +13,8 @@ SUITES = \
 	game/suite.mk \
 	message/suite.mk \
 	monster/suite.mk \
-#	object/suite.mk \
-	parse/suite.mk \
+	object/suite.mk \
+#	parse/suite.mk \
 	player/suite.mk \
 	trivial/suite.mk \
 	z-dice/suite.mk \

@@ -59,7 +59,7 @@ int lookup_brand(const char *code)
 bool same_monsters_slain(int slay1, int slay2)
 {
 	if (slays[slay1].race_flag != slays[slay2].race_flag) return false;
-	return false;
+	return true;
 }
 
 /**
@@ -166,7 +166,7 @@ int slay_count(const bool *slays_on)
  * \param slay is the slay we're testing for effectiveness
  * \param mon is the monster we're testing for being slain
  */
-static bool react_to_slay(struct slay *slay, const struct monster *mon)
+bool react_to_slay(struct slay *slay, const struct monster *mon)
 {
 	if (!slay->name) return false;
 	if (!mon->race) return false;

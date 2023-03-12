@@ -424,7 +424,9 @@ bool player_has_ability(struct player *p, char *name)
 
 int player_active_ability(struct player *p, char *name)
 {
-	int count = test_ability(name, p->abilities, ability_is_active);
+	int count;
+	if (!p) return 0;
+	count = test_ability(name, p->abilities, ability_is_active);
 	count += test_ability(name, p->item_abilities, ability_is_active);
 	return count;
 }
