@@ -633,7 +633,7 @@ int crit_bonus(struct player *p, int hit_result, int weight,
 			/* Can have improved criticals for melee with one handed weapons */
 			if (player_active_ability(p, "Subtlety") && !thrown &&
 				!two_handed_melee(p) &&
-				!equipped_item_by_slot_name(p, "shield")) {
+				!equipped_item_by_slot_name(p, "arm")) {
 				crit_separation -= 20;
 			}
 

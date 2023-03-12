@@ -139,7 +139,7 @@ int hand_and_a_half_bonus(struct player *p, const struct object *obj)
 {
 	if (p && obj && obj->kind && of_has(obj->kind->flags, OF_HAND_AND_A_HALF) &&
 		(equipped_item_by_slot_name(p, "weapon") == obj) &&
-	    (equipped_item_by_slot_name(p, "shield") == NULL)) {
+	    (equipped_item_by_slot_name(p, "arm") == NULL)) {
 		return 2;
 	}
 	return 0;

@@ -430,7 +430,7 @@ void py_attack_real(struct player *p, struct loc grid, int attack_type)
 			attack_mod += p->state.offhand_mel_mod;
 			mdd = p->state.mdd2;
 			mds = p->state.mds2;
-			obj = equipped_item_by_slot_name(p, "shield");
+			obj = equipped_item_by_slot_name(p, "arm");
 			weight = obj->weight;
 		}
 
