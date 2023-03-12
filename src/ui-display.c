@@ -1517,14 +1517,12 @@ static void display_hit(game_event_type type, game_event_data *data, void *user)
 	}
 
 	Term_fresh();
-	if (player->upkeep->redraw) redraw_stuff(player);
-
 	Term_xtra(TERM_XTRA_DELAY, msec);
+
 	event_signal_point(EVENT_MAP, x, y);
 	if (dam >= 10) {
 		event_signal_point(EVENT_MAP, x - 1, y);
 	}
-
 	Term_fresh();
 	if (player->upkeep->redraw) redraw_stuff(player);
 }
