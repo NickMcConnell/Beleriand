@@ -1433,12 +1433,12 @@ static void do_cmd_alter_aux(int dir)
 			square_mark(cave, grid);
 			square_light_spot(cave, grid);
 		}
+	} else if (square_iscloseddoor(cave, grid)) {
+		/* Open closed doors */
+		more = do_cmd_open_aux(grid);
 	} else if (square_iswall(cave, grid)) {
 		/* Tunnel through walls and rubble */
 		more = do_cmd_tunnel_aux(grid);
-	} else if (square_iscloseddoor(cave, grid)) {
-		/* Bash closed doors */
-		more = do_cmd_bash_aux(grid);
 	} else if (square_isdisarmabletrap(cave, grid)) {
 		/* Disarm traps */
 		more = do_cmd_disarm_aux(grid);
