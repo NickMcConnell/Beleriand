@@ -36,7 +36,7 @@ struct ability *abilities;
 static struct {
 	uint8_t skill;
 	char *name;
-} prereq_list[200];
+} prereq_list[100];
 static unsigned int prereq_num = 1;
 
 static unsigned int skill_index;
@@ -165,6 +165,7 @@ static enum parser_error parse_ability_desc(struct parser *p) {
 static struct parser *init_parse_ability(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
+	prereq_num = 1;
 	parser_reg(p, "skill str name", parse_ability_skill);
 	parser_reg(p, "name str name", parse_ability_name);
 	parser_reg(p, "level int level", parse_ability_level);

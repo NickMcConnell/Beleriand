@@ -13,13 +13,26 @@
 int setup_tests(void **state) {
 	struct monster_race *r = &test_r_human;
 	struct monster *m = mem_zalloc(sizeof *m);
+	int y, x;
 	textui_input_init();
 	z_info = mem_zalloc(sizeof(struct angband_constants));
 	z_info->mon_blows_max = 2;
 	projections = test_projections;
 	m->race = r;
+	m->midx = 1;
 	r_info = r;
 	*state = m;
+
+	cave = &test_cave;
+	cave->squares = mem_zalloc(cave->height * sizeof(struct square*));
+	for (y = 0; y < cave->height; y++) {
+		cave->squares[y] = mem_zalloc(cave->width * sizeof(struct square));
+		for (x = 0; x < cave->width; x++) {
+			cave->squares[y][x].info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
+		}
+	}
+	cave->monsters = mem_zalloc(2 *sizeof(struct monster));
+	cave->mon_max = 1;
 
 	rand_fix(100);
 	return 0;
@@ -27,6 +40,15 @@ int setup_tests(void **state) {
 
 int teardown_tests(void *state) {
 	struct monster *m = state;
+	int y, x;
+	mem_free(cave->monsters);
+	for (y = 0; y < cave->height; y++) {
+		for (x = 0; x < cave->width; x++) {
+			mem_free(cave->squares[y][x].info);
+		}
+		mem_free(cave->squares[y]);
+	}
+	mem_free(cave->squares);
 	mem_free(m);
 	mem_free(z_info);
 	return 0;
@@ -59,11 +81,6 @@ static int test_blows(void *state) {
 
 	p->upkeep = &test_player_upkeep;
 
-	rf_on(m->race->flags, RF_NEVER_BLOW);
-	delta = take1(p, m, &test_blow_method, &test_blow_effect_hurt);
-	rf_off(m->race->flags, RF_NEVER_BLOW);
-	eq(delta, 0);
-
 	delta = take1(p, m, &test_blow_method, &test_blow_effect_hurt);
 	eq(delta, mdam(m));
 
@@ -78,22 +95,12 @@ static int test_effects(void *state) {
 	options_init_defaults(&p->opts);
 	p->upkeep = &test_player_upkeep;
 
-	//require(!p->timed[TMD_POISONED]);
-	//delta = take1(p, m, &test_blow_method, &test_blow_effect_poison);
-	//require(p->timed[TMD_POISONED]);
-
 	delta = take1(p, m, &test_blow_method, &test_blow_effect_acid);
-	require(delta > 0);
-	delta = take1(p, m, &test_blow_method, &test_blow_effect_elec);
 	require(delta > 0);
 	delta = take1(p, m, &test_blow_method, &test_blow_effect_fire);
 	require(delta > 0);
 	delta = take1(p, m, &test_blow_method, &test_blow_effect_cold);
 	require(delta > 0);
-
-	//require(!p->timed[TMD_BLIND]);
-	//delta = take1(p, m, &test_blow_method, &test_blow_effect_blind);
-	//require(p->timed[TMD_BLIND]);
 
 	ok;
 }

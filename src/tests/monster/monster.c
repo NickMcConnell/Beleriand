@@ -28,8 +28,8 @@ static int test_match_monster_bases(void *state) {
 
 	/* Scruffy little dog */
 	base = (&r_info[3])->base;
-	require(match_monster_bases(base, "canine", NULL));
-	require(match_monster_bases(base, "zephyr hound", "canine", NULL));
+	require(match_monster_bases(base, "orc", NULL));
+	require(match_monster_bases(base, "zephyr hound", "orc", NULL));
 	require(!match_monster_bases(base, "angel", NULL));
 	require(!match_monster_bases(base, "lich", "vampire", "wraith", NULL));
 

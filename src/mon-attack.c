@@ -462,6 +462,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				obvious,
 				do_stun,
 				do_cut,
+				dam,
 				net_dam,
 			};
 
@@ -593,22 +594,24 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		}
 	}
 
-	/* Analyze "visible" monsters only */
-	if (visible) {
-		/* Count "obvious" attacks (and ones that cause damage) */
-		if (obvious || net_dam || (lore->blows[blow].times_seen > 10)) {
-			/* Count attacks of this type */
-			if (lore->blows[blow].times_seen < UCHAR_MAX)
-				lore->blows[blow].times_seen++;
+	if (lore) {
+		/* Analyze "visible" monsters only */
+		if (visible) {
+			/* Count "obvious" attacks (and ones that cause damage) */
+			if (obvious || net_dam || (lore->blows[blow].times_seen > 10)) {
+				/* Count attacks of this type */
+				if (lore->blows[blow].times_seen < UCHAR_MAX)
+					lore->blows[blow].times_seen++;
+			}
 		}
+
+		/* Always notice cause of death */
+		if (p->is_dead && (lore->deaths < SHRT_MAX))
+			lore->deaths++;
+
+		/* Learn lore */
+		lore_update(mon->race, lore);
 	}
-
-	/* Always notice cause of death */
-	if (p->is_dead && (lore->deaths < SHRT_MAX))
-		lore->deaths++;
-
-	/* Learn lore */
-	lore_update(mon->race, lore);
 
 	/* Assume we attacked */
 	return true;

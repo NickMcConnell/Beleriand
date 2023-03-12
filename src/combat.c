@@ -217,7 +217,7 @@ int hit_roll(int att, int evn, struct source attacker, struct source defender,
 	evasion_score_alt = randint1(20) + evn;
 
 	/* Take the worst of two rolls for cursed players */
-	if (player->cursed) {
+	if (player && player->cursed) {
 		if (attacker.what == SRC_PLAYER) {
 			attack_score = MIN(attack_score, attack_score_alt);
 		} else {
@@ -402,7 +402,7 @@ int total_monster_attack(struct player *p, struct monster *mon, int base)
 	att -= light_penalty(mon);
 
 	/* Reward surrounding the player */
-	att += overwhelming_att_mod(mon);
+	att += overwhelming_att_mod(p, mon);
 
 	/* Penalise distance */
 	att -= distance(p->grid, mon->grid) / 5;
@@ -500,17 +500,17 @@ int stealth_melee_bonus(const struct monster *mon)
  *
  * We should lessen this with the crowd fighting ability
  */
-int overwhelming_att_mod(struct monster *mon)
+int overwhelming_att_mod(struct player *p, struct monster *mon)
 {
 	int mod = 0;
     int dir;
 	int dy, dx;
-	int py = player->grid.y;
-	int px = player->grid.x;
+	int py = p->grid.y;
+	int px = p->grid.x;
 	
     /* Determine the main direction from the player to the monster */
-    dir = rough_direction(player->grid, mon->grid);
-    
+    dir = rough_direction(p->grid, mon->grid);
+
     /* Extract the deltas from the direction */
     dy = ddy[dir];
     dx = ddx[dir];
@@ -546,7 +546,7 @@ int overwhelming_att_mod(struct monster *mon)
 	}
 	
 	/* Adjust for crowd fighting ability */
-	if (player_active_ability(player, "Crowd Fighting")) {
+	if (player_active_ability(p, "Crowd Fighting")) {
 		mod /= 2;
 	}
 	

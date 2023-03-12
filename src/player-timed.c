@@ -178,7 +178,7 @@ static enum parser_error parse_player_timed_change_decrease(struct parser *p)
 	assert(t);
 
 	t->decrease.max = parser_getint(p, "max");
-	t->decrease.msg = string_append(t->decrease.msg, parser_getsym(p, "msg"));
+	t->decrease.msg = string_make(parser_getsym(p, "msg"));
 	return PARSE_ERROR_NONE;
 }
 

@@ -453,7 +453,7 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 		.method = &test_blow_method,
 		.effect = &test_blow_effect_hurt,
 		.dice = {
-			.base = 0,
+			.base = 5,
 			.dice = 3,
 			.sides = 1,
 			.m_bonus = 0,
@@ -680,8 +680,8 @@ static struct chunk TEST_DATA test_cave = {
 	.turn = 1,
 	.depth = 1,
 
-	.height = 2,
-	.width = 2,
+	.height = 5,
+	.width = 5,
 
 	.feat_count = NULL,
 

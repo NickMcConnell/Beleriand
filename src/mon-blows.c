@@ -283,7 +283,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 	}
 
 	take_hit(context->p, context->net_dam, context->ddesc);
-	inven_damage(player, type, MIN((context->net_dam / 10) + 1, 3), res);
+	inven_damage(context->p, type, MIN((context->net_dam / 10) + 1, 3), res);
 	ident_element(context->p, type);
 }
 

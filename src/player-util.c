@@ -1012,7 +1012,7 @@ int player_bane_bonus(struct player *p, struct monster *mon)
 	if (p->timed[TMD_ENTRANCED]) return 0;
 
 	/* Knocked out players don't get the bonus */
-	if (player_timed_grade_eq(player, TMD_STUN, "Knocked Out")) return 0;
+	if (player_timed_grade_eq(p, TMD_STUN, "Knocked Out")) return 0;
 
 	/* Calculate the bonus */
 	if (rf_has(mon->race->flags, bane_flag[p->bane_type])) {
