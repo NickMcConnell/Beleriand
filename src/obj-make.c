@@ -20,6 +20,7 @@
 #include "alloc.h"
 #include "cave.h"
 #include "effects.h"
+#include "game-world.h"
 #include "init.h"
 #include "obj-chest.h"
 #include "obj-gear.h"
@@ -979,7 +980,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 	/* Default fuel, light */
 	if (tval_is_light(obj)) {
 		if (of_has(obj->flags, OF_BURNS_OUT)) {
-			if (one_in_(3)) {
+			if (one_in_(3) && character_generated) {
 				obj->timeout = rand_range(500, z_info->default_torch);
 			} else {
 				obj->timeout = z_info->default_torch;
