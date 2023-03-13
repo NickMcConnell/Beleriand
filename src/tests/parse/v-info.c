@@ -8,6 +8,7 @@
 
 
 int setup_tests(void **state) {
+	z_info = mem_zalloc(sizeof(struct angband_constants));
 	*state = init_parse_vault();
 	return !*state;
 }
@@ -18,6 +19,7 @@ int teardown_tests(void *state) {
 	string_free(v->text);
 	string_free(v->typ);
 	mem_free(v);
+	mem_free(z_info);
 	parser_destroy(state);
 	return 0;
 }
@@ -44,58 +46,37 @@ static int test_typ0(void *state) {
 	ok;
 }
 
-static int test_rat0(void *state) {
-	enum parser_error r = parser_parse(state, "rating:5");
+static int test_depth0(void *state) {
+	enum parser_error r = parser_parse(state, "depth:15");
 	struct vault *v;
 
 	eq(r, PARSE_ERROR_NONE);
 	v = parser_priv(state);
-	eq(v->rat, 5);
+	eq(v->depth, 15);
 	require(v);
 	ok;
 }
 
-static int test_hgt0(void *state) {
-	enum parser_error r = parser_parse(state, "rows:12");
+static int test_rarity0(void *state) {
+	enum parser_error r = parser_parse(state, "rarity:25");
 	struct vault *v;
 
 	eq(r, PARSE_ERROR_NONE);
 	v = parser_priv(state);
-	eq(v->hgt, 12);
+	eq(v->rarity, 25);
 	require(v);
 	ok;
 }
 
-static int test_wid0(void *state) {
-	enum parser_error r = parser_parse(state, "columns:6");
+static int test_flags0(void *state) {
+	enum parser_error r = parser_parse(state, "flags:NO_ROTATION | LIGHT");
 	struct vault *v;
 
 	eq(r, PARSE_ERROR_NONE);
 	v = parser_priv(state);
-	eq(v->wid, 6);
+	eq(v->rarity, 25);
 	require(v);
-	ok;
-}
-
-static int test_min_lev0(void *state) {
-	enum parser_error r = parser_parse(state, "min-depth:15");
-	struct vault *v;
-
-	eq(r, PARSE_ERROR_NONE);
-	v = parser_priv(state);
-	eq(v->min_lev, 15);
-	require(v);
-	ok;
-}
-
-static int test_max_lev0(void *state) {
-	enum parser_error r = parser_parse(state, "max-depth:25");
-	struct vault *v;
-
-	eq(r, PARSE_ERROR_NONE);
-	v = parser_priv(state);
-	eq(v->max_lev, 25);
-	require(v);
+	require(v->flags);
 	ok;
 }
 
@@ -116,11 +97,9 @@ const char *suite_name = "parse/v-info";
 struct test tests[] = {
 	{ "name0", test_name0 },
 	{ "typ0", test_typ0 },
-	{ "rat0", test_rat0 },
-	{ "hgt0", test_hgt0 },
-	{ "wid0", test_wid0 },
-	{ "min_lev0", test_min_lev0 },
-	{ "max_lev0", test_max_lev0 },
+	{ "depth0", test_depth0 },
+	{ "rarity0", test_rarity0 },
+	{ "flags0", test_flags0 },
 	{ "d0", test_d0 },
 	{ NULL, NULL }
 };

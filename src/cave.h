@@ -139,7 +139,6 @@ struct feature {
 	char *confused_msg; /**< Message on confused monster move into feature */
 	char *look_prefix; /**< Prefix for name in look result */
 	char *look_in_preposition; /**< Preposition in look result when on the terrain */
-	int resist_flag;/**< Monster resist flag for entering feature */
 };
 
 extern struct feature *f_info;

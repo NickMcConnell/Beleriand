@@ -137,57 +137,82 @@ static int test_speed0(void *state) {
 }
 
 static int test_hp0(void *state) {
-	enum parser_error r = parser_parse(state, "hit-points:500");
+	enum parser_error r = parser_parse(state, "health:5d4");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->avg_hp, 500);
+	eq(mr->hdice, 5);
+	eq(mr->hside, 4);
 	ok;
 }
 
-static int test_hearing0(void *state) {
-	enum parser_error r = parser_parse(state, "hearing:80");
+static int test_percept0(void *state) {
+	enum parser_error r = parser_parse(state, "percept:8");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->hearing, 80);
+	eq(mr->per, 8);
 	ok;
 }
 
-static int test_smell0(void *state) {
-	enum parser_error r = parser_parse(state, "smell:30");
+static int test_stealth0(void *state) {
+	enum parser_error r = parser_parse(state, "stealth:3");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->smell, 30);
+	eq(mr->stl, 3);
 	ok;
 }
 
-static int test_ac0(void *state) {
-	enum parser_error r = parser_parse(state, "armor-class:22");
+static int test_will0(void *state) {
+	enum parser_error r = parser_parse(state, "will:2");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->ac, 22);
+	eq(mr->wil, 2);
+	ok;
+}
+
+static int test_prot0(void *state) {
+	enum parser_error r = parser_parse(state, "prot:2:1d4");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	eq(mr->evn, 2);
+	eq(mr->pd, 1);
+	eq(mr->ps, 4);
 	ok;
 }
 
 static int test_sleep0(void *state) {
-	enum parser_error r = parser_parse(state, "sleepiness:3");
+	enum parser_error r = parser_parse(state, "sleep:3");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
 	eq(mr->sleep, 3);
+	ok;
+}
+
+static int test_song0(void *state) {
+	enum parser_error r = parser_parse(state, "song:15");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	eq(mr->song, 15);
 	ok;
 }
 
@@ -213,19 +238,8 @@ static int test_rarity0(void *state) {
 	ok;
 }
 
-static int test_mexp0(void *state) {
-	enum parser_error r = parser_parse(state, "experience:4");
-	struct monster_race *mr;
-
-	eq(r, PARSE_ERROR_NONE);
-	mr = parser_priv(state);
-	require(mr);
-	eq(mr->mexp, 4);
-	ok;
-}
-
 static int test_blow0(void *state) {
-	enum parser_error r = parser_parse(state, "blow:CLAW:FIRE:9d12");
+	enum parser_error r = parser_parse(state, "blow:CLAW:FIRE:5:9d12");
 	struct monster_race *mr;
 	struct monster_blow *mb;
 
@@ -239,13 +253,14 @@ static int test_blow0(void *state) {
 	}
 	require(mb->method && streq(mb->method->name, "CLAW"));
 	require(mb->effect && streq(mb->effect->name, "FIRE"));
+	eq(mb->dice.base, 5);
 	eq(mb->dice.dice, 9);
 	eq(mb->dice.sides, 12);
 	ok;
 }
 
 static int test_blow1(void *state) {
-	enum parser_error r = parser_parse(state, "blow:BITE:FIRE:6d8:0");
+	enum parser_error r = parser_parse(state, "blow:BITE:FIRE:1:6d8");
 	struct monster_race *mr;
 	struct monster_blow *mb;
 
@@ -259,6 +274,7 @@ static int test_blow1(void *state) {
 	}
 	require(mb->method && streq(mb->method->name, "BITE"));
 	require(mb->effect && streq(mb->effect->name, "FIRE"));
+	eq(mb->dice.base, 1);
 	eq(mb->dice.dice, 6);
 	eq(mb->dice.sides, 8);
 	ok;
@@ -288,30 +304,30 @@ static int test_desc0(void *state) {
 	ok;
 }
 
-static int test_innate_freq0(void *state) {
-	enum parser_error r = parser_parse(state, "innate-freq:10");
+static int test_ranged_freq0(void *state) {
+	enum parser_error r = parser_parse(state, "ranged-freq:10");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->freq_innate, 10);
+	eq(mr->freq_ranged, 10);
 	ok;
 }
 
-static int test_spell_freq0(void *state) {
-	enum parser_error r = parser_parse(state, "spell-freq:4");
+static int test_spell_power0(void *state) {
+	enum parser_error r = parser_parse(state, "spell-power:4");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->freq_spell, 25);
+	eq(mr->spell_power, 4);
 	ok;
 }
 
 static int test_spells0(void *state) {
-	enum parser_error r = parser_parse(state, "spells:BR_DARK | S_HOUND");
+	enum parser_error r = parser_parse(state, "spells:BR_DARK | SNG_BIND");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -323,39 +339,26 @@ static int test_spells0(void *state) {
 
 static int test_messagevis0(void *state) {
 	enum parser_error r = parser_parse(state,
-		"message-vis:TRAPS:{name} grins mischieviously.");
+		"message-vis:CONF:{name} grins mischieviously.");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	require(has_alternate_message(mr, RSF_TRAPS, MON_ALTMSG_SEEN,
+	require(has_alternate_message(mr, RSF_CONF, MON_ALTMSG_SEEN,
 		"{name} grins mischieviously."));
 	ok;
 }
 
 static int test_messageinvis0(void *state) {
 	enum parser_error r = parser_parse(state,
-		"message-invis:BLINK");
+		"message-invis:ARROW1");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	require(has_alternate_message(mr, RSF_BLINK, MON_ALTMSG_UNSEEN, ""));
-	ok;
-}
-
-static int test_messagemiss0(void *state) {
-	enum parser_error r = parser_parse(state,
-		"message-miss:BOULDER:{name} throws a boulder and misses.");
-	struct monster_race *mr;
-
-	eq(r, PARSE_ERROR_NONE);
-	mr = parser_priv(state);
-	require(mr);
-	require(has_alternate_message(mr, RSF_BOULDER, MON_ALTMSG_MISS,
-		"{name} throws a boulder and misses."));
+	require(has_alternate_message(mr, RSF_ARROW1, MON_ALTMSG_UNSEEN, ""));
 	ok;
 }
 
@@ -366,22 +369,22 @@ struct test tests[] = {
 	{ "base0", test_base0 },
 	{ "speed0", test_speed0 },
 	{ "hp0", test_hp0 },
-	{ "hearing0", test_hearing0 },
-	{ "smell0", test_smell0 },
-	{ "ac0", test_ac0 },
+	{ "percept0", test_percept0 },
+	{ "stealth0", test_stealth0 },
+	{ "will0", test_will0 },
+	{ "prot0", test_prot0 },
 	{ "sleep0", test_sleep0 },
+	{ "song0", test_song0 },
 	{ "depth0", test_depth0 },
 	{ "rarity0", test_rarity0 },
-	{ "mexp0", test_mexp0 },
 	{ "blow0", test_blow0 },
 	{ "blow1", test_blow1 },
 	{ "flags0", test_flags0 },
 	{ "desc0", test_desc0 },
-	{ "innate-freq0", test_innate_freq0 },
-	{ "spell-freq0", test_spell_freq0 },
+	{ "ranged-freq0", test_ranged_freq0 },
+	{ "spell-power0", test_spell_power0 },
 	{ "spells0", test_spells0 },
 	{ "message-vis0", test_messagevis0 },
 	{ "message-invis0", test_messageinvis0 },
-	{ "message-miss0", test_messagemiss0 },
 	{ NULL, NULL }
 };

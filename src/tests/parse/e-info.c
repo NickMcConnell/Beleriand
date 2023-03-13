@@ -21,12 +21,6 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-static int test_order(void *state) {
-	enum parser_error r = parser_parse(state, "info:4");
-	eq(r, PARSE_ERROR_MISSING_FIELD);
-	ok;
-}
-
 static int test_name0(void *state) {
 	enum parser_error r = parser_parse(state, "name:of Resist Lightning");
 	struct ego_item *e;
@@ -38,44 +32,69 @@ static int test_name0(void *state) {
 	ok;
 }
 
-static int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:6:8");
+static int test_attack0(void *state) {
+	enum parser_error r = parser_parse(state, "max-attack:6");
 	struct ego_item *e;
 
 	eq(r, PARSE_ERROR_NONE);
 	e = parser_priv(state);
 	require(e);
-	eq(e->cost, 6);
-	eq(e->rating, 8);
+	eq(e->att, 6);
 	ok;
 }
 
-static int test_combat0(void *state) {
-	enum parser_error r = parser_parse(state, "combat:1d2:3d4:5d6");
+static int test_dam_dice0(void *state) {
+	enum parser_error r = parser_parse(state, "dam-dice:0");
 	struct ego_item *e;
 
 	eq(r, PARSE_ERROR_NONE);
 	e = parser_priv(state);
 	require(e);
-	eq(e->to_h.dice, 1);
-	eq(e->to_h.sides, 2);
-	eq(e->to_d.dice, 3);
-	eq(e->to_d.sides, 4);
-	eq(e->to_a.dice, 5);
-	eq(e->to_a.sides, 6);
+	eq(e->dd, 0);
 	ok;
 }
 
-static int test_min0(void *state) {
-	enum parser_error r = parser_parse(state, "min-combat:10:13:4");
+static int test_dam_sides0(void *state) {
+	enum parser_error r = parser_parse(state, "dam-sides:0");
 	struct ego_item *e;
 
 	eq(r, PARSE_ERROR_NONE);
 	e = parser_priv(state);
 	require(e);
-	eq(e->min_to_h, 10);
-	eq(e->min_to_d, 13);
-	eq(e->min_to_a, 4);
+	eq(e->ds, 0);
+	ok;
+}
+
+static int test_evasion0(void *state) {
+	enum parser_error r = parser_parse(state, "max-evasion:3");
+	struct ego_item *e;
+
+	eq(r, PARSE_ERROR_NONE);
+	e = parser_priv(state);
+	require(e);
+	eq(e->evn, 3);
+	ok;
+}
+
+static int test_prot_dice0(void *state) {
+	enum parser_error r = parser_parse(state, "prot-dice:1");
+	struct ego_item *e;
+
+	eq(r, PARSE_ERROR_NONE);
+	e = parser_priv(state);
+	require(e);
+	eq(e->pd, 1);
+	ok;
+}
+
+static int test_prot_sides0(void *state) {
+	enum parser_error r = parser_parse(state, "prot-sides:4");
+	struct ego_item *e;
+
+	eq(r, PARSE_ERROR_NONE);
+	e = parser_priv(state);
+	require(e);
+	eq(e->ps, 4);
 	ok;
 }
 
@@ -90,27 +109,15 @@ static int test_flags0(void *state) {
 	ok;
 }
 
-static int test_desc0(void *state) {
-	enum parser_error r = parser_parse(state, "desc:foo");
-	struct ego_item *e;
-	eq(r, PARSE_ERROR_NONE);
-	r = parser_parse(state, "desc: bar");
-	eq(r, PARSE_ERROR_NONE);
-
-	e = parser_priv(state);
-	require(e);
-	require(streq(e->text, "foo bar"));
-	ok;
-}
-
 const char *suite_name = "parse/e-info";
 struct test tests[] = {
-	{ "order", test_order },
 	{ "name0", test_name0 },
-	{ "info0", test_info0 },
-	{ "combat0", test_combat0 },
-	{ "min_combat0", test_min0 },
+	{ "attack0", test_attack0 },
+	{ "dam_dice0", test_dam_dice0 },
+	{ "dam_sides0", test_dam_sides0 },
+	{ "evasion0", test_evasion0 },
+	{ "prot_dice0", test_prot_dice0 },
+	{ "prot_sides0", test_prot_sides0 },
 	{ "flags0", test_flags0 },
-	{ "desc0", test_desc0 },
 	{ NULL, NULL }
 };

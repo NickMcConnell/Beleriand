@@ -799,8 +799,8 @@ bool square_changeable(struct chunk *c, struct loc grid)
 
 	/* Check objects */
 	for (obj = square_object(c, grid); obj; obj = obj->next) {
-		/* Forbid artifact grids */
-		if (obj->artifact) return false;
+		/* Forbid grids with indestructible objects */
+		if (of_has(obj->flags, OF_INDESTRUCTIBLE)) return false;
 	}
 
 	/* Accept */

@@ -81,14 +81,15 @@ static int test_flags0(void *state) {
 }
 
 static int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:9:2");
+	enum parser_error r = parser_parse(state, "info:9:2:0");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
-	eq(f->shopnum, 9);
+	eq(f->forge_bonus, 9);
 	eq(f->dig, 2);
+	eq(f->pit_difficulty, 0);
 	ok;
 }
 
@@ -136,14 +137,47 @@ static int test_die_msg0(void *state) {
 	ok;
 }
 
-static int test_resist_flag0(void *state) {
-	enum parser_error r = parser_parse(state, "resist-flag:IM_POIS");
+static int test_dig_msg0(void *state) {
+	enum parser_error r = parser_parse(state, "dig-msg:urgh");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
-	require(f->resist_flag);
+	require(streq(f->dig_msg, "urgh"));
+	ok;
+}
+
+static int test_fail_msg0(void *state) {
+	enum parser_error r = parser_parse(state, "fail-msg:D'oh");
+	struct feature *f;
+
+	eq(r, PARSE_ERROR_NONE);
+	f = parser_priv(state);
+	require(f);
+	require(streq(f->fail_msg, "D'oh"));
+	ok;
+}
+
+static int test_str_msg0(void *state) {
+	enum parser_error r = parser_parse(state, "str-msg:hnnnh");
+	struct feature *f;
+
+	eq(r, PARSE_ERROR_NONE);
+	f = parser_priv(state);
+	require(f);
+	require(streq(f->str_msg, "hnnnh"));
+	ok;
+}
+
+static int test_confused_msg0(void *state) {
+	enum parser_error r = parser_parse(state, "confused-msg:huh?");
+	struct feature *f;
+
+	eq(r, PARSE_ERROR_NONE);
+	f = parser_priv(state);
+	require(f);
+	require(streq(f->confused_msg, "huh?"));
 	ok;
 }
 
@@ -159,6 +193,9 @@ struct test tests[] = {
 	{ "run_msg0", test_run_msg0 },
 	{ "hurt_msg0", test_hurt_msg0 },
 	{ "die_msg0", test_die_msg0 },
-	{ "resist_flag0", test_resist_flag0 },
+	{ "dig_msg0", test_dig_msg0 },
+	{ "fail_msg0", test_fail_msg0 },
+	{ "str_msg0", test_str_msg0 },
+	{ "confused_msg0", test_confused_msg0 },
 	{ NULL, NULL }
 };

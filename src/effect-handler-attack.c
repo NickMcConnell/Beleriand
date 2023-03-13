@@ -480,6 +480,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 				if (num > 0) {
 					monster_swap(pgrid, safe);
 				} else {
+					/* Remember to make the player fall into the pit later */
 					fall_in = true;
 				}
 			}

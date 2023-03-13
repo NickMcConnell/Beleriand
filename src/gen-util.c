@@ -643,11 +643,12 @@ bool new_player_spot(struct chunk *c, struct player *p)
 	}
 
 	/* Destroy area if falling due to blasting through the floor */
-    if (player->upkeep->create_stair == FEAT_RUBBLE) {
+    if (p->upkeep->create_stair == FEAT_RUBBLE) {
 		effect_simple(EF_EARTHQUAKE, source_grid(grid), "0", 0, 5, 0, NULL);
 	}
 
-	if (p->upkeep->create_stair) {
+	if (p->upkeep->create_stair && square_changeable(c, grid)) {
+		object_pile_free(c, square_object(c, grid));
 		square_set_feat(c, grid, p->upkeep->create_stair);
 	}
 	player_place(c, p, grid);
