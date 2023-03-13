@@ -774,7 +774,7 @@ void inven_wield(struct object *obj, int slot)
 
 	/* Deal with wielding of shield or second weapon when already wielding a
 	 * hand and a half weapon */
-	if (slot_type_is(player, slot, EQUIP_SHIELD) &&
+	if (weapon && slot_type_is(player, slot, EQUIP_SHIELD) &&
 		of_has(weapon->flags, OF_HAND_AND_A_HALF) && (!old)) {
 		less_effective = true;
 	}

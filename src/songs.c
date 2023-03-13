@@ -232,6 +232,8 @@ int song_bonus(struct player *p, int pskill, struct song *song)
 	int skill = MAX(pskill, 0);
 	int bonus;
 
+	if (!song) return 0;
+
 	/* Adjust for minor theme and which song */
 	if (p->song[SONG_MAIN] != song) {
 		skill /= 2;

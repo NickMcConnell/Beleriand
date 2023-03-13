@@ -9,7 +9,6 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
-#include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
@@ -18,23 +17,6 @@
 #include "obj-util.h"
 #include "player-birth.h"
 #include "z-quark.h"
-
-static bool find_empty_spot(struct chunk *c, struct player *p)
-{
-	int ntry = 0;
-
-	while (ntry < 100) {
-		if (square_isobjectholding(c, p->grid) &&
-				square_object(c, p->grid) == NULL) {
-			return true;
-		}
-
-		effect_simple(EF_TELEPORT, source_player(),
-			"10", 0, 0, 0, 0, 0, NULL);
-		++ntry;
-	}
-	return false;
-}
 
 static bool empty_gear(struct player *p) {
 	struct object *curr = p->gear;
@@ -73,9 +55,6 @@ static bool empty_gear(struct player *p) {
 		none_left = false;
 		curr = gear_object_for_use(p, curr, curr->number, false,
 			&none_left);
-		if (curr->known) {
-			object_free(curr->known);
-		}
 		object_free(curr);
 		curr = next;
 		if (!none_left) {
@@ -100,9 +79,6 @@ static bool empty_floor(struct chunk *c, struct player *p) {
 		none_left = false;
 		obj = floor_object_for_use(p, obj, obj->number, false,
 			&none_left);
-		if (obj->known) {
-			object_free(obj->known);
-		}
 		object_free(obj);
 		if (!none_left) {
 			return false;
@@ -118,9 +94,7 @@ static struct object *setup_object(int tval, int sval, int num) {
 		obj = object_new();
 		object_prep(obj, kind, 0, RANDOMISE);
 		obj->number = num;
-		obj->known = object_new();
-		object_set_base_known(player, obj);
-		object_touch(player, obj);
+		object_know(obj);
 	}
 	return obj;
 }
@@ -161,13 +135,13 @@ static bool check_similar(const struct object* obj1, const struct object *obj2) 
 	}
 	if (tval_is_weapon(obj1) || tval_is_armor(obj1) ||
 			tval_is_jewelry(obj1) || tval_is_light(obj1)) {
-		if (obj1->ac != obj2->ac) return false;
+		if (obj1->att != obj2->att) return false;
 		if (obj1->dd != obj2->dd) return false;
 		if (obj1->ds != obj2->ds) return false;
 
-		if (obj1->to_h != obj2->to_h) return false;
-		if (obj1->to_d != obj2->to_d) return false;
-		if (obj1->to_a != obj2->to_a) return false;
+		if (obj1->evn != obj2->evn) return false;
+		if (obj1->pd != obj2->pd) return false;
+		if (obj1->ps != obj2->ps) return false;
 
 		for (i = 0; i < OBJ_MOD_MAX; i++) {
 			if (obj1->modifiers[i] != obj2->modifiers[i])
@@ -175,8 +149,6 @@ static bool check_similar(const struct object* obj1, const struct object *obj2) 
 		}
 
 		if (obj1->ego != obj2->ego) return false;
-
-		if (!curses_are_equal(obj1, obj2)) return false;
 	}
 	if (obj1->note && obj2->note && (obj1->note != obj2->note))
 		return false;
@@ -193,7 +165,7 @@ int setup_tests(void **state) {
 #endif
 
 	/* Set up the player. */
-	if (!player_make_simple(NULL, NULL, "Tester")) {
+	if (!player_make_simple(NULL, NULL, NULL, "Tester")) {
 		cleanup_angband();
 		return 1;
 	}
@@ -202,7 +174,7 @@ int setup_tests(void **state) {
 	on_new_level();
 
 	/* Shift to empty spot so pickup or drop is easier. */
-	if (!find_empty_spot(cave, player)) return 1;
+	object_pile_free(cave, square_object(cave, player->grid));
 
 	return 0;
 }
@@ -504,7 +476,7 @@ static int test_inven_wield_pack_full_no_overflow(void *state) {
 	player->upkeep->total_weight += obj1->weight;
 	slot = wield_slot(obj1);
 	inven_wield(obj1, slot);
-	obj2 = setup_object(TV_HARD_ARMOR, 1, 1);
+	obj2 = setup_object(TV_MAIL, 1, 1);
 	require(obj2 != NULL);
 	gear_insert_end(player, obj2);
 	require(object_is_carried(player, obj2));

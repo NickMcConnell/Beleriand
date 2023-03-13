@@ -233,7 +233,7 @@ static void get_bonuses(struct player *p)
 	p->chp = p->mhp;
 
 	/* Fully rested */
-	calc_voice(player, true);
+	calc_voice(p, true);
 	p->csp = p->msp;
 }
 
@@ -668,7 +668,7 @@ void player_generate(struct player *p, const struct player_race *r,
 	}
 
 	/* Initial experience */
-	player->exp = player->new_exp = z_info->start_exp;
+	p->exp = p->new_exp = z_info->start_exp;
 
 	/* Initial hitpoints etc */
 	get_bonuses(p);

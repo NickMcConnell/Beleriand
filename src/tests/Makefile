@@ -15,7 +15,7 @@ SUITES = \
 	monster/suite.mk \
 	object/suite.mk \
 	parse/suite.mk \
-#	player/suite.mk \
+	player/suite.mk \
 	trivial/suite.mk \
 	z-dice/suite.mk \
 	z-expression/suite.mk \

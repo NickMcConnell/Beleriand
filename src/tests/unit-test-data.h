@@ -347,6 +347,34 @@ static struct player_race TEST_DATA test_race = {
 	.history = NULL,
 };
 
+static struct player_house TEST_DATA test_house = {
+	.name = "House of TestHouse",
+	.alt_name = "TestHouse's house",
+	.short_name = "TestHouse",
+	.stat_adj = {
+		[STAT_STR] = +1,
+		[STAT_DEX] = 0,
+		[STAT_CON] = +1,
+		[STAT_GRA] = 0,
+	},
+	.skill_adj = {
+		[SKILL_MELEE] = 0,
+		[SKILL_ARCHERY] = 1,
+		[SKILL_EVASION] = -2,
+		[SKILL_STEALTH] = 1,
+		[SKILL_PERCEPTION] = 1,
+		[SKILL_WILL] = 1,
+		[SKILL_SMITHING] = 2,
+		[SKILL_SONG] = 0,
+	},
+};
+
+static struct player_sex TEST_DATA test_sex = {
+	.name = "TestSex",
+	.possessive = "their",
+	.poetry_name = NULL
+};
+	
 static struct start_item TEST_DATA start_torch = {
 	.tval = TV_LIGHT,
 	.sval = 1, //Hack - depends on edit file order - Wooden Torch (NRM)
