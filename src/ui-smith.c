@@ -80,6 +80,8 @@ struct smithing_menu_data {
 
 static struct menu *smithing_menu;
 
+static bool no_forge;
+static bool exhausted;
 static bool create_smithed_item;
 
 /**
@@ -1193,9 +1195,22 @@ static void smithing_menu_browser(int oid, void *data, const region *loc)
 
 	region_erase(&area);
 	Term_gotoxy(COL_SMT2, ROW_SMT1);
-	text_out_c(attr, desc[oid * 2]);
+	if (no_forge && (oid == 5)) {
+		text_out_c(attr, extra[4]);
+	} else if (exhausted && (oid == 5)) {
+		text_out_c(attr, extra[2]);
+	} else {
+		text_out_c(attr, desc[oid * 2]);
+	}
 	Term_gotoxy(COL_SMT2, ROW_SMT1 + 1);
-	text_out_c(attr, desc[oid * 2 + 1]);
+	if (no_forge && (oid == 5)) {
+		text_out_c(attr, extra[5]);
+	} else if (exhausted && (oid == 5)) {
+		text_out_c(attr, extra[3]);
+	} else {
+		text_out_c(attr, desc[oid * 2 + 1]);
+	}
+	//TODO test for if numbers have been changed
 	if (smith_obj->kind) {
 		show_smith_obj();
 	}
@@ -1279,17 +1294,23 @@ struct object *textui_smith_object(struct smithing_cost *cost)
 	smithing_menu = menu_new_action(smithing_actions,
 									N_ELEMENTS(smithing_actions));
 
+	/* Prepare some menu details */
 	check_smithing_menu_row_colors();
 	if (!square_isforge(cave, player->grid)) {
-		//smithing_menu->title =
-		//	"Exploration mode:  Smithing requires a forge.";
+		no_forge = true;
+		exhausted = false;
+		prt("Exploration mode:  Smithing requires a forge.", 0, 0);
 	} else if (!square_forge_uses(cave, player->grid)) {
-		//smithing_menu->title =
-		//	"Exploration mode:  Smithing requires a forge with resources left.";
+		no_forge = false;
+		exhausted = true;
+		prt("Exploration mode:  Smithing requires a forge with resources left.", 0, 0);
+	} else {
+		no_forge = false;
+		exhausted = false;
 	}
+
 	smithing_menu->flags = MN_CASELESS_TAGS;
 	smithing_menu->browse_hook = smithing_menu_browser;
-
 	menu_layout(smithing_menu, &area);
 	while (!create_smithed_item) {
 		ui_event evt = EVENT_EMPTY;
