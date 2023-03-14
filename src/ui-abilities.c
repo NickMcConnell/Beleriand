@@ -19,12 +19,12 @@
 #include "angband.h"
 #include "monster.h"
 #include "player-abilities.h"
+#include "ui-abilities.h"
 #include "ui-input.h"
 #include "ui-menu.h"
 
 
 
-#define	COL_SKILL		 2
 #define COL_ABILITY		17
 #define COL_DESCRIPTION	46
 
@@ -32,7 +32,7 @@ static struct ability **skill_abilities;
 
 static struct bane_type {
 	int race_flag;
-	char *name;
+	const char *name;
 } bane_types[] = {
 	#define BANE(a, b) { RF_##a, b },
 	#include "list-bane-types.h"
@@ -245,7 +245,7 @@ void abilities_skill_menu(void)
 {
 	struct menu menu;
 	menu_iter menu_f = { NULL, NULL, skill_display, skill_action, NULL };
-	char *skill_names[] = {
+	const char *skill_names[] = {
 		#define SKILL(a, b) b,
 		#include "list-skills.h"
 		#undef SKILL

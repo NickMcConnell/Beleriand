@@ -146,7 +146,7 @@ static enum parser_error parse_song_effect(struct parser *p) {
 	return grab_effect_data(p, new_effect);
 }
 
-struct parser *init_parse_song(void) {
+static struct parser *init_parse_song(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
     parser_reg(p, "name str name", parse_song_name);
@@ -214,7 +214,7 @@ struct song *song_by_idx(int idx)
 	return NULL;
 }
 
-struct song *lookup_song(char *name)
+struct song *lookup_song(const char *name)
 {
 	struct song *s = songs;
 	while (s) {

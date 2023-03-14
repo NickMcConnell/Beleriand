@@ -64,7 +64,7 @@
  * It gets more likely the more stairs you have recently taken.
  * It is designed to stop you stair-scumming.
  */
-bool trapped_stairs(void)
+static bool trapped_stairs(void)
 {
 	int chance;
 	
@@ -97,7 +97,7 @@ bool trapped_stairs(void)
 /**
  * Go up one level
  */
-void do_cmd_go_up_aux(void)
+static void do_cmd_go_up_aux(void)
 {
 	int new_depth, min;
 	int change = square_isshaft(cave, player->grid) ? -2 : -1;
@@ -208,7 +208,7 @@ void do_cmd_go_up(struct command *cmd)
 /**
  * Go down one level
  */
-void do_cmd_go_down_aux(void)
+static void do_cmd_go_down_aux(void)
 {
 	int new_depth, min;
 	int change = square_isshaft(cave, player->grid) ? 2 : 1;
@@ -1731,7 +1731,7 @@ void move_player(int dir, bool disarm)
 					history_add(player, "Entered the forge 'Orodruth'",
 								HIST_FORGE_FOUND);
 				} else {
-					char *article;
+					const char *article;
 					if (feat->fidx == FEAT_FORGE_UNIQUE) {
 						article = "the";
 					} else if (feat->fidx == FEAT_FORGE_GOOD) {
@@ -1768,7 +1768,7 @@ void move_player(int dir, bool disarm)
  * Stay still.  Search.  Enter stores.
  * Pick up treasure if "pickup" is true.
  */
-void do_cmd_hold_aux(void)
+static void do_cmd_hold_aux(void)
 {
 	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;

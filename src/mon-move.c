@@ -87,7 +87,7 @@ static bool monster_can_smell(struct monster *mon)
 /**
  * Check if the monster normally occurs with other monsters
  */
-bool monster_talks_to_friends(struct monster *mon)
+static bool monster_talks_to_friends(struct monster *mon)
 {
 	struct monster_race *race = mon->race;
 	return rf_has(race->flags, RF_FRIENDS) ||
@@ -159,7 +159,7 @@ static bool monster_can_exist(struct chunk *c, struct monster *mon,
  * note that this will be a percentage for normal skills (10 sides)
  * but will be out of 400 for hit rolls
  */
-int success_chance(int sides, int skill, int difficulty)
+static int success_chance(int sides, int skill, int difficulty)
 {
 	int i, j;
 	int ways = 0;
@@ -377,7 +377,7 @@ int adj_mon_count(struct loc grid)
  * Used when we need a fine-grained ordering of euclidean distance.
  * e.g. helps an archer who is stuck against a wall to find his way out.
  */
-int distance_squared(struct loc grid1, struct loc grid2)
+static int distance_squared(struct loc grid1, struct loc grid2)
 {
 	int y_diff = grid1.y - grid2.y;
 	int x_diff = grid1.x - grid2.x;
@@ -737,7 +737,7 @@ static bool get_move_find_safety(struct monster *mon, struct loc *tgrid)
 	int range = z_info->hide_range;
 	int countdown = range;
 	int least_cost = 100;
-	struct loc grid, least_cost_grid = loc(0, 0);
+	struct loc least_cost_grid = loc(0, 0);
 	int chance, cost, parent_cost;
 	bool dummy;
 	bool stair;
@@ -917,7 +917,7 @@ static bool get_move_find_safety(struct monster *mon, struct loc *tgrid)
 	/* We found a place that can be reached in reasonable time */
 	if (least_cost < 50) {
 		/* Convert to actual dungeon grid. */
-		grid = loc_diff(least_cost_grid, origin);
+		struct loc grid = loc_diff(least_cost_grid, origin);
 
 		/* Move towards the hiding place */
 		*tgrid = grid;
@@ -1418,7 +1418,7 @@ static int get_move_calc_vulnerability(struct loc mgrid)
  * gang up if they waited for the player to get into the open.
  */
 
-int get_move_calc_hesitance(struct monster *mon)
+static int get_move_calc_hesitance(struct monster *mon)
 {
 	int x, y;
 	int hesitance = 1;
@@ -2426,7 +2426,7 @@ static bool make_move(struct monster *mon, struct loc *tgrid, bool fear,
 /**
  * Deal with the monster Ability: exchange places
  */
-void process_move_exchange_places(struct monster *mon)
+static void process_move_exchange_places(struct monster *mon)
 {
     struct monster_lore *lore = get_lore(mon->race);
     char m_name1[80];
@@ -2987,7 +2987,7 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
  *
  * This function will finish the monster's turn
  */
-void monster_turn_wander(struct monster *mon)
+static void monster_turn_wander(struct monster *mon)
 {
 	struct monster_group *group = monster_group_by_index(cave,
 														 mon->group_info.index);

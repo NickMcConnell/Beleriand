@@ -227,7 +227,7 @@ bool make_ranged_attack(struct monster *mon)
 /**
  * Determine whether a monster is making a valid charge attack
  */
-bool monster_charge(struct monster *mon, struct player *p)
+static bool monster_charge(struct monster *mon, struct player *p)
 {
     int speed = mon->race->speed;
     int deltay = p->grid.y - mon->grid.y;
@@ -407,7 +407,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 		/* Special case */
 		if (streq(method->name, "HIT") && streq(effect->name, "BATTER")) {
-			act = "batters you";
+			act = (char *) "batters you";
 		}
 
 		/* Hack -- assume all attacks are obvious */
@@ -443,7 +443,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				/* Remember that the monster can do this */
 				if (monster_is_visible(mon)) {
 					rf_on(lore->flags, RF_CHARGE);
-					act = "charges you";
+					act = (char *) "charges you";
                 }
 			}
                 

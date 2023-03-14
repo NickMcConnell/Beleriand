@@ -182,7 +182,7 @@ void player_stat_dec(struct player *p, int stat)
 /**
  * Advance experience levels and print experience
  */
-void check_experience(struct player *p)
+static void check_experience(struct player *p)
 {
 	/* Limits */
 	p->exp = MIN(MAX(p->exp, 0), PY_MAX_EXP);

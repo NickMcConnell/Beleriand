@@ -52,11 +52,8 @@ struct grid_counts {
 	int upstair;
 	int downstair;
 	int trap;
-	int lava;
-	int impass_rubble;
+	int forge;
 	int pass_rubble;
-	int magma_treasure;
-	int quartz_treasure;
 	int open_door;
 	int closed_door;
 	int broken_door;

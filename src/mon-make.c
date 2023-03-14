@@ -645,7 +645,7 @@ int16_t mon_pop(struct chunk *c)
 /**
  * Set hallucinatory monster race
  */
-void set_hallucinatory_race(struct monster *mon)
+static void set_hallucinatory_race(struct monster *mon)
 {
 	/* Try hard to find a random race */
 	int tries = 1000;
@@ -1459,16 +1459,16 @@ bool pick_and_place_monster_on_stairs(struct chunk *c, struct player *p,
 
 	/* Print messages etc */
 	if (placed) {
-		struct monster *mon = square_monster(c, stair);
+		struct monster *mon1 = square_monster(c, stair);
 
 		/* Display a message if seen */
-		if (monster_is_visible(mon)) {				
+		if (monster_is_visible(mon1)) {
 			char m_name[80];
 			char who[80];
 			char message[240];
-			monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+			monster_desc(m_name, sizeof(m_name), mon1, MDESC_STANDARD);
 
-			if (monster_has_friends(mon)) {
+			if (monster_has_friends(mon1)) {
 				my_strcpy(message, format("A group of enemies come %s the stair", dir), 240);
 			} else {
 				my_strcpy(message, format("%s comes %s the stair", m_name, dir), 240);

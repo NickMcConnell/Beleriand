@@ -63,30 +63,30 @@ static struct visuals_color_cycle *visuals_color_cycle_new(const char *name,
 														   size_t const step_count,
 														   uint8_t const invalid_color)
 {
-	struct visuals_color_cycle *cycle = NULL;
+	struct visuals_color_cycle *ccycle = NULL;
 
 	if (step_count == 0) {
 		return NULL;
 	}
 
-	cycle = mem_zalloc(sizeof(*cycle));
+	ccycle = mem_zalloc(sizeof(*ccycle));
 
-	if (cycle == NULL) {
+	if (ccycle == NULL) {
 		return NULL;
 	}
 
-	cycle->steps = mem_zalloc(step_count * sizeof(*(cycle->steps)));
+	ccycle->steps = mem_zalloc(step_count * sizeof(*(ccycle->steps)));
 
-	if (cycle->steps == NULL) {
-		mem_free(cycle);
+	if (ccycle->steps == NULL) {
+		mem_free(ccycle);
 		return NULL;
 	}
 
-	memset(cycle->steps, invalid_color, step_count);
-	cycle->invalid_color = invalid_color;
-	cycle->max_steps = step_count;
-	cycle->cycle_name = string_make(name);
-	return cycle;
+	memset(ccycle->steps, invalid_color, step_count);
+	ccycle->invalid_color = invalid_color;
+	ccycle->max_steps = step_count;
+	ccycle->cycle_name = string_make(name);
+	return ccycle;
 }
 
 /**
@@ -94,24 +94,24 @@ static struct visuals_color_cycle *visuals_color_cycle_new(const char *name,
  *
  * \param cycle The color cycle to deallocate.
  */
-static void visuals_color_cycle_free(struct visuals_color_cycle *cycle)
+static void visuals_color_cycle_free(struct visuals_color_cycle *ccycle)
 {
-	if (cycle == NULL) {
+	if (ccycle == NULL) {
 		return;
 	}
 
-	if (cycle->steps != NULL) {
-		mem_free(cycle->steps);
-		cycle->steps = NULL;
+	if (ccycle->steps != NULL) {
+		mem_free(ccycle->steps);
+		ccycle->steps = NULL;
 	}
 
-	if (cycle->cycle_name != NULL) {
-		string_free(cycle->cycle_name);
-		cycle->cycle_name = NULL;
+	if (ccycle->cycle_name != NULL) {
+		string_free(ccycle->cycle_name);
+		ccycle->cycle_name = NULL;
 	}
 
-	mem_free(cycle);
-	cycle = NULL;
+	mem_free(ccycle);
+	ccycle = NULL;
 }
 
 /**
@@ -166,17 +166,17 @@ static struct visuals_color_cycle *visuals_color_cycle_copy(struct visuals_color
  * \param frame An arbitrary value used to select the color step.
  * \return A color or \c BASIC_COLORS if an error occurred.
  */
-static uint8_t visuals_color_cycle_attr_for_frame(struct visuals_color_cycle const *cycle,
+static uint8_t visuals_color_cycle_attr_for_frame(struct visuals_color_cycle const *ccycle,
 											   size_t const frame)
 {
 	size_t step = 0;
 
-	if (cycle == NULL) {
+	if (ccycle == NULL) {
 		return BASIC_COLORS;
 	}
 
-	step = frame % cycle->max_steps;
-	return cycle->steps[step];
+	step = frame % ccycle->max_steps;
+	return ccycle->steps[step];
 }
 
 /**
@@ -338,7 +338,7 @@ static struct visuals_color_cycle *visuals_cycler_cycle_by_name(struct visuals_c
 																const char *cycle_name)
 {
 	struct visuals_cycle_group *group = NULL;
-	struct visuals_color_cycle *cycle = NULL;
+	struct visuals_color_cycle *ccycle = NULL;
 	size_t i = 0;
 
 	if (group_name == NULL || strlen(group_name) == 0) {
@@ -362,12 +362,12 @@ static struct visuals_color_cycle *visuals_cycler_cycle_by_name(struct visuals_c
 
 	for (i = 0; i < group->max_cycles; i++) {
 		if (streq(group->cycles[i]->cycle_name, cycle_name)) {
-			cycle = group->cycles[i];
+			ccycle = group->cycles[i];
 			break;
 		}
 	}
 
-	return cycle;
+	return ccycle;
 }
 
 /**
@@ -386,14 +386,14 @@ uint8_t visuals_cycler_get_attr_for_frame(const char *group_name,
 									   size_t const frame)
 {
 	struct visuals_cycler *table = visuals_cycler_table;
-	struct visuals_color_cycle *cycle = NULL;
-	cycle = visuals_cycler_cycle_by_name(table, group_name, cycle_name);
+	struct visuals_color_cycle *ccycle = NULL;
+	ccycle = visuals_cycler_cycle_by_name(table, group_name, cycle_name);
 
-	if (cycle == NULL) {
+	if (ccycle == NULL) {
 		return BASIC_COLORS;
 	}
 
-	return visuals_color_cycle_attr_for_frame(cycle, frame);
+	return visuals_color_cycle_attr_for_frame(ccycle, frame);
 }
 
 /** A table to quickly map monster races to color cycles. */
@@ -422,7 +422,7 @@ void visuals_cycler_set_cycle_for_race(struct monster_race const *race,
 									   const char *cycle_name)
 {
 	struct visuals_cycler *table = visuals_cycler_table;
-	struct visuals_color_cycle *cycle = NULL;
+	struct visuals_color_cycle *ccycle = NULL;
 
 	if (race == NULL || group_name == NULL || cycle_name == NULL) {
 		return;
@@ -447,13 +447,13 @@ void visuals_cycler_set_cycle_for_race(struct monster_race const *race,
 		}
 	}
 
-	cycle = visuals_cycler_cycle_by_name(table, group_name, cycle_name);
+	ccycle = visuals_cycler_cycle_by_name(table, group_name, cycle_name);
 
-	if (cycle == NULL) {
+	if (ccycle == NULL) {
 		return;
 	}
 
-	visuals_color_cycles_by_race->race[race->ridx] = cycle;
+	visuals_color_cycles_by_race->race[race->ridx] = ccycle;
 }
 
 /**
@@ -468,7 +468,7 @@ void visuals_cycler_set_cycle_for_race(struct monster_race const *race,
 uint8_t visuals_cycler_get_attr_for_race(struct monster_race const *race,
 									  size_t const frame)
 {
-	struct visuals_color_cycle *cycle = NULL;
+	struct visuals_color_cycle *ccycle = NULL;
 
 	if (race == NULL) {
 		return BASIC_COLORS;
@@ -479,13 +479,13 @@ uint8_t visuals_cycler_get_attr_for_race(struct monster_race const *race,
 		return BASIC_COLORS;
 	}
 
-	cycle = visuals_color_cycles_by_race->race[race->ridx];
+	ccycle = visuals_color_cycles_by_race->race[race->ridx];
 
-	if (cycle == NULL) {
+	if (ccycle == NULL) {
 		return BASIC_COLORS;
 	}
 
-	return visuals_color_cycle_attr_for_frame(cycle, frame);
+	return visuals_color_cycle_attr_for_frame(ccycle, frame);
 }
 
 /* ----- Legacy Flicker Cycling ----- */
@@ -790,7 +790,7 @@ static struct visuals_cycler *visuals_parse_context_convert(struct visuals_parse
 		size_t cycle_count = 0;
 		size_t const cycle_offset = group * VISUALS_CYCLES_MAX;
 		struct visuals_cycle_group *cycle_group = NULL;
-		size_t cycle = 0;
+		size_t ccycle = 0;
 
 		/* Create a new group based with the number of actual cyles we have. */
 		while(context->group_cycles[cycle_offset + cycle_count] != NULL) {
@@ -804,11 +804,11 @@ static struct visuals_cycler *visuals_parse_context_convert(struct visuals_parse
 		}
 
 		/* Copy all of the cycles over to the group. */
-		for (cycle = 0; cycle < cycle_count; cycle++) {
-			struct visuals_color_cycle *old_cycle = context->group_cycles[cycle_offset + cycle];
-			cycle_group->cycles[cycle] = visuals_color_cycle_copy(old_cycle);
+		for (ccycle = 0; ccycle < cycle_count; ccycle++) {
+			struct visuals_color_cycle *old_cycle = context->group_cycles[cycle_offset + ccycle];
+			cycle_group->cycles[ccycle] = visuals_color_cycle_copy(old_cycle);
 
-			if (cycle_group->cycles[cycle] == NULL) {
+			if (cycle_group->cycles[ccycle] == NULL) {
 				return NULL;
 			}
 		}

@@ -243,7 +243,7 @@ uint8_t total_ads(struct player *p, struct player_state *state,
  *
  * \return whether to replace the original object with the new one
  */
-bool earlier_object(struct object *orig, struct object *new)
+static bool earlier_object(struct object *orig, struct object *new)
 {
 	/* Check we have actual objects */
 	if (!new) return false;
@@ -495,7 +495,7 @@ static void calc_hitpoints(struct player *p)
 /**
  * Determine the radius of possibly flickering lights
  */
-int light_up_to(struct object *obj)
+static int light_up_to(struct object *obj)
 { 
 	int radius = obj->pval;
 	
@@ -516,7 +516,7 @@ int light_up_to(struct object *obj)
 /**
  * Determines how much an enemy in a given location should make the sword glow
  */
-int hate_level(struct loc grid, int multiplier)
+static int hate_level(struct loc grid, int multiplier)
 {
 	int dist;
 
@@ -775,8 +775,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		struct object *obj = slot_object(p, i);
 
 		if (obj) {
-			int j;
-
 			/* Extract the item flags */
 			if (known_only) {
 				object_flags_known(obj, f);

@@ -61,11 +61,12 @@ extern int teardown_tests(void *data);
 #define require(x) \
 	do { \
 		if (!(x)) { \
-			if (verbose) \
+			if (verbose) { 	\
 				showfail(); \
 				printf("    %s:%d: requirement '%s' failed\n", \
 			           suite_name, __LINE__, #x); \
 			return 1; \
+			}  \
 		} \
 	} while (0)
 

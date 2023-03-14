@@ -86,7 +86,8 @@ static bool valid_charge(struct player *p, struct loc grid, int attack_type)
 /**
  * Attacks a new monster with 'follow through' if applicable
  */
-void possible_follow_through(struct player *p, struct loc grid, int attack_type)
+static void possible_follow_through(struct player *p, struct loc grid,
+									int attack_type)
 {
 	int d, i;
 	struct loc new_grid;
@@ -203,7 +204,7 @@ void attack_punctuation(char *punctuation, int net_dam, int crit_bonus_dice)
 /**
  * A whirlwind attack is possible
  */
-bool whirlwind_possible(struct player *p)
+static bool whirlwind_possible(struct player *p)
 {
 	int d, dir;
 	struct loc grid;
@@ -230,7 +231,7 @@ bool whirlwind_possible(struct player *p)
 /**
  * A whirlwind attack
  */
-void whirlwind(struct player *p, struct loc grid)
+static void whirlwind(struct player *p, struct loc grid)
 {
 	int i, dir, dir0;
 	bool clockwise = one_in_(2);
@@ -742,7 +743,7 @@ int archery_range(const struct object *bow)
 /**
  * Maximum throwing range with a given object
  */
-int throwing_range(const struct object *obj)
+static int throwing_range(const struct object *obj)
 {
 	/* The divisor is the weight + 2lb */
 	int div = obj->weight + 20;
@@ -757,7 +758,7 @@ int throwing_range(const struct object *obj)
 /**
  * Determines if a bow shoots radiant arrows and lights the current grid if so
  */
-bool do_radiance(struct player *p, struct loc grid) {
+static bool do_radiance(struct player *p, struct loc grid) {
 	/* Nothing to do */
 	if (square_isglow(cave, grid)) return false;
 

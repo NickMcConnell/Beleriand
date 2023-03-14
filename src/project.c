@@ -747,7 +747,7 @@ bool project(struct source origin, int rad, struct loc finish,
 	/* Now check for explosions.  Beams have already stored all the grids they
 	 * will affect; all non-beam projections with positive radius explode in
 	 * some way */
-	if (((rad > 0) || PROJECT_BOOM) && !(flg & (PROJECT_BEAM))) {
+	if (((rad > 0) || (flg & (PROJECT_BOOM))) && !(flg & (PROJECT_BEAM))) {
 		int y, x;
 
 		/* Pre-calculate some things for arcs. */

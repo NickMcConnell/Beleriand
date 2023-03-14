@@ -768,7 +768,7 @@ bool alloc_object(struct chunk *c, int set, int typ, int depth,
 /**
  * Lookup a room profile by name
  */
-struct room_profile lookup_room_profile(char *name)
+struct room_profile lookup_room_profile(const char *name)
 {
 	int num_rooms = dun->profile->n_room_profiles;
 	struct room_profile profile;

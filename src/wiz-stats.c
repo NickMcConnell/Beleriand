@@ -1836,11 +1836,8 @@ struct grid_count_aggregate {
 	struct i_sum_sum2 upstair;
 	struct i_sum_sum2 downstair;
 	struct d_sum_sum2 trap;
-	struct d_sum_sum2 lava;
-	struct d_sum_sum2 impass_rubble;
+	struct d_sum_sum2 forge;
 	struct d_sum_sum2 pass_rubble;
-	struct d_sum_sum2 magma_treasure;
-	struct d_sum_sum2 quartz_treasure;
 	struct d_sum_sum2 open_door;
 	struct d_sum_sum2 closed_door;
 	struct d_sum_sum2 broken_door;
@@ -1862,16 +1859,10 @@ static void initialize_grid_count_aggregate(struct grid_count_aggregate *ga)
 	ga->downstair.sum2_hi = 0;
 	ga->trap.sum = 0.0;
 	ga->trap.sum2 = 0.0;
-	ga->lava.sum = 0.0;
-	ga->lava.sum2 = 0.0;
-	ga->impass_rubble.sum = 0.0;
-	ga->impass_rubble.sum2 = 0.0;
+	ga->forge.sum = 0.0;
+	ga->forge.sum2 = 0.0;
 	ga->pass_rubble.sum = 0.0;
 	ga->pass_rubble.sum2 = 0.0;
-	ga->magma_treasure.sum = 0.0;
-	ga->magma_treasure.sum2 = 0.0;
-	ga->quartz_treasure.sum = 0.0;
-	ga->quartz_treasure.sum2 = 0.0;
 	ga->open_door.sum = 0.0;
 	ga->open_door.sum2 = 0.0;
 	ga->closed_door.sum = 0.0;
@@ -1897,11 +1888,8 @@ static void add_to_grid_count_aggregate(struct grid_count_aggregate *ga,
 	add_to_i_sum_sum2(&ga->upstair, gi->upstair);
 	add_to_i_sum_sum2(&ga->downstair, gi->downstair);
 	add_to_d_sum_sum2(&ga->trap, gi->trap / area);
-	add_to_d_sum_sum2(&ga->lava, gi->lava / area);
-	add_to_d_sum_sum2(&ga->impass_rubble, gi->impass_rubble / area);
+	add_to_d_sum_sum2(&ga->forge, gi->forge / area);
 	add_to_d_sum_sum2(&ga->pass_rubble, gi->pass_rubble / area);
-	add_to_d_sum_sum2(&ga->magma_treasure, gi->magma_treasure / area);
-	add_to_d_sum_sum2(&ga->quartz_treasure, gi->quartz_treasure / area);
 	add_to_d_sum_sum2(&ga->open_door, gi->open_door / area);
 	add_to_d_sum_sum2(&ga->closed_door, gi->closed_door / area);
 	add_to_d_sum_sum2(&ga->broken_door, gi->broken_door / area);
@@ -2296,20 +2284,11 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 					gs->level_counts[0][i]));
 		}
 		file_put(fo, "\n");
-		file_put(fo, "lava");
+		file_put(fo, "forge");
 		for (j = 0; j < 3; ++j) {
 			file_putf(fo, "\t%.6f\t%.6f",
-				gs->ga[i][j].lava.sum / gs->level_counts[0][i],
-				stddev_d_sum_sum2(gs->ga[i][j].lava,
-					gs->level_counts[0][i]));
-		}
-		file_put(fo, "\n");
-		file_put(fo, "imrubb");
-		for (j = 0; j < 3; ++j) {
-			file_putf(fo, "\t%.6f\t%.6f",
-				gs->ga[i][j].impass_rubble.sum /
-					gs->level_counts[0][i],
-				stddev_d_sum_sum2(gs->ga[i][j].impass_rubble,
+				gs->ga[i][j].forge.sum / gs->level_counts[0][i],
+				stddev_d_sum_sum2(gs->ga[i][j].forge,
 					gs->level_counts[0][i]));
 		}
 		file_put(fo, "\n");
@@ -2319,24 +2298,6 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 				gs->ga[i][j].pass_rubble.sum /
 					gs->level_counts[0][i],
 				stddev_d_sum_sum2(gs->ga[i][j].pass_rubble,
-					gs->level_counts[0][i]));
-		}
-		file_put(fo, "\n");
-		file_put(fo, "mgmvein");
-		for (j = 0; j < 3; ++j) {
-			file_putf(fo, "\t%.6f\t%.6f",
-				gs->ga[i][j].magma_treasure.sum /
-					gs->level_counts[0][i],
-				stddev_d_sum_sum2(gs->ga[i][j].magma_treasure,
-					gs->level_counts[0][i]));
-		}
-		file_put(fo, "\n");
-		file_put(fo, "qtzvein");
-		for (j = 0; j < 3; ++j) {
-			file_putf(fo, "\t%.6f\t%.6f",
-				gs->ga[i][j].quartz_treasure.sum /
-					gs->level_counts[0][i],
-				stddev_d_sum_sum2(gs->ga[i][j].quartz_treasure,
 					gs->level_counts[0][i]));
 		}
 		file_put(fo, "\n");
@@ -2847,15 +2808,12 @@ void stat_grid_counter_simple(struct chunk *c, struct grid_counts counts[3])
 	counts[0].upstair = gpreds[1].in_vault_count;
 	counts[0].downstair = gpreds[2].in_vault_count;
 	counts[0].trap = gpreds[3].in_vault_count;
-	counts[0].lava = gpreds[4].in_vault_count;
-	counts[0].impass_rubble = gpreds[5].in_vault_count;
-	counts[0].pass_rubble = gpreds[6].in_vault_count;
-	counts[0].magma_treasure = gpreds[7].in_vault_count;
-	counts[0].quartz_treasure = gpreds[8].in_vault_count;
-	counts[0].open_door = gpreds[9].in_vault_count;
-	counts[0].closed_door = gpreds[10].in_vault_count;
-	counts[0].broken_door = gpreds[11].in_vault_count;
-	counts[0].secret_door = gpreds[12].in_vault_count;
+	counts[0].forge = gpreds[4].in_vault_count;
+	counts[0].pass_rubble = gpreds[5].in_vault_count;
+	counts[0].open_door = gpreds[6].in_vault_count;
+	counts[0].closed_door = gpreds[7].in_vault_count;
+	counts[0].broken_door = gpreds[8].in_vault_count;
+	counts[0].secret_door = gpreds[9].in_vault_count;
 	for (i = 0; i < 9; ++i) {
 		counts[0].traversable_neighbor_histogram[i] =
 			npreds[0].vault_histogram[i];
@@ -2864,15 +2822,12 @@ void stat_grid_counter_simple(struct chunk *c, struct grid_counts counts[3])
 	counts[1].upstair = gpreds[1].in_room_count;
 	counts[1].downstair = gpreds[2].in_room_count;
 	counts[1].trap = gpreds[3].in_room_count;
-	counts[1].lava = gpreds[4].in_room_count;
-	counts[1].impass_rubble = gpreds[5].in_room_count;
-	counts[1].pass_rubble = gpreds[6].in_room_count;
-	counts[1].magma_treasure = gpreds[7].in_room_count;
-	counts[1].quartz_treasure = gpreds[8].in_room_count;
-	counts[1].open_door = gpreds[9].in_room_count;
-	counts[1].closed_door = gpreds[10].in_room_count;
-	counts[1].broken_door = gpreds[11].in_room_count;
-	counts[1].secret_door = gpreds[12].in_room_count;
+	counts[1].forge = gpreds[4].in_room_count;
+	counts[1].pass_rubble = gpreds[5].in_room_count;
+	counts[1].open_door = gpreds[6].in_room_count;
+	counts[1].closed_door = gpreds[7].in_room_count;
+	counts[1].broken_door = gpreds[8].in_room_count;
+	counts[1].secret_door = gpreds[9].in_room_count;
 	for (i = 0; i < 9; ++i) {
 		counts[1].traversable_neighbor_histogram[i] =
 			npreds[0].room_histogram[i];
@@ -2881,15 +2836,12 @@ void stat_grid_counter_simple(struct chunk *c, struct grid_counts counts[3])
 	counts[2].upstair = gpreds[1].in_other_count;
 	counts[2].downstair = gpreds[2].in_other_count;
 	counts[2].trap = gpreds[3].in_other_count;
-	counts[2].lava = gpreds[4].in_other_count;
-	counts[2].impass_rubble = gpreds[5].in_other_count;
-	counts[2].pass_rubble = gpreds[6].in_other_count;
-	counts[2].magma_treasure = gpreds[7].in_other_count;
-	counts[2].quartz_treasure = gpreds[8].in_other_count;
-	counts[2].open_door = gpreds[9].in_other_count;
-	counts[2].closed_door = gpreds[10].in_other_count;
-	counts[2].broken_door = gpreds[11].in_other_count;
-	counts[2].secret_door = gpreds[12].in_other_count;
+	counts[2].forge = gpreds[4].in_other_count;
+	counts[2].pass_rubble = gpreds[5].in_other_count;
+	counts[2].open_door = gpreds[6].in_other_count;
+	counts[2].closed_door = gpreds[7].in_other_count;
+	counts[2].broken_door = gpreds[8].in_other_count;
+	counts[2].secret_door = gpreds[9].in_other_count;
 	for (i = 0; i < 9; ++i) {
 		counts[2].traversable_neighbor_histogram[i] =
 			npreds[0].other_histogram[i];

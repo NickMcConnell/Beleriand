@@ -20,6 +20,7 @@
 #include "player-abilities.h"
 #include "songs.h"
 #include "ui-menu.h"
+#include "ui-songs.h"
 
 struct song_menu_info {
 	struct song *song;

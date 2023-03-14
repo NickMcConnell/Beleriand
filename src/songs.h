@@ -26,7 +26,7 @@ struct alt_song_desc {
 extern struct song *songs;
 
 struct song *song_by_idx(int idx);
-struct song *lookup_song(char *name);
+struct song *lookup_song(const char *name);
 int song_bonus(struct player *p, int pskill, struct song *song);
 void player_change_song(struct player *p, struct song *song, bool exchange);
 bool player_is_singing(struct player *p, struct song *song);

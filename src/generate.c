@@ -685,9 +685,8 @@ void prepare_next_level(struct player *p)
 				/* Greater vaults */
 				if (!noted && square_ismark(cave, grid) &&
 					square_isgreatervault(cave, grid)) {
-					char *buf = "Left without entering %s";
-					history_add(p, format(buf, cave->vault_name),
-								HIST_VAULT_LOST);
+					history_add(p, format("Left without entering %s",
+										  cave->vault_name), HIST_VAULT_LOST);
 					noted = true;
 				}
 			}

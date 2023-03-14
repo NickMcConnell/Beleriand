@@ -809,19 +809,6 @@ void do_cmd_refresh_stats(struct command *cmd)
 	event_signal_birthpoints(points_spent, points_inc, points_left);
 }
 
-void do_cmd_prev_stats(struct command *cmd)
-{
-	/* Only switch to the stored "previous"
-	   character if we've actually got one to load. */
-	if (prev.age) {
-		load_birth_data(&prev, &prev);
-		get_bonuses(player);
-	}
-
-	event_signal(EVENT_HP);
-	event_signal(EVENT_STATS);	
-}
-
 void do_cmd_choose_name(struct command *cmd)
 {
 	const char *str;

@@ -297,8 +297,8 @@ void display_combat_rolls(game_event_type type, game_event_data *data, void *use
 			/* determine the appropriate resistance if the player was attacked*/
 			if ((combat_rolls[round][i].defender_char == r_info[0].d_char) &&
 				(combat_rolls[round][i].defender_attr == r_info[0].d_attr)) {
-				int type = combat_rolls[round][i].dam_type;
-				res = player->state.el_info[type].res_level;
+				int dam_type = combat_rolls[round][i].dam_type;
+				res = player->state.el_info[dam_type].res_level;
 			}
 
 			if ((combat_rolls[round][i].attacker_char == r_info[0].d_char) &&

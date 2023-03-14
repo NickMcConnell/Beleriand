@@ -31,7 +31,7 @@
  *
  * It ranges from 100,000 to 141,399,999
  */
-int score_points(const struct high_score *score)
+static int score_points(const struct high_score *score)
 {
 	int points = 0;
 	int silmarils;

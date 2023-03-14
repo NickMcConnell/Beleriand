@@ -566,9 +566,8 @@ static void process_player_cleanup(void)
 	/* Check for greater vault squares */
 	if (square_isgreatervault(cave, player->grid) && cave->vault_name) {
 		char note[120];
-		char *fmt = "Entered %s";
 
-		strnfmt(note, sizeof(note), fmt, cave->vault_name);
+		strnfmt(note, sizeof(note), "Entered %s", cave->vault_name);
 		history_add(player, note, HIST_VAULT_ENTERED);
 
 		/* Give a message unless it is the Gates or the Throne Room */

@@ -476,7 +476,7 @@ int player_timed_decrement_amount(struct player *p, int idx)
 /**
  * Effects on end of temporary boost
  */
-void player_timed_end_effect(int idx)
+static void player_timed_end_effect(int idx)
 {
 	bool fake;
 	switch (idx) {

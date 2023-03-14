@@ -35,7 +35,7 @@ struct ability *abilities;
 /* Temporary list to store prerequisite details; 199 should be enough */
 static struct {
 	uint8_t skill;
-	char *name;
+	const char *name;
 } prereq_list[100];
 static unsigned int prereq_num = 1;
 
@@ -264,7 +264,7 @@ struct ability *lookup_ability(int skill, const char *name)
  * Counts the abilities for a given skill in a set.
  * If the skill is SKILL_MAX, count all abilities.
  */
-int count_abilities(struct ability *ability, int skill)
+static int count_abilities(struct ability *ability, int skill)
 {
 	int count = 0;
 	assert(0 <= skill && skill <= SKILL_MAX);
@@ -277,12 +277,13 @@ int count_abilities(struct ability *ability, int skill)
 	return count;
 }
 
-bool ability_is_active(const struct ability *ability)
+static bool ability_is_active(const struct ability *ability)
 {
 	return ability->active;
 }
 
-int test_ability(char *name, struct ability *test, ability_predicate pred)
+static int test_ability(const char *name, struct ability *test,
+						ability_predicate pred)
 {
 	int skill, count = 0;
 	bool found = false;
@@ -409,20 +410,20 @@ void remove_ability(struct ability **ability, struct ability *remove)
 	}
 }
 
-bool player_innate_ability(struct player *p, char *name)
+static bool player_innate_ability(struct player *p, const char *name)
 {
 	struct ability *ability = p->abilities;
 	return ability ? !!test_ability(name, ability, NULL) : false;
 }
 
-bool player_has_ability(struct player *p, char *name)
+bool player_has_ability(struct player *p, const char *name)
 {
 	if (player_innate_ability(p, name)) return true;
 	if (test_ability(name, p->item_abilities, NULL)) return true;
 	return false;
 }
 
-int player_active_ability(struct player *p, char *name)
+int player_active_ability(struct player *p, const char *name)
 {
 	int count;
 	if (!p) return 0;

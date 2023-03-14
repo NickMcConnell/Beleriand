@@ -859,7 +859,7 @@ void drop_loot(struct monster *mon, bool stats)
  * If `stats` is true, then we skip updating the monster memory. This is
  * used by stats-generation code, for efficiency.
  */
-void monster_death(struct monster *mon, struct player *p, bool player,
+void monster_death(struct monster *mon, struct player *p, bool by_player,
 						  const char *note, bool stats)
 {
 	int32_t new_exp;
@@ -917,21 +917,21 @@ void monster_death(struct monster *mon, struct player *p, bool player,
 		if (!monster_is_visible(mon)) {
 			/* Death by physical attack -- invisible monster
 			 * You only get messages for unseen monsters if you kill them */
-			if (player && (distance(mon->grid, p->grid) == 1)) {
+			if (by_player && (distance(mon->grid, p->grid) == 1)) {
 				msgt(soundfx, "You have killed %s.", m_name);
 			}
 		} else if (monster_is_nonliving(mon)) {
 			/* Death by Physical attack -- non-living monster */
 			if (streq(race->base->name, "deathblade")) {
 				/* Special message for deathblades */
-				if (player) {
+				if (by_player) {
 					msgt(soundfx, "You have subdued %s.", m_name);
 				} else {
 					my_strcap(m_name);
 					msgt(soundfx, "%s has been subdued.", m_name);
 				}
 			} else {
-				if (player) {
+				if (by_player) {
 					msgt(soundfx, "You have destroyed %s.", m_name);
 				} else {
 					my_strcap(m_name);
@@ -940,7 +940,7 @@ void monster_death(struct monster *mon, struct player *p, bool player,
 			}
 		} else {
 			/* Death by Physical attack -- living monster */
-			if (player) {
+			if (by_player) {
 				msgt(soundfx, "You have slain %s.", m_name);
 			} else {
 				my_strcap(m_name);
@@ -984,7 +984,7 @@ void monster_death(struct monster *mon, struct player *p, bool player,
 
     /* Since it was killed, it was definitely encountered */
     if (!mon->encountered) {
-        int new_exp = adjusted_mon_exp(mon->race, false);
+        new_exp = adjusted_mon_exp(mon->race, false);
 
         /* Gain experience for encounter */
         player_exp_gain(p, new_exp);

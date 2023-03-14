@@ -253,7 +253,6 @@ typedef struct vinfo_hack vinfo_hack;
  * Hard-coded version of z_info->max_sight etc for now - NRM
  */
 #define SIGHT_MAX 20
-#define VIEW_MAX 20
 
 /**
  * Hard-coded max fire grids - NRM
@@ -346,7 +345,7 @@ static void ang_sort_swap_hook_longs(void *u, void *v, int a, int b)
  * function hooks to interact with the data, which is given as
  * two pointers, and which may have any user-defined form.
  */
-void ang_sort_aux(void *u, void *v, int p, int q)
+static void ang_sort_aux(void *u, void *v, int p, int q)
 {
 	int z, a, b;
 
@@ -395,7 +394,7 @@ void ang_sort_aux(void *u, void *v, int p, int q)
  * function hooks to interact with the data, which is given as
  * two pointers, and which may have any user-defined form.
  */
-void ang_sort(void *u, void *v, int n)
+static void ang_sort(void *u, void *v, int n)
 {
 	/* Sort the array */
 	ang_sort_aux(u, v, 0, n-1);

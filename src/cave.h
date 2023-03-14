@@ -288,29 +288,28 @@ void expose_to_sun(struct chunk *c, struct loc grid, bool daytime);
 typedef bool (*square_predicate)(struct chunk *c, struct loc grid);
 
 /* FEATURE PREDICATES */
+bool feat_is_rock(int feat);
 bool feat_is_quartz(int feat);
 bool feat_is_granite(int feat);
-bool feat_is_treasure(int feat);
 bool feat_is_wall(int feat);
 bool feat_is_floor(int feat);
 bool feat_is_trap_holding(int feat);
 bool feat_is_object_holding(int feat);
 bool feat_is_monster_walkable(int feat);
-bool feat_is_shop(int feat);
+bool feat_is_forge(int feat);
 bool feat_is_los(int feat);
 bool feat_is_passable(int feat);
 bool feat_is_projectable(int feat);
 bool feat_is_torch(int feat);
-bool feat_is_bright(int feat);
-bool feat_is_fiery(int feat);
+bool feat_is_pit(int feat);
 bool feat_is_no_flow(int feat);
 bool feat_is_no_scent(int feat);
-bool feat_is_smooth(int feat);
 
 /* SQUARE FEATURE PREDICATES */
 bool square_isfloor(struct chunk *c, struct loc grid);
 bool square_istrappable(struct chunk *c, struct loc grid);
 bool square_isobjectholding(struct chunk *c, struct loc grid);
+bool square_isgranitewall(struct chunk *c, struct loc grid);
 bool square_isrock(struct chunk *c, struct loc grid);
 bool square_isgranite(struct chunk *c, struct loc grid);
 bool square_isperm(struct chunk *c, struct loc grid);

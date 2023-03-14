@@ -244,7 +244,7 @@ void place_random_door(struct chunk *c, struct loc grid);
 void place_forge(struct chunk *c, struct loc grid);
 void alloc_stairs(struct chunk *c, int feat, int num);
 bool alloc_object(struct chunk *c, int set, int typ, int depth, uint8_t origin);
-struct room_profile lookup_room_profile(char *name);
+struct room_profile lookup_room_profile(const char *name);
 void uncreate_artifacts(struct chunk *c);
 void chunk_validate_objects(struct chunk *c);
 void dump_level_simple(const char *basefilename, const char *title,

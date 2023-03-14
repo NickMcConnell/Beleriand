@@ -422,7 +422,6 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	bool vis = (context->origin.what == SRC_PLAYER);
 	int i;
 	struct loc offset, pit = loc(0, 0);
-	int damage = 0;
 	bool fall_in = false;
 	struct loc centre = origin_get_loc(context->origin);
 
@@ -446,7 +445,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 		/* Pit creation by Morgoth */
 		if (mon->race == lookup_monster("Morgoth, Lord of Darkness")) {
-			struct loc pit, safe;
+			struct loc safe;
 			bool in_pit = square_ispit(cave, player->grid);
 			int num = 0;
 
@@ -686,6 +685,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	/* Fall into the pit if there were no safe squares to jump to */
 	if (fall_in && square_ispit(cave, pgrid)) {
+		int damage;
 		msg("You fall back into the newly made pit!");
 
 		/* Falling damage */

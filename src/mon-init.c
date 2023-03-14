@@ -555,7 +555,7 @@ static enum parser_error parse_pursuit_message_far(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_pursuit(void) {
+static struct parser *init_parse_pursuit(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
@@ -668,7 +668,7 @@ static enum parser_error parse_warning_message_invis_silence(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_warning(void) {
+static struct parser *init_parse_warning(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
@@ -1723,7 +1723,7 @@ static enum parser_error parse_monster_color_cycle(struct parser *p)
 {
 	struct monster_race *r = parser_priv(p);
 	const char *group = parser_getsym(p, "group");
-	const char *cycle = parser_getsym(p, "cycle");
+	const char *ccycle = parser_getsym(p, "cycle");
 
 	if (r == NULL)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -1731,10 +1731,10 @@ static enum parser_error parse_monster_color_cycle(struct parser *p)
 	if (group == NULL || strlen(group) == 0)
 		return PARSE_ERROR_INVALID_VALUE;
 
-	if (cycle == NULL || strlen(cycle) == 0)
+	if (ccycle == NULL || strlen(ccycle) == 0)
 		return PARSE_ERROR_INVALID_VALUE;
 
-	visuals_cycler_set_cycle_for_race(r, group, cycle);
+	visuals_cycler_set_cycle_for_race(r, group, ccycle);
 
 	return PARSE_ERROR_NONE;
 }

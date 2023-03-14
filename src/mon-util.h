@@ -36,7 +36,7 @@ void monsters_hear(bool player_centered, bool main_roll, int difficulty);
 int32_t adjusted_mon_exp(const struct monster_race *race, bool kill);
 int mon_create_drop_count(const struct monster_race *race, bool maximize);
 void drop_loot(struct monster *mon, bool stats);
-void monster_death(struct monster *mon, struct player *p, bool player,
+void monster_death(struct monster *mon, struct player *p, bool by_player,
 				   const char *note, bool stats);
 bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 							enum mon_messages hurt_msg,

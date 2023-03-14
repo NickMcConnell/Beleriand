@@ -86,7 +86,7 @@
  * Determines whether the player can pass through a given feature
  * icky locations (inside vaults) are all considered passable.
  */
-bool player_pass(struct chunk *c, struct loc grid, bool ignore_rubble)
+static bool player_pass(struct chunk *c, struct loc grid, bool ignore_rubble)
 {
 	bool vault_interior = square_isvault(c, grid) &&
 		square_isvault(c, loc(grid.x - 1, grid.y)) &&
@@ -101,8 +101,8 @@ bool player_pass(struct chunk *c, struct loc grid, bool ignore_rubble)
 /**
  * Floodfills access through the dungeon, marking all accessible squares true
  */
-void flood_access(struct chunk *c, struct loc grid, bool **access,
-				  bool ignore_rubble)
+static void flood_access(struct chunk *c, struct loc grid, bool **access,
+						 bool ignore_rubble)
 {
 	int i;
 
@@ -123,7 +123,7 @@ void flood_access(struct chunk *c, struct loc grid, bool **access,
  * Make sure that the level is sufficiently connected.
  */
 
-bool check_connectivity(struct chunk *c)
+static bool check_connectivity(struct chunk *c)
 {
 	struct loc grid;
 
@@ -168,7 +168,7 @@ bool check_connectivity(struct chunk *c)
 /**
  * Floodfills access through the *graph* of the dungeon
  */
-void flood_piece(int n, int piece_num)
+static void flood_piece(int n, int piece_num)
 {
 	int i;
 
@@ -182,7 +182,7 @@ void flood_piece(int n, int piece_num)
 	return;
 }
 
-int dungeon_pieces(void)
+static int dungeon_pieces(void)
 {
 	int piece_num;
 	int i;
@@ -268,7 +268,7 @@ static bool build_streamer(struct chunk *c, int feat)
 static void build_chasm(struct chunk *c)
 {
 	bool chasm_ok = false;
-	struct loc grid;
+	struct loc grid1;
 
 	/* Try to mark squares to be a chasm */
 	while (!chasm_ok) {
@@ -385,11 +385,11 @@ static void build_chasm(struct chunk *c)
 	}
 
 	/* Actually place the chasm and clear the flag */
-	for (grid.y = 0; grid.y < c->height; grid.y++) {
-		for (grid.x = 0; grid.x < c->width; grid.x++) {
-			if (sqinfo_has(square(c, grid)->info, SQUARE_CHASM)) {
-				square_set_feat(c, grid, FEAT_CHASM);
-				sqinfo_off(square(c, grid)->info, SQUARE_CHASM);
+	for (grid1.y = 0; grid1.y < c->height; grid1.y++) {
+		for (grid1.x = 0; grid1.x < c->width; grid1.x++) {
+			if (sqinfo_has(square(c, grid1)->info, SQUARE_CHASM)) {
+				square_set_feat(c, grid1, FEAT_CHASM);
+				sqinfo_off(square(c, grid1)->info, SQUARE_CHASM);
 			}
 		}
 	}

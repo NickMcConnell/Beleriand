@@ -876,9 +876,9 @@ void mark_artifact_everseen(const struct artifact *art, bool seen)
 /**
  * Write ability lines for a set of abilities.
  */
-static void write_abilities(ang_file *fff, const struct ability *abilities)
+static void write_abilities(ang_file *fff, const struct ability *abils)
 {
-	struct ability *ability = (struct ability *) abilities;
+	struct ability *ability = (struct ability *) abils;
 
 	static const char *skill_names[] = {
 		#define SKILL(a, b) b,

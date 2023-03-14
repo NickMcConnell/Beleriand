@@ -45,14 +45,13 @@ extern struct ability *abilities;
 typedef bool (*ability_predicate)(const struct ability *test);
 
 struct ability *lookup_ability(int skill, const char *name);
-int count_abilities(struct ability *ability, int skill);
 bool applicable_ability(struct ability *ability, struct object *obj);
 struct ability *locate_ability(struct ability *ability, struct ability *test);
 void add_ability(struct ability **set, struct ability *add);
 void activate_ability(struct ability **set, struct ability *activate);
 void remove_ability(struct ability **ability, struct ability *remove);
-bool player_has_ability(struct player *p, char *name);
-int player_active_ability(struct player *p, char *name);
+bool player_has_ability(struct player *p, const char *name);
+int player_active_ability(struct player *p, const char *name);
 bool player_has_prereq_abilities(struct player *p, struct ability *ability);
 bool player_can_gain_ability(struct player *p, struct ability *ability);
 bool player_gain_ability(struct player *p, struct ability *ability);

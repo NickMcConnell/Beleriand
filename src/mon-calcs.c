@@ -62,7 +62,7 @@ int monster_elf_bane_bonus(struct monster *mon, struct player *p)
  * Calculate the number of monsters of the same type within LOS of a given
  * monster.
  */
-int morale_from_friends(struct monster *mon)
+static int morale_from_friends(struct monster *mon)
 {
 	int i;
 	int morale_bonus = 0;

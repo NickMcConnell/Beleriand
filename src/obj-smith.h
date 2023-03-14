@@ -99,7 +99,7 @@ struct smithing_cost {
 struct smithing_tval_desc {
 	int category;
 	int tval;
-	char *desc;
+	const char *desc;
 };
 
 /**

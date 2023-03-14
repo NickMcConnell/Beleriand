@@ -1687,7 +1687,7 @@ static enum parser_error parse_drop_item(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_drop(void) {
+static struct parser *init_parse_drop(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_drop_name);

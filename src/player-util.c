@@ -482,7 +482,7 @@ void player_fall_in_pit(struct player *p, bool spiked)
 void player_falling_damage(struct player *p, bool stun)
 {
 	int dice = 3, dam;
-	char *message;
+	const char *message;
 
 	if (square_ischasm(cave, p->grid)) {
 		if (p->depth != z_info->dun_depth - 2) {
@@ -972,7 +972,7 @@ static const int bane_flag[] = {
 	#undef BANE
 };
 
-int player_bane_type_killed(int i)
+static int player_bane_type_killed(int i)
 {
 	int j, k = 0;
 
@@ -1407,7 +1407,8 @@ void disturb(struct player *p, bool stop_stealth)
  * Search a single square for hidden things 
  * (a utility function called by 'search' and 'perceive')
  */
-void search_square(struct player *p, struct loc grid, int dist, int searching)
+static void search_square(struct player *p, struct loc grid, int dist,
+						  int searching)
 {
 	int score = 0;
 	int difficulty = 0;

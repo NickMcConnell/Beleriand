@@ -116,7 +116,6 @@ static void include_pval(struct object *obj)
 
 static void exclude_pval(struct object *obj)
 {
-	int i;
 	if (pval_included) object_copy(smith_obj, smith_obj_backup);
 	pval_included = false;
 }
@@ -359,7 +358,7 @@ static void smith_obj_browser(int oid, void *data, const region *loc)
  * ------------------------------------------------------------------------ */
 static struct object_kind *smithing_svals[20];
 
-int get_smithing_svals(int tval)
+static int get_smithing_svals(int tval)
 {
 	int i, count = 0;
 	for (i = 0; i < z_info->k_max; i++) {
@@ -504,7 +503,7 @@ static void tval_menu(const char *name, int row)
  * ------------------------------------------------------------------------ */
 struct ego_item **smithing_specials;
 
-int get_smithing_specials(struct object_kind *kind)
+static int get_smithing_specials(struct object_kind *kind)
 {
 	int i, count = 0;
 	if (!kind) return 0;
@@ -657,7 +656,7 @@ static int get_smith_art_abilities(int skill)
 /**
  * Allows the player to choose a new name for an artefact.
  */
-void rename_artefact(void)
+static void rename_artefact(void)
 {
 	char tmp[20];
 	char old_name[20];
@@ -801,7 +800,6 @@ static void artefact_display(struct menu *menu, int oid, bool cursor, int row,
 {
 	char **choice = menu->menu_data;
 	uint8_t attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
-	struct smithing_cost dummy;
 	if (cursor) {
 		object_know(smith_obj);
 		include_pval(smith_obj);
@@ -963,7 +961,7 @@ static void melt_menu(const char *name, int row)
  * ------------------------------------------------------------------------ */
 struct numbers_menu_entry {
 	enum smithing_numbers_mod_index index;
-	char *name;
+	const char *name;
 };
 
 struct numbers_menu_entry numbers_menu_info[SMITH_NUM_MAX] =
@@ -1123,7 +1121,7 @@ static void numbers_menu(const char *name, int row)
 	return;
 }
 
-void accept_item(const char *name, int row)
+static void accept_item(const char *name, int row)
 {
 	if (!square_isforge(cave, player->grid) ||
 		!square_forge_uses(cave, player->grid)) {
@@ -1163,25 +1161,25 @@ static menu_action smithing_actions[] =
 static void smithing_menu_browser(int oid, void *data, const region *loc)
 {
 	uint8_t attr = COLOUR_SLATE;
-	char *desc[] = { "Start with a new base item.               ",
-					 "                                          ",
-					 "Choose a special enchantment to add to the",
-					 "base item. (not compatible with Artifice) ",
-					 "Design your own artefact.                 ",
-					 "(not compatible with Enchant)             ",
-					 "Change the item's key numbers.            ",
-					 "                                          ",
-					 "Choose a mithril item to melt down.       ",
-					 "                                          ",
-					 "Create the item you have designed.        ",
-					 "(to cancel it instead, just press Escape) "
+	static char *desc[] = { "Start with a new base item.               ",
+							"                                          ",
+							"Choose a special enchantment to add to the",
+							"base item. (not compatible with Artifice) ",
+							"Design your own artefact.                 ",
+							"(not compatible with Enchant)             ",
+							"Change the item's key numbers.            ",
+							"                                          ",
+							"Choose a mithril item to melt down.       ",
+							"                                          ",
+							"Create the item you have designed.        ",
+							"(to cancel it instead, just press Escape) "
 	};
-	char *extra[] = { "(Enchantment cannot be changed after     "
-					  "using the Numbers menu)                  ",
-					 "This forge has no resources, so you cannot"
-					  "create items. To exit, press Escape.     ",
-					 "You are not at a forge and thus cannot    "
-					  "create items. To exit, press Escape.     "
+	static char *extra[] = { "(Enchantment cannot be changed after     ",
+							 "using the Numbers menu)                  ",
+							 "This forge has no resources, so you cannot",
+							 "create items. To exit, press Escape.     ",
+							 "You are not at a forge and thus cannot   ",
+							 "create items. To exit, press Escape.     "
 	};
 	region area = { COL_SMT2, ROW_SMT1, COL_SMT4 - COL_SMT2,
 					MAX_SMITHING_TVALS + 2 };
@@ -1203,7 +1201,7 @@ static void smithing_menu_browser(int oid, void *data, const region *loc)
 	}
 }
 
-void check_smithing_menu_row_colors(void)
+static void check_smithing_menu_row_colors(void)
 {
 	size_t i;
 

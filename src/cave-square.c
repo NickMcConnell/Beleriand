@@ -64,14 +64,6 @@ bool feat_is_granite(int feat)
 }
 
 /**
- * True if the square is a mineral wall with treasure (magma/quartz).
- */
-bool feat_is_treasure(int feat)
-{
-	return (tf_has(f_info[feat].flags, TF_GOLD));
-}
-
-/**
  * True if the feature is a solid wall (not rubble).
  */
 bool feat_is_wall(int feat)

@@ -27,7 +27,7 @@
 /**
  * Prints a nice comma spaced natural number
  */
-void comma_number(char *output, int number, int len)
+static void comma_number(char *output, int number, int len)
 {
 	if (number >= 1000000) {
 		strnfmt(output, len, "%d,%03d,%03d", number / 1000000,

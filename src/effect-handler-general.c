@@ -93,7 +93,7 @@ static const char *desc_stat(int stat, bool positive)
  *
  * Marks grids to be closed with the SQUARE_TEMP flag..
  */
-bool close_chasm(struct loc grid, int power)
+static bool close_chasm(struct loc grid, int power)
 {
     int adj_chasms = 0;
     int y, x;
@@ -124,7 +124,7 @@ bool close_chasm(struct loc grid, int power)
 /**
  * Close all marked chasms
  */
-void close_marked_chasms(void)
+static void close_marked_chasms(void)
 {
 	struct loc grid;
 

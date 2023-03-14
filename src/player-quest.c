@@ -239,7 +239,7 @@ void wake_all_monsters(struct player *p)
 void prise_silmaril(struct player *p)
 {
 	struct object *obj, *weapon;
-	char *freed_msg = NULL;
+	const char *freed_msg = NULL;
 	bool freed = false;
 	int net_dam = 0;
 	int hit_result = 0;

@@ -581,7 +581,7 @@ int mithril_carried(struct player *p)
 }
 
 
-void use_mithril(struct player *p, int cost)
+static void use_mithril(struct player *p, int cost)
 {
 	struct object *obj;
 		struct object_kind *kind = lookup_kind(TV_METAL,
@@ -649,7 +649,7 @@ int object_difficulty(struct object *obj, struct smithing_cost *smithing_cost)
 	bitflag flags[OF_MAX];
 	int dif_inc = 0, dif_dec = 0;
 	int i, weight_factor, diff, new, base;
-	int brands = 0;
+	int smith_brands = 0;
 	struct ability *ability = obj->abilities;
 	int dif_mult = 100;
 	int drain = player->state.skill_use[SKILL_SMITHING] +
@@ -772,7 +772,7 @@ int object_difficulty(struct object *obj, struct smithing_cost *smithing_cost)
 				if (obj->brands && (obj->brands[prop->index])) {
 					dif_inc += prop->smith_diff;
 					adjust_smithing_cost(1, prop, smithing_cost);
-					brands++;
+					smith_brands++;
 				}
 				break;
 			}
@@ -780,8 +780,8 @@ int object_difficulty(struct object *obj, struct smithing_cost *smithing_cost)
 	}
 
 	/* Extra difficulty for multiple brands */
-	if (brands > 1) {
-		dif_inc += (brands - 1) * 20;
+	if (smith_brands > 1) {
+		dif_inc += (smith_brands - 1) * 20;
 	}
 
 	/* Abilities */
@@ -869,7 +869,7 @@ int object_difficulty(struct object *obj, struct smithing_cost *smithing_cost)
 /**
  * Determines whether an item is too difficult to make.
  */
-int too_difficult(struct object *obj)
+static int too_difficult(struct object *obj)
 {
 	struct smithing_cost dummy;
 	int dif = object_difficulty(obj, &dummy);
@@ -886,7 +886,7 @@ int too_difficult(struct object *obj)
 /**
  * Checks whether a stat is great enough to accommodate a given cost
  */
-bool check_stat_drain(struct player *p, int stat, int cost)
+static bool check_stat_drain(struct player *p, int stat, int cost)
 {
 	int usable_stat = p->stat_base[stat] + p->stat_drain[stat];
 	if (cost <= 0) return true;
@@ -943,7 +943,7 @@ bool smith_affordable(struct object *obj, struct smithing_cost *smithing_cost)
  * Pay the costs in terms of ability points and experience needed to smith
  * the current object.
  */
-void smith_pay_costs(struct smithing_cost *smithing_cost)
+static void smith_pay_costs(struct smithing_cost *smithing_cost)
 {
 	int stat;
 
@@ -991,7 +991,7 @@ void smith_pay_costs(struct smithing_cost *smithing_cost)
 /**
  * Set modifiers or other values for base object to 1 where needed
  */
-void set_base_values(struct object *obj)
+static void set_base_values(struct object *obj)
 {
 	int i;
 
@@ -1315,7 +1315,7 @@ void remove_object_property(struct obj_property *prop, struct object *obj)
 /**
  * Actually create the item.
  */
-void create_smithing_item(struct object *obj, struct smithing_cost *cost)
+static void create_smithing_item(struct object *obj, struct smithing_cost *cost)
 {
 	struct object *created = object_new();
 	char o_name[80];

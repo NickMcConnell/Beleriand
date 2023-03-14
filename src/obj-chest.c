@@ -392,7 +392,7 @@ int count_chests(struct loc *grid, enum chest_query check_type)
 /**
  * Choose the theme for a chest
  */
-struct drop *choose_chest_contents(void)
+static struct drop *choose_chest_contents(void)
 {
 	struct drop *theme;
 	int pick, count = 0;

@@ -885,7 +885,7 @@ void apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
  * Special values are a stored random value for the case where the kind
  * almost always just needs an integer.
  */
-int eval_special_value(struct object_kind *kind, int lev)
+static int eval_special_value(struct object_kind *kind, int lev)
 {
 	int val = randcalc(kind->special1, lev, RANDOMISE);
 	if (!val && (kind->special2 != 0)) {
@@ -1036,7 +1036,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
  * This function fails gracefully; if the drop type is incorrect, it returns
  * NULL, which means no drop restrictions will be enforced.
  */
-struct drop *lookup_drop(char *name)
+struct drop *lookup_drop(const char *name)
 {
 	int i;
 	for (i = 0; i < z_info->drop_max; i++) {
@@ -1049,7 +1049,7 @@ struct drop *lookup_drop(char *name)
 /**
  * Verify a drop type
  */
-bool drop_is(struct drop *drop, char *name)
+static bool drop_is(struct drop *drop, const char *name)
 {
 	return streq(name, drop->name);
 }
@@ -1059,7 +1059,7 @@ bool drop_is(struct drop *drop, char *name)
  * This way, we can use get_obj_num() to get a level-appropriate object of
  * the specified drop type.
  */
-void get_obj_num_prep(struct drop *drop)
+static void get_obj_num_prep(struct drop *drop)
 {
 	int i;
 
