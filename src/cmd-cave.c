@@ -721,6 +721,10 @@ void do_cmd_exchange(struct command *cmd)
 		/* Message */
 		msg("You cannot see a monster there to exchange places with.");
 		return;
+	} else if (square_isrubble(cave, grid)) {
+		/* Rubble */
+		msg("There is a pile of rubble in the way.");
+		return;
 	} else if (square_iswall(cave, grid)) {
 		/* Wall */
 		msg("There is a wall in the way.");
@@ -728,10 +732,6 @@ void do_cmd_exchange(struct command *cmd)
 	} else if (square_iscloseddoor(cave, grid)) {
 		/* Closed door */
 		msg("There is a door in the way.");
-		return;
-	} else if (square_isrubble(cave, grid)) {
-		/* Rubble */
-		msg("There is a pile of rubble in the way.");
 		return;
 	} else if (square_ischasm(cave, grid)) {
 		/* Chasm */
