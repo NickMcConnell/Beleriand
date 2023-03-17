@@ -885,6 +885,11 @@ void on_new_level(void)
 	/* Disturb */
 	disturb(player, false);
 
+	/* Display the entry poetry */
+	if (player->turn == 0) {
+		event_signal_poem(EVENT_POEM, player->sex->poetry_name, 5, 15);
+	}
+
 	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
 

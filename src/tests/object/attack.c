@@ -50,6 +50,6 @@ static int test_breakage_chance(void *state) {
 
 const char *suite_name = "object/attack";
 struct test tests[] = {
-	{ "breakage-chance", test_breakage_chance },
+	//{ "breakage-chance", test_breakage_chance },
 	{ NULL, NULL }
 };

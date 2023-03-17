@@ -703,11 +703,6 @@ void prepare_next_level(struct player *p)
 	cave = cave_generate(p);
 	event_signal_flag(EVENT_GEN_LEVEL_END, true);
 
-	/* Display the entry poetry */
-	if (p->turn == 0) {
-		event_signal_poem(EVENT_POEM, p->sex->poetry_name, 5, 15);
-	}
-
 	/* The dungeon is ready */
 	character_dungeon = true;
 }

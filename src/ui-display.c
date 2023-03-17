@@ -1542,7 +1542,8 @@ static void pause_with_text(game_event_type type, game_event_data *data,
 	int msec = 50;
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_GAMEDATA, data->verse.filename);
+	path_build(buf, 1024, ANGBAND_DIR_GAMEDATA, format("%s.txt",
+													   data->verse.filename));
 
 	/* Open the file */
 	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
