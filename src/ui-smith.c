@@ -1163,25 +1163,25 @@ static menu_action smithing_actions[] =
 static void smithing_menu_browser(int oid, void *data, const region *loc)
 {
 	uint8_t attr = COLOUR_SLATE;
-	static char *desc[] = { "Start with a new base item.               ",
-							"                                          ",
-							"Choose a special enchantment to add to the",
-							"base item. (not compatible with Artifice) ",
-							"Design your own artefact.                 ",
-							"(not compatible with Enchant)             ",
-							"Change the item's key numbers.            ",
-							"                                          ",
-							"Choose a mithril item to melt down.       ",
-							"                                          ",
-							"Create the item you have designed.        ",
-							"(to cancel it instead, just press Escape) "
+	const char *desc[] = { "Start with a new base item.               ",
+						   "                                          ",
+						   "Choose a special enchantment to add to the",
+						   "base item. (not compatible with Artifice) ",
+						   "Design your own artefact.                 ",
+						   "(not compatible with Enchant)             ",
+						   "Change the item's key numbers.            ",
+						   "                                          ",
+						   "Choose a mithril item to melt down.       ",
+						   "                                          ",
+						   "Create the item you have designed.        ",
+						   "(to cancel it instead, just press Escape) "
 	};
-	static char *extra[] = { "(Enchantment cannot be changed after     ",
-							 "using the Numbers menu)                  ",
-							 "This forge has no resources, so you cannot",
-							 "create items. To exit, press Escape.     ",
-							 "You are not at a forge and thus cannot   ",
-							 "create items. To exit, press Escape.     "
+	const char *extra[] = { "(Enchantment cannot be changed after     ",
+							"using the Numbers menu)                  ",
+							"This forge has no resources, so you cannot",
+							"create items. To exit, press Escape.     ",
+							"You are not at a forge and thus cannot   ",
+							"create items. To exit, press Escape.     "
 	};
 	region area = { COL_SMT2, ROW_SMT1, COL_SMT4 - COL_SMT2,
 					MAX_SMITHING_TVALS + 2 };

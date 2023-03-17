@@ -449,7 +449,6 @@ void square_unmark(struct chunk *c, struct loc grid);
 int motion_dir(struct loc source, struct loc target);
 struct loc next_grid(struct loc grid, int dir);
 int dir_from_delta(int delta_y, int delta_x);
-struct loc next_grid(struct loc grid, int dir);
 int rough_direction(struct loc grid1, struct loc grid2);
 int lookup_feat(const char *name);
 void set_terrain(void);

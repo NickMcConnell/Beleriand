@@ -501,8 +501,6 @@ void rand_fix(uint32_t val)
 	rand_fixval = val;
 }
 
-int getpid(void);
-
 /**
  * Another simple RNG that does not use any of the above state
  * (so can be used without disturbing the game's RNG state)
@@ -510,8 +508,14 @@ int getpid(void);
 uint32_t Rand_simple(uint32_t m)
 {
 	static time_t seed;
-	time_t v;
-	v = time(NULL);
+	time_t v = time(NULL);
+
+#ifdef UNIX
 	seed = LCRNG(seed % m) + ((v << 16) ^ v ^ getpid());
+#elif defined(_WIN32)
+	seed = LCRNG(seed % m) + ((v << 16) ^ v ^ GetCurrentProcessId());
+#else
+	seed = LCRNG(seed % m) + ((v << 16) ^ v);
+#endif
 	return (seed % m);
 }

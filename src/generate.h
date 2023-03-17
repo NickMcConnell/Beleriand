@@ -235,7 +235,7 @@ bool new_player_spot(struct chunk *c, struct player *p);
 int trap_placement_chance(struct chunk *c, struct loc grid);
 void place_traps(struct chunk *c);
 void place_item_near_player(struct chunk *c, struct player *p, int tval,
-							char *name);
+							const char *name);
 void place_object(struct chunk *c, struct loc grid, int level, bool good,
 	bool great, uint8_t origin, struct drop *drop);
 void place_secret_door(struct chunk *c, struct loc grid);

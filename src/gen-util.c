@@ -352,7 +352,7 @@ static void place_stairs(struct chunk *c, struct loc grid, bool first, int feat)
  * Generate the chosen item at a random spot near the player.
  */
 void place_item_near_player(struct chunk *c, struct player *p, int tval,
-							char *name)
+							const char *name)
 {
 	struct loc grid;
 	int count = 100;

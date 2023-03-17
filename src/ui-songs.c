@@ -67,7 +67,7 @@ static void song_display(struct menu *menu, int oid, bool cursor, int row,
 {
 	struct song_menu_info *choice = menu->menu_data;
 	struct song *song = choice[oid].song;
-	char *str;
+	const char *str;
 	uint8_t attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 
 	if (song) {
