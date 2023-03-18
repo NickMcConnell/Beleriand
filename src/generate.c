@@ -703,6 +703,18 @@ void prepare_next_level(struct player *p)
 	cave = cave_generate(p);
 	event_signal_flag(EVENT_GEN_LEVEL_END, true);
 
+	/* Note any forges generated, done here in case generation fails earlier */
+	for (y = 0; y < cave->height; y++) {
+		for (x = 0; x < cave->width; x++) {
+			if (square_isforge(cave, loc(x, y))) {
+				/* Reset the time since the last forge when an interesting room
+				 * with a forge is generated */
+				player->forge_drought = 0;
+				player->forge_count++;
+			}
+		}
+	}
+
 	/* The dungeon is ready */
 	character_dungeon = true;
 }

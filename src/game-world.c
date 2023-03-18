@@ -885,9 +885,11 @@ void on_new_level(void)
 	/* Disturb */
 	disturb(player, false);
 
-	/* Display the entry poetry */
+	/* Display the entry poetry, prepare for guaranteed forge */
 	if (player->turn == 0) {
 		event_signal_poem(EVENT_POEM, player->sex->poetry_name, 5, 15);
+		player->forge_count = 0;
+		player->forge_drought = 5000;
 	}
 
 	/* Flush messages */

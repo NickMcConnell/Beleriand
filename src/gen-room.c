@@ -1193,9 +1193,12 @@ bool room_build(struct chunk *c, struct room_profile profile)
 	event_signal_string(EVENT_GEN_ROOM_START, profile.name);
 
 	/* Try to build a room */
-	if (!profile.builder(c, centre)) {
-		event_signal_flag(EVENT_GEN_ROOM_END, false);
-		return false;
+	while (!profile.builder(c, centre)) {
+		/* Keep trying if we're forcing a forge - NRM dangerous? */
+		if (!player->upkeep->force_forge) {
+			event_signal_flag(EVENT_GEN_ROOM_END, false);
+			return false;
+		}
 	}
 
 	/* Success */

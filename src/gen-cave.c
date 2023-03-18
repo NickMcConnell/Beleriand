@@ -983,7 +983,7 @@ struct chunk *cave_gen(struct player *p)
 	}
 
 	/* Guarantee a forge if one hasn't been generated in a while */
-	if ((p->forge_drought >= rand_range(2000, 5000)) && (p->turn > 0)) {
+	if (p->forge_drought >= rand_range(2000, 5000)) {
 		struct room_profile profile = lookup_room_profile("Interesting room");
 		if (OPT(player, cheat_room)) msg("Trying to force a forge:");
 		p->upkeep->force_forge = true;
@@ -999,7 +999,7 @@ struct chunk *cave_gen(struct player *p)
 		if (OPT(player, cheat_room)) msg("succeeded.");
 		p->upkeep->force_forge = false;
 	}
-	
+
 	/* Build some rooms */
 	for (i = 0; i < room_attempts; i++) {
 		int j;
