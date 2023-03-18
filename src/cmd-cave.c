@@ -1495,7 +1495,7 @@ void do_cmd_alter(struct command *cmd)
 	int dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
+	if (cmd_get_direction(cmd, "direction", &dir, true) != CMD_OK)
 		return;
 
 	do_cmd_alter_aux(dir);

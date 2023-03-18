@@ -472,7 +472,7 @@ keymap-input:3:{^K}[PageUp]
 ##### Sil/Angband Keyset Mappings #####
 
 # Stay still (numerical)
-keymap-act:,
+keymap-act:z
 keymap-input:0:5
 keymap-input:0:{K}5
 keymap-input:0:{MK}5
@@ -483,6 +483,13 @@ keymap-input:2:{K}5
 keymap-input:2:{MK}5
 keymap-input:2:{K}[Begin]
 keymap-input:2:{MK}[Begin]
+
+# Control-z / , -- Interact with own square
+keymap-act:/5
+keymap-input:0:,
+keymap-input:2:,
+keymap-input:0:^Z
+keymap-input:2:^Z
 
 # Hack -- Commit suicide
 keymap-act:Q
@@ -504,6 +511,13 @@ keymap-input:3:{K}5
 keymap-input:3:{MK}5
 keymap-input:3:{K}[Begin]
 keymap-input:3:{MK}[Begin]
+
+# Control-z / , -- Interact with own square
+keymap-act:/5
+keymap-input:1:,
+keymap-input:3:,
+keymap-input:1:^Z
+keymap-input:3:^Z
 
 # Movement (rogue keys)
 keymap-act:;1
