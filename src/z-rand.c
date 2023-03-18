@@ -18,6 +18,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "z-rand.h"
+#ifdef _WIN32
+#include <windows.h> /* GetCurrentProcessId() */
+#endif
 
 /**
  * This file provides a pseudo-random number generator.
@@ -135,10 +138,11 @@ void Rand_init(void)
 		seed = (uint32_t)(time(NULL));
 
 #ifdef UNIX
-
 		/* Mutate the seed on Unix machines */
 		seed = ((seed >> 3) * (getpid() << 1));
-
+#elif defined(_WIN32)
+		/* Or on Windows */
+		seed = ((seed >> 3) * (GetCurrentProcessId() << 1));
 #endif
 
 		/* Use the complex RNG */
