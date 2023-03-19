@@ -172,7 +172,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	p->upkeep->redraw |= (PR_HP);
 
 	/* Dead player */
-	if (p->chp < 0) {
+	if (p->chp <= 0) {
 		if ((p->wizard || OPT(p, cheat_live)) && !get_check("Die? ")) {
 			event_signal(EVENT_CHEAT_DEATH);
 		} else {
