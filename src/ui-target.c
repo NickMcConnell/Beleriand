@@ -470,7 +470,7 @@ static bool aux_monster(struct chunk *c, struct player *p,
 			/* Describe, and prompt for recall */
 			if (p->wizard) {
 				strnfmt(out_val, sizeof(out_val),
-					"%s%s%s (%s), %s (%d:%d, noise=%d, scent=%d).",
+					"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
 					auxst->phrase1,
 					auxst->phrase2,
 					m_name,
@@ -482,7 +482,7 @@ static bool aux_monster(struct chunk *c, struct player *p,
 					(int)c->scent.grids[auxst->grid.y][auxst->grid.x]);
 			} else {
 				strnfmt(out_val, sizeof(out_val),
-					"%s%s%s (%s), %s.",
+					"%s%s%s%s, %s.",
 					auxst->phrase1,
 					auxst->phrase2,
 					m_name,

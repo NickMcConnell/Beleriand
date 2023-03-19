@@ -60,6 +60,9 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 
 	if (!mon) return;
 
+	/* Start the string empty */
+	my_strcpy(buf, " (", max);
+
 	if (player->wizard) {
 		if (mon->alertness < ALERTNESS_UNWARY) {
 			my_strcat(buf, format("asleep (%d), ", mon->alertness), max);
@@ -71,10 +74,19 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 	}
 
 	/* Effect status */
-	if (mon->m_timed[MON_TMD_CONF]) my_strcat(buf, ", confused", max);
-	if (mon->m_timed[MON_TMD_STUN]) my_strcat(buf, ", stunned", max);
-	if (mon->m_timed[MON_TMD_SLOW]) my_strcat(buf, ", slowed", max);
-	if (mon->m_timed[MON_TMD_FAST]) my_strcat(buf, ", hasted", max);
+	if (mon->m_timed[MON_TMD_CONF]) my_strcat(buf, "confused, ", max);
+	if (mon->m_timed[MON_TMD_STUN]) my_strcat(buf, "stunned, ", max);
+	if (mon->m_timed[MON_TMD_SLOW]) my_strcat(buf, "slowed, ", max);
+	if (mon->m_timed[MON_TMD_FAST]) my_strcat(buf, "hasted, ", max);
+
+	/* If nothing is going to be written, wipe the string */
+	if (strlen(buf) == 2) {
+		buf[0] = '\0';
+	} else {
+		/* Otherwise trim the final ", " and finish */
+		buf[strlen(buf) - 2] = '\0';
+		my_strcat(buf, ") ", max);
+	}
 }
 
 
