@@ -557,7 +557,7 @@ void process_world(struct chunk *c)
 
 
 /**
- * Housekeeping after the processing of a player command
+ * Housekeeping after the processing of any player command
  */
 static void process_player_cleanup(void)
 {
@@ -627,6 +627,123 @@ static void process_player_cleanup(void)
 	redraw_stuff(player);
 }
 
+/**
+ * Housekeeping after the processing of a player game command (ie energy use)
+ */
+static void process_player_post_energy_use_cleanup(void)
+{
+
+    /* If the player is exiting the the game in some manner, stop processing */
+    if (player->is_dead || player->upkeep->generate_level) return;
+
+	/* Do song effects */
+	player_sing(player);
+
+	/* Make less noise if you did nothing at all (+7 in total whether or
+	 * not stealth mode is used) */
+	if (player_is_resting(player)) {
+		player->stealth_score += (player->stealth_mode) ? 2 : 7;
+	}
+
+	/* Make much more noise when smithing */
+	if (player->upkeep->smithing) {
+		/* Make a lot of noise */
+		monsters_hear(true, false, -10);
+	}
+
+	/* Update noise and scent */
+	cave->player_noise.centre = player->grid;
+	update_flow(cave, &cave->player_noise, NULL);
+	update_scent();
+
+	/* Possibly identify passive abilities every so often*/
+	if (one_in_(500)) {
+		ident_passive(player);
+	}
+
+	/*** Damage over Time ***/
+
+	/* Take damage from poison */
+	if (player->timed[TMD_POISONED]) {
+		/* Amount is one fifth of the poison, rounding up */
+		take_hit(player, (player->timed[TMD_POISONED] + 4) / 5, "poison");
+	}
+
+	/* Take damage from cuts, worse from serious cuts */
+	if (player->timed[TMD_CUT]) {
+		/* Take damage */
+		take_hit(player, (player->timed[TMD_CUT] + 4) / 5, "a fatal wound");
+	}
+
+	/* Reduce the wrath counter */
+	if (player->wrath) {
+		int amount = (player->wrath / 100) * (player->wrath / 100);
+
+		/* Half as fast if still singing the song */
+		if (player_is_singing(player, lookup_song("Slaying"))) {
+			player->wrath -= MAX(amount / 2, 1);
+		} else {
+			player->wrath -= MAX(amount, 1);
+		}
+		player->upkeep->update |= (PU_BONUS);
+		player->upkeep->redraw |= (PR_SONG);
+	}
+
+	/*** Check the Food, and Regenerate ***/
+
+	/* Digest */
+	player_digest(player);
+
+	/* Regenerate Hit Points if needed */
+	if (player->chp < player->mhp) {
+		player_regen_hp(player);
+	}
+
+	/* Regenerate voice if needed */
+	if (player->csp < player->msp) {
+		player_regen_mana(player);
+	}
+
+	/* Timeout various things */
+	decrease_timeouts();
+
+	/* Lower the staircasiness */
+	if (player->staircasiness > 0) {
+		int amount;
+
+        /* Decreases much faster on the escape */
+        if (player->on_the_run) {
+            /* Amount is one hundredth of the current value, rounding up */
+            amount = (player->staircasiness + 99) / 100;
+        } else {
+            /* Amount is one thousandth of the current value, rounding up */
+            amount = (player->staircasiness + 999) / 1000;
+        }
+
+		player->staircasiness -= amount;
+	}
+
+	/* Increase the time since the last forge */
+	player->forge_drought++;
+
+	/* Reset the focus flag if the player didn't 'pass' this turn */
+	if (player->previous_action[0] != ACTION_STAND) {
+		player->focused = false;
+	}
+
+	/* Reset the consecutive attacks if the player didn't attack or 'pass' */
+	if (!player->attacked && (player->previous_action[0] != ACTION_STAND)) {
+		player->consecutive_attacks = 0;
+		player->last_attack_m_idx = 0;
+	}
+
+	/* Check for radiance */
+	if (player_radiates(player)) {
+		sqinfo_on(square(cave, player->grid)->info, SQUARE_GLOW);
+	}
+
+	player->turn++;
+}
 
 /**
  * Process player commands from the command queue, finishing when there is a
@@ -762,117 +879,6 @@ void process_player(void)
 
 	/* Notice stuff (if needed) */
 	notice_stuff(player);
-
-    /* If the player is exiting the the game in some manner, stop processing */
-    if (player->is_dead || player->upkeep->generate_level) return;
-
-	/* Do song effects */
-	player_sing(player);
-
-	/* Make less noise if you did nothing at all (+7 in total whether or
-	 * not stealth mode is used) */
-	if (player_is_resting(player)) {
-		player->stealth_score += (player->stealth_mode) ? 2 : 7;
-	}
-
-	/* Make much more noise when smithing */
-	if (player->upkeep->smithing) {
-		/* Make a lot of noise */
-		monsters_hear(true, false, -10);
-	}
-
-	/* Update noise and scent */
-	cave->player_noise.centre = player->grid;
-	update_flow(cave, &cave->player_noise, NULL);
-	update_scent();
-
-	/* Possibly identify passive abilities every so often*/
-	if (one_in_(500)) {
-		ident_passive(player);
-	}
-
-	/*** Damage over Time ***/
-
-	/* Take damage from poison */
-	if (player->timed[TMD_POISONED]) {
-		/* Amount is one fifth of the poison, rounding up */
-		take_hit(player, (player->timed[TMD_POISONED] + 4) / 5, "poison");
-	}
-
-	/* Take damage from cuts, worse from serious cuts */
-	if (player->timed[TMD_CUT]) {
-		/* Take damage */
-		take_hit(player, (player->timed[TMD_CUT] + 4) / 5, "a fatal wound");
-	}
-
-	/* Reduce the wrath counter */
-	if (player->wrath) {
-		int amount = (player->wrath / 100) * (player->wrath / 100);
-
-		/* Half as fast if still singing the song */
-		if (player_is_singing(player, lookup_song("Slaying"))) {
-			player->wrath -= MAX(amount / 2, 1);
-		} else {
-			player->wrath -= MAX(amount, 1);
-		}
-		player->upkeep->update |= (PU_BONUS);
-		player->upkeep->redraw |= (PR_SONG);
-	}
-
-	/*** Check the Food, and Regenerate ***/
-
-	/* Digest */
-	player_digest(player);
-
-	/* Regenerate Hit Points if needed */
-	if (player->chp < player->mhp) {
-		player_regen_hp(player);
-	}
-
-	/* Regenerate voice if needed */
-	if (player->csp < player->msp) {
-		player_regen_mana(player);
-	}
-
-	/* Timeout various things */
-	decrease_timeouts();
-
-	/* Lower the staircasiness */
-	if (player->staircasiness > 0) {
-		int amount; 
-
-        /* Decreases much faster on the escape */
-        if (player->on_the_run) {
-            /* Amount is one hundredth of the current value, rounding up */
-            amount = (player->staircasiness + 99) / 100;
-        } else {
-            /* Amount is one thousandth of the current value, rounding up */
-            amount = (player->staircasiness + 999) / 1000;
-        }
-
-		player->staircasiness -= amount;
-	}
-
-	/* Increase the time since the last forge */
-	player->forge_drought++;
-
-	/* Reset the focus flag if the player didn't 'pass' this turn */
-	if (player->previous_action[0] != ACTION_STAND) {
-		player->focused = false;
-	}
-
-	/* Reset the consecutive attacks if the player didn't attack or 'pass' */
-	if (!player->attacked && (player->previous_action[0] != ACTION_STAND)) {
-		player->consecutive_attacks = 0;
-		player->last_attack_m_idx = 0;
-	}
-
-	/* Check for radiance */
-	if (player_radiates(player)) {
-		sqinfo_on(square(cave, player->grid)->info, SQUARE_GLOW);
-	}
-
-	player->turn++;
 }
 
 /**
@@ -961,10 +967,12 @@ void run_game_loop(void)
 	 * another command is needed */
 	while (player->upkeep->playing) {
 		process_player();
-		if (player->upkeep->energy_use)
+		if (player->upkeep->energy_use) {
+			process_player_post_energy_use_cleanup();
 			break;
-		else
+		} else {
 			return;
+		}
 	}
 
 	/* The player may still have enough energy to move, so we run another
@@ -982,10 +990,12 @@ void run_game_loop(void)
 		/* Process the player until they use some energy */
 		while (player->upkeep->playing) {
 			process_player();
-			if (player->upkeep->energy_use)
+			if (player->upkeep->energy_use) {
+				process_player_post_energy_use_cleanup();
 				break;
-			else
+			} else {
 				return;
+			}
 		}
 	}
 
@@ -1059,10 +1069,12 @@ void run_game_loop(void)
 			/* Process the player until they use some energy */
 			while (player->upkeep->playing) {
 				process_player();
-				if (player->upkeep->energy_use)
+				if (player->upkeep->energy_use) {
+					process_player_post_energy_use_cleanup();
 					break;
-				else
+				} else {
 					return;
+				}
 			}
 		}
 	}
