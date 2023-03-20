@@ -770,6 +770,7 @@ void inven_wield(struct object *obj, int slot)
 	char o_name[80];
 	bool dummy = false;
 	bool less_effective = false;
+	int num = tval_is_ammo(obj) ? obj->number : 1;
 	struct ability *ability;
 
 	/* Deal with wielding of shield or second weapon when already wielding a
@@ -792,8 +793,8 @@ void inven_wield(struct object *obj, int slot)
 	/* It's either a gear object or a floor object */
 	if (object_is_carried(player, obj)) {
 		/* Split off a new object if necessary */
-		if (obj->number > 1) {
-			wielded = gear_object_for_use(player, obj, 1, false, &dummy);
+		if (obj->number > num) {
+			wielded = gear_object_for_use(player, obj, num, false, &dummy);
 
 			/* It's still carried; keep its weight in the total. */
 			assert(wielded->number == 1);
@@ -811,7 +812,7 @@ void inven_wield(struct object *obj, int slot)
 		}
 	} else {
 		/* Get a floor item and carry it */
-		wielded = floor_object_for_use(player, obj, 1, false, &dummy);
+		wielded = floor_object_for_use(player, obj, num, false, &dummy);
 		inven_carry(player, wielded, false, false);
 	}
 
@@ -825,6 +826,8 @@ void inven_wield(struct object *obj, int slot)
 		fmt = "You are shooting with %s (%c).";
 	else if (tval_is_light(wielded))
 		fmt = "Your light source is %s (%c).";
+	else if (tval_is_ammo(wielded))
+		fmt = "In your quiver you have %s (%c)";
 	else
 		fmt = "You are wearing %s (%c).";
 

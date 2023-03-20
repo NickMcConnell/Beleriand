@@ -199,6 +199,10 @@ void do_cmd_takeoff(struct command *cmd)
 void do_cmd_wield(struct command *cmd)
 {
 	struct object *equip_obj;
+	struct object *quiver1_obj =
+		equipped_item_by_slot_name(player, "first quiver");
+	struct object *quiver2_obj =
+		equipped_item_by_slot_name(player, "second quiver");
 	char o_name[80];
 	const char *act;
 
@@ -253,6 +257,21 @@ void do_cmd_wield(struct command *cmd)
 
 		/* Change slot if necessary */
 		slot = equipped_item_slot(player->body, equip_obj);
+	}
+
+	/* Special cases for merging arrows */
+	if (object_similar(quiver1_obj, obj, OSTACK_PACK)) {
+		slot = slot_by_name(player, "first quiver");
+	} else if (object_similar(quiver2_obj, obj, OSTACK_PACK)) {
+		slot = slot_by_name(player, "second quiver");
+	} else if (tval_is_ammo(obj) && quiver1_obj && quiver2_obj) {
+		/* Ask for arrow set to replace */
+		if (cmd_get_item(cmd, "replace", &equip_obj,
+						 /* Prompt */ "Replace which set of arrows? ",
+						 /* Error  */ "Error in do_cmd_wield(), please report.",
+						 /* Filter */ tval_is_ammo,
+						 /* Choice */ USE_EQUIP) != CMD_OK)
+			return;
 	}
 
 	/* Ask about two weapon fighting if necessary */
