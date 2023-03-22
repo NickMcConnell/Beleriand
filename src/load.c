@@ -133,7 +133,7 @@ static struct object *rd_item(void)
 		tv = tval_find_idx(buf);
 		rd_string(buf, sizeof(buf));
 		if (buf[0]) {
-			sv = lookup_sval(obj->tval, buf);
+			sv = lookup_sval(tv, buf);
 			obj->image_kind = lookup_kind(tv, sv);
 		}
 	}

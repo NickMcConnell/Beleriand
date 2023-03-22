@@ -299,23 +299,17 @@ void calc_stance(struct monster *mon)
 
 	/* React to changes in stance */
 	if (stance != mon->stance) {
-		char m_name[80];
-		char buf[160];
-		bool message = false;
-
-		/* Get the monster name */
-		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+		enum mon_messages stance_msg = MON_MSG_NONE;
 		switch (mon->stance) {
 			case STANCE_FLEEING: {
 				/* Give the monster a temporary 'rally' bonus to its morale */
 				mon->tmp_morale += 60;
 				calc_morale(mon);
 				if (!player->truce) {
-					sprintf(buf, "turns to fight!");
+					stance_msg = MON_MSG_TURN_TO_FIGHT;
 				} else {
-					sprintf(buf, "recovers its composure.");
+					stance_msg = MON_MSG_RECOVER_COMPOSURE;
 				}
-				message = true;
 				break;
 			}
 			case STANCE_CONFIDENT:
@@ -324,17 +318,16 @@ void calc_stance(struct monster *mon)
 					/* Give the monster a temporary 'break' penalty to morale */
 					mon->tmp_morale -= 60;
 					calc_morale(mon);
-					sprintf(buf, "flees in terror!");
-					message = true;
+					stance_msg = MON_MSG_FLEE_IN_TERROR;
 				}
 				break;
 			}
 		}
 
 		/* Inform player of visible changes */
-		if (message && monster_is_visible(mon) &&
+		if (stance_msg && monster_is_visible(mon) &&
 			!rf_has(race->flags, RF_NEVER_MOVE)) {
-			msg("%s %s", m_name, buf);
+			add_monster_message(mon, stance_msg, true);
 		}
 
 		/* Force recalculation of range if stance changes */
@@ -364,17 +357,14 @@ void make_alert(struct monster *mon, int dam)
  */
 void set_alertness(struct monster *mon, int alertness)
 {
-	char m_name[80];
 	bool redisplay = false;
+	enum mon_messages alert_msg = MON_MSG_NONE;
 	
 	/* Nothing to be done... */
 	if (mon->alertness == alertness) return;
 	
 	/* Bound the alertness value */
 	alertness = (MAX(MIN(alertness, ALERTNESS_MAX), ALERTNESS_MIN));
-	
-	/* Get the monster name */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 	
 	/* First deal with cases where the monster becomes more alert */
 	if (mon->alertness < alertness) {
@@ -386,7 +376,7 @@ void set_alertness(struct monster *mon, int alertness)
 				/* Notice the "waking up and noticing" */
 				if (monster_is_visible(mon)) {
 					/* Dump a message */
-					msg("%s wakes up and notices you.", m_name);
+					alert_msg = MON_MSG_WAKE_AND_NOTICE;
 				}
 
 				/* Disturb the player */
@@ -398,7 +388,7 @@ void set_alertness(struct monster *mon, int alertness)
 				/* Notice the "waking up" */
 				if (monster_is_visible(mon)) {
 					/* Dump a message */
-					msg("%s wakes up.", m_name);
+					alert_msg = MON_MSG_WAKES_UP;
 				}
 
 				/* Disturb the player */
@@ -415,7 +405,7 @@ void set_alertness(struct monster *mon, int alertness)
 			/* Notice the "noticing" (!) */
 			if (monster_is_visible(mon)) {
 				/* Dump a message */
-				msg("%s notices you.", m_name);
+				alert_msg = MON_MSG_NOTICE;
 
 				/* Disturb the player */
 				disturb(player, true);
@@ -429,7 +419,7 @@ void set_alertness(struct monster *mon, int alertness)
 			/* Notice the "stirring" */
 			if (monster_is_visible(mon)) {
 				/* Dump a message */
-				msg("%s stirs.", m_name);
+				alert_msg = MON_MSG_STIR;
 			}
 		} else if ((mon->alertness < ALERTNESS_ALERT) &&
 				   (alertness < ALERTNESS_ALERT) &&
@@ -437,7 +427,7 @@ void set_alertness(struct monster *mon, int alertness)
 			/* Notice the "looking around" */
 			if (monster_is_visible(mon)) {
 				/* Dump a message */
-				msg("%s looks around.", m_name);
+				alert_msg = MON_MSG_LOOK_AROUND;
 			}
 		}
 	} else {
@@ -447,7 +437,7 @@ void set_alertness(struct monster *mon, int alertness)
 			/* Notice the falling asleep */
 			if (monster_is_visible(mon)) {
 				/* Dump a message */
-				msg("%s falls asleep.", m_name);
+				alert_msg = MON_MSG_FALL_ASLEEP;
 
 				/* Morgoth drops his iron crown if he falls asleep */
 				if (rf_has(mon->race->flags, RF_QUESTOR)) {
@@ -462,7 +452,7 @@ void set_alertness(struct monster *mon, int alertness)
 			/* Notice the becoming unwary */
 			if (monster_is_visible(mon)) {
 				/* Dump a message */
-				msg("%s becomes unwary.", m_name);
+				alert_msg = MON_MSG_BECOME_UNWARY;
 
 				/* Redisplay the monster */
 				redisplay = true;
@@ -475,6 +465,11 @@ void set_alertness(struct monster *mon, int alertness)
 		}
 	}
 	
+	/* Add the message */
+	if (alert_msg) {
+		add_monster_message(mon, alert_msg, true);
+	}
+
 	/* Do the actual alerting */
 	mon->alertness = alertness;
 	
