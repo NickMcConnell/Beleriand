@@ -557,6 +557,65 @@ void process_world(struct chunk *c)
 
 
 /**
+ * Housekeeping after the processing monsters but before processing the player
+ */
+void pre_process_player(void)
+{
+	int i;
+
+	/* Reset the riposte flag */
+	player->upkeep->riposte = false;
+
+	/* Reset the was_entranced flag */
+	player->upkeep->was_entranced = false;
+
+	/* Update the player's light radius */
+	calc_light(player);
+
+	/* Make the stealth-modified noise (has to occur after monsters have
+	 * had a chance to move) */
+	monsters_hear(true, true, player->stealth_score);
+
+	/* Stop stealth mode if something happened */
+	if (player->stealth_mode == STEALTH_MODE_STOPPING) {
+		/* Cancel */
+		player->stealth_mode = STEALTH_MODE_OFF;
+
+		/* Recalculate bonuses */
+		player->upkeep->update |= (PU_BONUS);
+
+		/* Redraw the state */
+		player->upkeep->redraw |= (PR_STATE);
+	}
+
+	/* Morgoth will announce a challenge if adjacent */
+	if (player->truce && (player->depth == z_info->dun_depth)) {
+		check_truce(player);
+	}
+
+	/* List all challenge options at the start of the game */
+	if (player->turn == 1) {
+		options_list_challenge();
+	}
+
+	/* Shuffle along the array of previous actions */
+	for (i = MAX_ACTION - 1; i > 0; i--) {
+		player->previous_action[i] = player->previous_action[i - 1];
+	}
+
+	/* Put in a default for this turn */
+	player->previous_action[0] = ACTION_NOTHING;
+
+	/* Redraw stuff (if needed) */
+	redraw_stuff(player);
+
+	/* Have to update the player bonuses at every turn with sprinting, dodging
+	 * etc. This might cause annoying slowdowns, I'm not sure */
+	player->upkeep->update |= (PU_BONUS);
+
+}
+
+/**
  * Housekeeping after the processing of any player command
  */
 static void process_player_cleanup(void)
@@ -763,61 +822,9 @@ static void process_player_post_energy_use_cleanup(void)
  */
 void process_player(void)
 {
-	int i;
-
-	/* Reset the riposte flag */
-	player->upkeep->riposte = false;
-
-	/* Reset the was_entranced flag */
-	player->upkeep->was_entranced = false;
-
-	/* Update the player's light radius */
-	calc_light(player);
-
 	/* Check for interrupts */
 	player_resting_complete_special(player);
 	event_signal(EVENT_CHECK_INTERRUPT);
-
-	/* Make the stealth-modified noise (has to occur after monsters have
-	 * had a chance to move) */
-	monsters_hear(true, true, player->stealth_score);
-
-	/* Stop stealth mode if something happened */
-	if (player->stealth_mode == STEALTH_MODE_STOPPING) {
-		/* Cancel */
-		player->stealth_mode = STEALTH_MODE_OFF;
-
-		/* Recalculate bonuses */
-		player->upkeep->update |= (PU_BONUS);
-
-		/* Redraw the state */
-		player->upkeep->redraw |= (PR_STATE);			
-	}
-
-	/* Morgoth will announce a challenge if adjacent */
-	if (player->truce && (player->depth == z_info->dun_depth)) {
-		check_truce(player);
-	}
-
-	/* List all challenge options at the start of the game */
-	if (player->turn == 1) {
-		options_list_challenge();
-	}
-
-	/* Shuffle along the array of previous actions */
-	for (i = MAX_ACTION - 1; i > 0; i--) {
-		player->previous_action[i] = player->previous_action[i - 1];
-	}
-
-	/* Put in a default for this turn */
-	player->previous_action[0] = ACTION_NOTHING;
-
-	/* Redraw stuff (if needed) */
-	redraw_stuff(player);
-
-	/* Have to update the player bonuses at every turn with sprinting, dodging
-	 * etc. This might cause annoying slowdowns, I'm not sure */
-	player->upkeep->update |= (PU_BONUS);
 
 	/* Repeat until energy is reduced */
 	do {
@@ -989,6 +996,7 @@ void run_game_loop(void)
 
 		/* Process the player until they use some energy */
 		while (player->upkeep->playing) {
+			pre_process_player();
 			process_player();
 			if (player->upkeep->energy_use) {
 				process_player_post_energy_use_cleanup();
