@@ -193,7 +193,7 @@ desc: sight.
 # 0x38 --> granite wall -- basic
 
 name:granite wall
-graphics:#:z
+graphics:#:W
 priority:20
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW | TORCH
 info:0:3:0
@@ -208,7 +208,7 @@ desc: sight.
 # 0x3F --> granite wall -- permanent
 
 name:permanent wall
-graphics:#:z
+graphics:#:M
 mimic:granite wall
 priority:20
 flags:WALL | ROCK | GRANITE | PERMANENT | NO_SCENT | NO_FLOW | TORCH
