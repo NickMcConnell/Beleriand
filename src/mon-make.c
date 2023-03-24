@@ -286,6 +286,12 @@ struct monster_race *get_mon_num(int level, bool special, bool allow_non_smart,
 		/* Get the chosen monster */
 		race = &r_info[table[i].index];
 
+		/* Ignore monsters before the set level unless in special generation */
+		if (!special && (table[i].level < generation_level)) continue;
+
+		/* Even in special generation ignore monsters before 1/2 the level */
+		if (special && (table[i].level <= generation_level / 2)) continue;
+
 		/* Only one copy of a unique must be around at the same time */
 		if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
 			continue;
@@ -293,6 +299,17 @@ struct monster_race *get_mon_num(int level, bool special, bool allow_non_smart,
 		/* Some monsters never appear out of depth */
 		if (rf_has(race->flags, RF_FORCE_DEPTH) && race->level > player->depth)
 			continue;
+
+		/* Non-moving monsters can't appear as out-of-depth pursuing monsters */
+		if (rf_has(race->flags, RF_NEVER_MOVE) && pursuing_monster) continue;
+
+		/* Territorial monsters can't appear as out-of-depth pursuing monsters*/
+		if (rf_has(race->flags, RF_TERRITORIAL) && pursuing_monster) continue;
+
+		/* Forbid the generation of non-smart monsters except at level-creation
+		 * or specific summons */
+		if (!allow_non_smart && !rf_has(race->flags, RF_SMART) &&
+			!rf_has(race->flags, RF_TERRITORIAL)) continue;
 
 		/* Accept */
 		table[i].prob3 = table[i].prob2;
