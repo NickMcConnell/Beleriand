@@ -1273,6 +1273,10 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 					/* Mark the monster as attacked by the player */
 					mflag_on(mon->mflag, MFLAG_HIT_BY_RANGED);
 
+					/* Describe the object (have up-to-date knowledge now) */
+					object_desc(o_name, sizeof(o_name), obj,
+								ODESC_FULL | ODESC_SINGULAR, p);
+
 					if (!visible) {
 						/* Invisible monster */
 						msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
