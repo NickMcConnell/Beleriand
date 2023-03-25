@@ -458,10 +458,10 @@ int player_timed_decrement_amount(struct player *p, int idx)
 	int amount = 1;
 
 	/* Adjust for songs */
-	if (timed_effects[idx].este) {
+	if (timed_effects[idx].este && player_is_singing(p, este)) {
 		amount = bonus_este;
 	}
-	if (idx == TMD_SLOW) {
+	if ((idx == TMD_SLOW) && player_is_singing(p, freedom)) {
 		amount = bonus_freedom;
 	}
 
