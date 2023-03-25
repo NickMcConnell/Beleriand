@@ -242,7 +242,7 @@ static menu_action death_actions[] =
 	{ 0, 'x', "View inventory and equipment", death_examine   },
 	{ 0, 'd', "View dungeon",                 death_dungeon   },
 	{ 0, 'm', "View final messages",          death_messages  },
-	{ 0, 'f', "View character sheet",         death_info      },
+	{ 0, 'c', "View character sheet",         death_info      },
 	{ 0, 'h', "View character history",       death_history   },
 	{ 0, 'a', "Add comment to history",       death_note      },
 	{ 0, 'f', "Save character sheet",         death_file      },
