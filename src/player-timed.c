@@ -468,6 +468,7 @@ int player_timed_decrement_amount(struct player *p, int idx)
 	/* Special cases */
 	if ((idx == TMD_CUT) || (idx == TMD_POISONED)) {
 		amount *= ((p->timed[idx] + 4) / 5);
+		p->upkeep->redraw |= (PR_STATUS);
 	}
 
 	return amount;
