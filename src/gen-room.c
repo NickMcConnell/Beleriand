@@ -65,20 +65,21 @@ struct vault *random_vault(int depth, const char *typ, bool forge)
 	int n = 1;
 	do {
 		if (streq(v->typ, typ) && (v->depth <= depth)) {
+			bool valid = true;
 			/* Check if we need a forge and don't have one */
 			if (forge && !v->forge) {
-				v = v->next;
-				continue;
+				valid = false;
 			}
 
 			/* Check if it's a greater vault we've already seen */
 			if (streq(v->typ, "Greater vault") && player->vaults[v->index]) {
-				v = v->next;
-				continue;
+				valid = false;
 			}
 
-			if (one_in_(n)) r = v;
-			n++;
+			if (valid) {
+				if (one_in_(n)) r = v;
+				n++;
+			}
 		}
 		v = v->next;
 	} while(v);
@@ -1194,7 +1195,9 @@ bool room_build(struct chunk *c, struct room_profile profile)
 
 	/* Try to build a room */
 	while (!profile.builder(c, centre)) {
-		/* Keep trying if we're forcing a forge - NRM dangerous? */
+		/* Keep trying if we're forcing a forge, but reset the centre
+		 * This is a bit dangerous, and may need more modification - NRM */
+		centre = loc(rand_range(5, c->width - 5), rand_range(5, c->height - 5));
 		if (!player->upkeep->force_forge) {
 			event_signal_flag(EVENT_GEN_ROOM_END, false);
 			return false;
