@@ -179,10 +179,8 @@ bool target_set_monster(struct monster *mon)
 /**
  * Set the target to a location
  */
-void target_set_location(int y, int x)
+void target_set_location(struct loc grid)
 {
-	struct loc grid = loc(x, y);
-
 	/* Legal target */
 	if (square_in_bounds_fully(cave, grid)) {
 		/* Save target info */
@@ -324,9 +322,8 @@ int16_t target_pick(int y1, int x1, int dy, int dx, struct point_set *targets)
 /**
  * Determine if a given location is "interesting"
  */
-bool target_accept(int y, int x)
+static bool target_accept(struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	struct object *obj;
 
 	/* Player grids are always interesting */
@@ -367,26 +364,24 @@ bool target_accept(int y, int x)
  * Describe a location relative to the player position.
  * e.g. "12 S 35 W" or "0 N, 33 E" or "0 N, 0 E"
  */
-void coords_desc(char *buf, int size, int y, int x)
+void coords_desc(char *buf, int size, struct loc grid)
 {
 	const char *east_or_west;
 	const char *north_or_south;
 
-	int py = player->grid.y;
-	int px = player->grid.x;
-
-	if (y > py)
+	if (grid.y > player->grid.y)
 		north_or_south = "S";
 	else
 		north_or_south = "N";
 
-	if (x < px)
+	if (grid.x < player->grid.x)
 		east_or_west = "W";
 	else
 		east_or_west = "E";
 
 	strnfmt(buf, size, "%d %s, %d %s",
-		ABS(y - py), north_or_south, ABS(x-px), east_or_west);
+			ABS(grid.y - player->grid.y), north_or_south,
+			ABS(grid.x - player->grid.x), east_or_west);
 }
 
 /**
@@ -436,7 +431,7 @@ bool target_sighted(void)
 struct point_set *target_get_monsters(int mode, monster_predicate pred,
 		bool restrict_to_panel)
 {
-	int y, x;
+	struct loc grid;
 	int min_y, min_x, max_y, max_x;
 	struct point_set *targets = point_set_new(TS_INITIAL_SIZE);
 
@@ -451,15 +446,13 @@ struct point_set *target_get_monsters(int mode, monster_predicate pred,
 	}
 
 	/* Scan for targets */
-	for (y = min_y; y < max_y; y++) {
-		for (x = min_x; x < max_x; x++) {
-			struct loc grid = loc(x, y);
-
+	for (grid.y = min_y; grid.y < max_y; grid.y++) {
+		for (grid.x = min_x; grid.x < max_x; grid.x++) {
 			/* Check bounds */
 			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Require "interesting" contents */
-			if (!target_accept(y, x)) continue;
+			if (!target_accept(grid)) continue;
 
 			/* Special mode */
 			if (mode & (TARGET_KILL)) {

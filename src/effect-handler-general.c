@@ -801,7 +801,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	monster_swap(start, land);
 
 	/* Cancel target if necessary */
-	target_set_location(0, 0);
+	target_set_location(loc(0, 0));
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);

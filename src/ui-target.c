@@ -228,7 +228,7 @@ static bool is_running_keymap(struct keypress ch)
  * such adjustment was performed. Optionally accounts for the targeting
  * help window.
  */
-static bool adjust_panel_help(int y, int x, bool help)
+static bool adjust_panel_help(struct loc grid, bool help)
 {
 	bool changed = false;
 
@@ -262,12 +262,12 @@ static bool adjust_panel_help(int y, int x, bool help)
 		screen_hgt = screen_hgt / tile_height;
 
 		/* Adjust as needed */
-		while (y >= wy + screen_hgt) wy += screen_hgt / 2;
-		while (y < wy) wy -= screen_hgt / 2;
+		while (grid.y >= wy + screen_hgt) wy += screen_hgt / 2;
+		while (grid.y < wy) wy -= screen_hgt / 2;
 
 		/* Adjust as needed */
-		while (x >= wx + screen_wid) wx += screen_wid / 2;
-		while (x < wx) wx -= screen_wid / 2;
+		while (grid.x >= wx + screen_wid) wx += screen_wid / 2;
+		while (grid.x < wx) wx -= screen_wid / 2;
 
 		/* Use "modify_panel" */
 		if (modify_panel(t, wy, wx)) changed = true;
@@ -891,7 +891,7 @@ static bool aux_wrapup(struct chunk *c, struct player *p,
  *
  * This function must handle blindness/hallucination.
  */
-static ui_event target_set_interactive_aux(int y, int x, int mode)
+static ui_event target_set_interactive_aux(struct loc grid, int mode)
 {
 	/*
 	 * If there's other types to be handled, insert a function to do so
@@ -914,9 +914,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 	auxst.mode = mode;
 
 	/* Describe the square location */
-	auxst.grid.x = x;
-	auxst.grid.y = y;
-	coords_desc(auxst.coord_desc, sizeof(auxst.coord_desc), y, x);
+	auxst.grid = grid;
+	coords_desc(auxst.coord_desc, sizeof(auxst.coord_desc), grid);
 
 	/* Apply the handlers in order until done */
 	ihandler = 0;
@@ -1152,6 +1151,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 {
 	int path_n;
 	struct loc path_g[256];
+	struct loc grid = loc(x, y);
 
 	int wid, hgt, help_prompt_loc;
 	int adjusted_range = range ? range : z_info->max_range;
@@ -1174,9 +1174,8 @@ bool target_set_interactive(int mode, int x, int y, int range)
 
 	/* If we haven't been given an initial location, start on the
 	   player, otherwise  honour it by going into "free targetting" mode. */
-	if (x == -1 || y == -1 || !square_in_bounds_fully(cave, loc(x, y))) {
-		x = player->grid.x;
-		y = player->grid.y;
+	if (grid.x == -1 || grid.y == -1 || !square_in_bounds_fully(cave, grid)) {
+		grid = player->grid;
 	} else {
 		show_interesting = false;
 	}
@@ -1203,15 +1202,13 @@ bool target_set_interactive(int mode, int x, int y, int range)
 		bool path_drawn = false;
 		bool use_interesting_mode = show_interesting && point_set_size(targets);
 		bool use_free_mode = !use_interesting_mode;
-		struct loc grid = loc(x, y);
 
 		/* Use an interesting grid if requested and there are any */
 		if (use_interesting_mode) {
-			y = targets->pts[target_index].y;
-			x = targets->pts[target_index].x;
+			grid = targets->pts[target_index];
 
 			/* Adjust panel if needed */
-			if (adjust_panel_help(y, x, help)) handle_stuff(player);
+			if (adjust_panel_help(grid, help)) handle_stuff(player);
 		}
 
 		/* Update help */
@@ -1224,7 +1221,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 
 		/* Find the path. */
 		path_n = project_path(cave, path_g, adjusted_range, player->grid, &grid,
-							  PROJECT_THRU | PROJECT_INFO);
+							  PROJECT_THRU | PROJECT_INFO | PROJECT_LEAVE);
 
 		/* Draw the path in "target" mode. If there is one */
 		if (mode & (TARGET_KILL))
@@ -1232,8 +1229,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 					player->grid.y, player->grid.x);
 
 		/* Describe and Prompt */
-		ui_event press = target_set_interactive_aux(y, x,
-				mode | (use_free_mode ? TARGET_LOOK : 0));
+		ui_event press = target_set_interactive_aux(grid, mode | (use_free_mode ? TARGET_LOOK : 0));
 
 		/* Remove the path */
 		if (path_drawn) load_path(path_n, path_g, path_char, path_attr);
@@ -1241,11 +1237,11 @@ bool target_set_interactive(int mode, int x, int y, int range)
 		/* Handle an input event */
 		if (event_is_mouse_m(press, 2, KC_MOD_CONTROL) || event_is_mouse(press, 3)) {
 			/* Set a target and done */
-			y = KEY_GRID_Y(press);
-			x = KEY_GRID_X(press);
+			grid.y = KEY_GRID_Y(press);
+			grid.x = KEY_GRID_X(press);
 			if (use_free_mode) {
 				/* Free mode: Target a location */
-				target_set_location(y, x);
+				target_set_location(grid);
 				done = true;
 			} else {
 				/* Interesting mode: Try to target a monster and done, or bell */
@@ -1258,16 +1254,15 @@ bool target_set_interactive(int mode, int x, int y, int range)
 				} else {
 					bell();
 					if (!square_in_bounds(cave, grid)) {
-						x = player->grid.x;
-						y = player->grid.y;
+						grid = player->grid;
 					}
 				}
 			}
 
 		} else if (event_is_mouse_m(press, 2, KC_MOD_ALT)) {
 			/* Navigate to location and done */
-			y = KEY_GRID_Y(press);
-			x = KEY_GRID_X(press);
+			grid.y = KEY_GRID_Y(press);
+			grid.x = KEY_GRID_X(press);
 			cmdq_push(CMD_PATHFIND);
 			cmd_set_arg_point(cmdq_peek(), "point", grid);
 			done = true;
@@ -1275,35 +1270,35 @@ bool target_set_interactive(int mode, int x, int y, int range)
 		} else if (event_is_mouse(press, 2)) {
 			/* Cancel and done */
 			if (use_free_mode && (mode & TARGET_KILL)
-					&& y == KEY_GRID_Y(press) && x == KEY_GRID_X(press)) {
+					&& grid.y == KEY_GRID_Y(press) && grid.x == KEY_GRID_X(press)) {
 				/* Free/kill mode: Clicked current location, set target */
-				target_set_location(y, x);
+				target_set_location(grid);
 			}
 			done = true;
 
 		} else if (event_is_mouse(press, 1)) {
 			/* Relocate cursor */
-			y = KEY_GRID_Y(press);
-			x = KEY_GRID_X(press);
+			grid.y = KEY_GRID_Y(press);
+			grid.x = KEY_GRID_X(press);
 
 			/* If they clicked on an edge of the map, drag the cursor further
 			   to trigger a panel scroll */
 			if (press.mouse.y <= 1) {
-				y--;
+				grid.y--;
 			} else if (press.mouse.y >= Term->hgt - 2) {
-				y++;
+				grid.y++;
 			} else if (press.mouse.x <= COL_MAP) {
-				x--;
+				grid.x--;
 			} else if (press.mouse.x >= Term->wid - 2) {
-				x++;
+				grid.x++;
 			}
 
 			/* Restrict cursor to inbounds */
-			x = MAX(0, MIN(x, cave->width - 1));
-			y = MAX(0, MIN(y, cave->height - 1));
+			grid.x = MAX(0, MIN(grid.x, cave->width - 1));
+			grid.y = MAX(0, MIN(grid.y, cave->height - 1));
 
 			/* Adjust panel if needed */
-			if (adjust_panel_help(y, x, help)) {
+			if (adjust_panel_help(grid, help)) {
 				handle_stuff(player);
 
 				/* Recalculate interesting grids */
@@ -1316,7 +1311,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 
 			/* ...but turn it on if they clicked an interesting spot */
 			for (int i = 0; i < point_set_size(targets); i++) {
-				if (y == targets->pts[i].y && x == targets->pts[i].x) {
+				if (loc_eq(grid, targets->pts[i])) {
 					target_index = i;
 					show_interesting = true;
 					break;
@@ -1342,8 +1337,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 
 		} else if (event_is_key(press, 'p')) {
 			/* Focus the player and switch to free mode */
-			y = player->grid.y;
-			x = player->grid.x;
+			grid = player->grid;
 			show_interesting = false;
 
 			/* Recenter around player */
@@ -1385,7 +1379,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 					bell();
 				}
 			} else {
-				target_set_location(y, x);
+				target_set_location(grid);
 				done = true;
 			}
 
@@ -1464,15 +1458,15 @@ bool target_set_interactive(int mode, int x, int y, int range)
 					10 : 1;
 
 				/* Free mode direction: Move cursor */
-				x += step * ddx[dir];
-				y += step * ddy[dir];
+				grid.x += step * ddx[dir];
+				grid.y += step * ddy[dir];
 
 				/* Keep 1 away from the edge */
-				x = MAX(1, MIN(x, cave->width - 2));
-				y = MAX(1, MIN(y, cave->height - 2));
+				grid.x = MAX(1, MIN(x, cave->width - 2));
+				grid.y = MAX(1, MIN(y, cave->height - 2));
 
 				/* Adjust panel if needed */
-				if (adjust_panel_help(y, x, help)) {
+				if (adjust_panel_help(grid, help)) {
 					handle_stuff(player);
 
 					/* Recalculate interesting grids */

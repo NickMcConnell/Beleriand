@@ -1055,7 +1055,7 @@ int project_path(struct chunk *c, struct loc *gp, int range, struct loc grid1,
 	dist = distance(grid1, *grid2);
 
 	/* Must stay within the field of sight XXX XXX */
-	if (dist > z_info->max_sight) {
+	if ((dist > z_info->max_sight) && !(flg & PROJECT_LEAVE)) {
 		/* Always watch your (+/-) when doing rounded integer math. */
 		int round_y = (dy < 0 ? -(dist / 2) : (dist / 2));
 		int round_x = (dx < 0 ? -(dist / 2) : (dist / 2));
@@ -1344,8 +1344,9 @@ int project_path(struct chunk *c, struct loc *gp, int range, struct loc grid1,
 		j += num;
 	}
 
-	/* Accept last grid as the new endpoint */
-	*grid2 = gp[step - 1];
+	/* Accept last grid as the new endpoint if allowed */
+	if (!(flg & PROJECT_LEAVE))
+		*grid2 = gp[step - 1];
 
 	/* Return count of grids in projection path */
 	if (monster_in_way) return -step;
