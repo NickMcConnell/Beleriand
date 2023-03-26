@@ -203,7 +203,8 @@ static void decrease_timeouts(void)
 	/* Most timed effects decrement by 1 */
 	for (i = 0; i < TMD_MAX; i++) {
 		int decr = player_timed_decrement_amount(player, i);
-		if (!player->timed[i])
+		/* Food is handled separately */
+		if (!player->timed[i] || (i == TMD_FOOD))
 			continue;
 
 		/* Decrement the effect */

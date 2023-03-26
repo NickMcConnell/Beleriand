@@ -320,6 +320,11 @@ static void project_feature_handler_LOCK_DOOR(project_feature_handler_context_t 
 	if (square_isopendoor(cave, grid) || square_isbrokendoor(cave, grid)) {
 		square_close_door(cave, grid);
 		context->obvious = true;
+		if (square_isseen(cave, grid)) {
+			msg("The door slams shut.");
+		} else {
+			msg("You hear a door slam shut.");
+		}
 	} else {
 		/* Or lock the door more firmly than it was before */
 		if ((square_door_lock_power(cave, grid) < 7) && (power > 1)) {
