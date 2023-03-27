@@ -2756,7 +2756,7 @@ void do_cmd_equip(void)
 void do_cmd_look(void)
 {
 	/* Look around */
-	if (target_set_interactive(TARGET_LOOK, -1, -1, 0))
+	if (target_set_interactive(TARGET_LOOK, loc(-1, -1), 0))
 	{
 		msg("Target Selected.");
 	}

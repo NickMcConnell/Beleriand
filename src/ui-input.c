@@ -1535,8 +1535,9 @@ static bool textui_get_aim_dir(int *dp, int range)
 
 		if (ke.type == EVT_MOUSE) {
 			if (ke.mouse.button == 1) {
-				if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke),
-										   KEY_GRID_Y(ke), range))
+				if (target_set_interactive(TARGET_KILL,
+										   loc(KEY_GRID_X(ke), KEY_GRID_Y(ke)),
+										   range))
 					dir = DIR_TARGET;
 			} else if (ke.mouse.button == 2) {
 				break;
@@ -1544,7 +1545,7 @@ static bool textui_get_aim_dir(int *dp, int range)
 		} else if (ke.type == EVT_KBRD) {
 			if (ke.key.code == '*') {
 				/* Set new target, use target if legal */
-				if (target_set_interactive(TARGET_KILL, -1, -1, range))
+				if (target_set_interactive(TARGET_KILL, loc(-1, -1), range))
 					dir = DIR_TARGET;
 			} else if (ke.key.code == '\'') {
 				/* Set to closest target */

@@ -1702,7 +1702,7 @@ void do_cmd_wiz_push_object(struct command *cmd)
 	struct loc grid;
 
 	if (cmd_get_arg_point(cmd, "point", &grid) != CMD_OK) {
-		if (!target_set_interactive(TARGET_KILL, -1, -1, 0)) return;
+		if (!target_set_interactive(TARGET_KILL, loc(-1, -1), 0)) return;
 		target_get(&grid);
 		cmd_set_arg_point(cmd, "point", grid);
 	}
@@ -2447,7 +2447,7 @@ void do_cmd_wiz_teleport_to(struct command *cmd)
 
 	if (cmd_get_arg_point(cmd, "point", &grid) != CMD_OK) {
 		/* Use the targeting function. */
-		if (!target_set_interactive(TARGET_LOOK, -1, -1, 0)) return;
+		if (!target_set_interactive(TARGET_LOOK, loc(-1, -1), 0)) return;
 
 		/* Grab the target coordinates. */
 		target_get(&grid);

@@ -934,7 +934,7 @@ static ui_event target_set_interactive_aux(struct loc grid, int mode)
  */
 void textui_target(void)
 {
-	if (target_set_interactive(TARGET_KILL, -1, -1, 0))
+	if (target_set_interactive(TARGET_KILL, loc(-1, -1), 0))
 		msg("Target Selected.");
 	else
 		msg("Target Aborted.");
@@ -984,7 +984,7 @@ void textui_target_closest(void)
  * which requires changes elsewhere
  */
 static int draw_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a,
-					 int y1, int x1)
+					 struct loc grid1)
 {
 	int i;
 	bool on_screen;
@@ -996,7 +996,7 @@ static int draw_path(uint16_t path_n, struct loc *path_g, wchar_t *c, int *a,
 	/* The starting square is never drawn, but notice if it is being
      * displayed. In theory, it could be the last such square.
      */
-	on_screen = panel_contains(y1, x1);
+	on_screen = panel_contains(grid1.y, grid1.x);
 
 	/* Draw the path. */
 	for (i = 0; i < path_n; i++) {
@@ -1147,11 +1147,10 @@ static bool pile_has_known(const struct object *obj) {
  * or -1 if no location is specified.
  * Returns true if a target has been successfully set, false otherwise.
  */
-bool target_set_interactive(int mode, int x, int y, int range)
+bool target_set_interactive(int mode, struct loc grid, int range)
 {
 	int path_n;
 	struct loc path_g[256];
-	struct loc grid = loc(x, y);
 
 	int wid, hgt, help_prompt_loc;
 	int adjusted_range = range ? range : z_info->max_range;
@@ -1174,7 +1173,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 
 	/* If we haven't been given an initial location, start on the
 	   player, otherwise  honour it by going into "free targetting" mode. */
-	if (grid.x == -1 || grid.y == -1 || !square_in_bounds_fully(cave, grid)) {
+	if (!square_in_bounds_fully(cave, grid)) {
 		grid = player->grid;
 	} else {
 		show_interesting = false;
@@ -1226,7 +1225,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 		/* Draw the path in "target" mode. If there is one */
 		if (mode & (TARGET_KILL))
 			path_drawn = draw_path(path_n, path_g, path_char, path_attr,
-					player->grid.y, player->grid.x);
+					player->grid);
 
 		/* Describe and Prompt */
 		ui_event press = target_set_interactive_aux(grid, mode | (use_free_mode ? TARGET_LOOK : 0));
@@ -1237,8 +1236,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 		/* Handle an input event */
 		if (event_is_mouse_m(press, 2, KC_MOD_CONTROL) || event_is_mouse(press, 3)) {
 			/* Set a target and done */
-			grid.y = KEY_GRID_Y(press);
-			grid.x = KEY_GRID_X(press);
+			grid = KEY_GRID(press);
 			if (use_free_mode) {
 				/* Free mode: Target a location */
 				target_set_location(grid);
@@ -1261,8 +1259,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 
 		} else if (event_is_mouse_m(press, 2, KC_MOD_ALT)) {
 			/* Navigate to location and done */
-			grid.y = KEY_GRID_Y(press);
-			grid.x = KEY_GRID_X(press);
+			grid = KEY_GRID(press);
 			cmdq_push(CMD_PATHFIND);
 			cmd_set_arg_point(cmdq_peek(), "point", grid);
 			done = true;
@@ -1270,7 +1267,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 		} else if (event_is_mouse(press, 2)) {
 			/* Cancel and done */
 			if (use_free_mode && (mode & TARGET_KILL)
-					&& grid.y == KEY_GRID_Y(press) && grid.x == KEY_GRID_X(press)) {
+				&& loc_eq(grid, KEY_GRID(press))) {
 				/* Free/kill mode: Clicked current location, set target */
 				target_set_location(grid);
 			}
@@ -1278,8 +1275,7 @@ bool target_set_interactive(int mode, int x, int y, int range)
 
 		} else if (event_is_mouse(press, 1)) {
 			/* Relocate cursor */
-			grid.y = KEY_GRID_Y(press);
-			grid.x = KEY_GRID_X(press);
+			grid = KEY_GRID(press);
 
 			/* If they clicked on an edge of the map, drag the cursor further
 			   to trigger a panel scroll */
@@ -1462,8 +1458,8 @@ bool target_set_interactive(int mode, int x, int y, int range)
 				grid.y += step * ddy[dir];
 
 				/* Keep 1 away from the edge */
-				grid.x = MAX(1, MIN(x, cave->width - 2));
-				grid.y = MAX(1, MIN(y, cave->height - 2));
+				grid.x = MAX(1, MIN(grid.x, cave->width - 2));
+				grid.y = MAX(1, MIN(grid.y, cave->height - 2));
 
 				/* Adjust panel if needed */
 				if (adjust_panel_help(grid, help)) {

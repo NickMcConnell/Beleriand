@@ -34,6 +34,11 @@
 #define KEY_GRID_X(K) \
 	((int) (((K.mouse.x - COL_MAP) / tile_width) + Term->offset_x))
 
+/**
+ * Convert a "key event" into a "location"
+ */
+#define KEY_GRID(K) (loc(KEY_GRID_X(K), KEY_GRID_Y(K)))
+
 
 /**
  * Height of the help screen; any higher than 4 will overlap the health
@@ -51,6 +56,6 @@ int target_dir_allow(struct keypress ch, bool allow_5);
 void target_display_help(bool monster, bool object, bool free);
 void textui_target(void);
 void textui_target_closest(void);
-bool target_set_interactive(int mode, int x, int y, int range);
+bool target_set_interactive(int mode, struct loc grid, int range);
 
 #endif /* UI_TARGET_H */
