@@ -154,7 +154,7 @@ static void mod_message(struct object *obj, int mod)
 bool easy_know(const struct object *obj)
 {
 	assert(obj->kind);
-	if (obj->kind->aware && of_has(obj->kind->flags, OF_EASY_KNOW))
+	if (obj->kind->aware && kf_has(obj->kind->kind_flags, KF_EASY_KNOW))
 		return true;
 	else
 		return false;
