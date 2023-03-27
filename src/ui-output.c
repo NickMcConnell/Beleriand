@@ -439,6 +439,8 @@ void screen_load(void)
 
 bool textui_map_is_visible(void)
 {
+	/* Special case for post-death dungeon viewing */
+	if (player->is_dead) return true;
 	return (screen_save_depth == 0);
 }
 

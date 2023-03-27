@@ -122,6 +122,7 @@ static void death_dungeon(const char *title, int row)
 	handle_stuff(player);
 
 	/* Allow the player to look around */
+	prt_map();
 	do_cmd_look();
 
 	/* Load screen */
