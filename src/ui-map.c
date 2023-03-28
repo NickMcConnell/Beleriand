@@ -891,29 +891,29 @@ void mini_screenshot(game_event_type type, game_event_data *data, void *user)
 	
 	/* Populate the arrays */
 	if (!player->escaped) { 
-		for (y = player->grid.y - 3; y <= player->grid.y + 3; y++) {
-			for (x = player->grid.x - 3; x <= player->grid.x + 3; x++) {
+		for (y = -3; y <= 3; y++) {
+			for (x = -3; x <= 3; x++) {
 				struct grid_data g;
 				int a, ta;
 				wchar_t c, tc;
-				struct loc grid = loc(x, y);
+				struct loc grid = loc(player->grid.x + x, player->grid.y + y);
 				if (square_in_bounds(cave, grid)) {
 					map_info(grid, &g);
 					grid_data_as_text(&g, &a, &c, &ta, &tc);
-					mini_screenshot_char[y][x] = c;
-					mini_screenshot_attr[y][x] = a;
+					mini_screenshot_char[y + 3][x + 3] = c;
+					mini_screenshot_attr[y + 3][x + 3] = a;
 				} else {
-					mini_screenshot_char[y][x] = ' ';
-					mini_screenshot_attr[y][x] = COLOUR_DARK;
+					mini_screenshot_char[y + 3][x + 3] = ' ';
+					mini_screenshot_attr[y + 3][x + 3] = COLOUR_DARK;
 				}
 			}
 		}
 	} else {
-		for (y = player->grid.y - 3; y <= player->grid.y + 3; y++) {
-			for (x = player->grid.x - 3; x <= player->grid.x + 3; x++) {
+		for (y = -3; y <= 3; y++) {
+			for (x = -3; x <= 3; x++) {
 				/* Grass */
-				mini_screenshot_char[y][x] = '.';
-				mini_screenshot_attr[y][x] = COLOUR_L_GREEN;
+				mini_screenshot_char[y + 3][x + 3] = '.';
+				mini_screenshot_attr[y + 3][x + 3] = COLOUR_L_GREEN;
 			}
 		}
 
@@ -968,7 +968,10 @@ void file_mini_screenshot(ang_file *fff)
 	for (y = 0; y <= 6; y++) {
 		file_putf(fff, "  ");
 		for (x = 0; x <= 6; x++) {
-			file_putf(fff, "%c", mini_screenshot_char[y][x]);
+			/* Ugly hack to deal with floors */
+			uint8_t c = (mini_screenshot_char[y][x] < 32) ?
+				'.' : mini_screenshot_char[y][x];
+			file_putf(fff, "%c", c);
 		}
 		file_putf(fff, "\n");
 	}

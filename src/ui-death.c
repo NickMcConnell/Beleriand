@@ -49,7 +49,8 @@ static void print_tomb(struct high_score *score)
 		Term_putstr(15, 2, -1, COLOUR_L_BLUE, "You have been slain");
 	}
 	display_single_score(score, 1, 0, COLOUR_WHITE);
-	prt_mini_screenshot(5, 12);
+	Term_putstr( 3, 10, -1, COLOUR_L_DARK, "____________________________________________________");
+	prt_mini_screenshot(5, 14);
 }
 
 /**
