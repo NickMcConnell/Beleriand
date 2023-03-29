@@ -678,13 +678,13 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 
 
 /**
- * Recharge a wand or staff from the pack or on the floor.  Number of charges
+ * Recharge a staff from the pack or on the floor.  Number of charges
  * is context->value.base.
  */
 bool effect_handler_RECHARGE(effect_handler_context_t *context)
 {
 	int num = context->value.base;
-	int itemmode = (USE_INVEN | USE_FLOOR | SHOW_RECHARGE);
+	int itemmode = (USE_INVEN | USE_FLOOR);
 	struct object *obj;
 	bool used = false;
 	const char *q, *s;

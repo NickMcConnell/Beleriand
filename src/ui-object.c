@@ -334,8 +334,6 @@ static void show_obj_list(olist_detail_t mode)
 
 	/* Width of extra fields */
 	if (mode & OLIST_WEIGHT) ex_width += 9;
-	if (mode & OLIST_PRICE) ex_width += 9;
-	if (mode & OLIST_FAIL) ex_width += 10;
 
 	/* Determine beginning row and column */
 	if (in_term) {
@@ -839,14 +837,6 @@ static struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 		ex_width += 9;
 		ex_offset_ctr += 9;
 	}
-	if (olist_mode & OLIST_PRICE) {
-		ex_width += 9;
-		ex_offset_ctr += 9;
-	}
-	if (olist_mode & OLIST_FAIL) {
-		ex_width += 10;
-		ex_offset_ctr += 10;
-	}
 
 	/* Set up the menu region */
 	area.page_rows = m->count;
@@ -983,19 +973,10 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	allow_all = str ? false : true;
 
 	/* Object list display modes */
-	if (mode & SHOW_FAIL)
-		olist_mode |= OLIST_FAIL;
-	else
-		olist_mode |= OLIST_WEIGHT;
-
-	if (mode & SHOW_PRICES)
-		olist_mode |= OLIST_PRICE;
+	olist_mode |= OLIST_WEIGHT;
 
 	if (mode & SHOW_EMPTY)
 		olist_mode |= OLIST_SEMPTY;
-
-	if (mode & SHOW_RECHARGE)
-		olist_mode |= OLIST_RECHARGE;
 
 	/* Paranoia XXX XXX XXX */
 	event_signal(EVENT_MESSAGE_FLUSH);

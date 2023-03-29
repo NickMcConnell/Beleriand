@@ -742,8 +742,7 @@ static bool aux_object(struct chunk *c, struct player *p,
 					 * Use OLIST_DEATH to show item labels
 					 */
 					show_floor(floor_list, floor_num,
-						(OLIST_DEATH | OLIST_WEIGHT
-						| OLIST_GOLD), NULL);
+						(OLIST_DEATH | OLIST_WEIGHT), NULL);
 
 					/* Describe the pile */
 					prt(out_val, 0, 0);

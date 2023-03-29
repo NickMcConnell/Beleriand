@@ -1482,7 +1482,7 @@ void do_cmd_fire(struct command *cmd) {
 			/* Prompt */ "Fire which ammunition?",
 			/* Error  */ "You have no suitable ammunition to fire.",
 			/* Filter */ obj_can_fire,
-			/* Choice */ USE_INVEN | USE_QUIVER | USE_FLOOR | QUIVER_TAGS)
+			/* Choice */ USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)
 		!= CMD_OK)
 		return;
 

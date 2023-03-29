@@ -334,7 +334,8 @@ void calc_inventory(struct player *p)//TODO make two quivers (= quiver slots?)
 	 */
 	for (current = p->gear, j = 0; current; current = current->next, ++j) {
 		assert(j < n_max);
-		assigned[j] = object_is_equipped(p->body, current);
+		assigned[j] = object_is_equipped(p->body, current)
+			|| object_is_in_quiver(p, current);
 	}
 	for (; j < n_max; ++j) {
 		assigned[j] = false;
@@ -384,7 +385,8 @@ void calc_inventory(struct player *p)//TODO make two quivers (= quiver slots?)
 	if (character_dungeon && p->upkeep->inven_cnt == old_inven_cnt) {
 		for (i = 0; i < z_info->pack_size; i++) {
 			if (old_pack[i] && p->upkeep->inven[i] != old_pack[i]
-					 && !object_is_equipped(p->body, old_pack[i])) {
+				&& !object_is_equipped(p->body, old_pack[i])
+				&& !object_is_in_quiver(p, old_pack[i])) {
 				msg("You re-arrange your pack.");
 				break;
 			}
