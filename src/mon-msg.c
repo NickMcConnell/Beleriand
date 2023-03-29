@@ -334,7 +334,21 @@ static void get_message_text(char *buf, size_t buflen,
 	assert(msg_code < MON_MSG_MAX);
 	assert(race != NULL);
 	assert(race->base != NULL);
-	assert(race->base->pain != NULL);
+
+	/* Return now for monsters with no messages of the given type */
+	if ((msg_code == MON_MSG_66) || (msg_code == MON_MSG_33) ||
+		(msg_code == MON_MSG_0)) {
+		if (race->base->pain == NULL) return;
+	} else if ((msg_code == MON_MSG_PURSUE_VIS) ||
+			   (msg_code == MON_MSG_PURSUE_CLOSE) ||
+			   (msg_code == MON_MSG_PURSUE_FAR)) {
+		if (race->base->pursuit == NULL) return;
+	} else if ((msg_code == MON_MSG_WARN_VIS) ||
+			   (msg_code == MON_MSG_WARN_INVIS) ||
+			   (msg_code == MON_MSG_WARN_VIS_SIL) ||
+			   (msg_code == MON_MSG_WARN_INVIS_SIL)) {
+		if (race->base->warning == NULL) return;
+	}
 
 	/* Find the appropriate message */
 	const char *source = msg_repository[msg_code].msg;
