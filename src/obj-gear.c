@@ -418,7 +418,7 @@ char gear_to_label(struct player *p, struct object *obj)
 	int i;
 
 	/* Equipment is easy */
-	if (object_is_equipped(p->body, obj)) {
+	if (object_is_equipped(p->body, obj) || object_is_in_quiver(p, obj)) {
 		return I2A(equipped_item_slot(p->body, obj));
 	}
 

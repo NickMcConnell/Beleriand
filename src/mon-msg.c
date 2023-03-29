@@ -93,6 +93,9 @@ void message_pain(struct monster *mon, int dam)
 {
 	int msg_code = MON_MSG_UNHARMED;
 
+	/* Return now for monsters with no pain messages */
+	if (mon->race->base->pain == NULL) return;
+
 	/* Calculate damage levels */
 	if (dam > 0) {
 		/* Note -- subtle fix -CFT */
@@ -118,6 +121,9 @@ void message_pursuit(struct monster *mon)
 	int msg_code = MON_MSG_NONE;
 	int dist = distance(player->grid, mon->grid);
 
+	/* Return now for monsters with no pursuit messages */
+	if (mon->race->base->pursuit == NULL) return;
+
 	/* Visible, or near or far */
 	if (monster_is_visible(mon)) {
 		msg_code = MON_MSG_PURSUE_VIS;
@@ -138,6 +144,9 @@ void message_warning(struct monster *mon)
 {
 	int msg_code = MON_MSG_NONE;
 	bool silence = player_is_singing(player, lookup_song("Silence"));
+
+	/* Return now for monsters with no warning messages */
+	if (mon->race->base->warning == NULL) return;
 
 	/* Visible, or near or far */
 	if (monster_is_visible(mon)) {
@@ -334,21 +343,9 @@ static void get_message_text(char *buf, size_t buflen,
 	assert(msg_code < MON_MSG_MAX);
 	assert(race != NULL);
 	assert(race->base != NULL);
-
-	/* Return now for monsters with no messages of the given type */
-	if ((msg_code == MON_MSG_66) || (msg_code == MON_MSG_33) ||
-		(msg_code == MON_MSG_0)) {
-		if (race->base->pain == NULL) return;
-	} else if ((msg_code == MON_MSG_PURSUE_VIS) ||
-			   (msg_code == MON_MSG_PURSUE_CLOSE) ||
-			   (msg_code == MON_MSG_PURSUE_FAR)) {
-		if (race->base->pursuit == NULL) return;
-	} else if ((msg_code == MON_MSG_WARN_VIS) ||
-			   (msg_code == MON_MSG_WARN_INVIS) ||
-			   (msg_code == MON_MSG_WARN_VIS_SIL) ||
-			   (msg_code == MON_MSG_WARN_INVIS_SIL)) {
-		if (race->base->warning == NULL) return;
-	}
+	assert(race->base->pain != NULL);
+	assert(race->base->pursuit != NULL);
+	assert(race->base->warning != NULL);
 
 	/* Find the appropriate message */
 	const char *source = msg_repository[msg_code].msg;
