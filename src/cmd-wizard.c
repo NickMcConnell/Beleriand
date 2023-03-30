@@ -2478,6 +2478,9 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		#define STAT(a) #a,
 		#include "list-stats.h"
 		#undef STAT
+		#define SKILL(a, b) #a,
+		#include "list-skills.h"
+		#undef SKILL
 		#define OBJ_MOD(a) #a,
 		#include "list-object-modifiers.h"
 		#undef OBJ_MOD
