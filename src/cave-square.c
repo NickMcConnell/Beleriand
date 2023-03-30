@@ -168,6 +168,14 @@ bool feat_is_no_scent(int feat)
 }
 
 /**
+ * True if the feature is a chasm.
+ */
+bool feat_is_chasm(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_CHASM);
+}
+
+/**
  * SQUARE FEATURE PREDICATES
  *
  * These functions are used to figure out what kind of square something is,
@@ -404,6 +412,14 @@ bool square_isnotknown(struct chunk *c, struct loc grid) {
 }
 
 /**
+ * True if the square is a chasm.
+ */
+bool square_ischasm(struct chunk *c, struct loc grid)
+{
+	return feat_is_chasm(square(c, grid)->feat);
+}
+
+/**
  * SQUARE INFO PREDICATES
  *
  * These functions tell whether a square is marked with one of the SQUARE_*
@@ -526,9 +542,9 @@ bool square_iswall_solid(struct chunk *c, struct loc grid) {
 }
 
 /**
- * True if cave square is a chasm (generation)
+ * True if cave square will become a chasm (generation)
  */
-bool square_ischasm(struct chunk *c, struct loc grid) {
+bool square_tobechasm(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid)->info, SQUARE_CHASM);
 }

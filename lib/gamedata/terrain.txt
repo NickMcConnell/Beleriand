@@ -139,7 +139,7 @@ desc:A shaft down to a deeper part of the dungeon.
 name:chasm
 graphics:%:D
 priority:20
-flags:LOS | PROJECT | PASSABLE
+flags:LOS | PROJECT | PASSABLE | CHASM
 desc:Empty space - only flying creatures can pass across without falling.  All 
 desc:spells and missiles can pass through.
 walk-msg:It's a cliff! Really step off it?

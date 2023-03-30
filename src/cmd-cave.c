@@ -1749,6 +1749,8 @@ void move_player(int dir, bool disarm)
 			if (square_isplayertrap(cave, grid)) {
 				disturb(player, false);
 				hit_trap(grid);
+			} else if (square_ischasm(cave, grid)) {
+				player_fall_in_chasm(player);
 			}
 
 			// Read any notes the player stumbles upon

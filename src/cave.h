@@ -304,6 +304,7 @@ bool feat_is_torch(int feat);
 bool feat_is_pit(int feat);
 bool feat_is_no_flow(int feat);
 bool feat_is_no_scent(int feat);
+bool feat_is_chasm(int feat);
 
 /* SQUARE FEATURE PREDICATES */
 bool square_isfloor(struct chunk *c, struct loc grid);
@@ -332,6 +333,7 @@ bool square_isoccupied(struct chunk *c, struct loc grid);
 bool square_isimpassable(struct chunk *c, struct loc grid);
 bool square_isknown(struct chunk *c, struct loc grid);
 bool square_isnotknown(struct chunk *c, struct loc grid);
+bool square_ischasm(struct chunk *c, struct loc grid);
 
 /* SQUARE INFO PREDICATES */
 bool square_ismark(struct chunk *c, struct loc grid);
@@ -349,7 +351,7 @@ bool square_isinvis(struct chunk *c, struct loc grid);
 bool square_iswall_inner(struct chunk *c, struct loc grid);
 bool square_iswall_outer(struct chunk *c, struct loc grid);
 bool square_iswall_solid(struct chunk *c, struct loc grid);
-bool square_ischasm(struct chunk *c, struct loc grid);
+bool square_tobechasm(struct chunk *c, struct loc grid);
 bool square_isproject(struct chunk *c, struct loc grid);
 bool square_isno_stairs(struct chunk *c, struct loc grid);
 

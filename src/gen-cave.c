@@ -320,19 +320,19 @@ static void build_chasm(struct chunk *c)
 				struct loc gridn = loc_sum(grid, loc(0, -1));
 
                 /* Only inspect squares currently destined to be chasms */
-                if (square_ischasm(c, grid)) {
+                if (square_tobechasm(c, grid)) {
                     /* Avoid chasms in interesting rooms / vaults */
                     if (square_isvault(c, grid)) {
                         chasm_ok = false;
                     }
 
                     /* Avoid two chasm square in a row in corridors */
-                    if (square_ischasm(c, grids) && !square_isroom(c, grid) &&
+                    if (square_tobechasm(c, grids) && !square_isroom(c, grid) &&
 						!square_isroom(c, grids) && square_isfloor(c, grid) &&
 						square_isfloor(c, grids)) {
                         chasm_ok = false;
                     }
-                    if (square_ischasm(c, gride) && !square_isroom(c, grid) &&
+                    if (square_tobechasm(c, gride) && !square_isroom(c, grid) &&
 						!square_isroom(c, gride) && square_isfloor(c, grid) &&
 						square_isfloor(c, gride)) {
                         chasm_ok = false;
@@ -350,13 +350,13 @@ static void build_chasm(struct chunk *c)
 					 * look odd that the light doesn't hit the wall behind) */
                     if (square_isrock(c, grid) && square_isglow(c, grid)) {
                         if ((square_isrock(c, gride) && !square_isglow(c, gride)
-							 && !square_ischasm(c, gride)) ||
+							 && !square_tobechasm(c, gride)) ||
 							(square_isrock(c, grids) && !square_isglow(c, grids)
-							 && !square_ischasm(c, grids)) ||
+							 && !square_tobechasm(c, grids)) ||
 							(square_isrock(c, gridw) && !square_isglow(c, gridw)
-							 && !square_ischasm(c, gridw)) ||
+							 && !square_tobechasm(c, gridw)) ||
 							(square_isrock(c, gridn) && !square_isglow(c, gridn)
-							 && !square_ischasm(c, gridn))) {
+							 && !square_tobechasm(c, gridn))) {
                             chasm_ok = false;
                         }
                     }
