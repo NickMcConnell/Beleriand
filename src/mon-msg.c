@@ -343,41 +343,57 @@ static void get_message_text(char *buf, size_t buflen,
 	assert(msg_code < MON_MSG_MAX);
 	assert(race != NULL);
 	assert(race->base != NULL);
-	assert(race->base->pain != NULL);
-	assert(race->base->pursuit != NULL);
-	assert(race->base->warning != NULL);
 
 	/* Find the appropriate message */
 	const char *source = msg_repository[msg_code].msg;
 	switch (msg_code) {
-		case MON_MSG_66: source = race->base->pain->messages[0]; break;
-		case MON_MSG_33: source = race->base->pain->messages[1]; break;
-		case MON_MSG_0:  source = race->base->pain->messages[2]; break;
+		case MON_MSG_66: {
+			assert(race->base->pain != NULL);
+			source = race->base->pain->messages[0];
+			break;
+		}
+		case MON_MSG_33: {
+			assert(race->base->pain != NULL);
+			source = race->base->pain->messages[1];
+			break;
+		}
+		case MON_MSG_0: {
+			assert(race->base->pain != NULL);
+			source = race->base->pain->messages[2];
+			break;
+		}
 		case MON_MSG_PURSUE_VIS:  {
+			assert(race->base->pursuit != NULL);
 			source = race->base->pursuit->msg_vis;
 			break;
 		}
 		case MON_MSG_PURSUE_CLOSE:  {
+			assert(race->base->pursuit != NULL);
 			source = race->base->pursuit->msg_close;
 			break;
 		}
 		case MON_MSG_PURSUE_FAR:  {
+			assert(race->base->pursuit != NULL);
 			source = race->base->pursuit->msg_far;
 			break;
 		}
 		case MON_MSG_WARN_VIS:  {
+			assert(race->base->warning != NULL);
 			source = race->base->warning->msg_vis;
 			break;
 		}
 		case MON_MSG_WARN_INVIS:  {
+			assert(race->base->warning != NULL);
 			source = race->base->warning->msg_invis;
 			break;
 		}
 		case MON_MSG_WARN_VIS_SIL:  {
+			assert(race->base->warning != NULL);
 			source = race->base->warning->msg_vis_silence;
 			break;
 		}
 		case MON_MSG_WARN_INVIS_SIL:  {
+			assert(race->base->warning != NULL);
 			source = race->base->warning->msg_invis_silence;
 			break;
 		}
