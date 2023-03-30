@@ -293,7 +293,7 @@ static struct panel *get_panel_midleft(void) {
 	panel_line(p, COLOUR_L_GREEN, "Max Burden", "%.1f",
 			   weight_limit(player->state) / 10.0F);
 	if (turn > 0) {
-		panel_line(p, max_color(player_min_depth(player), player->depth),
+		panel_line(p, max_color(player->depth, player_min_depth(player)),
 				   "Depth", "%3d'", player->depth * 50);
 		panel_line(p, COLOUR_L_GREEN, "Min Depth", "%3d'",
 				   player_min_depth(player) * 50);
