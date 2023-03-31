@@ -16,7 +16,7 @@ depgen:
 			sed "s|^\\([^ ]\\)|$$DIR/\\1|" >> Makefile.new; \
 	done;
 
-./cave.o: cave.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+# Dependencies
 ./cave.o: cave.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
