@@ -121,8 +121,11 @@ static void flood_access(struct chunk *c, struct loc grid, bool **access,
 
 /**
  * Make sure that the level is sufficiently connected.
+ *
+ * Currently a failure here results in a new level being generated, which is OK
+ * as long as it's not happening too often.  Ideally connect_rooms_stairs()
+ * should be rewritten so it doesn't happen at all - NRM.
  */
-
 static bool check_connectivity(struct chunk *c)
 {
 	struct loc grid;
@@ -138,8 +141,6 @@ static bool check_connectivity(struct chunk *c)
 	for (grid.y = 0; grid.y < c->height; grid.y++) {
 		for (grid.x = 0; grid.x < c->width; grid.x++) {
 			if (player_pass(c, grid, true) && !access[grid.y][grid.x]) {
-				dump_level_simple(NULL, "Disconnected Level", c);
-				//quit("Disconnected Level");
 				return false;
 			}
 		}
