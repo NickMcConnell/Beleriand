@@ -702,11 +702,15 @@ int protection_roll(struct player *p, int typ, bool melee, aspect prot_aspect)
 	/* Armour: */
 	for (i = 0; i < player->body.count; i++) {
 		struct object *obj = player->body.slots[i].obj;
+		if (!obj) continue;
         
-		/* Skip anything that isn't armour */
-		if (!obj || !tval_is_armor(obj)) continue;
+		/* Skip off-hand weapons */
+		if (slot_type_is(p, i, EQUIP_SHIELD) && tval_is_weapon(obj)) continue;
 
-		armour_weight += obj->weight;
+		/* Count weight of armour */
+		if (tval_is_armor(obj)) {
+			armour_weight += obj->weight;
+		}
 
 		/* Fire and cold and generic 'hurt' all check the shield */
 		if (slot_type_is(p, i, EQUIP_SHIELD)) {
