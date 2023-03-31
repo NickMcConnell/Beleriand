@@ -28,36 +28,57 @@ struct song_menu_info {
 };
 
 static struct song_menu_info *songlist;
+static char labels[25];
 
 static int get_songs(void)
 {
 	struct ability *a = abilities;
 	int count = 0;
 
+	/* Find available songs */
+	while (a) {
+		if ((a->skill == SKILL_SONG) && strstr(a->name, "Song of") &&
+			player_active_ability(player, a->name)) {
+			labels[count] = 'a' + count;
+			songlist[count].swap = false;
+			songlist[count++].song = lookup_song(a->name + strlen("Song of "));
+		}
+		a = a->next;
+	}
+
 	/* Add the chance to stop singing */
 	if (player->song[SONG_MAIN]) {
+		labels[count] = 's';
 		songlist[count].swap = false;
 		songlist[count++].song = NULL;
 	}
 
 	/* Add the chance to exchange themes */
 	if (player->song[SONG_MINOR]) {
+		labels[count] = 'x';
 		songlist[count].swap = true;
 		songlist[count++].song = NULL;
 	}
-
-	/* Find available songs */
-	while (a) {
-		if ((a->skill == SKILL_SONG) && strstr(a->name, "Song of") &&
-			player_active_ability(player, a->name)) {
-			songlist[count].swap = false;
-			songlist[count++].song = lookup_song(a->name + strlen("Song of "));
-		}
-		a = a->next;
-	}
+	labels[count] = '\0';
 	return count;
 }
 
+
+/**
+ * Get the tag for an entry in the song menu.
+ */
+static char song_tag(struct menu *menu, int oid)
+{
+	struct song_menu_info *choice = menu->menu_data;
+	struct song *song = choice[oid].song;
+	if (song) {
+		return 'a' + oid;
+	} else if (choice[oid].swap) {
+		return 'x';
+	} else {
+		return 's';
+	}
+}
 
 /**
  * Display an entry in the song menu.
@@ -108,7 +129,7 @@ static bool song_action(struct menu *m, const ui_event *event, int oid)
 void textui_change_song(void)
 {
 	struct menu menu;
-	menu_iter menu_f = { NULL, NULL, song_display, song_action, NULL };
+	menu_iter menu_f = { song_tag, NULL, song_display, song_action, NULL };
 	region area = { 10, 2, 0, 0 };
 	int count;
 
@@ -122,7 +143,7 @@ void textui_change_song(void)
 
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
 	menu.title = "Songs";
-	menu.selections = lower_case;
+	menu.selections = labels;
 	menu.flags = MN_CASELESS_TAGS;
 
 	menu_setpriv(&menu, count, songlist);
