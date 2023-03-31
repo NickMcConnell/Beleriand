@@ -170,8 +170,9 @@ static void ability_browser(int oid, void *data, const region *loc)
 	/* Print more info if you don't have the skill */
 	if (!learned) {
 		struct ability *prereq = current->prerequisites;
+		bool ready = player_has_prereq_abilities(player, current);
 		int line = 0;
-		if (player_has_prereq_abilities(player, current) && points) {
+		if (ready && points) {
 			attr = COLOUR_SLATE;
 		}
 		Term_gotoxy(text_out_indent, 10);
@@ -196,6 +197,20 @@ static void ability_browser(int oid, void *data, const region *loc)
 			if (prereq) {
 				Term_gotoxy(text_out_indent + 2, 13 + line);
 				text_out_c(COLOUR_L_DARK, "or ");
+			}
+		}
+		if (ready) {
+			int exp_cost = player_ability_cost(player, current);
+			bool have_exp = player_can_gain_ability(player, current);
+			attr = have_exp ? COLOUR_SLATE : COLOUR_L_DARK;
+			Term_gotoxy(text_out_indent, 16);
+			text_out_c(attr, "Current price:");
+			Term_gotoxy(text_out_indent + 2, 18);
+			if (have_exp) {
+				text_out_c(attr, "%d experience", exp_cost, player->new_exp);
+			} else {
+				text_out_c(attr, "%d experience (you have %d)", exp_cost,
+						   player->new_exp);
 			}
 		}
 	}

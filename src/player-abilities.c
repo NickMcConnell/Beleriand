@@ -456,7 +456,7 @@ bool player_has_prereq_abilities(struct player *p, struct ability *ability)
  * Ability cost is based on race and class affinity for the relevant skill,
  * the number of abilities already gained from that skill.
  */
-static int player_ability_cost(struct player *p, struct ability *ability)
+int player_ability_cost(struct player *p, struct ability *ability)
 {
 	int skill = ability->skill;
 	int num = count_abilities(p->abilities, skill);
