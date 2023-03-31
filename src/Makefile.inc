@@ -17,6 +17,7 @@ depgen:
 	done;
 
 ./cave.o: cave.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+./cave.o: cave.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
  list-tvals.h list-object-flags.h list-kind-flags.h list-stats.h \
@@ -728,11 +729,12 @@ depgen:
  z-expression.h list-elements.h list-origins.h option.h list-options.h \
  list-player-flags.h alloc.h cave.h list-square-flags.h \
  list-terrain-flags.h effects.h player-attack.h cmd-core.h cmds.h \
- list-effects.h init.h datafile.h parser.h list-parser-errors.h \
- obj-chest.h obj-gear.h list-equip-slots.h obj-knowledge.h obj-make.h \
- obj-pile.h obj-slays.h monster.h target.h mon-predicate.h mon-timed.h \
- list-mon-timed.h mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
- list-mon-spells.h obj-tval.h obj-util.h player-abilities.h
+ list-effects.h game-world.h init.h datafile.h parser.h \
+ list-parser-errors.h obj-chest.h obj-gear.h list-equip-slots.h \
+ obj-knowledge.h obj-make.h obj-pile.h obj-slays.h monster.h target.h \
+ mon-predicate.h mon-timed.h list-mon-timed.h mon-blows.h \
+ list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h obj-tval.h \
+ obj-util.h player-abilities.h
 ./obj-pile.o: obj-pile.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
@@ -1149,8 +1151,9 @@ depgen:
  list-player-flags.h monster.h cave.h list-square-flags.h \
  list-terrain-flags.h target.h mon-predicate.h mon-timed.h \
  list-mon-timed.h mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
- list-mon-spells.h player-abilities.h ui-input.h cmd-core.h ui-event.h \
- ui-term.h ui-menu.h ui-output.h z-textblock.h list-bane-types.h
+ list-mon-spells.h player-abilities.h ui-abilities.h ui-input.h \
+ cmd-core.h ui-event.h ui-term.h ui-menu.h ui-output.h z-textblock.h \
+ list-bane-types.h
 ./ui-birth.o: ui-birth.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
@@ -1312,11 +1315,11 @@ depgen:
  list-terrain-flags.h cmd-core.h game-input.h obj-smith.h game-world.h \
  init.h datafile.h parser.h list-parser-errors.h obj-gear.h \
  list-equip-slots.h obj-util.h player-calcs.h player-path.h savefile.h \
- target.h mon-predicate.h ui-abilities.h ui-command.h ui-term.h \
- ui-event.h ui-context.h ui-input.h ui-display.h ui-effect.h ui-help.h \
- ui-keymap.h ui-knowledge.h ui-map.h ui-menu.h ui-output.h z-textblock.h \
- ui-object.h ui-player.h ui-prefs.h ui-signals.h ui-smith.h ui-songs.h \
- ui-target.h
+ target.h mon-predicate.h ui-abilities.h ui-birth.h ui-command.h \
+ ui-term.h ui-event.h ui-context.h ui-input.h ui-display.h ui-effect.h \
+ ui-help.h ui-keymap.h ui-knowledge.h ui-map.h ui-menu.h ui-output.h \
+ z-textblock.h ui-object.h ui-player.h ui-prefs.h ui-signals.h ui-smith.h \
+ ui-songs.h ui-target.h
 ./ui-keymap.o: ui-keymap.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
  z-type.h message.h list-message.h player.h guid.h obj-properties.h \
@@ -1425,9 +1428,9 @@ depgen:
  list-player-flags.h cmds.h cave.h list-square-flags.h \
  list-terrain-flags.h cmd-core.h game-input.h obj-smith.h init.h \
  datafile.h parser.h list-parser-errors.h obj-desc.h obj-ignore.h \
- list-ignore-types.h obj-tval.h obj-util.h player-calcs.h ui-display.h \
- ui-input.h ui-event.h ui-term.h ui-keymap.h ui-knowledge.h ui-menu.h \
- ui-output.h z-textblock.h ui-options.h ui-prefs.h ui-target.h
+ list-ignore-types.h obj-tval.h obj-util.h player-calcs.h ui-birth.h \
+ ui-display.h ui-input.h ui-event.h ui-term.h ui-keymap.h ui-knowledge.h \
+ ui-menu.h ui-output.h z-textblock.h ui-options.h ui-prefs.h ui-target.h
 ./ui-output.o: ui-output.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
  z-type.h message.h list-message.h player.h guid.h obj-properties.h \
@@ -1512,7 +1515,7 @@ depgen:
  list-skills.h list-object-modifiers.h object.h z-quark.h z-dice.h \
  z-expression.h list-elements.h list-origins.h option.h list-options.h \
  list-player-flags.h player-abilities.h songs.h ui-menu.h ui-output.h \
- ui-event.h ui-term.h z-textblock.h
+ ui-event.h ui-term.h z-textblock.h ui-songs.h
 ./ui-spoil.o: ui-spoil.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
