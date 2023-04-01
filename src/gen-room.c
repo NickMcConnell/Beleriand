@@ -398,7 +398,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v, bool flip)
 				/* Secret door */
 			case 's': place_secret_door(c, grid); break;
 				/* Trap */
-			case '^': if (one_in_(2)) place_trap(c, grid, -1, c->depth); break;
+			case '^': if (one_in_(2)) square_add_trap(c, grid); break;
 				/* Forge */
 			case '0': place_forge(c, grid); break;
 				/* Chasm */
@@ -746,12 +746,10 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v, bool flip)
 			 * so traps in interesting rooms and vaults are a total of 5 times
 			 * more likely */
             if (randint1(1000) <= trap_placement_chance(c, grid) * (mult - 1)) {
-                place_trap(c, grid, -1, c->depth);
-            } else if (roomf_has(v->flags, ROOMF_WEBS) &&
-					   square_isempty(c, grid) && one_in_(20)) {
-				struct trap_kind *web = lookup_trap("web");
+                square_add_trap(c, grid);
+            } else if (roomf_has(v->flags, ROOMF_WEBS) && one_in_(20)) {
 				/* Webbed vaults also have a large chance of receiving webs */
-                place_trap(c, grid, web->tidx, 0);
+                square_add_web(c, grid);
 
                 /* Hide it half the time */
                 if (one_in_(2)) {

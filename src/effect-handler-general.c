@@ -1250,7 +1250,7 @@ bool effect_handler_CREATE_TRAPS(effect_handler_context_t *context)
 	while (amount--) {
 		struct loc grid;
 		cave_find(cave, &grid, square_isunseen);
-		place_trap(cave, grid, -1, cave->depth);
+		square_add_trap(cave, grid);
 	}
 	return true;
 }

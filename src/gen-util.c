@@ -716,7 +716,7 @@ void place_traps(struct chunk *c)
 		for (grid.x = 0; grid.x < c->width; grid.x++) {
             /* Randomly determine whether to place a trap based on the above */
             if (randint1(1000) <= trap_placement_chance(c, grid)) {
-                place_trap(c, grid, -1, c->depth);
+                square_add_trap(c, grid);
             }
 		}
 	}

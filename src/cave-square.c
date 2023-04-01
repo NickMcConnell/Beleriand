@@ -1114,6 +1114,7 @@ void square_set_trap(struct chunk *c, struct loc grid, struct trap *trap)
 void square_add_trap(struct chunk *c, struct loc grid)
 {
 	assert(square_in_bounds_fully(c, grid));
+	if (!square_isempty(c, grid)) return;
 	place_trap(c, grid, -1, c->depth);
 }
 
