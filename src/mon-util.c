@@ -734,7 +734,8 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize)
  *
  * Returns true if anything is created, false if nothing is.
  */
-static int mon_create_drop(struct chunk *c, struct monster *mon, bool stats)
+static int mon_create_drop(struct chunk *c, struct monster *mon,
+						   struct loc grid, bool stats)
 {
 	struct monster_drop *drop;
 	bool great, good;
@@ -787,7 +788,7 @@ static int mon_create_drop(struct chunk *c, struct monster *mon, bool stats)
 			number--;
 			count++;
 
-			drop_near(c, &obj, 0, mon->grid, true, false);
+			drop_near(c, &obj, 0, grid, true, false);
 		}
 	}
 
@@ -803,7 +804,7 @@ static int mon_create_drop(struct chunk *c, struct monster *mon, bool stats)
 		obj->origin_race = mon->race;
 		count++;
 
-		drop_near(c, &obj, 0, mon->grid, true, false);
+		drop_near(c, &obj, 0, grid, true, false);
 	}
 
 	return count;
@@ -813,7 +814,8 @@ static int mon_create_drop(struct chunk *c, struct monster *mon, bool stats)
 /**
  * Drop monster carried items and generate treasure
  */
-void drop_loot(struct monster *mon, bool stats)
+void drop_loot(struct chunk *c, struct monster *mon, struct loc grid,
+			   bool stats)
 {
 	int dump_item;
 	struct object *obj = mon->held_obj;
@@ -832,7 +834,7 @@ void drop_loot(struct monster *mon, bool stats)
 		if (!visible && !stats)
 			obj->origin = ORIGIN_DROP_UNKNOWN;
 
-		drop_near(cave, &obj, 0, mon->grid, true, false);
+		drop_near(c, &obj, 0, grid, (c == cave), false);
 		obj = next;
 	}
 
@@ -840,7 +842,7 @@ void drop_loot(struct monster *mon, bool stats)
 	mon->held_obj = NULL;
 
 	/* Drop some objects */
-	dump_item = mon_create_drop(cave, mon, stats);
+	dump_item = mon_create_drop(c, mon, grid, stats);
 
 	/* Take note of any dropped treasure */
 	if (visible && dump_item && stats) {
@@ -1008,7 +1010,7 @@ void monster_death(struct monster *mon, struct player *p, bool by_player,
 
 	/* Generate treasure for eligible monsters */
 	if (!chasm && !rf_has(mon->race->flags, RF_TERRITORIAL)) {
-		drop_loot(mon, false);
+		drop_loot(cave, mon, mon->grid, false);
 	}
 
 	/* Update monster list window */

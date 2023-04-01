@@ -860,7 +860,9 @@ static void floor_carry_fail(struct chunk *c, struct object *drop, bool broke)
 		VERB_AGREEMENT(drop->number, "breaks", "break") :
 		VERB_AGREEMENT(drop->number, "disappears", "disappear");
 	object_desc(o_name, sizeof(o_name), drop, ODESC_BASE, player);
-	msg("The %s %s.", o_name, verb);
+	if (c == cave) {
+		msg("The %s %s.", o_name, verb);
+	}
 	delist_object(c, drop);
 	object_delete(cave, &drop);
 }
@@ -1001,8 +1003,8 @@ void drop_near(struct chunk *c, struct object **dropped, int chance,
 	/* Find the best grid and drop the item, destroying if there's no space */
 	drop_find_grid(player, c, *dropped, prefer_pile, &best);
 	if (floor_carry(c, best, *dropped, &dont_ignore)) {
-		sound(MSG_DROP);
 		if (dont_ignore && (square(c, best)->mon < 0)) {
+			sound(MSG_DROP);
 			msg("You feel something roll beneath your feet.");
 		}
 	} else {

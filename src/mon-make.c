@@ -954,7 +954,7 @@ bool place_new_monster_one(struct chunk *c, struct loc grid,
 
 	/* Monsters that don't pursue you drop their treasure upon being created */
 	if (rf_has(mon->race->flags, RF_TERRITORIAL)) {
-		drop_loot(mon, false);
+		drop_loot(c, mon, grid, false);
 	}
 
 	/* Success */
