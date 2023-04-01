@@ -474,18 +474,19 @@ void place_closed_door(struct chunk *c, struct loc grid)
  * \param c current chunk
  * \param grid location
  *
- * The door generated could be closed (and possibly locked), open, or broken.
+ * The door generated could be closed (and possibly locked), open, or secret.
  */
 void place_random_door(struct chunk *c, struct loc grid)
 {
-	int tmp = randint0(100);
+	int tmp = randint0(60 + c->depth);
 
-	if (tmp < 30)
+	if (tmp < 20) {
 		square_set_feat(c, grid, FEAT_OPEN);
-	else if (tmp < 40)
-		square_set_feat(c, grid, FEAT_BROKEN);
-	else
+	} else if (tmp < 60) {
 		place_closed_door(c, grid);
+	} else {
+		place_secret_door(c, grid);
+	}
 }
 
 /**
