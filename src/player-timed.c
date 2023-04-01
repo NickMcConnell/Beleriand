@@ -691,10 +691,10 @@ bool player_saving_throw(struct player *p, struct monster *mon, int resistance)
 
 	if (mon) {
 		return skill_check(source_monster(mon->midx), difficulty, player_skill,
-						   source_player()) > 0;
+						   source_player()) <= 0;
 	}
 	return skill_check(source_none(), difficulty, player_skill,
-					   source_player()) > 0;
+					   source_player()) <= 0;
 }
 
 /**
