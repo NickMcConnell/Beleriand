@@ -357,7 +357,7 @@ static bool do_cmd_open_test(struct loc grid)
 	}
 
 	/* Must be a closed door */
-	if (!square_iscloseddoor(cave, grid)) {
+	if (!square_iscloseddoor(cave, grid) && !square_issecretdoor(cave, grid)) {
 		msgt(MSG_NOTHING_TO_OPEN, "You see nothing there to open.");
 		return false;
 	}
@@ -1553,7 +1553,8 @@ void move_player(int dir, bool disarm)
 	int m_idx = square(cave, grid)->mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 	bool trap = square_isdisarmabletrap(cave, grid);
-	bool door = square_iscloseddoor(cave, grid);
+	bool door = square_iscloseddoor(cave, grid) &&
+		!square_issecretdoor(cave, grid);
 	bool confused = player->timed[TMD_CONFUSED] > 0;
 
 	/* Many things can happen on movement */
@@ -1584,7 +1585,7 @@ void move_player(int dir, bool disarm)
 					 "You feel a pile of rubble blocking your way.");
 				square_mark(cave, grid);
 				square_light_spot(cave, grid);
-			} else if (square_iscloseddoor(cave, grid)) {
+			} else if (door) {
 				msgt(MSG_HITWALL, "You feel a door blocking your way.");
 				square_mark(cave, grid);
 				square_light_spot(cave, grid);
@@ -1597,7 +1598,7 @@ void move_player(int dir, bool disarm)
 			if (square_isrubble(cave, grid))
 				msgt(MSG_HITWALL,
 					 "There is a pile of rubble blocking your way.");
-			else if (square_iscloseddoor(cave, grid))
+			else if (door)
 				msgt(MSG_HITWALL, "There is a door blocking your way.");
 			else
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
