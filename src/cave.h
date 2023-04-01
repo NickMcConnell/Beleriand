@@ -260,6 +260,7 @@ extern uint16_t chunk_list_max;
 
 /* cave-fire.c */
 errr vinfo_init(void);
+void forget_fire(struct chunk *c);
 void update_fire(struct chunk *c, struct player *p);
 int project_path(struct chunk *c, struct loc *gp, int range, struct loc grid1,
 	struct loc *grid2, int flg);

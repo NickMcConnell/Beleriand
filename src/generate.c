@@ -537,6 +537,9 @@ static void cave_clear(struct chunk *c, struct player *p)
 	/* Clear the monsters */
 	wipe_mon_list(c, p);
 
+	/* Forget the fire information */
+	forget_fire(c);
+
 	/* Free the chunk */
 	cave_free(c);
 }

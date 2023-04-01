@@ -702,7 +702,7 @@ static struct loc grid_to_loc(int grid)
 /**
  * Forget the fire_g grids, redrawing as needed
  */
-static void forget_fire(struct chunk *c)
+void forget_fire(struct chunk *c)
 {
 	int i;
 
