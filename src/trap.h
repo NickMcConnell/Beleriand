@@ -98,8 +98,7 @@ extern struct file_parser trap_parser;
 struct trap_kind *lookup_trap(const char *desc);
 bool square_trap_specific(struct chunk *c, struct loc grid, int t_idx);
 bool square_trap_flag(struct chunk *c, struct loc grid, int flag);
-bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
-						bool domsg);
+bool square_reveal_trap(struct chunk *c, struct loc grid, bool domsg);
 void hit_trap(struct loc grid);
 bool check_hit(int power, bool display_roll);
 bool square_player_trap_allowed(struct chunk *c, struct loc grid);

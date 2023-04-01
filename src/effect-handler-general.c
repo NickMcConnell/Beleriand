@@ -421,7 +421,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 			/* Detect traps */
 			if (square_isplayertrap(cave, grid)) {
 				/* Reveal trap */
-				if (square_reveal_trap(cave, grid, true, false)) {
+				if (square_reveal_trap(cave, grid, false)) {
 					detect = true;
 				}
 			}

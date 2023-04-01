@@ -681,6 +681,7 @@ void player_land(struct player *p)
 	/* Set off traps */
 	if (square_issecrettrap(cave, p->grid)) {
 		disturb(player, false);
+		square_reveal_trap(cave, p->grid, true);
 		hit_trap(p->grid);
 	} else if (square_isdisarmabletrap(cave, p->grid)) {
 		disturb(player, false);
@@ -1504,7 +1505,7 @@ static void search_square(struct player *p, struct loc grid, int dist,
 		if (skill_check(source_player(), score, difficulty, source_none()) > 0){
 			/* Traps */
 			if (square_issecrettrap(cave, grid)) {
-				square_reveal_trap(cave, grid, true, true);
+				square_reveal_trap(cave, grid, true);
 				disturb(p, false);
 			}
 

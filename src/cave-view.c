@@ -874,12 +874,10 @@ static void update_view_one(struct chunk *c, struct loc grid, struct player *p)
  */
 static void update_one(struct chunk *c, struct loc grid, struct player *p)
 {
-	/* Remove view if blind, check visible squares for traps */
+	/* Remove view if blind */
 	if (p->timed[TMD_BLIND]) {
 		sqinfo_off(square(c, grid)->info, SQUARE_SEEN);
 		sqinfo_off(square(c, grid)->info, SQUARE_CLOSE_PLAYER);
-	} else if (square_isseen(c, grid)) {
-		square_reveal_trap(c, grid, false, true);
 	}
 
 	/* Square went from unseen -> seen */

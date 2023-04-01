@@ -761,6 +761,7 @@ void do_cmd_exchange(struct command *cmd)
 	/* Set off traps */
 	if (square_isplayertrap(cave, grid)) {
 		/* Hit the trap */
+		square_reveal_trap(cave, grid, true);
 		hit_trap(grid);
 	} else if (square_ischasm(cave, grid)) {
 		player_fall_in_chasm(player);
@@ -1748,6 +1749,7 @@ void move_player(int dir, bool disarm)
 			/* Discover invisible traps, set off visible ones */
 			if (square_isplayertrap(cave, grid)) {
 				disturb(player, false);
+				square_reveal_trap(cave, grid, true);
 				hit_trap(grid);
 			} else if (square_ischasm(cave, grid)) {
 				player_fall_in_chasm(player);

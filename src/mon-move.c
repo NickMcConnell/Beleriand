@@ -2464,7 +2464,7 @@ static void process_move_exchange_places(struct monster *mon)
     /* Set off traps */
     if (square_isplayertrap(cave, grid) || square_ischasm(cave, grid)) {
 		/* Reveal the trap */
-		square_reveal_trap(cave, grid, true, true);
+		square_reveal_trap(cave, grid, true);
 
         /* Hit the trap */
         hit_trap(grid);

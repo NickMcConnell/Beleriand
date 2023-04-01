@@ -104,6 +104,7 @@ bool knock_back(struct loc grid1, struct loc grid2)
 			if (square_issecrettrap(cave, grid3) ||
 				square_isdisarmabletrap(cave, grid3)) {
 				disturb(player, false);
+				square_reveal_trap(cave, grid3, true);
 				hit_trap(grid3);
 			} else if (square_ischasm(cave, grid3)) {
 				player_fall_in_chasm(player);

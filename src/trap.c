@@ -851,8 +851,7 @@ void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level)
 /**
  * Reveal some of the player traps in a square
  */
-bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
-						bool domsg)
+bool square_reveal_trap(struct chunk *c, struct loc grid, bool domsg)
 {
     int found_trap = 0;
 	struct trap *trap = square_trap(c, grid);
@@ -984,7 +983,7 @@ void hit_trap(struct loc grid)
 		/* Trap may have gone */
 		if (!square_trap(cave, grid)) break;
 
-		/* Trap becomes visible (always XXX) */
+		/* Trap becomes visible */
 		trf_on(trap->flags, TRF_VISIBLE);
 	}
 
