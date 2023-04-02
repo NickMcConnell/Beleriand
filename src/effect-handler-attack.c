@@ -280,10 +280,14 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 		/* Require line of sight */
 		if (!los(cave, origin, mon->grid)) continue;
 
+		/* Require line of fire - assumes player is the origin - NRM */
+		if (!square_isfire(cave, mon->grid)) continue;
+
 		/* Jump directly to the monster */
-		(void)project(source_player(), 0, mon->grid, 0, 0, context->value.base,
-					  typ, flg, 0, 0, context->obj);
-		context->ident = true;
+		if (project(source_player(), 0, mon->grid, 0, 0, context->value.base,
+					typ, flg, 0, 0, context->obj)) {
+			context->ident = true;
+		}
 	}
 
 	/* Result */
