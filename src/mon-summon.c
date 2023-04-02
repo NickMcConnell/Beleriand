@@ -226,7 +226,7 @@ int summon_name_to_idx(const char *name)
 {
     int i;
     for (i = 0; i < summon_max; i++) {
-        if (name && streq(name, summons[i].name)) {
+        if (name && summons[i].name && streq(name, summons[i].name)) {
             return i;
 		}
     }

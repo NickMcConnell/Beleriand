@@ -1141,7 +1141,7 @@ depgen:
  list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h mon-util.h \
  mon-msg.h list-mon-message.h obj-knowledge.h player-history.h \
  list-history-types.h player-quest.h player-timed.h list-player-timed.h \
- player-util.h trap.h list-trap-flags.h
+ player-util.h songs.h trap.h list-trap-flags.h
 ./ui-abilities.o: ui-abilities.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
  z-type.h message.h list-message.h player.h guid.h obj-properties.h \

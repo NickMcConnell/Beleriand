@@ -248,7 +248,7 @@ desc:A uniquely enchanted forge for smithing objects.
 name:pit
 graphics:^:s
 priority:20
-flags:LOS | PROJECT | PASSABLE | PIT | EASY | TORCH
+flags:LOS | PROJECT | PASSABLE | PIT | EASY | TORCH | TRAP
 info:0:0:10
 walk-msg:Are you sure you want to step in the pit? 
 run-msg:A pit blocks your path.  Step into it? 
@@ -258,7 +258,7 @@ run-msg:A pit blocks your path.  Step into it?
 name:spiked pit
 graphics:^:W
 priority:20
-flags:LOS | PROJECT | PASSABLE | PIT | EASY | TORCH
+flags:LOS | PROJECT | PASSABLE | PIT | EASY | TORCH | TRAP
 info:0:0:15
 walk-msg:Are you sure you want to step in the spiked pit? 
 run-msg:A spiked pit blocks your path.  Step into it? 

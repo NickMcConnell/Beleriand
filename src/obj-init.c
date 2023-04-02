@@ -250,6 +250,16 @@ static enum parser_error parse_projection_message_type(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_projection_damaging(struct parser *p) {
+	int damaging = parser_getuint(p, "answer");
+	struct projection *projection = parser_priv(p);
+	if (!projection)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	projection->damaging = (damaging == 1) ? true : false;;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_projection_obvious(struct parser *p) {
 	int obvious = parser_getuint(p, "answer");
 	struct projection *projection = parser_priv(p);
@@ -294,6 +304,7 @@ static struct parser *init_parse_projection(void) {
 	parser_reg(p, "player-desc str desc", parse_projection_player_desc);
 	parser_reg(p, "blind-desc str desc", parse_projection_blind_desc);
 	parser_reg(p, "msgt sym type", parse_projection_message_type);
+	parser_reg(p, "damaging uint answer", parse_projection_damaging);
 	parser_reg(p, "obvious uint answer", parse_projection_obvious);
 	parser_reg(p, "wake uint answer", parse_projection_wake);
 	parser_reg(p, "color sym color", parse_projection_color);

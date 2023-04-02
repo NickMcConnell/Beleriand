@@ -1074,7 +1074,7 @@ void square_set_feat(struct chunk *c, struct loc grid, int feat)
 	/* Make the new terrain feel at home */
 	if (character_dungeon) {
 		/* Remove traps if necessary */
-		if (!square_player_trap_allowed(c, grid))
+		if (!square_istrappable(c, grid))
 			square_destroy_trap(c, grid);
 
 		square_note_spot(c, grid);

@@ -81,9 +81,7 @@ rarity:0
 flags:JAM | INVISIBLE
 desc:An obstruction which makes a closed door harder to open.
 
-## Player traps ### msg-vis: activation message, only when the player is not blind
-#    This is shown to the user when the trap is triggered.
-
+## Player traps ###
 
 # false floor
 
@@ -97,7 +95,9 @@ flags:TRAP | FLOOR | DOWN
 effect:DAMAGE
 dice:3d4
 desc:It looks like floor, but step incautiously and you will fall through.
-msg:The floor crumbles beneath you!{pause}You fall through...{pause}...and land somewhere deeper in the Iron Hells.
+msg:The floor crumbles beneath you!
+msg2:You fall through...
+msg3:...and land somewhere deeper in the Iron Hells.
 
 # open pit
 
@@ -198,7 +198,7 @@ effect:DAMAGE
 dice:1d4
 effect:TIMED_INC_CHECK:SLOW
 effect-xtra:TIMED_INC_NO_RES:SLOW
-dice:4d4
+dice-xtra:4d4
 stealth:-10
 desc:A field of caltrops.
 msg-good:You step carefully amidst a field of caltrops.
@@ -216,7 +216,7 @@ min-depth:3
 max-depth:6
 power:-1
 flags:TRAP | FLOOR | ONETIME | SURFACE
-effect:SUMMON:BIRD_BAT:0:5
+effect:SUMMON:BIRD_BAT
 dice:2
 desc:A resting place for flying creatures.
 msg-xtra:There is a flutter of wings from high above.

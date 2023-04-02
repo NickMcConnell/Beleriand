@@ -194,7 +194,7 @@ int hit_roll(int att, int evn, struct source attacker, struct source defender,
 	
 	/* Determine the visibility for the combat roll window */
 	if (attacker.what == SRC_PLAYER) {
-		if (defender.what == SRC_NONE) {
+		if ((defender.what == SRC_NONE) || (defender.what == SRC_TRAP)) {
 			non_player_visible = true;
 		} else {
 			struct monster *mon = cave_monster(cave, defender.which.monster);
@@ -202,7 +202,7 @@ int hit_roll(int att, int evn, struct source attacker, struct source defender,
 			non_player_visible = monster_is_visible(mon);
 		}
 	} else {
-		if (attacker.what == SRC_NONE) {
+		if ((attacker.what == SRC_NONE) || (attacker.what == SRC_TRAP)) {
 			non_player_visible = true;
 		} else {
 			struct monster *mon = cave_monster(cave, attacker.which.monster);

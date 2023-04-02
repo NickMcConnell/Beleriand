@@ -424,7 +424,7 @@ void player_fall_in_pit(struct player *p, bool spiked)
 {
 	/* Falling damage */
 	int dam = damroll(2, 4);
-	char *name = format("a %s", square_apparent_name(cave, p->grid));
+	char *name = format("%s", square_apparent_name(cave, p->grid));
 
 	msg("You fall into a %s", name);
 
@@ -795,7 +795,8 @@ bool player_escape_pit(struct player *p)
 	/* Disturb the player */
 	disturb(player, false);
 
-	if (check_hit(square_pit_difficulty(cave, p->grid), false)) {
+	if (check_hit(square_pit_difficulty(cave, p->grid), false,
+				  source_grid(p->grid))) {
 		msg("You try to climb out of the pit, but fail.");
 
 		/* Take a full turn */

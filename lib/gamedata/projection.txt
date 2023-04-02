@@ -49,6 +49,7 @@ desc:acid
 player-desc:acid
 blind-desc:acid
 msgt:BR_ACID
+damaging:1
 obvious:1
 wake:1
 color:Slate
@@ -60,6 +61,7 @@ desc:fire
 player-desc:fire
 blind-desc:fire
 msgt:BR_FIRE
+damaging:1
 obvious:1
 wake:1
 color:Red
@@ -71,6 +73,7 @@ desc:cold
 player-desc:frost
 blind-desc:cold
 msgt:BR_FROST
+damaging:1
 obvious:1
 wake:1
 color:White
@@ -93,6 +96,7 @@ desc:dark
 player-desc:dark
 blind-desc:something
 msgt:BR_DARK
+damaging:1
 obvious:1
 wake:1
 color:Light Dark
@@ -104,6 +108,7 @@ desc:lightning
 player-desc:lightning
 blind-desc:lightning
 msgt:BR_ELEC
+damaging:1
 obvious:1
 wake:1
 color:Blue
@@ -118,12 +123,22 @@ desc:an arrow
 player-desc:arrows
 blind-desc:something sharp
 msgt:GENERIC
+damaging:1
 obvious:1
 wake:1
 color:White
 
 code:BOULDER
+name:boulders
 type:monster
+desc:a boulder
+player-desc:boulders
+blind-desc:something very heavy
+msgt:GENERIC
+damaging:1
+obvious:1
+wake:1
+color:White
 
 code:SOUND
 name:sound

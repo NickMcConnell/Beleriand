@@ -214,7 +214,7 @@ bool effect_handler_DART(effect_handler_context_t *context)
 
 	assert(context->origin.what == SRC_TRAP);
 	name = context->origin.which.trap->kind->name;
-	if (check_hit(context->radius, true)) {
+	if (check_hit(context->radius, true, context->origin)) {
 		if (dam > prt) {
 			msg("A small dart hits you!");
 
@@ -249,6 +249,7 @@ bool effect_handler_DART(effect_handler_context_t *context)
 bool effect_handler_PIT(effect_handler_context_t *context)
 {
 	bool spiked = (context->subtype == 1);
+	square_set_feat(cave, player->grid, spiked ? FEAT_SPIKED_PIT : FEAT_PIT);
 	player_fall_in_pit(player, spiked);
 	return true;
 }
@@ -365,7 +366,7 @@ bool effect_handler_DEADFALL(effect_handler_context_t *context)
 		(void)player_inc_timed(player, TMD_STUN, dam * 4, true, true);
 	} else {
 		/* Destroy the grid, and push the player to safety */
-		if (check_hit(20, true)) {
+		if (check_hit(20, true, context->origin)) {
 			msg("You are struck by rubble!");
 			dam = damroll(4, 8);
 

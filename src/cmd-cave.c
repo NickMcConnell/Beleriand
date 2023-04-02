@@ -1641,8 +1641,8 @@ void move_player(int dir, bool disarm)
 		}
 	} else {
 		/* Normal movement */
-		bool pit = square_ispit(cave, grid);
-		bool web = square_iswebbed(cave, grid);
+		bool pit = square_ispit(cave, player->grid);
+		bool web = square_iswebbed(cave, player->grid);
 		bool step = true;
 
 		/* Check before walking on known traps/chasms on movement */

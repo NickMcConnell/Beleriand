@@ -29,6 +29,7 @@
 #include "player-quest.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "songs.h"
 #include "trap.h"
 
 /**
@@ -360,6 +361,22 @@ static enum parser_error parse_trap_msg(struct parser *p) {
     return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_trap_msg2(struct parser *p) {
+    struct trap_kind *t = parser_priv(p);
+    assert(t);
+
+    t->msg2 = string_append(t->msg2, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_msg3(struct parser *p) {
+    struct trap_kind *t = parser_priv(p);
+    assert(t);
+
+    t->msg3 = string_append(t->msg3, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_trap_msg_vis(struct parser *p) {
     struct trap_kind *t = parser_priv(p);
     assert(t);
@@ -419,6 +436,8 @@ struct parser *init_parse_trap(void) {
 	parser_reg(p, "expr-xtra sym name sym base str expr", parse_trap_expr_xtra);
 	parser_reg(p, "desc str text", parse_trap_desc);
 	parser_reg(p, "msg str text", parse_trap_msg);
+	parser_reg(p, "msg2 str text", parse_trap_msg2);
+	parser_reg(p, "msg3 str text", parse_trap_msg3);
 	parser_reg(p, "msg-vis str text", parse_trap_msg_vis);
 	parser_reg(p, "msg-silence str text", parse_trap_msg_silence);
 	parser_reg(p, "msg-good str text", parse_trap_msg_good);
@@ -707,11 +726,12 @@ bool square_remove_trap(struct chunk *c, struct loc grid, int t_idx_remove)
 /**
  * Determine if a trap affects the player, based on player's evasion.
  */
-bool check_hit(int power, bool display_roll)
+bool check_hit(int power, bool display_roll, struct source against)
 {
 	int skill = player->state.skill_use[SKILL_EVASION] +
 		player_dodging_bonus(player);
-	return hit_roll(power, skill, source_none(), source_player(), display_roll);
+	return hit_roll(power, skill, against, source_player(),
+					display_roll) > 0;
 }
 
 /**
@@ -911,6 +931,7 @@ void hit_trap(struct loc grid)
 
 	/* Look at the traps in this grid */
 	for (trap = square_trap(cave, grid); trap; trap = trap->next) {
+		struct song *silence = lookup_song("Silence");
 		bool saved = false;
 
 		/* Require that trap be capable of affecting the character */
@@ -920,8 +941,19 @@ void hit_trap(struct loc grid)
 		disturb(player, false);
 
 		/* Give a message */
-		if (trap->kind->msg)
+		if (player_is_singing(player, silence) && trap->kind->msg_silence) {
+			msg("%s", trap->kind->msg_silence);
+		} else if (trap->kind->msg) {
 			msg("%s", trap->kind->msg);
+		}
+		if (trap->kind->msg2) {
+			event_signal(EVENT_MESSAGE_FLUSH);
+			msg("%s", trap->kind->msg2);
+		}
+		if (trap->kind->msg3) {
+			event_signal(EVENT_MESSAGE_FLUSH);
+			msg("%s", trap->kind->msg3);
+		}
 
 		/* Test for save due to saving throw */
 		if (trf_has(trap->kind->flags, TRF_SAVE_SKILL)) {
@@ -938,19 +970,21 @@ void hit_trap(struct loc grid)
 		} else {
 			if (trap->kind->msg_bad)
 				msg("%s", trap->kind->msg_bad);
-			effect = trap->kind->effect;
-			effect_do(effect, source_trap(trap), NULL, &ident, false, 0, NULL);
+			if (trap->kind->msg_vis && !player->timed[TMD_BLIND])
+				msg("%s", trap->kind->msg_vis);
 
 			/* Affect stealth */
 			player->stealth_score += trap->kind->stealth;
+
+			effect = trap->kind->effect;
+			effect_do(effect, source_trap(trap), NULL, &ident, false, 0, NULL);
 
 			/* Trap may have gone */
 			if (!square_trap(cave, grid)) break;
 
 			/* Do any extra effects (hack - use ident as the trigger - NRM) */
 			if (trap->kind->msg_xtra && ident) {
-				if (trap->kind->msg_xtra)
-					msg("%s", trap->kind->msg_xtra);
+				msg("%s", trap->kind->msg_xtra);
 				if (trap->kind->effect_xtra) {
 					effect = trap->kind->effect_xtra;
 					effect_do(effect, source_trap(trap), NULL, &ident, false,

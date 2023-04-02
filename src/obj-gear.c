@@ -371,7 +371,7 @@ bool minus_ac(struct player *p)
 
 	/* Get the item */
 	obj = slot_object(p, i);
-	if (slot_type_is(p, i, EQUIP_SHIELD) && !tval_is_weapon(obj)) {
+	if (obj && slot_type_is(p, i, EQUIP_SHIELD) && tval_is_weapon(obj)) {
 		obj = NULL;
 	}
 

@@ -51,6 +51,8 @@ struct trap_kind
 	char *text;					/**< Text  */
 	char *desc;					/**< Short description  */
 	char *msg;					/**< Message on hitting */
+	char *msg2;					/**< 2nd message on hitting */
+	char *msg3;					/**< 3rd message on hitting */
 	char *msg_vis;				/**< Message on hitting, only when visible */
 	char *msg_silence;			/**< Message on hitting with song of silence */
 	char *msg_good;				/**< Message on saving */
@@ -100,7 +102,7 @@ bool square_trap_specific(struct chunk *c, struct loc grid, int t_idx);
 bool square_trap_flag(struct chunk *c, struct loc grid, int flag);
 bool square_reveal_trap(struct chunk *c, struct loc grid, bool domsg);
 void hit_trap(struct loc grid);
-bool check_hit(int power, bool display_roll);
+bool check_hit(int power, bool display_roll, struct source against);
 bool square_player_trap_allowed(struct chunk *c, struct loc grid);
 void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level);
 void square_free_trap(struct chunk *c, struct loc grid);

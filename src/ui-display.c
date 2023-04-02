@@ -964,7 +964,7 @@ static size_t prt_tmd(int row, int col)
 			c_put_str(grade->color, grade->name, row, col + len);
 			len += strlen(grade->name) + 1;
 			if (timed_effects[i].c_grade) {
-				char *meter = format("%-3d", player->timed[i]);
+				char *meter = format(" %-3d", player->timed[i]);
 				c_put_str(grade->color, meter, row, col + len);
 				len += strlen(meter) + 1;
 			}

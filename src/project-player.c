@@ -63,6 +63,8 @@ int adjust_dam(struct player *p, int dd, int ds, int type)
 	/* If an actual player exists, get their actual resist */
 	if (p && p->race) {
 		resist = type < ELEM_MAX ? p->state.el_info[type].res_level : 0;
+		/* Hack for acid */
+		if (!type) resist = 1;
 		if (resist < 1) resist -= 2;
 	}
 
@@ -250,7 +252,7 @@ static void monster_ranged_attack(project_player_handler_context_t *context,
 		net_dam = (dam - prt > 0) ? (dam - prt) : 0;
 
 		if (player->timed[TMD_BLIND]) {
-			msg("You are hit by something %s.", arrow ? "sharp" : "very heavy");
+			msg("You are hit by %s.", projections[context->type].blind_desc);
 		} else {
 			if (net_dam > 0) {
 				if (crit_bonus_dice == 0) {
