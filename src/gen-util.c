@@ -996,6 +996,12 @@ void dump_level_body(ang_file *fo, const char *title, struct chunk *c,
 				} else if (square_isupstairs(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
 						"&lt;" : "*";
+				} else if (square_isforge(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"0" : "*";
+				} else if (square_ischasm(c, grid)) {
+					s = (dist == NULL || dist[y][x] >= 0) ?
+						"7" : "*";
 				} else if (square_istrap(c, grid) ||
 					square_isplayertrap(c, grid)) {
 					s = (dist == NULL || dist[y][x] >= 0) ?
