@@ -76,9 +76,8 @@ struct chest_trap {
 	struct chest_trap *next;
 	char *name;
 	char *code;
-	int index;
+	uint8_t flag;
 	struct effect *effect;
-	int pval;
 	bool destroy;
 	char *msg;
 	char *msg_save;

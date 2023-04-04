@@ -38,7 +38,7 @@
 /**
  * Chest traps are specified in the file chest_trap.txt.
  *
- * Chests are described by their 16-bit pval as follows:
+ * Chests are described by their pval as follows:
  * - pval of 0 is an empty chest
  * - pval of 1 is a locked chest with no traps
  * - pval > 1  is a trapped chest, with the pval serving as in index into
@@ -100,13 +100,12 @@ static enum parser_error parse_chest_trap_name(struct parser *p)
     struct chest_trap *h = parser_priv(p);
     struct chest_trap *t = mem_zalloc(sizeof *t);
 
-	/* Order the traps correctly and set the pval */
+	/* Order the traps correctly and set the flag */
 	if (h) {
 		h->next = t;
-		t->pval = h->pval * 2;
+		t->flag = h->flag ? h->flag * 2 : 1;
 	} else {
 		chest_traps = t;
-		t->pval = 1;
 	}
     t->name = string_make(name);
     parser_setpriv(p, t);
@@ -265,7 +264,7 @@ const char *chest_trap_name(const struct object *obj)
 	} else if (trap_value > 0) {
 		struct chest_trap *trap = chest_traps, *found = NULL;
 		while (trap) {
-			if (trap_value & trap->pval) {
+			if (trap_value & trap->flag) {
 				if (found) {
 					return "multiple traps";
 				}
@@ -493,7 +492,7 @@ static void chest_death(struct loc grid, struct object *chest)
  */
 static void chest_trap(struct object *obj)
 {
-	uint8_t traps; 
+	uint8_t flags; 
 	struct chest_trap *trap;
 	bool ident = false;
 	int old[TMD_MAX];
@@ -504,13 +503,13 @@ static void chest_trap(struct object *obj)
 	/* Record current timed effect status */
 	memcpy(old, player->timed, TMD_MAX);
 
-	/* Get the traps */
+	/* Get the flags */
 	assert(obj->pval < (int) N_ELEMENTS(chest_trap_list));
-	traps = chest_trap_list[obj->pval];
+	flags = chest_trap_list[obj->pval];
 
 	/* Apply trap effects */
 	for (trap = chest_traps; trap; trap = trap->next) {
-		if (traps & trap->pval) {
+		if (flags & trap->flag) {
 			bool save = false;
 			if (trap->msg_save) {
 				int difficulty = player->state.stat_use[STAT_DEX] * 2;
@@ -529,8 +528,8 @@ static void chest_trap(struct object *obj)
 					effect_do(trap->effect, source_chest_trap(trap), obj,
 							  &ident, false, DIR_NONE, NULL);
 					/* Bit of a hack */
-					if (player_timed_inc_happened(player, old, TMD_MAX)) {
-						if (trap->msg_bad) {
+					if (trap->msg_bad) {
+						if (player_timed_inc_happened(player, old, TMD_MAX)) {
 							msg(trap->msg_bad);
 						} else {
 							msg("You resist the effects.");

@@ -55,11 +55,11 @@ void wr_description(void)
 				player->full_name,
 				player->died_from);
 	else
-		strnfmt(buf, sizeof buf, "%s, L%s %s, at %d feet",
+		strnfmt(buf, sizeof buf, "%s, L0 %s %s, at DL%d",
 				player->full_name,
 				player->race->name,
 				player->house->name,
-				player->depth * 50);
+				player->depth);
 
 	wr_string(buf);
 }
