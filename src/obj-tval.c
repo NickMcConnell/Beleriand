@@ -127,6 +127,11 @@ bool tval_is_sword(const struct object *obj)
 	return obj->tval == TV_SWORD;
 }
 
+bool tval_is_shield(const struct object *obj)
+{
+	return obj->tval == TV_SHIELD;
+}
+
 bool tval_is_body_armor(const struct object *obj)
 {
 	switch (obj->tval) {

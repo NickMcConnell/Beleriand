@@ -766,19 +766,17 @@ void inven_wield(struct object *obj, int slot)
 {
 	struct object *wielded, *old = player->body.slots[slot].obj;
 	struct object *weapon = equipped_item_by_slot_name(player, "weapon");
+	int shield_slot = slot_by_name(player, "arm");
 	const char *fmt;
 	char o_name[80];
 	bool dummy = false;
-	bool less_effective = false;
 	int num = tval_is_ammo(obj) ? obj->number : 1;
 	struct ability *ability;
 
 	/* Deal with wielding of shield or second weapon when already wielding a
 	 * hand and a half weapon */
-	if (weapon && slot_type_is(player, slot, EQUIP_SHIELD) &&
-		of_has(weapon->flags, OF_HAND_AND_A_HALF) && (!old)) {
-		less_effective = true;
-	}
+	bool less_effective = weapon && (slot == shield_slot)
+		&& of_has(weapon->flags, OF_HAND_AND_A_HALF) && !old;
 
 	/* Increase equipment counter if empty slot */
 	if (old == NULL)
@@ -818,6 +816,20 @@ void inven_wield(struct object *obj, int slot)
 
 	/* Wear the new stuff */
 	player->body.slots[slot].obj = wielded;
+
+	/* Deal with wielding of two-handed weapons when already using a shield */
+	if (of_has(obj->flags, OF_TWO_HANDED) && slot_object(player, shield_slot)) {
+		/* Take off shield */
+		inven_takeoff(player->body.slots[shield_slot].obj);
+	}
+
+	/* Deal with wielding of shield or second weapon when already wielding
+	 * a two handed weapon */
+	if ((slot == shield_slot) && weapon &&
+		of_has(weapon->flags, OF_TWO_HANDED)) {
+		/* Stop wielding two handed weapon */
+		inven_takeoff(weapon);
+	}
 
 	/* Where is the item now */
 	if (tval_is_melee_weapon(wielded))

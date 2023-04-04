@@ -203,6 +203,8 @@ void do_cmd_wield(struct command *cmd)
 		equipped_item_by_slot_name(player, "first quiver");
 	struct object *quiver2_obj =
 		equipped_item_by_slot_name(player, "second quiver");
+	struct object *weapon = equipped_item_by_slot_name(player, "weapon");
+	int shield_slot = slot_by_name(player, "arm");
 	char o_name[80];
 	const char *act;
 
@@ -237,6 +239,54 @@ void do_cmd_wield(struct command *cmd)
 	/* Get the slot the object wants to go in, and the item currently there */
 	slot = wield_slot(obj);
 	equip_obj = slot_object(player, slot);
+
+	/* Deal with wielding of two-handed weapons when already using a shield */
+	if (of_has(obj->flags, OF_TWO_HANDED) && slot_object(player, shield_slot)) {
+		bool shield = tval_is_shield(slot_object(player, shield_slot));
+		const char *thing = shield ? "shield" : "off-hand weapon";
+		if (object_is_cursed(slot_object(player, shield_slot))) {
+			msg("You would need to remove your %s, but cannot bear to part with it.", thing);
+
+			/* Cancel the command */
+			return;
+		}
+
+		/* Warn about dropping item in left hand */
+		if (!object_is_carried(player, obj) && pack_is_full()) {
+			const char *thing = shield ? "shield" : "off-hand weapon";
+			/* Flush input */
+			event_signal(EVENT_INPUT_FLUSH);
+
+			msg("This would require removing (and dropping) your %s.", thing);
+			if (!get_check("Proceed? ")) {
+				/* Cancel the command */
+				return;
+			}
+		}
+	}
+
+	/* Deal with wielding of shield or second weapon when already wielding
+	 * a two handed weapon */
+	if ((slot == shield_slot) && of_has(weapon->flags, OF_TWO_HANDED)) {
+		if (object_is_cursed(weapon)) {
+			msg("You would need to remove your weapon, but cannot bear to part with it.");
+
+			/* Cancel the command */
+			return;
+		}
+
+		/* Warn about dropping item in left hand */
+		if (!object_is_carried(player, obj) && pack_is_full()) {
+			/* Flush input */
+			event_signal(EVENT_INPUT_FLUSH);
+
+			msg("This would require removing (and dropping) your weapon.");
+			if (!get_check("Proceed? ")) {
+				/* Cancel the command */
+				return;
+			}
+		}
+	}
 
 	/* If the slot is open, wield and be done */
 	if (!equip_obj) {
@@ -286,7 +336,7 @@ void do_cmd_wield(struct command *cmd)
 		if (!of_has(obj->flags, OF_TWO_HANDED) &&
 			!of_has(obj->flags, OF_HAND_AND_A_HALF)) {
 			if (get_check("Do you wish to wield it in your off-hand? ")) {
-				slot = slot_by_name(player, "arm");
+				slot = shield_slot;
 				equip_obj = slot_object(player, slot);
 			}
 		}
