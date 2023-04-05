@@ -821,6 +821,12 @@ void drop_loot(struct chunk *c, struct monster *mon, struct loc grid,
 	struct object *obj = mon->held_obj;
 
 	bool visible = monster_is_visible(mon) || monster_is_unique(mon);
+	bool stair = square_isstairs(c, grid) || square_isshaft(c, grid);
+
+	/* Stone creatures turn into rubble */
+	if (rf_has(mon->race->flags, RF_STONE) && !stair) {
+		square_set_feat(c, grid, FEAT_RUBBLE);
+	}
 
 	/* Drop objects being carried */
 	while (obj) {
