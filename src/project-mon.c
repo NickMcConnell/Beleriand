@@ -394,6 +394,7 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 {
 	context->hurt_msg = MON_MSG_SHUDDER;
 	context->die_msg = MON_MSG_DISSOLVE;
+	context->dam = context->dif;
 }
 
 static const project_monster_handler_f monster_handlers[] = {
