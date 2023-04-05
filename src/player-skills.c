@@ -81,9 +81,11 @@ void init_skills(bool start, bool reset)
 	}
 
 	/* Use the new base skill values to work out the skill values after
-	 * modifiers) and tell the UI things have changed. */
-	recalculate_skills();
-	event_signal_skillpoints(exp_spent, exp_inc, exp_left);
+	 * modifiers) and tell the UI things have changed if necessary. */
+	if (!start || reset) {
+		recalculate_skills();
+		event_signal_skillpoints(exp_spent, exp_inc, exp_left);
+	}
 }
 
 /**

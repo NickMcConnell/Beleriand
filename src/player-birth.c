@@ -749,7 +749,7 @@ void do_cmd_birth_reset(struct command *cmd)
 {
 	player_init(player);
 	reset_stats(stats, points_spent, points_inc, &points_left, false);
-	init_skills(true, true);
+	init_skills(true, false);
 	do_birth_reset(quickstart_allowed, &quickstart_prev);
 }
 
