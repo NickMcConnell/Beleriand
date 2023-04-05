@@ -489,6 +489,9 @@ static struct object *make_artifact_special(int level)
 		/* Skip non-special artifacts */
 		if (!kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
 
+		/* Skip specified artifacts */
+		if (of_has(art->flags, OF_NO_RANDOM)) continue;
+
 		/* Cannot make an artifact twice */
 		if (is_artifact_created(art)) continue;
 
@@ -567,6 +570,9 @@ static bool make_artifact(struct object *obj, int lev)
 
 		/* Skip special artifacts */
 		if (kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
+
+		/* Skip specified artifacts */
+		if (of_has(art->flags, OF_NO_RANDOM)) continue;
 
 		/* Cannot make an artifact twice */
 		if (is_artifact_created(art)) continue;

@@ -482,7 +482,7 @@ weight:70
 cost:45000
 attack:0:0d0
 defence:-1:1d8
-flags:HUNGER
+flags:HUNGER | NO_RANDOM
 values:SMITHING[3] | RES_POIS[1]
 desc:Supple but harder than serpent-scale, this shining black
 desc: armour was wrought years ago by the master smith Eol,
@@ -1030,7 +1030,7 @@ weight:120
 cost:100000
 attack:-1:3d6
 defence:1:0d0
-flags:SUST_STR
+flags:SUST_STR | NO_RANDOM
 values:STR[1]
 desc:The long deadly blade of Nan, the Giant.
 
@@ -1131,7 +1131,7 @@ weight:20
 cost:500000
 attack:3:1d9
 defence:1:0d0
-flags:VAMPIRIC | HUNGER
+flags:VAMPIRIC | HUNGER | NO_RANDOM
 values:STEALTH[2]
 desc:Though this dark blade is held to your will now, you feel it writhe
 desc: with resentment. It will happily take out its anger on any before
@@ -1156,7 +1156,7 @@ weight:50
 cost:30000
 attack:0:1d10
 defence:0:0d0
-flags:PROT_FEAR | THROWING
+flags:PROT_FEAR | THROWING | NO_RANDOM
 slay:WOLF_1
 desc:The iron spear of Boldog, a fierce captain of the orcs.
 
@@ -1679,6 +1679,7 @@ cost:500000
 attack:-3:0d0
 defence:-3:1d4
 ability:Stealth:Disguise
+flags:NO_RANDOM
 values:STEALTH[2]
 desc:The coat of Draugluin, sire of werewolves. If you cast this
 desc: over yourself you may deceive some of the enemy's servants.
@@ -1699,6 +1700,7 @@ cost:500000
 attack:-1:0d0
 defence:2:0d0
 ability:Stealth:Disguise
+flags:NO_RANDOM
 values:STEALTH[2]
 desc:With its great black wings, might this remnant of the vampire
 desc: let you pass as a messenger journeying to Morgoth?
@@ -2119,7 +2121,7 @@ weight:4000
 cost:10000000
 attack:0:0d0
 defence:0:0d0:0
-flags:INDESTRUCTIBLE
+flags:INDESTRUCTIBLE | NO_RANDOM
 desc:Containing much of the power of he who is the mightiest among the
 desc: Ainur, this plain iron crown has mounted upon it the three
 desc: Silmarils, greatest treasures of Middle-Earth. To attempt to cut
@@ -2141,6 +2143,7 @@ weight:1000
 cost:500000
 attack:-9:6d5
 defence:0:0d0
+flags:NO_RANDOM
 values:TUNNEL[3]
 desc:The mighty Hammer of the Underworld, blackened by dark sorceries,
 desc: whose wielder holds the lives of all Morgoth's servants
