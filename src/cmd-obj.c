@@ -761,11 +761,23 @@ void do_cmd_use(struct command *cmd)
 
 static void refill_lamp(struct object *lamp, struct object *obj)
 {
-	/* Refuel */
-	lamp->timeout += obj->timeout ? obj->timeout : obj->pval;
+	int timeout = obj->timeout ? obj->timeout : obj->pval;
 
 	/* Message */
-	msg("You fuel your lamp.");
+	if (timeout > z_info->fuel_lamp) {
+		if (tval_is_light(obj)) {
+			if (!get_check("Refueling from this lantern will waste some fuel. Proceed? ")) {
+				return;
+			}
+		} else if (get_check("Refueling from this flask will waste some fuel. Proceed? ")) {
+			return;
+		}
+	} else {
+		msg("You fuel your lamp.");
+	}
+
+	/* Refuel */
+	lamp->timeout = timeout;
 
 	/* Comment */
 	if (lamp->timeout >= z_info->fuel_lamp) {
@@ -788,9 +800,10 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 				inven_carry(player, used, true, true);
 			else
 				drop_near(cave, &used, 0, player->grid, false, true);
-		} else
+		} else {
 			/* Empty a single lantern */
 			obj->timeout = 0;
+		}
 
 		/* Combine the pack (later) */
 		player->upkeep->notice |= (PN_COMBINE);
@@ -821,9 +834,15 @@ static void combine_torches(struct object *torch, struct object *obj)
 {
 	struct object *used;
 	bool none_left = false;
+	int timeout = torch->timeout + obj->timeout + 5;
+
+	/* Message */
+	if ((timeout > z_info->fuel_torch) && !get_check("Refueling from this torch will waste some fuel. Proceed? ")) {
+		return;
+	}
 
 	/* Refuel */
-	torch->timeout += obj->timeout + 5;
+	torch->timeout = timeout;
 
 	/* Message */
 	msg("You combine the torches.");
@@ -871,7 +890,7 @@ void do_cmd_refuel(struct command *cmd)
 
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
-			"Refuel with with fuel source? ",
+			"Refuel with which fuel source? ",
 			"You have nothing you can refuel with.",
 			obj_can_refuel,
 			USE_INVEN | USE_FLOOR | USE_QUIVER) != CMD_OK) return;
