@@ -862,14 +862,8 @@ void ident_hunger(struct player *p)
 /**
  * Describes the effect of a slay
  */
-static void slay_desc(char *desc, int len, int flag, int brand,
-					  const struct monster *mon)
+static void slay_desc(char *desc, int len, int flag, int brand, char *m_name)
 {
-	char m_name[80];
-
-	/* Monster description */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
-
 	/* Description depends on the type of 'slay' */
 	if (flag) {
 		flag_slay_message(flag, m_name, desc, len);
@@ -883,8 +877,8 @@ static void slay_desc(char *desc, int len, int flag, int brand,
 /**
  * Identifies a weapon from one of its slays being active and prints a message
  */
-void ident_weapon_by_use(struct object *obj, const struct monster *mon,
-						 int flag, int brand, int slay, struct player *p)
+void ident_weapon_by_use(struct object *obj, char *m_name, int flag, int brand,
+						 int slay, struct player *p)
 {	
 	char o_short_name[80];
 	char o_full_name[80];
@@ -902,7 +896,7 @@ void ident_weapon_by_use(struct object *obj, const struct monster *mon,
 	object_desc(o_full_name, sizeof(o_full_name), obj, ODESC_FULL, p);
 	
 	/* Description of the 'slay' */
-	slay_desc(slay_description, sizeof(slay_description), flag, brand, mon);
+	slay_desc(slay_description, sizeof(slay_description), flag, brand, m_name);
 
 	/* Print the messages */
 	msg("Your %s %s.", o_short_name, slay_description);
@@ -910,9 +904,9 @@ void ident_weapon_by_use(struct object *obj, const struct monster *mon,
 }
 
 void ident_bow_arrow_by_use(struct object *bow, struct object *arrows,
-							const struct monster *mon, int bow_brand,
-							int bow_slay, int arrow_flag, int arrow_brand,
-							int arrow_slay, struct player *p)
+							char *m_name, int bow_brand, int bow_slay,
+							int arrow_flag, int arrow_brand, int arrow_slay,
+							struct player *p)
 {
 	char a_short_name[80];
 	char a_full_name[80];
@@ -932,7 +926,7 @@ void ident_bow_arrow_by_use(struct object *bow, struct object *arrows,
 		object_desc(a_full_name, sizeof(a_full_name), arrows, ODESC_FULL, p);
 
 		slay_desc(slay_description, sizeof(slay_description), arrow_flag,
-				  arrow_brand, mon);
+				  arrow_brand, m_name);
 
 		msg("Your %s %s.", a_short_name, slay_description);
 		msg("You recognize it as %s.", a_full_name);
@@ -949,7 +943,7 @@ void ident_bow_arrow_by_use(struct object *bow, struct object *arrows,
 		object_desc(b_full_name, sizeof(b_full_name), bow, ODESC_FULL, p);
 
 		slay_desc(slay_description, sizeof(slay_description), 0, bow_brand,
-				  mon);
+				  m_name);
 
 		msg("Your shot %s.", slay_description);
 		msg("You recognize your %s to be %s.", b_short_name,

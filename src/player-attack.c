@@ -472,6 +472,7 @@ void py_attack_real(struct player *p, struct loc grid, int attack_type)
 			int crit_bonus_dice = 0, slay_bonus_dice = 0, total_dice = 0;
 			int effective_strength = p->state.stat_use[STAT_STR];
 			bool fatal_blow = false;
+			bool living = monster_is_living(mon);
 			int slay = 0, brand = 0, flag = 0;
 
 			hits++;
@@ -560,19 +561,18 @@ void py_attack_real(struct player *p, struct loc grid, int attack_type)
 
 			/* If a slay, brand or flag was noticed, then identify the weapon */
 			if (slay || brand || flag) {
-				ident_weapon_by_use(obj, mon, flag, brand, slay, p);
+				ident_weapon_by_use(obj, m_name, flag, brand, slay, p);
 			}
 
 			/* Deal with killing blows */
 			if (fatal_blow) {
 				/* Heal with a vampiric weapon */
-				if (obj && of_has(obj->flags, OF_VAMPIRIC) &&
-					monster_is_living(mon)) {
+				if (obj && of_has(obj->flags, OF_VAMPIRIC) && living) {
 					if (p->chp < p->mhp) {
 						bool dummy;
 						effect_simple(EF_HEAL_HP, source_player(), "m7", 0, 0,
 									  0, &dummy);
-						ident_weapon_by_use(obj, mon, OF_VAMPIRIC, 0, 0, p);
+						ident_weapon_by_use(obj, m_name, OF_VAMPIRIC, 0, 0, p);
 					}
 				}
 
@@ -915,6 +915,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	int dam, prt;
 	int arrow_slay = 0, arrow_brand = 0, arrow_flag = 0;
 	int bow_slay = 0, bow_brand = 0;
+	char m_name[80];
 
 	/* Remove the rapid fire penalty to attack if necessary */
 	if (undo_rapid) {
@@ -990,7 +991,10 @@ static struct attack_result make_ranged_shot(struct player *p,
 	prt = (prt * prt_percent) / 100;
 	result.dmg = MAX(0, dam - prt);
 
-	ident_bow_arrow_by_use(bow, ammo, mon, bow_brand, bow_slay, arrow_flag,
+	/* Monster description */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+
+	ident_bow_arrow_by_use(bow, ammo, m_name, bow_brand, bow_slay, arrow_flag,
 						   arrow_brand, arrow_slay,	p);
 
 	event_signal_combat_damage(EVENT_COMBAT_DAMAGE, total_dd, total_ds,
@@ -1083,7 +1087,12 @@ static struct attack_result make_ranged_throw(struct player *p,
 
 	/* If a slay, brand or flag was noticed, then identify the weapon */
 	if (slay || brand || flag) {
-		ident_weapon_by_use(obj, mon, flag, brand, slay, p);
+		char m_name[80];
+
+		/* Monster description */
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+
+		ident_weapon_by_use(obj, m_name, flag, brand, slay, p);
 	}
 
 	event_signal_combat_damage(EVENT_COMBAT_DAMAGE, total_dd, total_ds,

@@ -44,11 +44,11 @@ void ident_see_invisible(const struct monster *mon, struct player *p);
 void ident_haunted(struct player *p);
 void ident_cowardice(struct player *p);
 void ident_hunger(struct player *p);
-void ident_weapon_by_use(struct object *obj, const struct monster *mon,
-						 int flag, int brand, int slay, struct player *p);
+void ident_weapon_by_use(struct object *obj, char *m_name, int flag, int brand,
+						 int slay, struct player *p);
 void ident_bow_arrow_by_use(struct object *bow, struct object *arrows,
-							const struct monster *mon, int bow_brand,
-							int bow_slay, int arrow_flag, int arrow_brand,
-							int arrow_slay, struct player *p);
+							char *m_name, int bow_brand, int bow_slay,
+							int arrow_flag, int arrow_brand, int arrow_slay,
+							struct player *p);
 void id_known_specials(void);
 int object_value(const struct object *obj);
