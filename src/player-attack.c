@@ -706,7 +706,8 @@ int breakage_chance(const struct object *obj, bool hit_wall) {
 	} else if (tval_is_ammo(obj)) {
 		if (player_active_ability(player, "Careful Shot")) perc /= 2;
 		if (player_active_ability(player, "Flaming Arrows")) perc = 100;
-	} else if ((perc != 100) && player_active_ability(player, "Throwing")) {
+	} else if ((perc != 100) &&
+			   player_active_ability(player, "Throwing Mastery")) {
 		perc = 0;
 	}
 
@@ -1021,10 +1022,12 @@ static struct attack_result make_ranged_throw(struct player *p,
 	int slay = 0, brand = 0, flag = 0;
 
 	/* Subtract the melee weapon's bonus (as we had already accounted for it) */
-	attack_mod -= weapon->att;
-	attack_mod -= blade_bonus(p, weapon);
-	attack_mod -= axe_bonus(p, weapon);
-	attack_mod -= polearm_bonus(p, weapon);
+	if (weapon) {
+		attack_mod -= weapon->att;
+		attack_mod -= blade_bonus(p, weapon);
+		attack_mod -= axe_bonus(p, weapon);
+		attack_mod -= polearm_bonus(p, weapon);
+	}
 
 	/* Weapons that are not good for throwing are much less accurate */
 	if (!of_has(obj->flags, OF_THROWING)) {
@@ -1037,7 +1040,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 	attack_mod += polearm_bonus(p, obj);
 
 	/* Bonus for throwing proficiency ability */
-	if (player_active_ability(p, "Throwing")) attack_mod += 5;
+	if (player_active_ability(p, "Throwing Mastery")) attack_mod += 5;
 
 	/* Determine the player's attack score after all modifiers */
 	total_attack_mod = total_player_attack(p, mon, attack_mod);

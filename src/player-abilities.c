@@ -326,7 +326,7 @@ bool applicable_ability(struct ability *ability, struct object *obj)
 
 	/* Throwing Mastery is OK for throwing items */
 	if (of_has(obj->flags, OF_THROWING) && (ability->skill == SKILL_MELEE) &&
-		streq(ability->name, "Throwing")) {
+		streq(ability->name, "Throwing Mastery")) {
 		return true;
 	}
 
