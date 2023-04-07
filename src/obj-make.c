@@ -316,16 +316,16 @@ void ego_apply_magic(struct object *obj, bool smithing)
 		}
 	} else {
 		/* Apply extra ego bonuses */
-		obj->att += randint1(ego->att);
-		obj->evn += randint1(ego->evn);
-		obj->dd += randint1(ego->dd);
-		obj->ds += randint1(ego->ds);
-		obj->pd += randint1(ego->pd);
-		obj->ps += randint1(ego->ps);
+		if (ego->att) obj->att += randint1(ego->att);
+		if (ego->evn) obj->evn += randint1(ego->evn);
+		if (ego->dd) obj->dd += randint1(ego->dd);
+		if (ego->ds) obj->ds += randint1(ego->ds);
+		if (ego->pd) obj->pd += randint1(ego->pd);
+		if (ego->ps) obj->ps += randint1(ego->ps);
 
-		if (of_has(obj->flags, OF_CURSED)) {
+		if (of_has(obj->flags, OF_CURSED) && ego->pval) {
 			obj->pval -= randint1(ego->pval);
-		} else {
+		} else if (ego->pval) {
 			obj->pval += randint1(ego->pval);
 		}
 
