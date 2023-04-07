@@ -731,18 +731,22 @@ bool floor_destroy(struct object *obj, int amt)
 	bool none_left;
 	char name[80];
 	char out_val[160];
-
-	/* Get the object */
-	struct object *destroyed = floor_object_for_use(player, obj, amt, true,
-													&none_left);
+	int num = obj->number;
+	struct object *destroyed;
 
 	/* Describe the destroyed object */
-	object_desc(name, sizeof(name), destroyed, ODESC_PREFIX | ODESC_FULL,
-		player);
+	obj->number = amt;
+	object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL, player);
+	obj->number = num;
 
 	/* Check for known special items */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", name);
-	if (!get_check(out_val)) return false;
+	if (!get_check(out_val)) {
+		return false;
+	}
+
+	/* Get the object */
+	destroyed = floor_object_for_use(player, obj, amt, true, &none_left);
 
 	/* Message */
 	msg("You destroy %s.", name);

@@ -1063,6 +1063,7 @@ bool inven_destroy(struct object *obj, int amt)
 	char name[80];
 	char out_val[160];
 	char label;
+	int num = obj->number;
 
 	/* Error check */
 	if (amt <= 0)
@@ -1083,6 +1084,15 @@ bool inven_destroy(struct object *obj, int amt)
 	/* Not too many */
 	if (amt > obj->number) amt = obj->number;
 
+	/* Describe the destroyed object */
+	obj->number = amt;
+	object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL, player);
+	obj->number = num;
+
+	/* Check for known special items */
+	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", name);
+	if (!get_check(out_val)) return false;
+
 	/* Take off equipment, don't combine */
 	if (object_is_equipped(player->body, obj)) {
 		equipped = true;
@@ -1091,14 +1101,6 @@ bool inven_destroy(struct object *obj, int amt)
 
 	/* Get the object */
 	destroyed = gear_object_for_use(player, obj, amt, false, &none_left);
-
-	/* Describe the destroyed object */
-	object_desc(name, sizeof(name), destroyed, ODESC_PREFIX | ODESC_FULL,
-		player);
-
-	/* Check for known special items */
-	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", name);
-	if (!get_check(out_val)) return false;
 
 	/* Message */
 	msg("You destroy %s (%c).", name, label);
