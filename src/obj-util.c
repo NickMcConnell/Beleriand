@@ -688,6 +688,9 @@ void distribute_charges(struct object *source, struct object *dest, int amt)
 void uncurse_object(struct object *obj)
 {
 	/* Uncurse it */
+	if (!of_off(obj->flags, OF_CURSED)) {
+		msg("Attempt to uncurse non-cursed object - please report this bug");
+	}
 	obj->notice &= ~(OBJ_NOTICE_CURSED);
 
 	/* Remove special inscription, if any */

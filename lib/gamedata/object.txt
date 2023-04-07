@@ -1472,7 +1472,6 @@ alloc:6:2
 alloc:14:4
 charges:2d2
 effect:REMOVE_CURSE
-dice:30
 desc:It removes curses from the items in your possession.
 
 

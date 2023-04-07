@@ -336,6 +336,7 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
 bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 {
 	int i;
+	bool removed = false;
 
 	for (i = 0; i < player->body.count; i++) {
 		struct object *obj = slot_object(player, i);
@@ -346,7 +347,12 @@ bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 
 		/* Uncurse the object */
 		uncurse_object(obj);
+		removed = true;
 		context->ident = true;
+	}
+
+	if (removed) {
+		msg("You feel sanctified.");
 	}
 
 	return context->ident;
