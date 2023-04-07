@@ -1275,7 +1275,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 				/* Perform the attack */
 				result = attack(p, obj, mon, rapid_fire, attack_penalty,
 								shots == 1);
-				if (result.hit) {
+				if (result.hit > 0) {
 					char o_name[80];
 					bool fatal_blow = false;
 
