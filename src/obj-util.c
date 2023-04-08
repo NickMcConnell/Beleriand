@@ -693,8 +693,8 @@ void uncurse_object(struct object *obj)
 	}
 	obj->notice &= ~(OBJ_NOTICE_CURSED);
 
-	/* Remove special inscription, if any */
-	obj->pseudo = OBJ_PSEUDO_NONE;
+	/* Take note if allowed */
+	if (obj->pseudo) obj->pseudo = OBJ_PSEUDO_UNCURSED;
 
 	/* The object has been "sensed" */
 	obj->notice |= (OBJ_NOTICE_SENSE);

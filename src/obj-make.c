@@ -354,7 +354,8 @@ void ego_apply_magic(struct object *obj, bool smithing)
 		obj->el_info[i].flags |= ego->el_info[i].flags;
 	}
 
-	return;
+	/* Pseudo-id the item */
+	pseudo_id(obj);
 }
 
 /**
@@ -529,6 +530,9 @@ static struct object *make_artifact_special(int level)
 		/* Mark the artifact as "created" */
 		mark_artifact_created(art, true);
 
+		/* Pseudo-id the item */
+		pseudo_id(new_obj);
+
 		/* Success */
 		return new_obj;
 	}
@@ -603,6 +607,7 @@ static bool make_artifact(struct object *obj, int lev)
 	if (obj->artifact) {
 		copy_artifact_data(obj, obj->artifact);
 		mark_artifact_created(obj->artifact, true);
+		pseudo_id(obj);
 		return true;
 	}
 

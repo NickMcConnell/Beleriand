@@ -262,7 +262,7 @@ int pseudo_id_check_weak(const struct object *obj)
 {
 	/* Artefacts and Ego-Items*/
 	if (obj->artifact || obj->ego) {
-		return OBJ_PSEUDO_EXCELLENT;
+		return OBJ_PSEUDO_SPECIAL;
 	}
 
 	/* Default to "average" */
@@ -279,19 +279,19 @@ int pseudo_id_check_strong(const struct object *obj)
 	/* Artefacts */
 	if (obj->artifact) {
 		/* Cursed */
-		if (object_is_cursed(obj)) return OBJ_PSEUDO_TERRIBLE;
+		if (object_is_cursed(obj)) return OBJ_PSEUDO_CURSED_ART;
 
 		/* Normal */
-		return OBJ_PSEUDO_SPECIAL;
+		return OBJ_PSEUDO_ARTEFACT;
 	}
 
 	/* Ego-Items */
 	if (obj->ego) {
 		/* Cursed */
-		if (object_is_cursed(obj)) return OBJ_PSEUDO_WORTHLESS;
+		if (object_is_cursed(obj)) return OBJ_PSEUDO_CURSED_SPEC;
 
 		/* Normal */
-		return OBJ_PSEUDO_EXCELLENT;
+		return OBJ_PSEUDO_SPECIAL;
 	}
 
 	/* Default to "average" */

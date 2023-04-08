@@ -854,6 +854,12 @@ void inven_wield(struct object *obj, int slot)
 	if (of_has(wielded->flags, OF_CURSED)) {
 		/* Warn the player */
 		msgt(MSG_CURSED, "You have a bad feeling about this...");
+
+		/* Sense the object */
+		obj->pseudo = OBJ_PSEUDO_CURSED;
+
+		/* The object has been "sensed" */
+		obj->notice |= (OBJ_NOTICE_SENSE);
 	}
 
 	if (less_effective) {
