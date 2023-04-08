@@ -363,7 +363,7 @@ static void build_chasm(struct chunk *c)
                     }
                         
                     /* Avoid a chasm having no squares in a room/corridor */
-                    if (square_isfloor(c, grid)) {
+                    if (square_ispassable(c, grid)) {
                         floor_to_chasm++;
                     }
                 }
@@ -515,7 +515,7 @@ static bool tunnel_ok(struct chunk *c, struct loc grid1, struct loc grid2,
 		/* Abort if the tunnel would have floor beside it at some point
 		 * outside a room */
 		if ((square_isfloor(c, perp0) || square_isfloor(c, perp1)) &&
-			!square_isroom(c, loc(x, y))) {
+			!square_isroom(c, grid)) {
 			return false;
 		}
 
@@ -525,12 +525,12 @@ static bool tunnel_ok(struct chunk *c, struct loc grid1, struct loc grid2,
 
 		/* Count the number of times it enters or leaves a room */
 		if (square_iswall_outer(c, grid) &&
-			(square_isfloor(c, prev) || square_iswall_inner(c, prev))) {
+			(square_ispassable(c, prev) || square_iswall_inner(c, prev))) {
 			/* To outside from inside */
 			changes++;
 		}
 		if (square_iswall_outer(c, prev) &&
-			(square_isfloor(c, grid) || square_iswall_inner(c, grid))) {
+			(square_ispassable(c, grid) || square_iswall_inner(c, grid))) {
 			/* From outside to inside */
 			changes++;
 		}
@@ -560,11 +560,11 @@ static bool tunnel_ok(struct chunk *c, struct loc grid1, struct loc grid2,
 		/* Abort if the tunnel would directly enter a vault without going
 		 * through a designated square */
 		if (square_iswall_solid(c, prev) && 
-			(square_isfloor(c, grid) || square_iswall_inner(c, grid))) {
+			(square_ispassable(c, grid) || square_iswall_inner(c, grid))) {
 			return false;
 		}
 		if (square_iswall_solid(c, grid) && 
-			(square_isfloor(c, prev) || square_iswall_inner(c, prev))) {
+			(square_ispassable(c, prev) || square_iswall_inner(c, prev))) {
 			return false;
 		}
 	}

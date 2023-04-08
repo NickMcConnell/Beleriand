@@ -220,7 +220,7 @@ static bool whirlwind_possible(struct player *p)
 		 dir = cycle[d];
 		 grid = loc_sum(p->grid, ddgrid[dir]);
 
-		 if (!square_isfloor(cave, grid)) {
+		 if (square_iswall(cave, grid)) {
 			 return false;
 		 }
 	 }
@@ -1193,8 +1193,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 			bool see = square_isseen(cave, path_g[i]);
 
 			/* Stop before hitting walls */
-			if (!(square_ispassable(cave, path_g[i])) &&
-				!(square_isprojectable(cave, path_g[i]))) {
+			if (!square_isprojectable(cave, path_g[i])) {
 				/* If the arrow hasn't already stopped, do some things... */
 				if (!ghost_arrow) {
 					hit_wall = true;

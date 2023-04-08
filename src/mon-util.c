@@ -605,7 +605,7 @@ void monsters_hear(bool player_centered, bool main_roll, int difficulty)
 			for (d = 0; d < 8; d++) {
 				dir = cycle[d];
 				grid = loc_sum(player->grid, ddgrid[dir]);
-				if (square_isfloor(cave, grid)) {
+				if (square_ispassable(cave, grid)) {
 					open_squares++;
 				}
 			}

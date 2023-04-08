@@ -56,7 +56,7 @@ bool knock_back(struct loc grid1, struct loc grid2)
     struct loc next = loc_sum(grid2, ddgrid[dir]);
     
     /* First try to knock it straight back */
-    if (square_isfloor(cave, next) && (square_monster(cave, next) == NULL)) {
+    if (!square_iswall(cave, next) && (square_monster(cave, next) == NULL)) {
         grid3 = next;
         knocked = true;
     } else {
@@ -68,7 +68,7 @@ bool knock_back(struct loc grid1, struct loc grid2)
         for (i = 0; i < 2; i++) {
             d = cycle[chome[dir_from_delta(next.y, next.x)] + mod];
             grid3 = loc_sum(grid2, ddgrid[d]);
-            if (square_isfloor(cave, grid3) &&
+            if (!square_iswall(cave, grid3) &&
 				(square_monster(cave, next) == NULL)) {
                 knocked = true;
                 break;

@@ -1376,7 +1376,7 @@ static int get_move_calc_vulnerability(struct loc mgrid)
 
 		/* Increase vulnerability for each open square towards the monster */
 		for (i = 0; i < 5; i++) {
-			if (!square_isprojectable(cave, grid[i])) vulnerability++;
+			if (square_isprojectable(cave, grid[i])) vulnerability++;
 		}
 		
 		/* Increase for monsters already engaged with the player
@@ -1601,7 +1601,8 @@ static bool get_move(struct monster *mon, struct loc *tgrid, bool *fear,
 				/* If also adjacent to monster */
 				if (distance(mon->grid, grid) == 1) {
 					/* if it is free... */
-					if (square_isopen(cave, grid)) {
+					if (square_ispassable(cave, grid) &&
+						!square_monster(cave, grid)) {
 						/* and has a lower count... */
 						if ((adj_mon_count(grid) <= count) &&
 							(rf_has(race->flags, RF_FLANKING) || one_in_(2))) {
