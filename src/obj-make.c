@@ -323,7 +323,7 @@ void ego_apply_magic(struct object *obj, bool smithing)
 		if (ego->pd) obj->pd += randint1(ego->pd);
 		if (ego->ps) obj->ps += randint1(ego->ps);
 
-		if (of_has(obj->flags, OF_CURSED) && ego->pval) {
+		if (of_has(ego->flags, OF_CURSED) && ego->pval) {
 			obj->pval -= randint1(ego->pval);
 		} else if (ego->pval) {
 			obj->pval += randint1(ego->pval);
