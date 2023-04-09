@@ -770,6 +770,7 @@ void inven_wield(struct object *obj, int slot)
 	const char *fmt;
 	char o_name[80];
 	bool dummy = false;
+	bool split = false;
 	int num = tval_is_ammo(obj) ? obj->number : 1;
 	struct ability *ability;
 
@@ -792,6 +793,7 @@ void inven_wield(struct object *obj, int slot)
 	if (object_is_carried(player, obj)) {
 		/* Split off a new object if necessary */
 		if (obj->number > num) {
+			split = true;
 			wielded = gear_object_for_use(player, obj, num, false, &dummy);
 
 			/* It's still carried; keep its weight in the total. */
@@ -812,6 +814,7 @@ void inven_wield(struct object *obj, int slot)
 		/* Get a floor item and carry it */
 		wielded = floor_object_for_use(player, obj, num, false, &dummy);
 		inven_carry(player, wielded, false, false);
+		split = (wielded != obj);
 	}
 
 	/* Wear the new stuff */
@@ -856,16 +859,16 @@ void inven_wield(struct object *obj, int slot)
 		msgt(MSG_CURSED, "You have a bad feeling about this...");
 
 		/* Sense the object */
-		obj->pseudo = OBJ_PSEUDO_CURSED;
+		wielded->pseudo = OBJ_PSEUDO_CURSED;
 
 		/* The object has been "sensed" */
-		obj->notice |= (OBJ_NOTICE_SENSE);
+		wielded->notice |= (OBJ_NOTICE_SENSE);
 	}
 
 	if (less_effective) {
 		/* Describe it */
 		object_desc(o_name, sizeof(o_name), weapon, ODESC_BASE, player);
-		
+
 		/* Message */
 		msg("You are no longer able to wield your %s as effectively.", o_name);
 	}
@@ -873,8 +876,23 @@ void inven_wield(struct object *obj, int slot)
 	/* Do any ID-on-wield */
 	ident_on_wield(player, wielded);
 
+	/* Handle split objects; messy, but avoids re-ID and ensuing messages */
+	if (split) {
+		int num = obj->number;
+		int oidx = obj->oidx;
+		struct object *prev = obj->prev, *next = obj->next;
+		struct loc grid = obj->grid;
+		assert(num);
+		object_copy(obj, wielded);
+		obj->prev = prev;
+		obj->next = next;
+		obj->number = num;
+		obj->oidx = oidx;
+		obj->grid = grid;
+	}
+
 	/* Activate all of its new abilities */
-	for (ability = obj->abilities; ability; ability = ability->next) {
+	for (ability = wielded->abilities; ability; ability = ability->next) {
 		if (!player_has_ability(player, ability->name)) {
 			add_ability(&player->item_abilities, ability);
 			activate_ability(&player->item_abilities, ability);
