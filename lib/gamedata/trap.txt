@@ -149,6 +149,8 @@ power:5
 flags:TRAP | FLOOR
 effect:TIMED_INC:CONFUSED
 dice:4d4
+effect:SPHERE:CONFUSION:1
+dice:3d4m10
 effect:NOISE:PLAYER
 dice:10
 desc:A trap that releases gas to confuse you.
