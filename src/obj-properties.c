@@ -148,10 +148,10 @@ void flag_slay_message(int flag, char *name, char *message, int len)
 	char buf[1024] = "\0";
 
 	/* See if we have a message */
-	if (!prop->msg) return;
+	if (!prop->slay_msg) return;
 
 	/* Insert */
-	insert_name(buf, 1024, prop->msg, name);
+	insert_name(buf, 1024, prop->slay_msg, name);
 	my_strcpy(message, buf, len);
 }
 
