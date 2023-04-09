@@ -239,6 +239,101 @@ void object_flavor_tried(struct object *obj)
 	obj->kind->tried = true;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Object knowledge propagators
+ * These functions transfer player knowledge to objects
+ * ------------------------------------------------------------------------ */
+/**
+ * This function does a few book keeping things for item identification.
+ *
+ * It identifies visible objects for the Lore-Master ability, marks
+ * artefacts/specials as seen and grants experience for the first sighting.
+ *
+ * \param p is the player
+ * \param obj is the object
+ */
+static void player_know_object(struct player *p, struct object *obj)
+{
+	/* Identify seen items with Lore-Master */
+	if (!object_is_known(obj) && player_active_ability(p, "Lore-Master") &&
+        !tval_is_chest(obj)) {
+		ident(obj);
+	}
+
+	/* Mark new identified artefacts/specials and gain experience for them */
+	if (object_is_known(obj)) {
+		int new_exp = 100;
+		if (obj->artifact) {
+			const struct artifact *art = obj->artifact;
+			if (!is_artifact_seen(art)) {
+				/* Mark */
+				mark_artifact_seen(art, true);
+
+				/* Gain experience for identification */
+				player_exp_gain(p, new_exp);
+				p->ident_exp += new_exp;
+
+				/* Record in the history */
+				history_find_artifact(p, art);
+			}
+		} else if (obj->ego) {
+			/* We now know about the special item type */
+			obj->ego->everseen = true;
+
+			if (!obj->ego->aware) {
+				/* Mark */
+				obj->ego->aware = true;
+
+				/* Gain experience for identification */
+				player_exp_gain(p, new_exp);
+				p->ident_exp += new_exp;
+			}
+		}
+	}
+}
+
+/**
+ * Propagate player knowledge of objects to all objects
+ *
+ * \param p is the player
+ */
+void update_player_object_knowledge(struct player *p)
+{
+	int i;
+	struct object *obj;
+
+	/* Level objects */
+	if (cave) {
+		for (i = 0; i < cave->obj_max; i++) {
+			obj = cave->objects[i];
+
+			/* Skip dead objects */
+			if (!obj) continue;
+
+			/* Skip held objects */
+			if (object_is_carried(p, obj)) continue;
+
+			/* If the object is in sight, or under the player... */
+			if (square_isseen(cave, obj->grid) || loc_eq(obj->grid, p->grid)) {
+				player_know_object(p, obj);
+			}
+		}
+	}
+
+	/* Player objects */
+	for (obj = p->gear; obj; obj = obj->next) {
+		player_know_object(p, obj);
+	}
+
+	/* Update */
+	if (cave)
+		autoinscribe_ground(p);
+	autoinscribe_pack(p);
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
+}
+
 
 /**
  * ------------------------------------------------------------------------

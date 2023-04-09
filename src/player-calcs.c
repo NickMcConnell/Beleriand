@@ -1159,6 +1159,8 @@ static void update_bonuses(struct player *p)
 		p->upkeep->redraw |= (PR_ARMOR);
 	}
 
+	/* Propagate knowledge */
+	update_player_object_knowledge(p);
 	if (player_active_ability(p, "Lore-Keeper")) {
 		pseudo_id_everything();
 	}
