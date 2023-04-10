@@ -619,7 +619,7 @@ static void lay_tunnel(struct chunk *c, struct loc grid1, struct loc grid2,
 		if (square_iswall_outer(c, grid)) {
 			/* All doors get randomised later */
 			square_set_feat(c, grid, FEAT_CLOSED);	
-		} else {
+		} else if (square_iswall_solid(c, grid)) {
 			square_set_feat(c, grid, FEAT_FLOOR);
 			dun->tunn1[y][x] = r1;
 			dun->tunn2[y][x] = r2;
@@ -973,7 +973,7 @@ struct chunk *cave_gen(struct player *p)
 
 	/* Fill cave area with basic granite */
 	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_GRANITE,
-				   SQUARE_NONE);
+				   SQUARE_WALL_SOLID);
 
 	/* Initialize the room tunnel arrays */
 	for (y = 0; y < c->height; y++) {
