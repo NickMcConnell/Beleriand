@@ -403,7 +403,7 @@ type:helm
 type:crown
 type:light
 
-name:Focused attack
+name:Focused Attack
 level:2
 desc:Gives you a bonus of half your Perception score to your
 desc: attacks if you passed the previous turn.
@@ -427,7 +427,7 @@ type:crown
 
 name:Concentration
 level:5
-prerequisite:Perception:Focused attack
+prerequisite:Perception:Focused Attack
 desc:Gives you a +1 bonus to attack for every consecutive round
 desc: spent attacking the same enemy (to a maximum of Perception/2).
 type:helm
