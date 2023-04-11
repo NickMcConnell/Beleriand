@@ -435,19 +435,19 @@ int player_active_ability(struct player *p, const char *name)
 bool player_has_prereq_abilities(struct player *p, struct ability *ability)
 {
 	struct ability *prereqs = ability->prerequisites;
-	while (prereqs) {
-		struct ability *possessed = p->abilities;
-		bool found = false;
-		while (possessed) {
-			if (streq(possessed->name, prereqs->name) &&
-				(possessed->skill == prereqs->skill)) {
-				found = true;
-				break;
+	if (prereqs) {
+		while (prereqs) {
+			struct ability *possessed = p->abilities;
+			while (possessed) {
+				if (streq(possessed->name, prereqs->name) &&
+					(possessed->skill == prereqs->skill)) {
+					return true;
+				}
+				possessed = possessed->next;
 			}
-			possessed = possessed->next;
+			prereqs = prereqs->next;
 		}
-		if (!found) return false;
-		prereqs = prereqs->next;
+		return false;
 	}
 	return true;
 }
