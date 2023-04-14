@@ -1539,6 +1539,88 @@ static bool confirm_leap(struct loc grid, int dir)
 }
 
 /**
+ * Finish player leap
+ */
+static void player_land(struct player *p)
+{
+    /* Make some noise when landing */
+    p->stealth_score -= 5;
+
+	/* Set off traps */
+	if (square_issecrettrap(cave, p->grid)) {
+		disturb(player, false);
+		square_reveal_trap(cave, p->grid, true);
+		hit_trap(p->grid);
+	} else if (square_isdisarmabletrap(cave, p->grid)) {
+		disturb(player, false);
+		hit_trap(p->grid);
+	}
+
+	/* Fall into chasms */
+	if (square_ischasm(cave, p->grid)) {
+		player_fall_in_chasm(p);
+	}
+}
+
+/**
+ * Continue player leap
+ */
+void do_cmd_leap(struct command *cmd)
+{
+    int dir = player->previous_action[1];
+	struct loc end = loc_sum(player->grid, ddgrid[dir]);
+	struct monster *mon = square_monster(cave, end);
+
+	/* Knocked back player is handled separately */
+	if (player->upkeep->knocked_back) return;
+
+    /* Display a message until player input is received */
+    msg("You fly through the air.");
+
+	/* Flush messages */
+	event_signal(EVENT_MESSAGE_FLUSH);
+
+	/* Take a turn */
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Store the action type */
+	player->previous_action[0] = dir;
+
+    /* Solid objects end the leap */
+	if (!square_ispassable(cave, end)) {
+		if (square_isrubble(cave, end)) {
+			msgt(MSG_HITWALL, "You slam into a wall of rubble.");
+		} else if (square_iscloseddoor(cave, end)) {
+			msgt(MSG_HITWALL, "You slam into a door.");
+		} else {
+			msgt(MSG_HITWALL, "You slam into a wall.");
+		}
+    } else if (mon) {
+		/* Monsters end the leap */
+        char m_name[80];
+
+        /* Get the monster name */
+        monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+        if (monster_is_visible(mon)) {
+			msg("%s blocks your landing.", m_name);
+        } else {
+            msg("Some unseen foe blocks your landing.");
+		}
+	} else {
+		/* Successful leap */
+        /* We generously give you your free flanking attack... */
+        player_flanking_or_retreat(player, end);
+
+        /* Move player to the new position */
+        monster_swap(player->grid, end);
+    }
+
+    /* Land on the ground */
+    player_land(player);
+}
+
+/**
  * Move player in the given direction.
  *
  * This routine should only be called when energy has been expended.
@@ -1638,6 +1720,7 @@ void move_player(int dir, bool disarm)
 
 			/* Remember that the player is in the air now */
 			player->upkeep->leaping = true;
+			cmdq_push(CMD_LEAP);
 		}
 	} else {
 		/* Normal movement */

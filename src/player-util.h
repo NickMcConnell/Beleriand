@@ -90,8 +90,6 @@ void player_falling_damage(struct player *p, bool stun);
 void player_fall_in_chasm(struct player *p);
 void player_flanking_or_retreat(struct player *p, struct loc grid);
 bool player_can_leap(struct player *p, struct loc grid, int dir);
-void player_land(struct player *p);
-void player_continue_leap(struct player *p);
 bool player_break_web(struct player *p);
 bool player_escape_pit(struct player *p);
 void player_blast_ceiling(struct player *p);

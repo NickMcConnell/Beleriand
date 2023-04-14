@@ -847,11 +847,6 @@ void process_player(void)
 		 * the type of action */
 		player->stealth_score = player->state.skill_use[SKILL_STEALTH];
 
-        /* Leaping */
-        if (player->upkeep->leaping) {
-            player_continue_leap(player);
-        }
-
 		/* Paralyzed or Knocked Out player gets no turn */
 		if (player->timed[TMD_ENTRANCED] ||
 			player_timed_grade_eq(player, TMD_STUN, "Knocked Out")) {

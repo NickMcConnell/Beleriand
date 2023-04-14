@@ -96,6 +96,7 @@ typedef enum cmd_code {
 	CMD_SING,
 	CMD_EXCHANGE,
 	CMD_RUN,
+	CMD_LEAP,
 	CMD_HOLD,
 	CMD_ALTER,
 	CMD_SLEEP,

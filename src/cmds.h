@@ -35,6 +35,7 @@ void do_cmd_tunnel(struct command *cmd);
 void do_cmd_disarm(struct command *cmd);
 void do_cmd_bash(struct command *cmd);
 void do_cmd_alter(struct command *cmd);
+void do_cmd_leap(struct command *cmd);
 void do_cmd_hold(struct command *cmd);
 void do_cmd_steal(struct command *cmd);
 void move_player(int dir, bool disarm);
