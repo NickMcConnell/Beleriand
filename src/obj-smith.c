@@ -1389,14 +1389,14 @@ void do_cmd_smith_aux(void)
 	int turns = 0;
 	struct smithing_cost cost;
 
-	/* Check for actual usability, or warn of exploration mode */
-	if (forge && useless) {
-		msg("The resources of this forge are exhausted.");
-		msg("You will be able to browse the options but not make new things.");
-	}
-
 	/* Are we just starting? */
 	if (!player->upkeep->smithing) {
+		/* Check for actual usability, or warn of exploration mode */
+		if (forge && useless) {
+			msg("The resources of this forge are exhausted.");
+			msg("You will be able to browse options but not make new things.");
+		}
+
 		/* Go to the smithing menu */
 		obj = smith_object(&cost);
 
@@ -1429,6 +1429,7 @@ void do_cmd_smith_aux(void)
 
 	/* Finish */
 	if (cmd_get_nrepeats() == 1) {
+		obj = smith_object(&cost);
 		create_smithing_item(obj, &cost);
 	}
 
