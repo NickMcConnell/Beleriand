@@ -241,7 +241,7 @@ static void get_bonuses(struct player *p)
 /**
  * Get the racial history, and social class, using the "history charts".
  */
-char *get_history(struct history_chart *chart)
+char *get_history(struct history_chart *chart, struct player *p)
 {
 	struct history_entry *entry;
 	char *res = NULL;
@@ -254,6 +254,12 @@ char *get_history(struct history_chart *chart)
 		assert(entry);
 
 		res = string_append(res, entry->text);
+		/* Hack for Noldor houses */
+		if (strstr(entry->text, "house of") && streq(p->race->name, "Noldor")) {
+			res = string_append(res, " ");
+			res = string_append(res, p->house->short_name);
+			res = string_append(res, ".");
+		}
 		chart = entry->succ;
 	}
 
@@ -683,7 +689,7 @@ void player_generate(struct player *p, const struct player_race *r,
 		if (p->history) {
 			string_free(p->history);
 		}
-		p->history = get_history(p->race->history);
+		p->history = get_history(p->race->history, p);
 	}
 }
 

@@ -725,7 +725,7 @@ static void finish_with_random_choices(enum birth_stage current)
 	if (current <= BIRTH_HISTORY_CHOICE) {
 		char *buf;
 
-		buf = get_history(pr->history);
+		buf = get_history(pr->history, player);
 		my_strcpy(history, buf, sizeof(history));
 		string_free(buf);
 

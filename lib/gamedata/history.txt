@@ -35,241 +35,237 @@
 
 # Noldor history
 
-chart:1:2:30:0
+chart:1:2:30
 phrase:You are one of several children
-chart:1:2:60:0
+chart:1:2:60
 phrase:You are one of two children
-chart:1:2:95:0
+chart:1:2:95
 phrase:You are the only child
-chart:1:50:100:0
+chart:1:50:100
 phrase:You awoke on the shores of lake Cuivienen.
 
-chart:2:3:20:0
+chart:2:3:20
 phrase: of an archer
-chart:2:3:40:0
+chart:2:3:40
 phrase: of a warrior
-chart:2:3:60:0
+chart:2:3:60
 phrase: of a smith
-chart:2:3:95:0
+chart:2:3:95
 phrase: of a bard
-chart:2:3:100:0
+chart:2:3:100
 phrase: of a prince
 
 chart:3:50:100:1
-phrase: from the house of Feanor.
-chart:3:50:100:2
-phrase: from the house of Fingolfin.
-chart:3:50:100:3
-phrase: from the house of Finarfin.
+phrase: from the house of
 
 
 # Sindar history
 
-chart:4:5:30:0
+chart:4:5:30
 phrase:You are one of several children
-chart:4:5:60:0
+chart:4:5:60
 phrase:You are one of two children
-chart:4:5:95:0
+chart:4:5:95
 phrase:You are the only child
-chart:4:54:100:0
+chart:4:54:100
 phrase:You awoke on the shores of lake Cuivienen.
 
-chart:5:54:35:0
+chart:5:54:35
 phrase: of a Sindar archer.
-chart:5:54:50:0
+chart:5:54:50
 phrase: of a Sindar warrior.
-chart:5:54:60:0
+chart:5:54:60
 phrase: of a Sindar smith.
-chart:5:54:95:0
+chart:5:54:95
 phrase: of a Sindar bard.
-chart:5:54:99:0
+chart:5:54:99
 phrase: of a Sindar prince.
-chart:5:54:100:0
+chart:5:54:100
 phrase: of a Sindar king.
 
 
 # Naugrim History
 
-chart:16:17:25:0
+chart:16:17:25
 phrase:You are one of two children of a Dwarven
-chart:16:17:100:0
+chart:16:17:100
 phrase:You are the only child of a Dwarven
 
-chart:17:18:5:0
+chart:17:18:5
 phrase: Outcast.
-chart:17:18:50:0
+chart:17:18:50
 phrase: Craftsman.
-chart:17:18:70:0
+chart:17:18:70
 phrase: Warrior.
-chart:17:18:99:0
+chart:17:18:99
 phrase: Smith.
-chart:17:18:100:0
+chart:17:18:100
 phrase: Prince.
 
-chart:18:57:10:0
+chart:18:57:10
 phrase:You are the black sheep of the family.
-chart:18:57:85:0
+chart:18:57:85
 phrase:You are a credit to the family.
-chart:18:57:100:0
+chart:18:57:100
 phrase:You were a well liked child.
 
 
 
 # Edain History
 
-chart:21:22:5:0
+chart:21:22:5
 phrase:You are the illegitimate and unacknowledged child
-chart:21:22:7:0
+chart:21:22:7
 phrase:You are the illegitimate but acknowledged child
-chart:21:22:70:0
+chart:21:22:70
 phrase:You are one of several children
-chart:21:22:90:0
+chart:21:22:90
 phrase:You are the first child
-chart:21:22:100:0
+chart:21:22:100
 phrase:You are the only child
 
-chart:22:23:30:0
+chart:22:23:30
 phrase: of a farmer.
-chart:22:23:60:0
+chart:22:23:60
 phrase: of a craftsman.
-chart:22:23:80:0
+chart:22:23:80
 phrase: of an archer.
-chart:22:23:99:0
+chart:22:23:99
 phrase: of a warrior.
-chart:22:23:100:0
+chart:22:23:100
 phrase: of a prince.
 
 
-chart:23:25:10:0
+chart:23:25:10
 phrase:You are the black sheep of the family.
-chart:23:25:80:0
+chart:23:25:80
 phrase:You are a credit to the family.
-chart:23:25:100:0
+chart:23:25:100
 phrase:You were a well liked child.
 
 
 # Edain Description
 
-chart:25:26:20:0
+chart:25:26:20
 phrase: You have dark brown eyes,
-chart:25:26:60:0
+chart:25:26:60
 phrase: You have brown eyes,
-chart:25:26:70:0
+chart:25:26:70
 phrase: You have hazel eyes,
-chart:25:26:80:0
+chart:25:26:80
 phrase: You have green eyes,
-chart:25:26:90:0
+chart:25:26:90
 phrase: You have blue eyes,
-chart:25:26:100:0
+chart:25:26:100
 phrase: You have blue-gray eyes,
 
-chart:26:27:70:0
+chart:26:27:70
 phrase: straight
-chart:26:27:90:0
+chart:26:27:90
 phrase: wavy
-chart:26:27:100:0
+chart:26:27:100
 phrase: curly
 
-chart:27:28:30:0
+chart:27:28:30
 phrase: black hair,
-chart:27:28:70:0
+chart:27:28:70
 phrase: brown hair,
-chart:27:28:80:0
+chart:27:28:80
 phrase: auburn hair,
-chart:27:28:90:0
+chart:27:28:90
 phrase: red hair,
-chart:27:28:100:0
+chart:27:28:100
 phrase: golden hair,
 
-chart:28:0:30:0
+chart:28:0:30
 phrase: and an average complexion.
-chart:28:0:80:0
+chart:28:0:80
 phrase: and an average complexion.
-chart:28:0:90:0
+chart:28:0:90
 phrase: and a fair complexion.
-chart:28:0:100:0
+chart:28:0:100
 phrase: and a very fair complexion.
 
 
 # Noldor description
 
-chart:50:51:85:0
+chart:50:51:85
 phrase: You have light grey eyes,
-chart:50:51:95:0
+chart:50:51:95
 phrase: You have light blue eyes,
-chart:50:51:100:0
+chart:50:51:100
 phrase: You have light green eyes,
 
-chart:51:52:75:0
+chart:51:52:75
 phrase: straight
-chart:51:52:100:0
+chart:51:52:100
 phrase: wavy
 
 chart:52:0:90:3
 phrase: golden hair, and a fair complexion.
-chart:52:0:70:0
+chart:52:0:70
 phrase: black hair, and a fair complexion.
-chart:52:0:80:0
+chart:52:0:80
 phrase: brown hair, and a fair complexion.
-chart:52:0:88:0
+chart:52:0:88
 phrase: auburn hair, and a fair complexion.
-chart:52:0:95:0
+chart:52:0:95
 phrase: golden hair, and a fair complexion.
-chart:52:0:100:0
+chart:52:0:100
 phrase: silver hair, and a fair complexion.
 
 
 # Sindar description
 
-chart:54:55:85:0
+chart:54:55:85
 phrase: You have light grey eyes,
-chart:54:55:95:0
+chart:54:55:95
 phrase: You have light blue eyes,
-chart:54:55:100:0
+chart:54:55:100
 phrase: You have light green eyes,
 
-chart:55:56:75:0
+chart:55:56:75
 phrase: straight
-chart:55:56:100:0
+chart:55:56:100
 phrase: wavy
 
-chart:56:0:70:0
+chart:56:0:70
 phrase: black hair, and a fair complexion.
-chart:56:0:80:0
+chart:56:0:80
 phrase: brown hair, and a fair complexion.
-chart:56:0:88:0
+chart:56:0:88
 phrase: auburn hair, and a fair complexion.
-chart:56:0:95:0
+chart:56:0:95
 phrase: golden hair, and a fair complexion.
-chart:56:0:100:0
+chart:56:0:100
 phrase: silver hair, and a fair complexion.
 
 
 # Naugrim description
 
-chart:57:58:100:0
+chart:57:58:100
 phrase: You have dark brown eyes,
 
-chart:58:59:90:0
+chart:58:59:90
 phrase: straight
-chart:58:59:100:0
+chart:58:59:100
 phrase: wavy
 
-chart:59:60:75:0
+chart:59:60:75
 phrase: black hair,
-chart:59:60:100:0
+chart:59:60:100
 phrase: brown hair,
 
-chart:60:61:40:0
+chart:60:61:40
 phrase: a one foot beard,
-chart:60:61:80:0
+chart:60:61:80
 phrase: a two foot beard,
-chart:60:61:98:0
+chart:60:61:98
 phrase: a three foot beard,
-chart:60:61:100:0
+chart:60:61:100
 phrase: a four foot beard,
 
-chart:61:0:70:0
+chart:61:0:70
 phrase: and a dark complexion.
-chart:61:0:100:0
+chart:61:0:100
 phrase: and a ruddy complexion.

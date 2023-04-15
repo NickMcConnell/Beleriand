@@ -661,6 +661,7 @@ static struct player_upkeep TEST_DATA test_player_upkeep = {
 static struct player TEST_DATA test_player = {
 	.grid = { 1, 1 },
 	.race = &test_race,
+	.house = &test_house,
 	.age = 12,
 	.ht = 40,
 	.wt = 80,

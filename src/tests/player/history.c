@@ -3,6 +3,7 @@
 #include "player.h"
 #include "player-birth.h"
 #include "unit-test.h"
+#include "unit-test-data.h"
 
 NOTEARDOWN
 
@@ -58,7 +59,8 @@ int setup_tests(void **state) {
 static int test_0(void *state) {
 	int i;
 	for (i = 0; i < 100; i++) {
-		char *h = get_history(&ca);
+		struct player *p = &test_player;
+		char *h = get_history(&ca, p);
 		assert(h);
 		eq(h[0], 'A');
 		require(isdigit(h[1]));
