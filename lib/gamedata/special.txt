@@ -618,7 +618,7 @@ max-evasion:0
 prot-dice:0
 prot-sides:0
 max-pval:1
-#T:20:2:3 ??
+item:digger:Mattock
 values:TUNNEL[1]
 
 

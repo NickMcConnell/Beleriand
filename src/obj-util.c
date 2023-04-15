@@ -495,7 +495,7 @@ uint8_t convert_depth_to_origin(int depth)
 /**
  * Calculate the digging score for a digging implement
  */
-bool obj_digging_score(const struct object *obj)
+int obj_digging_score(const struct object *obj)
 {
 	int base = 0;
 	if (!obj) return 0;

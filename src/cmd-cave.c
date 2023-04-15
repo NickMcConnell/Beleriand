@@ -835,6 +835,21 @@ static bool twall(struct loc grid)
 
 
 /**
+ * Print a message when the player doesn't have the required digger for terrain.
+ */
+void fail_message(struct feature *terrain, char *name)
+{
+	char buf[1024] = "\0";
+
+	/* See if we have a message */
+	if (!terrain->fail_msg) return;
+
+	/* Insert */
+	insert_name(buf, 1024, terrain->fail_msg, name);
+	msg("%s", buf);
+}
+
+/**
  * Perform the basic "tunnel" command
  *
  * Assumes that no monster is blocking the destination.
@@ -885,8 +900,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 	}
 
 	/* Abort if you have no digger */
-    if (digging_score == 0)
-    {
+    if (digging_score == 0) {
         /* Confused players trying to dig without a digger waste their turn
 		 * (otherwise control-dir is safe in a corridor) */
         if (player->timed[TMD_CONFUSED]) {
@@ -914,7 +928,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 
 	/* Test for success */
 	if (difficulty > digging_score) {
-		msg(square_feat(cave, grid)->fail_msg);
+		fail_message(square_feat(cave, grid), o_name);
 
         /* Confused players trying to dig without a digger waste their turn
 		 * (otherwise control-dir is safe in a corridor) */

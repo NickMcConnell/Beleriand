@@ -44,7 +44,7 @@ int lookup_sval(int tval, const char *name);
 void object_short_name(char *buf, size_t max, const char *name);
 int compare_items(const struct object *o1, const struct object *o2);
 uint8_t convert_depth_to_origin(int depth);
-bool obj_digging_score(const struct object *obj);
+int obj_digging_score(const struct object *obj);
 bool obj_can_dig(const struct object *obj);
 bool obj_has_charges(const struct object *obj);
 bool obj_can_refuel(const struct object *obj);
