@@ -961,6 +961,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (j > i) state->speed -= 1;
 
 	state->speed -= state->flags[OF_SLOWNESS];
+	state->speed += state->flags[OF_SPEED];
 
 	/* Stealth slows the player down (unless they are passing) */
 	if (p->stealth_mode) {
