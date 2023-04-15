@@ -70,7 +70,6 @@ void do_cmd_use(struct command *cmd);
 void do_cmd_refuel(struct command *cmd);
 
 /* cmd-pickup.c */
-void do_autopickup(struct player *p);
 void player_pickup_item(struct player *p, struct object *obj, bool menu);
 void do_cmd_pickup(struct command *cmd);
 void do_cmd_autopickup(struct command *cmd);

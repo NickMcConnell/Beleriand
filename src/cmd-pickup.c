@@ -308,7 +308,7 @@ void player_pickup_item(struct player *p, struct object *obj, bool menu)
 /**
  * Pick up everything on the floor that requires no player action
  */
-void do_autopickup(struct player *p)
+static void do_autopickup(struct player *p)
 {
 	struct object *obj, *next;
 

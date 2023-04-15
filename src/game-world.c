@@ -867,6 +867,7 @@ void process_player(void)
 			/* Place cursor on player/target */
 			event_signal(EVENT_REFRESH);
 		}
+		//TODO handle autopickup
 
 		/* Get a command from the queue if there is one */
 		if (!cmdq_pop(CTX_GAME))
@@ -879,6 +880,9 @@ void process_player(void)
 	} while (!player->upkeep->energy_use &&
 			 !player->is_dead &&
 			 !player->upkeep->generate_level);
+
+	if (player->upkeep->energy_use)
+		process_player_post_energy_use_cleanup();
 
 	/* Notice stuff (if needed) */
 	notice_stuff(player);
@@ -963,43 +967,13 @@ static void on_leave_level(void) {
  */
 void run_game_loop(void)
 {
-	/* Tidy up after the player's command */
-	process_player_cleanup();
-
-	/* Keep processing the player until they use some energy or
-	 * another command is needed */
+	/* Process the character until energy use or another command is needed */
 	while (player->upkeep->playing) {
 		process_player();
 		if (player->upkeep->energy_use) {
-			process_player_post_energy_use_cleanup();
 			break;
 		} else {
 			return;
-		}
-	}
-
-	/* The player may still have enough energy to move, so we run another
-	 * player turn before processing the rest of the world */
-	while (player->energy >= z_info->move_energy) {
-		/* Do any necessary animations */
-		event_signal(EVENT_ANIMATE);
-		
-		/* Process monster with even more energy first */
-		process_monsters(player->energy + 1);
-		if (player->is_dead || !player->upkeep->playing ||
-			player->upkeep->generate_level)
-			break;
-
-		/* Process the player until they use some energy */
-		while (player->upkeep->playing) {
-			pre_process_player();
-			process_player();
-			if (player->upkeep->energy_use) {
-				process_player_post_energy_use_cleanup();
-				break;
-			} else {
-				return;
-			}
 		}
 	}
 
@@ -1010,12 +984,12 @@ void run_game_loop(void)
 		handle_stuff(player);
 		event_signal(EVENT_REFRESH);
 
-		/* Process the rest of the world, give the player energy and 
+		/* Process the rest of the world, give the character energy and
 		 * increment the turn counter unless we need to stop playing or
 		 * generate a new level */
-		if (player->is_dead || !player->upkeep->playing)
+		if (player->is_dead || !player->upkeep->playing) {
 			return;
-		else if (!player->upkeep->generate_level) {
+		} else if (!player->upkeep->generate_level) {
 			/* Process the rest of the monsters */
 			process_monsters(0);
 
@@ -1041,15 +1015,13 @@ void run_game_loop(void)
 					return;
 			}
 
-			/* Give the player some energy */
+			/* Give the character some energy */
 			player->energy += turn_energy(player->state.speed);
 
 			/* Count game turns */
 			turn++;
-		}
-
-		/* Make a new level if requested */
-		if (player->upkeep->generate_level) {
+		} else {
+			/* Make a new level if requested */
 			if (character_dungeon) {
 				on_leave_level();
 			}
@@ -1058,7 +1030,7 @@ void run_game_loop(void)
 			player->upkeep->generate_level = false;
 		}
 
-		/* If the player has enough energy to move they now do so, after
+		/* If the character has enough energy to move they now do so, after
 		 * any monsters with more energy take their turns */
 		while (player->energy >= z_info->move_energy) {
 			/* Do any necessary animations */
@@ -1072,9 +1044,9 @@ void run_game_loop(void)
 
 			/* Process the player until they use some energy */
 			while (player->upkeep->playing) {
+				pre_process_player();
 				process_player();
 				if (player->upkeep->energy_use) {
-					process_player_post_energy_use_cleanup();
 					break;
 				} else {
 					return;
