@@ -109,7 +109,7 @@ static void possible_follow_through(struct player *p, struct loc grid,
 				(!OPT(p, forgo_attacking_unwary) ||
 				 (mon->alertness >= ALERTNESS_ALERT))) {
                     msg("You continue your attack!");
-                    py_attack_real(p, grid, ATT_FOLLOW_THROUGH);
+                    py_attack_real(p, new_grid, ATT_FOLLOW_THROUGH);
                     return;
 			}
 		}
