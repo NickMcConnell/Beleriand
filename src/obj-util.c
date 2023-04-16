@@ -50,6 +50,24 @@ struct artifact_upkeep *aup_info;
 struct ego_item *e_info;
 struct flavor *flavors;
 
+static void flavor_assign_fixed(void)
+{
+	int i;
+	struct flavor *f;
+
+	for (f = flavors; f; f = f->next) {
+		if (f->sval == SV_UNKNOWN)
+			continue;
+
+		for (i = 0; i < z_info->k_max; i++) {
+			struct object_kind *k = &k_info[i];
+			if (k->tval == f->tval && k->sval == f->sval)
+				k->flavor = f;
+		}
+	}
+}
+
+
 static void flavor_assign_random(uint8_t tval)
 {
 	int i;
@@ -131,6 +149,8 @@ void flavor_init(void)
 		cleanup_parser(&flavor_parser);
 		run_parser(&flavor_parser);
 	}
+
+	flavor_assign_fixed();
 
 	flavor_assign_random(TV_RING);
 	flavor_assign_random(TV_AMULET);
