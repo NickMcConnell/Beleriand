@@ -967,10 +967,9 @@ void do_cmd_destroy(struct command *cmd)
 
 				/* Store the action type */
 				player->previous_action[0] = ACTION_MISC;
-
-				return;
 			}
 		}
+		return;
 	}
 
 	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
