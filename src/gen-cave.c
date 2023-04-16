@@ -1144,10 +1144,11 @@ struct chunk *throne_gen(struct player *p)
 
 	/* Restrict to single-screen size */
 	c = cave_new(3 * z_info->block_hgt, 3 * z_info->block_wid);
+	c->depth = p->depth;
 
 	/* Fill cave area with basic granite */
 	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_GRANITE,
-				   SQUARE_NONE);
+				   SQUARE_WALL_SOLID);
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM, SQUARE_NONE,
@@ -1161,7 +1162,7 @@ struct chunk *throne_gen(struct player *p)
 		for (x = 0; x < c->width; x++) {
 			struct loc grid = loc(x, y);
 			/* Assumes the important staircase is at the centre of the level */
-			if (square_isupstairs(c, grid) && (x >= 30) && (x <= 45)) {
+			if (square_isupstairs(c, grid) && (x >= 40) && (x <= 55)) {
 				pgrid = grid;
 				break;
 			}
@@ -1195,10 +1196,11 @@ struct chunk *gates_gen(struct player *p)
 
 	/* Restrict to single-screen size */
 	c = cave_new(3 * z_info->block_hgt, 2 * z_info->block_wid);
+	c->depth = p->depth;
 
 	/* Fill cave area with basic granite */
 	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_GRANITE,
-				   SQUARE_NONE);
+				   SQUARE_WALL_SOLID);
 
 	/* Generate permanent walls around the edge of the generated area */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM, SQUARE_NONE,

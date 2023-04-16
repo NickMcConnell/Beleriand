@@ -203,8 +203,8 @@ void check_truce(struct player *p)
 		struct loc grid = loc_sum(p->grid, ddgrid_ddd[d]);
 		struct monster *mon = square_monster(cave, grid);
 
-		if ((mon->race == lookup_monster("Morgoth, Lord of Darkness")) &&
-			(mon->alertness >= ALERTNESS_ALERT)) {
+		if (mon && (mon->race == lookup_monster("Morgoth, Lord of Darkness"))
+			&& (mon->alertness >= ALERTNESS_ALERT)) {
 			msg("With a voice as of rolling thunder, Morgoth, Lord of Darkness, speaks:");
 			msg("'You dare challenge me in mine own hall? Now is your death upon you!'");
 

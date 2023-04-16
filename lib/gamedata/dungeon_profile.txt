@@ -40,7 +40,11 @@ name:throne
 #params:11:33:0
 alloc:-1
 
+room:Throne room:0:0:0
+
 ## Gates of Angband
 name:gates
 #params:11:33:0
 alloc:-1
+
+room:Gates of Angband:0:0:0

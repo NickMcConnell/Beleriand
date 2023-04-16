@@ -704,7 +704,7 @@ bool build_vault(struct chunk *c, struct loc centre, struct vault *v, bool flip)
 					
 				/* Morgoth */
 				case 'V': {
-					place_new_monster_one(c, grid, lookup_monster("Morgoth"),
+					place_new_monster_one(c, grid, lookup_monster("Morgoth, Lord of Darkness"),
 										  true, true, info,
 										  ORIGIN_DROP_VAULT);
 					break;
@@ -1113,6 +1113,7 @@ bool build_throne(struct chunk *c, struct loc centre)
 	}
 
 	/* Determine the coordinates */
+	centre = loc(c->width / 2, c->height / 2);
 	y1 = centre.y - (v->hgt / 2);
 	x1 = centre.x - (v->wid / 2);
 	y2 = y1 + v->hgt - 1;
@@ -1145,6 +1146,7 @@ bool build_gates(struct chunk *c, struct loc centre)
 	}
 
 	/* Determine the coordinates */
+	centre = loc(c->width / 2, c->height / 2);
 	y1 = centre.y - (v->hgt / 2);
 	x1 = centre.x - (v->wid / 2);
 	y2 = y1 + v->hgt - 1;
