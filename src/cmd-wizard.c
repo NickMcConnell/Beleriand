@@ -286,6 +286,13 @@ static void wiz_drop_object(struct object *obj)
 	obj->origin = ORIGIN_CHEAT;
 	obj->origin_depth = convert_depth_to_origin(player->depth);
 
+	/* Pseudo-id artefacts and specials, identify other weapons/armour */
+	if (obj->artifact || obj->ego) {
+		pseudo_id(obj);
+	} else if (tval_has_variable_power(obj) && !tval_is_jewelry(obj)) {
+		object_know(obj);
+	}
+
 	/* Drop the object from heaven. */
 	drop_near(cave, &obj, 0, player->grid, true, true);
 }

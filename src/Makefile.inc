@@ -352,8 +352,9 @@ depgen:
  cmd-core.h cmds.h list-effects.h generate.h monster.h target.h \
  mon-predicate.h mon-timed.h list-mon-timed.h mon-blows.h \
  list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h \
- list-room-flags.h init.h mon-make.h mon-spell.h obj-make.h obj-pile.h \
- obj-tval.h obj-util.h player-util.h trap.h list-trap-flags.h z-queue.h
+ list-room-flags.h init.h mon-make.h mon-spell.h obj-knowledge.h \
+ obj-make.h obj-pile.h obj-tval.h obj-util.h player-util.h trap.h \
+ list-trap-flags.h z-queue.h
 ./grafmode.o: grafmode.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \

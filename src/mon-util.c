@@ -764,6 +764,15 @@ static int mon_create_drop(struct chunk *c, struct monster *mon,
 				obj = mem_zalloc(sizeof(*obj));
 				object_prep(obj, drop->kind, level, RANDOMISE);
 				obj->number = randcalc(drop->dice, 0, RANDOMISE);
+				/* Deathblades only */
+				if (streq(mon->race->base->name, "deathblade")) {
+					apply_magic(obj, c->depth, false, false, false);
+				}
+
+				/* Identify non-special non-artefact weapons/armour */
+				if (tval_has_variable_power(obj) && !tval_is_jewelry(obj)) {
+					object_know(obj);
+				}
 			} else {
 				/* Artifact */
 				const struct artifact *art;
@@ -776,6 +785,7 @@ static int mon_create_drop(struct chunk *c, struct monster *mon,
 				obj->artifact = art;
 				copy_artifact_data(obj, obj->artifact);
 				mark_artifact_created(art, true);
+				pseudo_id(obj);
 			}
 
 			/* Skip if the object couldn't be created. */
