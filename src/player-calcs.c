@@ -760,10 +760,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	state->el_info[ELEM_COLD].res_level = 1;
 	state->el_info[ELEM_POIS].res_level = 1;
 
-	/* Extract race/house info */
-	for (i = 0; i < STAT_MAX; i++) {
-		state->stat_misc_mod[i] = p->race->stat_adj[i] + p->house->stat_adj[i];
-	}
+	/* Extract race/house skill info */
 	for (i = 0; i < SKILL_MAX; i++) {
 		state->skill_misc_mod[i] = p->race->skill_adj[i]
 			+ p->house->skill_adj[i];

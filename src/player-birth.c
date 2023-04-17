@@ -95,8 +95,6 @@ struct birther
 
 	int16_t stat[STAT_MAX];
 
-	//int16_t skill[SKILL_MAX];
-
 	char *history;
 	char name[PLAYER_NAME_LEN];
 };
@@ -149,11 +147,8 @@ static void save_birth_data(birther *tosave)
 
 	/* Save the stats */
 	for (i = 0; i < STAT_MAX; i++)
-		tosave->stat[i] = player->stat_base[i];
-
-	/* Save the skills */
-	//for (i = 0; i < SKILL_MAX; i++)
-	//	tosave->skill[i] = player->skill_base[i];
+		tosave->stat[i] = player->stat_base[i] -
+			(player->race->stat_adj[i] + player->house->stat_adj[i]);
 
 	if (tosave->history) {
 		string_free(tosave->history);
@@ -199,12 +194,6 @@ static void load_birth_data(birther *saved, birther *prev_player)
 		player->stat_base[i] = saved->stat[i];
 	}
 
-	/* Load previous skills */
-	//for (i = 0; i < SKILL_MAX; i++) {
-	//	player->skill_base[i] = saved->skill[i];
-	//}
-
-	/* Load previous history */
 	if (player->history) {
 		string_free(player->history);
 	}
@@ -652,6 +641,17 @@ static bool sell_stat(int choice, int stats_local[STAT_MAX],
 
 
 /**
+ * Add race and house stat points to what we've chosen.
+ */
+static void finalise_stats(struct player *p)
+{
+	int i;
+	for (i = 0; i < STAT_MAX; i++) {
+		p->stat_base[i] += p->race->stat_adj[i] + p->house->stat_adj[i];
+	}
+}
+
+/**
  * This fleshes out a full player based on the choices currently made,
  * and so is called whenever things like race or house are chosen.
  */
@@ -861,7 +861,8 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Embody */
 	player_embody(player);
 
-	/* Record final starting skills */
+	/* Record final starting stats and skills */
+	finalise_stats(player);
 	finalise_skills();
 
 	/* This is actually just a label for the file of self-made artefacts */
