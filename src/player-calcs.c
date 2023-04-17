@@ -1121,6 +1121,10 @@ static void update_bonuses(struct player *p)
 			/* Change in CON affects Hitpoints */
 			if (i == STAT_CON)
 				p->upkeep->update |= (PU_HP);
+
+			/* Change in GRA affects voice */
+			if (i == STAT_GRA)
+				p->upkeep->update |= (PU_MANA);
 		}
 	}
 
