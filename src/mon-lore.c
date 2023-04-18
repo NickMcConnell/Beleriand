@@ -66,7 +66,7 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 	/* Blows */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
 		if (!race->blow) break;
-		if (lore->blow_known[i] || (lore->blows[i].times_seen == SHRT_MAX) ||
+		if (lore->blow_known[i] || (lore->blows[i].times_seen) ||
 			lore->all_known) {
 			lore->blow_known[i] = true;
 			lore->blows[i].method = race->blow[i].method;
@@ -86,7 +86,7 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 
 	/* Awareness */
 	if ((lore->ranged == UCHAR_MAX) || lore->all_known ||
-	    ((lore->tsights > 1) &&
+	    ((player && lore->tsights > 1) &&
 		 (10 - lore->tsights < player->state.skill_use[SKILL_PERCEPTION])))
 		lore->sleep_known = true;
 

@@ -2086,26 +2086,28 @@ static struct parser *init_parse_lore(void) {
 	parser_reg(p, "name str name", parse_lore_name);
 	parser_reg(p, "plural ?str plural", ignored);
 	parser_reg(p, "base sym base", parse_lore_base);
+	parser_reg(p, "depth int level", ignored);
+	parser_reg(p, "rarity int rarity", ignored);
 	parser_reg(p, "glyph char glyph", ignored);
 	parser_reg(p, "color sym color", ignored);
 	parser_reg(p, "speed int speed", ignored);
-	parser_reg(p, "hit-points int hp", ignored);
+	parser_reg(p, "health rand dice", ignored);
 	parser_reg(p, "light int light", ignored);
-	parser_reg(p, "hearing int hearing", ignored);
-	parser_reg(p, "smell int smell", ignored);
-	parser_reg(p, "armor-class int ac", ignored);
-	parser_reg(p, "sleepiness int sleep", ignored);
-	parser_reg(p, "depth int level", ignored);
-	parser_reg(p, "rarity int rarity", ignored);
-	parser_reg(p, "experience int mexp", ignored);
+	parser_reg(p, "sleep int sleep", ignored);
+	parser_reg(p, "percept int per", ignored);
+	parser_reg(p, "stealth int stealth", ignored);
+	parser_reg(p, "will int will", ignored);
+	parser_reg(p, "song int song", ignored);
+	parser_reg(p, "prot int evn ?rand dice", ignored);
 	parser_reg(p, "counts int sights int deaths int kills int notice int ignore int ranged", parse_lore_counts);
 	parser_reg(p, "blow sym method ?sym effect ?rand damage ?int seen ?int index", parse_lore_blow);
 	parser_reg(p, "flags ?str flags", parse_lore_flags);
 	parser_reg(p, "desc str desc", ignored);
-	parser_reg(p, "innate-freq int freq", ignored);
-	parser_reg(p, "spell-freq int freq", ignored);
+	parser_reg(p, "ranged-freq int freq", ignored);
 	parser_reg(p, "spell-power uint power", ignored);
 	parser_reg(p, "spells str spells", parse_lore_spells);
+	parser_reg(p, "message-vis sym spell ?str message", ignored);
+	parser_reg(p, "message-invis sym spell ?str message", ignored);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_lore_drop);
 	parser_reg(p, "drop-artifact str name", parse_lore_drop_artifact);
 	parser_reg(p, "color-cycle sym group sym cycle", ignored);
@@ -2143,7 +2145,7 @@ static errr finish_parse_lore(struct parser *p) {
 		}
 
 		/* update any derived values */
-		//lore_update(r, l);
+		lore_update(r, l);
 	}
 
 	parser_destroy(p);

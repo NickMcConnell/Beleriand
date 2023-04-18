@@ -1096,7 +1096,7 @@ static struct
 	{ L"N",        "Nameless things" },
 	{ L"o",        "Orcs" },
 	{ L"R",        "Raukar" },
-	{ L"s",        "Serpents" },
+	{ L"sS",       "Serpents" },
 	{ L"T",        "Trolls" },
 	{ L"v",        "Vampires" },
 	{ L"V",        "Valar" },
@@ -1247,7 +1247,7 @@ static int count_known_monsters(void)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!l_list[i].all_known && !l_list[i].psights) {
+		if (!l_list[i].all_known && !l_list[i].tsights) {
 			continue;
 		}
 
@@ -1282,7 +1282,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!l_list[i].all_known && !l_list[i].psights) {
+		if (!l_list[i].all_known && !l_list[i].tsights) {
 			continue;
 		}
 
@@ -1302,7 +1302,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!l_list[i].all_known && !l_list[i].psights) {
+		if (!l_list[i].all_known && !l_list[i].tsights) {
 			continue;
 		}
 
