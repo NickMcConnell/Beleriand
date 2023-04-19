@@ -367,7 +367,7 @@ void wr_monster_memory(void)
 		struct monster_lore *lore = &l_list[r_idx];
 
 		/* Names and kill counts */
-		if (!race->name || !lore->pkills|| !lore->psights) continue;
+		if (!race->name || ((!lore->pkills) && (!lore->psights))) continue;
 		wr_string(race->name);
 		wr_u16b(lore->pkills);
 		wr_u16b(lore->psights);

@@ -25,17 +25,17 @@ desc:attack
 name:WOUND
 power:40
 eval:0
-desc:attack
+desc:wound
 
 name:BATTER
 power:60
 eval:300
-desc:batter
+desc:stun
 
 name:SHATTER
 power:60
 eval:300
-desc:shatter
+desc:cause eqrthquakes
 
 name:EAT_ITEM
 power:0
@@ -53,7 +53,7 @@ dam-type:DARK
 name:HUNGER
 power:20
 eval:5
-desc:make hungry
+desc:cause hunger
 effect-type:flag
 
 name:POISON
@@ -67,7 +67,7 @@ dam-type:POIS
 name:ACID
 power:20
 eval:20
-desc:shoot acid
+desc:corrode
 dam-type:ACID
 
 name:FIRE
@@ -106,7 +106,7 @@ resist:FREE_ACT
 name:HALLU
 power:0
 eval:20
-desc:cause hallucinations
+desc:induce hallucinations
 effect-type:element
 resist:CHAOS
 

@@ -99,7 +99,7 @@ miss:0
 prt:1
 msg:MON_HIT
 act:tears at {target}
-desc:tear
+desc:pierce you with thorns
 
 name:WHIP
 cut:0
