@@ -315,6 +315,9 @@ void ego_apply_magic(struct object *obj, bool smithing)
 			obj->modifiers[i] = ego->modifiers[i] != 0 ? obj->pval : 0;
 		}
 	} else {
+		/* Remember pval for lights */
+		int light_pval = tval_is_light(obj) ? obj->pval : 0;
+
 		/* Apply extra ego bonuses */
 		if (ego->att) obj->att += randint1(ego->att);
 		if (ego->evn) obj->evn += randint1(ego->evn);
@@ -333,7 +336,7 @@ void ego_apply_magic(struct object *obj, bool smithing)
 		for (i = 0; i < OBJ_MOD_MAX; i++) {
 			obj->modifiers[i] = ego->modifiers[i] != 0 ? obj->pval : 0;
 		}
-		obj->pval = 0;
+		obj->pval = light_pval;
 	}
 
 	/* Apply flags */
