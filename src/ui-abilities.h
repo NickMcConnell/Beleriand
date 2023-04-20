@@ -19,6 +19,6 @@
 #ifndef INCLUDED_UI_ABILITIES_H
 #define INCLUDED_UI_ABILITIES_H
 
-void abilities_skill_menu(void);
+void do_cmd_abilities(void);
 
 #endif

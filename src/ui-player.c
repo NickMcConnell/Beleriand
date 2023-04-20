@@ -689,7 +689,7 @@ void do_cmd_change_name(void)
 				}
 				
 				case 'a': {
-					abilities_skill_menu();
+					do_cmd_abilities();
 					break;
 				}
 

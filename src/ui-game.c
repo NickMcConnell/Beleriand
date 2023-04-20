@@ -35,6 +35,7 @@
 #include "player-util.h"
 #include "savefile.h"
 #include "target.h"
+#include "ui-abilities.h"
 #include "ui-birth.h"
 #include "ui-command.h"
 #include "ui-context.h"
@@ -173,6 +174,7 @@ struct cmd_info cmd_info[] =
 	{ "Locate player on map", { 'L', 'W', 'L', 'W' }, CMD_NULL, do_cmd_locate, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Help", { '?' }, CMD_NULL, do_cmd_help, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Character description", { '@', '@', 'C', 'C' }, CMD_NULL, do_cmd_change_name, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Abilities list", { KC_TAB, KC_TAB, KC_TAB, KC_TAB }, CMD_NULL, do_cmd_abilities, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL, 0, NULL, NULL, NULL, 0 }

@@ -256,7 +256,7 @@ static bool skill_action(struct menu *m, const ui_event *event, int oid)
 /**
  * Display the abilities main menu.
  */
-void abilities_skill_menu(void)
+void do_cmd_abilities(void)
 {
 	struct menu menu;
 	menu_iter menu_f = { NULL, NULL, skill_display, skill_action, NULL };
