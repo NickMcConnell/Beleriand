@@ -432,7 +432,7 @@ desc: don it it fits perfectly. You feel a desire to hunt.
 
 # Index 28
 name:of Beor
-base-object:soft armor:Studded Leather Armour
+base-object:soft armor:Studded Leather
 pval:0
 depth:8
 rarity:20
@@ -454,7 +454,7 @@ desc: the heart in the dark places of the world.
 
 # Index 29
 name:of Aegnor
-base-object:soft armor:Studded Leather Armour
+base-object:soft armor:Studded Leather
 pval:1
 depth:4
 rarity:30
