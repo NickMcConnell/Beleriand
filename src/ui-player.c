@@ -637,7 +637,7 @@ void do_cmd_change_name(void)
 
 		/* Prompt */
 		Term_putstr(1, 23, -1, COLOUR_SLATE, "history   change name   save to a file   abilities   increase skills   ESC");
-		Term_putstr(1, 23, -1, COLOUR_L_WHITE, "n");
+		Term_putstr(1, 23, -1, COLOUR_L_WHITE, "h");
 		Term_putstr(11, 23, -1, COLOUR_L_WHITE, "c");
 		Term_putstr(25, 23, -1, COLOUR_L_WHITE, "s");
 		Term_putstr(42, 23, -1, COLOUR_L_WHITE, "a");
