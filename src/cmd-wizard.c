@@ -871,13 +871,13 @@ void do_cmd_wiz_cure_all(struct command *cmd)
 
 	/* Remove bad properties from all objects */
 	for (i = 0; i < player->body.count; i++) {
-		if (player->body.slots[i].obj) {
-			struct object *obj = player->body.slots[i].obj;
+		struct object *obj = player->body.slots[i].obj;
+		if (obj) {
 			for (flag = FLAG_START; flag != FLAG_END;
-				 flag = of_next(obj->flags, flag)) {
+			 flag = of_next(obj->flags, flag + 1)) {
 				struct obj_property *prop =
 					lookup_obj_property(OBJ_PROPERTY_FLAG, flag);
-				if (prop->type == OFT_BAD) {
+				if (prop && prop->type == OFT_BAD) {
 					of_off(obj->flags, flag);
 				}
 			}
@@ -886,8 +886,7 @@ void do_cmd_wiz_cure_all(struct command *cmd)
 
 	/* Restore stats */
 	for (i = 0; i < STAT_MAX; i++) {
-		effect_simple(EF_RESTORE_STAT, source_player(), "0", i,
-			0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_player(), "0", i, 0, 0, NULL);
 	}
 
 	/* Heal the player */
