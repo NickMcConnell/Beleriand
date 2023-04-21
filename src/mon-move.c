@@ -3671,7 +3671,7 @@ void process_monsters(int minimum_energy)
 	if (OPT(player, cheat_timestop)) return;
 
 	/* Regenerate hitpoints and mana every 100 game turns */
-	if (turn % 100 == 0)
+	if (turn % 10 == 0)
 		regen = true;
 
 	/* Process the monsters (backwards) */
