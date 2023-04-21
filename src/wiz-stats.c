@@ -67,7 +67,7 @@ static ang_file *stats_log = NULL;
   * or less if TRIES_SIZE is less than tries
   */
  #define TRIES_SIZE 100
- #define MAX_LVL 101
+ #define MAX_LVL 20
  
  /* default for number of tries */
 int tries=50;
@@ -2490,6 +2490,7 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 		 * 100% of the time act as if came in via a down staircase.
 		 */
 		use_stairs = true;
+		player->upkeep->create_stair = FEAT_LESS;
 
 		/* Make a new cave */
 		prepare_next_level(player);

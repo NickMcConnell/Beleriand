@@ -1296,7 +1296,7 @@ void place_monster_by_flag(struct chunk *c, struct loc grid, int flg1, int flg2,
 		
 	while (!got_race && (depth > 0)) {		
 		race = get_mon_num(depth, false, true, true);
-        if (allow_unique || !rf_has(race->flags, RF_UNIQUE)) {
+        if (race && (allow_unique || !rf_has(race->flags, RF_UNIQUE))) {
             if (rf_has(race->flags, flg1)) {
                 got_race = true;
                 break;

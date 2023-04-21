@@ -41,7 +41,7 @@
 #include <stddef.h>
 #include <time.h>
 
-#define LEVEL_MAX 		101
+#define LEVEL_MAX 		 20
 #define TOP_DICE		 21 /* highest catalogued values for wearables */
 #define TOP_SIDES		 11
 #define TOP_ATT			 50
@@ -231,6 +231,7 @@ static void initialize_character(void)
 	flavor_init();
 	player->upkeep->playing = true;
 	player->upkeep->autosave = false;
+	player->depth = 1;
 	prepare_next_level(player);
 }
 
@@ -240,16 +241,17 @@ static void kill_all_monsters(int level)
 
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
 		struct monster *mon = cave_monster(cave, i);
+		struct monster_race *race = mon->race;
 
 		/* Skip the ones that are already dead. */
-		if (!mon->race) continue;
+		if (!race) continue;
 
-		level_data[level].monsters[mon->race->ridx]++;
+		level_data[level].monsters[race->ridx]++;
 
 		monster_death(mon, player, false, NULL, true);
 
-		if (rf_has(mon->race->flags, RF_UNIQUE))
-			mon->race->max_num = 0;
+		if (rf_has(race->flags, RF_UNIQUE))
+			race->max_num = 0;
 	}
 }
 
@@ -485,7 +487,7 @@ static int stats_dump_egos(void)
 	char sql_buf[256];
 	sqlite3_stmt *info_stmt, *flags_stmt, *mods_stmt; //*type_stmt;
 
-	strnfmt(sql_buf, 256, "INSERT INTO ego_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	strnfmt(sql_buf, 256, "INSERT INTO ego_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?);");
 	err = stats_db_stmt_prep(&info_stmt, sql_buf);
 	if (err) return err;
 
@@ -507,7 +509,7 @@ static int stats_dump_egos(void)
 		err = sqlite3_bind_text(info_stmt, 2, ego->name, 
 			strlen(ego->name), SQLITE_STATIC);
 		if (err) return err;
-		err = stats_db_bind_ints(info_stmt, 10, 5, 
+		err = stats_db_bind_ints(info_stmt, 10, 2,
 			ego->cost, ego->level, ego->alloc_max,
 			ego->rarity, ego->att, ego->dd,
 			ego->ds, ego->evn, ego->pd, ego->ps);
@@ -518,7 +520,7 @@ static int stats_dump_egos(void)
 		if (err) return err;
 
 		for (i = 0; i < OBJ_MOD_MAX; i++) {
-			err = stats_db_bind_ints(mods_stmt, 3, 0, idx, i, 
+			err = stats_db_bind_ints(mods_stmt, 2, 0, idx, i,
 									 ego->min_modifiers[i]);
 				if (err) return err;
 				STATS_DB_STEP_RESET(mods_stmt)
@@ -630,7 +632,7 @@ static int stats_dump_monsters(void)
 	sqlite3_stmt *info_stmt, *flags_stmt, *spell_flags_stmt;
 	struct monster_base *base;
 
-	strnfmt(sql_buf, 256, "INSERT INTO monster_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?);");
+	strnfmt(sql_buf, 256, "INSERT INTO monster_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
 	err = stats_db_stmt_prep(&info_stmt, sql_buf);
 	if (err) return err;
 
@@ -647,17 +649,18 @@ static int stats_dump_monsters(void)
 
 		/* Skip empty entries */
 		if (!race->name) continue;
+		if (!race->base) continue;
 
-		err = stats_db_bind_ints(info_stmt, 14, 0, idx,
+		err = stats_db_bind_ints(info_stmt, 15, 0, idx,
 			race->hdice, race->hside, race->sleep, race->speed, race->stl,
 			race->wil, race->per, race->freq_ranged,
 			race->light, race->evn, race->ps, race->pd,
 			race->level, race->rarity);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 11, race->name,
+		err = sqlite3_bind_text(info_stmt, 16, race->name,
 			strlen(race->name), SQLITE_STATIC);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 12, race->base->name,
+		err = sqlite3_bind_text(info_stmt, 17, race->base->name,
 			strlen(race->base->name), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
@@ -945,10 +948,10 @@ static int stats_dump_info(void)
  *     artifacts
  *     consumables
  *     wearables_count
- *     wearables_dice
- *     wearables_ac
- *     wearables_hit
- *     wearables_dam
+ *     wearables_damage
+ *     wearables_prot
+ *     wearables_att
+ *     wearables_evn
  *     wearables_egos
  *     wearables_flags
  *     wearables_mods
@@ -975,7 +978,7 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE artifact_mods_map(a_idx INT, modifier_index INT, modifier INT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE ego_info(idx INT PRIMARY KEY, name TEXT, to_h TEXT, to_d TEXT, to_a TEXT, cost INT, level INT, rarity INT, rating INT, min_to_h INT, min_to_d INT, min_to_a INT, xtra INT);");
+	err = stats_db_exec("CREATE TABLE ego_info(idx INT PRIMARY KEY, name TEXT, cost INT, level INT, alloc_max INT, rarity INT, att INT, dd INT, ds INT, evn INT, pd INT, ps INT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE ego_flags_map(e_idx INT, o_flag INT);");
@@ -993,7 +996,7 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE monster_base_spell_flags_map(rb_idx INT, rs_flag INT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE monster_info(idx INT PRIMARY KEY, ac INT, sleep INT, speed INT, mexp INT, hp INT, freq_innate INT, freq_spell INT, level INT, rarity INT, name TEXT, base TEXT);");
+	err = stats_db_exec("CREATE TABLE monster_info(idx INT PRIMARY KEY, hdice INT, hside INT, sleep INT, speed INT, stl INT, wil INT, per INT, freq_ranged INT, light INT, evn INT, ps INT, pd INT, level INT, rarity INT, name TEXT, base TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE monster_flags_map(r_idx INT, r_flag INT);");
@@ -1056,16 +1059,16 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE wearables_count(level INT, count INT, k_idx INT, origin INT, UNIQUE (level, k_idx, origin) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_dice(level INT, count INT, k_idx INT, origin INT, dd INT, ds INT, UNIQUE (level, k_idx, origin, dd, ds) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_damage(level INT, count INT, k_idx INT, origin INT, dd INT, ds INT, UNIQUE (level, k_idx, origin, dd, ds) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_ac(level INT, count INT, k_idx INT, origin INT, ac INT, UNIQUE (level, k_idx, origin, ac) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_prot(level INT, count INT, k_idx INT, origin INT, pd INT, ps INT, UNIQUE (level, k_idx, origin, pd, ps) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_hit(level INT, count INT, k_idx INT, origin INT, to_h INT, UNIQUE (level, k_idx, origin, to_h) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_att(level INT, count INT, k_idx INT, origin INT, att INT, UNIQUE (level, k_idx, origin, att) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_dam(level INT, count INT, k_idx INT, origin INT, to_d INT, UNIQUE (level, k_idx, origin, to_d) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_evn(level INT, count INT, k_idx INT, origin INT, evn INT, UNIQUE (level, k_idx, origin, evn) ON CONFLICT REPLACE);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE wearables_egos(level INT, count INT, k_idx INT, origin INT, e_idx INT, UNIQUE (level, k_idx, origin, e_idx) ON CONFLICT REPLACE);");

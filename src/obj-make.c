@@ -373,9 +373,10 @@ static bool make_special_item(struct object *obj, int level, bool only_good)
 	/* Occasionally boost the generation level of an item */
 	if (level > 0 && one_in_(z_info->great_ego)) {
 		/* Usually choose a deeper depth, weighted towards the current depth */
-		if (level < z_info->max_depth) {
-			level = rand_range(level + 1, z_info->max_depth);
-			level = MIN(level, rand_range(level + 1, z_info->max_depth));
+		if (level < z_info->dun_depth) {
+			int level1 = rand_range(level + 1, z_info->dun_depth);
+			int level2 = rand_range(level + 1, z_info->dun_depth);
+			level = MIN(level1, level2);
 		} else {
 			level++;
 		}
