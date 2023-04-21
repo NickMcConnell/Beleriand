@@ -744,7 +744,7 @@ int archery_range(const struct object *bow)
 /**
  * Maximum throwing range with a given object
  */
-static int throwing_range(const struct object *obj)
+int throwing_range(const struct object *obj)
 {
 	/* The divisor is the weight + 2lb */
 	int div = obj->weight + 20;

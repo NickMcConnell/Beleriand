@@ -79,6 +79,7 @@ int prt_after_sharpness(struct player *p, const struct object *obj, int *flag);
 void attack_punctuation(char *punctuation, int net_dam, int crit_bonus_dice);
 extern int breakage_chance(const struct object *obj, bool hit_target);
 int archery_range(const struct object *bow);
+int throwing_range(const struct object *obj);
 int chance_of_melee_hit_base(const struct player *p,
 	const struct object *weapon);
 extern bool test_hit(int to_hit, int ac);

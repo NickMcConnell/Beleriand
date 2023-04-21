@@ -234,7 +234,7 @@ code:SLOW_DIGEST
 smith-cat:misc
 smith-difficulty:4
 msg:You realise your {name} is slowing your metabolism.
-desc:Slows your metabolism
+desc:Reduces your need for food
 
 name:regeneration
 type:flag
@@ -245,7 +245,7 @@ smith-cat:misc
 smith-difficulty:8
 smith-cost:CON:1
 msg:You note that your {name} is speeding up your recovery.
-desc:Speeds regeneration
+desc:Speeds your regeneration (which also increases your hunger)
 
 name:see invisible
 type:flag
@@ -264,7 +264,7 @@ code:FREE_ACT
 smith-cat:misc
 smith-difficulty:8
 msg:Your {name} glows softly.
-desc:Prevents paralysis
+desc:Grants you freedom of movement
 
 name:speed
 type:flag
@@ -275,7 +275,7 @@ smith-cat:misc
 smith-difficulty:30
 smith-cost:CON:5
 msg:Your {name} quickens your steps.
-desc:Hastens you
+desc:Grants you great speed
 
 name:radiance
 type:flag
@@ -286,7 +286,7 @@ smith-cat:misc
 smith-difficulty:8
 smith-cost:GRA:1
 msg:Your {name} glows.
-desc:Lights your path
+desc:Creates a path of light
 
 name:sharpness
 type:flag
@@ -343,7 +343,6 @@ id-type:timed
 code:DANGER
 smith-cat:curse
 smith-difficulty:-5
-#msg:You feel your {name} is slowing your recovery.
 desc:Makes you encounter more dangerous creatures (even when not worn)
 
 name:darkness
@@ -353,7 +352,6 @@ id-type:on wield
 code:DARKNESS
 smith-cat:curse
 smith-difficulty:-5
-#msg:You feel your {name} is slowing your recovery.
 desc:Creates an unnatural darkness
 
 name:terror
@@ -363,7 +361,16 @@ id-type:on wield
 code:AFRAID
 smith-cat:curse
 smith-difficulty:0
-desc:Makes you afraid of melee, and worse at shooting and casting spells
+desc:Causes you to panic in combat
+
+name:hunger
+type:flag
+subtype:bad
+id-type:on wield
+code:HUNGER
+smith-cat:curse
+smith-difficulty:0
+desc:Increases your hunger
 
 name:wrath
 type:flag

@@ -383,6 +383,20 @@ static bool describe_archery(textblock *tb, const struct object *obj)
 }
 
 /**
+ * Describe attributes of throwing weapons.
+ */
+static bool describe_throwing(textblock *tb, const struct object *obj)
+{
+	if (obj_is_throwing(obj)) {
+		textblock_append(tb, format("It can be thrown effectively (%d squares with your current strength).", throwing_range(obj)));
+		textblock_append(tb, "\n");
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Describe slays and brands on weapons
  */
 static bool describe_slays(textblock *tb, const struct object *obj)
@@ -827,6 +841,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (describe_misc_magic(tb, flags)) something = true;
 	if (describe_abilities(tb, obj)) something = true;
 	if (describe_archery(tb, obj)) something = true;
+	if (describe_throwing(tb, obj)) something = true;
 	if (describe_light(tb, obj, mode)) something = true;
 	if (describe_ignores(tb, el_info)) something = true;
 	if (describe_hates(tb, el_info)) something = true;

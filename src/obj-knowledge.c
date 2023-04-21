@@ -557,9 +557,6 @@ void ident_on_wield(struct player *p, struct object *obj)
 			notice = true;
 			msg("It glows very brightly.");
 		}
-	} else if (of_has(flags, OF_SLOWNESS)) {
-		notice = true;
-		msg("It slows your movement.");
 	} else if (of_has(flags, OF_SPEED)) {
 		notice = true;
 		msg("It speeds your movement.");
