@@ -24,6 +24,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-abilities.h"
+#include "player-calcs.h"
 #include "player-util.h"
 
 struct ability *abilities;
@@ -487,6 +488,7 @@ bool player_gain_ability(struct player *p, struct ability *ability)
 	add_ability(&p->abilities, ability);
 	new = locate_ability(p->abilities, ability);
 	new->active = true;
+	p->upkeep->redraw |= (PR_EXP);
 	return true;
 }
 
