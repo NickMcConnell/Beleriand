@@ -264,7 +264,7 @@ static void prt_arc(int row, int col)
 			c_put_str(COLOUR_UMBER, "2x", row, col);
 		} else {
 			strnfmt(buf, sizeof(buf), "            ");
-			put_str("            ", col, row);
+			put_str("            ", row, col);
 		}
 	}
 }
