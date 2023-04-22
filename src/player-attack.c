@@ -994,8 +994,10 @@ static struct attack_result make_ranged_shot(struct player *p,
 	/* Monster description */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
-	ident_bow_arrow_by_use(bow, ammo, m_name, bow_brand, bow_slay, arrow_flag,
-						   arrow_brand, arrow_slay,	p);
+	if (!object_is_known(ammo) || !object_is_known(bow)) {
+		ident_bow_arrow_by_use(bow, ammo, m_name, bow_brand, bow_slay,
+							   arrow_flag, arrow_brand, arrow_slay, p);
+	}
 
 	event_signal_combat_damage(EVENT_COMBAT_DAMAGE, total_dd, total_ds,
 							   result.dmg, race->pd, race->ps, prt, prt_percent,
