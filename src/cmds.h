@@ -26,7 +26,6 @@
 /* cmd-cave.c */
 void do_cmd_go_up(struct command *cmd);
 void do_cmd_go_down(struct command *cmd);
-void do_cmd_search(struct command *cmd);
 void do_cmd_toggle_stealth(struct command *cmd);
 void do_cmd_open(struct command *cmd);
 void do_cmd_close(struct command *cmd);

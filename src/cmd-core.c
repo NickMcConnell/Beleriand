@@ -73,7 +73,6 @@ static const struct command_info game_cmds[] =
 
 	{ CMD_GO_UP, "go up stairs", do_cmd_go_up, false, 0 },
 	{ CMD_GO_DOWN, "go down stairs", do_cmd_go_down, false, 0 },
-	{ CMD_SEARCH, "search", do_cmd_search, true, 0 },
 	{ CMD_TOGGLE_STEALTH, "toggle stealth", do_cmd_toggle_stealth, false, 0 },
 	{ CMD_WALK, "walk", do_cmd_walk, true, 0 },
 	{ CMD_RUN, "run", do_cmd_run, true, 0 },

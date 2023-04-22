@@ -303,22 +303,6 @@ void do_cmd_go_down(struct command *cmd)
 }
 
 /**
- * Simple command to "search" for one turn
- */
-void do_cmd_search(struct command *cmd)
-{
-	/* Take a turn */
-	player->upkeep->energy_use = z_info->move_energy;
-
-	/* Store the action type */
-	player->previous_action[0] = ACTION_MISC;
-
-	/* Search */
-	search(player);
-}
-
-
-/**
  * Toggle stealth mode
  */
 void do_cmd_toggle_stealth(struct command *cmd)
