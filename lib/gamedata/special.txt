@@ -738,7 +738,7 @@ prot-sides:0
 max-pval:0
 type:helm
 type:crown
-flags:AFRAID
+flags:COWARDICE
 
 # a helm that lowers perception?
 

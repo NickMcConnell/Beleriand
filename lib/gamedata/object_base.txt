@@ -51,7 +51,7 @@ smith-attack:3:8
 flags:HATES_ACID | HATES_FIRE
 smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
 smith-flags:SHARPNESS
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 slay:ORC_1
 slay:WOLF_1
 slay:SPIDER_1
@@ -74,7 +74,7 @@ flags:SHOW_DICE
 smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
 smith-flags:RADIANCE
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 slay:ORC_1
 slay:WOLF_1
 slay:SPIDER_1
@@ -98,7 +98,7 @@ smith-flags:SUST_STR | SUST_DEX | SUST_CON
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 slay:ORC_1
 slay:WOLF_1
 slay:SPIDER_1
@@ -127,7 +127,7 @@ smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 slay:ORC_1
 slay:WOLF_1
 slay:SPIDER_1
@@ -157,7 +157,7 @@ smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 slay:ORC_1
 slay:WOLF_1
 slay:SPIDER_1
@@ -187,7 +187,7 @@ smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 slay:ORC_1
 slay:WOLF_1
 slay:SPIDER_1
@@ -212,7 +212,7 @@ smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
 smith-flags:SUST_DEX
 smith-flags:FREE_ACT | SPEED
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:gloves:Glove~
 graphics:light umber
@@ -227,7 +227,7 @@ smith-values:RES_FIRE[-1] | RES_COLD[-1] | RES_POIS[-1]
 smith-flags:SUST_STR | SUST_DEX
 smith-flags:FREE_ACT
 smith-flags:HUNGER | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:helm:Helm~
 graphics:light umber
@@ -243,7 +243,7 @@ smith-flags:SUST_STR | SUST_CON | SUST_GRA
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:LIGHT | REGEN | SEE_INVIS
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:crown:Crown~
 graphics:light umber
@@ -259,7 +259,7 @@ smith-flags:SUST_GRA
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:LIGHT | REGEN | SEE_INVIS
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:shield:Shield~
 graphics:light umber
@@ -274,7 +274,7 @@ smith-flags:SUST_STR | SUST_CON
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN
 smith-flags:LIGHT | REGEN | FREE_ACT
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:cloak:Cloak~
 graphics:light umber
@@ -289,7 +289,7 @@ smith-flags:SUST_DEX | SUST_CON
 smith-flags:PROT_FEAR | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:SLOW_DIGEST | LIGHT | REGEN | FREE_ACT
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:soft armor:Soft Armor~
 graphics:slate
@@ -305,7 +305,7 @@ smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT | SPEED
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:mail:Mail~
 graphics:slate
@@ -321,7 +321,7 @@ smith-flags:SUST_STR | SUST_DEX | SUST_CON | SUST_GRA
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT | SPEED
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:light:Light~
 graphics:yellow
@@ -334,7 +334,7 @@ smith-flags:SUST_GRA
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_HALLU
 smith-flags:LIGHT | SEE_INVIS
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:amulet:Amulet~
 graphics:orange
@@ -347,7 +347,7 @@ smith-flags:SUST_CON | SUST_GRA
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:SLOW_DIGEST | LIGHT | REGEN | SEE_INVIS | FREE_ACT
 smith-flags:HUNGER | DARKNESS | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:ring:Ring~
 graphics:red
@@ -362,7 +362,7 @@ smith-flags:SUST_STR | SUST_DEX
 smith-flags:PROT_FEAR | PROT_BLIND | PROT_CONF | PROT_STUN | PROT_HALLU
 smith-flags:SLOW_DIGEST | REGEN | SEE_INVIS | FREE_ACT | SPEED
 smith-flags:HUNGER | DANGER | AGGRAVATE | CURSED
-smith-flags:HAUNTED | AFRAID
+smith-flags:HAUNTED | COWARDICE
 
 name:staff:Staff~
 graphics:light umber

@@ -318,8 +318,7 @@ void py_attack_real(struct player *p, struct loc grid, int attack_type)
 	}
 
 	/* Handle player fear (only for invisible monsters) */
-	if (p->state.flags[OF_AFRAID]) {
-		ident_flag(p, OF_AFRAID);
+	if (p->timed[TMD_AFRAID]) {
 		msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
 		return;
 	}
@@ -1511,10 +1510,15 @@ void do_cmd_fire(struct command *cmd) {
 		return;
 	}
 
-	if (cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK)
+	if (cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK) {
 		player_confuse_dir(player, &dir, false);
-	else
+		if (player->timed[TMD_AFRAID]) {
+			msgt(MSG_AFRAID, "You are too afraid to aim properly!");
+			return;
+		}
+	} else {
 		return;
+	}
 
 	/* Determine if the bow has 'radiance' */
 	radiance = of_has(bow->flags, OF_RADIANCE);
@@ -1552,10 +1556,15 @@ void do_cmd_throw(struct command *cmd) {
 
 	range = throwing_range(obj);
 
-	if (cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK)
+	if (cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK) {
 		player_confuse_dir(player, &dir, false);
-	else
+		if (player->timed[TMD_AFRAID]) {
+			msgt(MSG_AFRAID, "You are too afraid to aim properly!");
+			return;
+		}
+	} else {
 		return;
+	}
 
 	if (object_is_equipped(player->body, obj)) {
 		assert(obj_can_takeoff(obj) && tval_is_melee_weapon(obj));

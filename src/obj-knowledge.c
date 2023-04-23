@@ -877,7 +877,7 @@ void ident_cowardice(struct player *p)
 		/* Ignore previously identified items */
 		if (object_is_known(obj)) continue;
 	
-		if (of_has(obj->flags, OF_AFRAID)) {
+		if (of_has(obj->flags, OF_COWARDICE)) {
 			char o_full_name[80];
 			char o_short_name[80];
 

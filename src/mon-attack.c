@@ -540,15 +540,15 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		}
 
 		/* Deal with cowardice */
-		if ((p->state.flags[OF_AFRAID] > 0) &&
-			(net_dam >= 10 / p->state.flags[OF_AFRAID])) {
+		if ((p->state.flags[OF_COWARDICE] > 0) &&
+			(net_dam >= 10 / p->state.flags[OF_COWARDICE])) {
 			if (!p->timed[TMD_AFRAID]) {
-				if (player_inc_timed(p, TMD_AFRAID, damroll(10, 4), true,
-									 true)) {
+				if (player_inc_timed(p, TMD_AFRAID, damroll(10, 4), true,true)){
 					player_inc_timed(p, TMD_FAST, damroll(5, 4), true, true);
+
+					/* Give the player a chance to identify what's causing it */
+					ident_cowardice(p);
 				}
-				/* Give the player a chance to identify what is causing it */
-				ident_cowardice(p);
 			}
 		}
 	} else {

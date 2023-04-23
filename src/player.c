@@ -243,9 +243,6 @@ void player_flags_timed(struct player *p, bitflag f[OF_SIZE])
 	if (p->timed[TMD_SINVIS]) {
 		of_on(f, OF_SEE_INVIS);
 	}
-	if (p->timed[TMD_AFRAID]) {
-		of_on(f, OF_AFRAID);
-	}
 }
 
 

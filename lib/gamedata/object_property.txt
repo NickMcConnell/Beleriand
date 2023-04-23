@@ -354,11 +354,11 @@ smith-cat:curse
 smith-difficulty:-5
 desc:Creates an unnatural darkness
 
-name:terror
+name:cowardice
 type:flag
 subtype:bad
 id-type:on wield
-code:AFRAID
+code:COWARDICE
 smith-cat:curse
 smith-difficulty:0
 desc:Causes you to panic in combat

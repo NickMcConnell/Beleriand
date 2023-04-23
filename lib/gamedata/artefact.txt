@@ -382,7 +382,7 @@ weight:70
 cost:45000
 attack:0:0d0
 defence:0:1d5
-flags:AFRAID
+flags:COWARDICE
 ability:Stealth:Exchange Places
 desc:This armour is black with the memory of treachery.
 desc: It was worn by Gorlim, called the Unhappy,
