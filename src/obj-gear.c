@@ -906,8 +906,8 @@ void inven_wield(struct object *obj, int slot)
 	/* Recalculate bonuses, torch, mana, gear */
 	player->upkeep->notice |= (PN_IGNORE);
 	player->upkeep->update |= (PU_BONUS | PU_INVEN | PU_UPDATE_VIEW);
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_ARMOR);
-	player->upkeep->redraw |= (PR_STATS | PR_HP | PR_MANA | PR_SPEED);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_ARC | PR_ARMOR);
+	player->upkeep->redraw |= (PR_MELEE | PR_STATS | PR_HP | PR_MANA |PR_SPEED);
 	update_stuff(player);
 
 	/* Disable repeats */

@@ -262,9 +262,9 @@ static void prt_arc(int row, int col)
 
 		if (player_active_ability(player, "Rapid Fire")) {
 			c_put_str(COLOUR_UMBER, "2x", row, col);
-		} else {
-			strnfmt(buf, sizeof(buf), "            ");
-			put_str("            ", row, col);
+			//} else {
+			//strnfmt(buf, sizeof(buf), "            ");
+			//put_str("            ", row, col);
 		}
 	}
 }
