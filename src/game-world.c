@@ -895,6 +895,11 @@ void on_new_level(void)
 {
 	int i;
 
+	/* Update noise and scent */
+	cave->player_noise.centre = player->grid;
+	update_flow(cave, &cave->player_noise, NULL);
+	update_scent();
+
 	/* Disturb */
 	disturb(player, false);
 

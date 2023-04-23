@@ -31,6 +31,7 @@
 #include "obj-gear.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-abilities.h"
 #include "player-attack.h"
 #include "player-calcs.h"
 #include "player-timed.h"
@@ -1096,9 +1097,12 @@ void lore_append_skills(textblock *tb, const struct monster_race *race,
 	/* Do we know how aware it is? */
 	if (lore->sleep_known) {
 		const char *aware = lore_describe_awareness(race->sleep);
-		textblock_append(tb, "%s has %d Will, %d Stealth, %d Perception",
-						 lore_pronoun_nominative(msex, true), race->wil,
-						 race->stl, race->per);
+		textblock_append(tb, "%s has %d Will,",
+						 lore_pronoun_nominative(msex, true), race->wil);
+		if (player_active_ability(player, "Listen")) {
+			textblock_append(tb, " %d Stealth,", race->stl);
+		}
+		textblock_append(tb, " %d Perception", race->per);
 		if (rf_has(race->flags, RF_MINDLESS)) {
 			textblock_append(tb, ".  ");
 		} else {
