@@ -407,12 +407,8 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 		   since the kinds are identical, either both will be
 		   aware or both will be unaware */
 	} else if (tval_can_have_charges(obj1)) {
-		/* Gold, staves and wands stack most of the time */
-		/* Too much gold or too many charges */
-		if (obj1->pval + obj2->pval > MAX_PVAL)
-			return false;
-
-		/* ... otherwise ok */
+		/* Staves never stack */
+		return false;
 	} else if (tval_is_weapon(obj1) || tval_is_armor(obj1) ||
 			   tval_is_jewelry(obj1) || tval_is_light(obj1)) {
 		/* Require identical knowledge of both items */
