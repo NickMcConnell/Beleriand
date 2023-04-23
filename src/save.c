@@ -71,6 +71,7 @@ void wr_description(void)
 static void wr_item(const struct object *obj)
 {
 	size_t i;
+	struct ability *ability;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
@@ -176,6 +177,13 @@ static void wr_item(const struct object *obj)
 		wr_s16b(obj->el_info[i].res_level);
 		wr_byte(obj->el_info[i].flags);
 	}
+
+	/* Dump the abilities */
+	for (ability = obj->abilities; ability; ability = ability->next) {
+		wr_string(ability->name);
+		wr_byte(ability->skill);
+	}
+	wr_string("end");
 
 	/* Held by monster index */
 	wr_s16b(obj->held_m_idx);

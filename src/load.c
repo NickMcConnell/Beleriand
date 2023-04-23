@@ -212,6 +212,20 @@ static struct object *rd_item(void)
 		rd_byte(&obj->el_info[i].flags);
 	}
 
+	/* Read the abilities */
+	while (true) {
+		struct ability *ability;
+		rd_string(buf, sizeof(buf));
+		if (streq(buf, "end")) break;
+		rd_byte(&tmp8u);
+		ability = lookup_ability(tmp8u, buf);
+		if (ability == NULL)  {
+			note(format("Ability not found (%s).", buf));
+			return NULL;
+		}
+		add_ability(&obj->abilities, ability);
+	}
+
 	/* Monster holding object */
 	rd_s16b(&obj->held_m_idx);
 

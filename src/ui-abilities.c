@@ -121,6 +121,12 @@ static bool ability_action(struct menu *m, const ui_event *event, int oid)
 	struct ability **choice = m->menu_data;
 	struct ability *possessed = locate_ability(player->abilities, choice[oid]);
 	bool points = player->skill_base[choice[oid]->skill] >= choice[oid]->level;
+
+	/* Check for item abilities */
+	if (!possessed) {
+		possessed = locate_ability(player->item_abilities, choice[oid]);
+	}
+
 	if (event->type == EVT_SELECT) {
 		if (possessed) {
 			if (possessed->active) {

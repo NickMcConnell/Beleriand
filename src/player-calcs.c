@@ -739,7 +739,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
 	struct object *off = equipped_item_by_slot_name(p, "arm");
 	bitflag f[OF_SIZE];
-	struct ability *ability;
 	int armour_weight = 0;
 	struct song *song;
 
@@ -752,7 +751,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 	/* Reset */
 	memset(state, 0, sizeof *state);
-	p->item_abilities = NULL;
 
 	/* Set various defaults */
 	state->speed = 2;
@@ -813,16 +811,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			/* Add up the armour weight */
 			if (tval_is_armor(obj)) {
 				armour_weight += obj->weight;
-			}
-
-			/* Add the abilities */
-			if (obj->abilities) {
-				ability = obj->abilities;
-				while (ability->next && !ability->last) {
-					ability = ability->next;
-				}
-				ability->next = p->item_abilities;
-				p->item_abilities = obj->abilities;
 			}
 
 			/* Do not apply weapon to-hit bonuses yet */

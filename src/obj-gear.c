@@ -929,6 +929,7 @@ void inven_takeoff(struct object *obj)
 	int slot = equipped_item_slot(player->body, obj);
 	const char *act;
 	char o_name[80];
+	struct ability *ability;
 
 	/* Paranoia */
 	if (slot == player->body.count) return;
@@ -950,6 +951,11 @@ void inven_takeoff(struct object *obj)
 	/* De-equip the object */
 	player->body.slots[slot].obj = NULL;
 	player->upkeep->equip_cnt--;
+
+	/* Remove all of its abilities from the player */
+	for (ability = obj->abilities; ability; ability = ability->next) {
+		remove_ability(&player->item_abilities, ability);
+	}
 
 	player->upkeep->update |= (PU_BONUS | PU_INVEN | PU_UPDATE_VIEW);
 	player->upkeep->notice |= (PN_IGNORE);
@@ -975,7 +981,6 @@ void inven_drop(struct object *obj, int amt)
 	bool none_left = false;
 	bool equipped = false;
 	bool quiver;
-
 	char name[80];
 	char label;
 

@@ -513,8 +513,8 @@ depgen:
  list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h mon-init.h \
  mon-lore.h z-textblock.h mon-make.h mon-spell.h mon-util.h mon-msg.h \
  list-mon-message.h obj-gear.h list-equip-slots.h obj-tval.h obj-util.h \
- player-calcs.h player-timed.h list-player-timed.h project.h \
- list-projections.h
+ player-abilities.h player-calcs.h player-timed.h list-player-timed.h \
+ project.h list-projections.h
 ./mon-make.o: mon-make.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
