@@ -34,7 +34,7 @@
  * ------------------------------------------------------------------------ */
 
 #define COSTS_COL     (42 + 32)
-#define TOTAL_COL     (42 + 19)
+#define TOTAL_COL     (42 + 15)
 #define SKILL_COSTS_ROW 7
 int skill_idx = 0;
 
