@@ -206,7 +206,6 @@ void do_cmd_wield(struct command *cmd)
 	struct object *weapon = equipped_item_by_slot_name(player, "weapon");
 	int shield_slot = slot_by_name(player, "arm");
 	char o_name[80];
-	const char *act;
 
 	unsigned n;
 
@@ -362,28 +361,8 @@ void do_cmd_wield(struct command *cmd)
 		if (!get_check(format("Really take off %s? ", o_name))) return;
 	}
 
-	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), equip_obj,
-		ODESC_PREFIX | ODESC_FULL, player);
-
-	/* Took off weapon */
-	if (slot_type_is(player, slot, EQUIP_WEAPON))
-		act = "You were wielding";
-	/* Took off bow */
-	else if (slot_type_is(player, slot, EQUIP_BOW))
-		act = "You were holding";
-	/* Took off light */
-	else if (slot_type_is(player, slot, EQUIP_LIGHT))
-		act = "You were holding";
-	/* Took off something else */
-	else
-		act = "You were wearing";
-
+	inven_takeoff(equip_obj);
 	inven_wield(obj, slot);
-
-	/* Message */
-	msgt(MSG_WIELD, "%s %s (%c).", act, o_name,
-		gear_to_label(player, equip_obj));
 }
 
 /**
