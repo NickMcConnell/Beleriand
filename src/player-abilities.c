@@ -469,18 +469,17 @@ int player_ability_cost(struct player *p, struct ability *ability)
 
 bool player_can_gain_ability(struct player *p, struct ability *ability)
 {
-	int cost = player_ability_cost(p, ability);
-	if (cost > p->new_exp) {
-		msg("You do not have enough experience to acquire this ability.");
-		return false;
-	}
-	return true;
+	return player_ability_cost(p, ability) <= p->new_exp;
 }
 
 bool player_gain_ability(struct player *p, struct ability *ability)
 {
 	struct ability *new;
 	int cost = player_ability_cost(p, ability);
+	if (cost > p->new_exp) {
+		msg("You do not have enough experience to acquire this ability.");
+		return false;
+	}
 	if (!get_check("Are you sure you wish to gain this ability? ")) {
 		return false;
 	}

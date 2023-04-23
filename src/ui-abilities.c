@@ -138,7 +138,11 @@ static bool ability_action(struct menu *m, const ui_event *event, int oid)
 				if (player_gain_ability(player, choice[oid])) {
 					put_str("Ability gained.", 0, 0);
 				}
+			} else {
+				msg("You do not have enough experience to acquire this ability.");
 			}
+		} else {
+			msg("Insufficient prerequisites for ability!");
 		}
 		return true;
 	}

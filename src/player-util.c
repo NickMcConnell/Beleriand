@@ -848,7 +848,7 @@ bool player_can_riposte(struct player *p, int hit_result)
 {
 	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
 
-	return (player_active_ability(p, "Riposte") &&
+	return (weapon && player_active_ability(p, "Riposte") &&
 			!p->upkeep->riposte &&
 			!p->timed[TMD_AFRAID] &&
 			!p->timed[TMD_CONFUSED] &&
