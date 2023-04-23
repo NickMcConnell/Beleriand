@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cmd-core.h"
 #include "game-world.h"
+#include "player-calcs.h"
 #include "player-skills.h"
 #include "ui-menu.h"
 #include "ui-input.h"
@@ -326,6 +327,7 @@ int gain_skills(cmd_context context, bool reset)
 	skill_points_stop();
 	if (context == CTX_GAME) {
 		finalise_skills();
+		player->upkeep->redraw |= (PR_EXP);
 	}
 	return next;
 }
