@@ -830,7 +830,7 @@ bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 	struct loc pgrid = player->grid;
 	int rad = context->radius ? context->radius : 0;
 
-	int flg = PROJECT_BOOM | PROJECT_GRID | PROJECT_KILL | PROJECT_PASS;
+	int flg = PROJECT_BOOM | PROJECT_GRID | PROJECT_KILL;
 
 	/* Message */
 	if (!player->timed[TMD_BLIND])
