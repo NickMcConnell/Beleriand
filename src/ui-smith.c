@@ -147,7 +147,6 @@ static void reset_smithing_objects(struct object_kind *kind)
  */
 static void show_smith_obj(void)
 {
-	//struct smithing_menu_data *d = data;
 	int ability = player->state.skill_use[SKILL_SMITHING] +
 		square_forge_bonus(cave, player->grid);
 		//TODO allow for masterpiece, probably by adding ability to data
@@ -156,13 +155,14 @@ static void show_smith_obj(void)
 	bool affordable = true;
 	int costs = 0;
 	char o_desc[80];
-	int mode = ODESC_FULL | ODESC_CAPITAL;
+	int mode = ODESC_FULL | ODESC_CAPITAL | ODESC_SPOIL;
 	textblock *tb;
 	region bottom = { COL_SMT2, MAX_SMITHING_TVALS + 3, 0, 0};
 	region right = { COL_SMT4, ROW_SMT1, 0, 0};
+	const struct object_kind *kind = smith_obj->kind;
 
 	/* Abort if there is no object to display */
-	if (!smith_obj->kind) return;
+	if (!kind) return;
 
 	/* Evaluate difficulty */
 	include_pval(smith_obj);
