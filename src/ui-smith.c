@@ -109,9 +109,11 @@ static void include_pval(struct object *obj)
 {
 	int i;
 	if (!pval_included) object_copy(smith_obj_backup, smith_obj);
-	if (ABS(obj->pval) <= 1) obj->pval *= pval;
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (ABS(obj->modifiers[i]) <= 1) obj->modifiers[i] *= pval;
+	if (pval) {
+		if (ABS(obj->pval) <= 1) obj->pval *= pval;
+		for (i = 0; i < OBJ_MOD_MAX; i++) {
+			if (ABS(obj->modifiers[i]) <= 1) obj->modifiers[i] *= pval;
+		}
 	}
 	pval_included = true;
 }
@@ -337,7 +339,7 @@ static void show_smith_obj(void)
 							 smith_obj->weight * smith_obj->number / 10,
 							 (smith_obj->weight * smith_obj->number) % 10),
 			  sizeof(o_desc));
-	tb = object_info(smith_obj, OINFO_TERSE);
+	tb = object_info(smith_obj, OINFO_SMITH);
 	exclude_pval(smith_obj);
 	textui_textblock_place(tb, bottom, o_desc);
 	textblock_free(tb);

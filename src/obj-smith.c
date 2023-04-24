@@ -1005,8 +1005,11 @@ static void set_base_values(struct object *obj)
 		obj->ps = 1;
 	}
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (obj->kind->modifiers[i].base == SPECIAL_VALUE) {
+		/* Hackish calculations needed here */
+		if ((obj->kind->modifiers[i].base == SPECIAL_VALUE) ||
+			(obj->kind->modifiers[i].m_bonus)) {
 			obj->modifiers[i] = 1;
+			obj->pval = 1;
 		}
 	}
 }

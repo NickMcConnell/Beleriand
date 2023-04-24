@@ -768,13 +768,13 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
  * real object)
  */
 static void describe_flavor_text(textblock *tb, const struct object *obj,
-								 bool ego)
+								 bool ego, bool smith)
 {
 	/* Display the known artifact or object description */
 	if (obj->artifact && obj->artifact->text) {
 		textblock_append(tb, "%s\n\n", obj->artifact->text);
 
-	} else if (object_flavor_is_aware(obj) || ego) {
+	} else if (object_flavor_is_aware(obj) || ego || smith) {
 		bool did_desc = false;
 
 		if (!ego && obj->kind->text) {
@@ -808,6 +808,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	bool terse = mode & OINFO_TERSE ? true : false;
 	bool subjective = mode & OINFO_SUBJ ? true : false;
 	bool ego = mode & OINFO_EGO ? true : false;
+	bool smith = mode & OINFO_SMITH ? true : false;
 	textblock *tb = textblock_new();
 
 	assert(obj);
@@ -825,7 +826,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	get_known_elements(obj, mode, el_info);
 
 	if (subjective) describe_origin(tb, obj, terse);
-	if (!terse) describe_flavor_text(tb, obj, ego);
+	if (!terse) describe_flavor_text(tb, obj, ego, smith);
 
 	if (!object_is_known(obj)) {
 		textblock_append(tb, "You do not know the full extent of this item's powers.\n");
@@ -849,7 +850,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 
 	/* Skip all the very specific information where we are giving general
 	   ego knowledge rather than for a single item - abilities can vary */
-	if (!ego) {
+	if (!(ego || smith)) {
 		if (describe_effect(tb, obj, terse, subjective)) {
 			something = true;
 			textblock_append(tb, "\n");
@@ -857,7 +858,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	}
 
 	/* Don't append anything in terse (for chararacter dump) */
-	if (!something && !terse)
+	if (!something && !terse && !smith)
 		textblock_append(tb, "\n\nThis item does not seem to possess any special abilities.");
 
 	return tb;
