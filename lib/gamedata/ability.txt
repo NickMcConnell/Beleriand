@@ -683,7 +683,7 @@ name:Song of Sharpness
 level:10
 prerequisite:Song:Song of Slaying
 prerequisite:Song:Song of Aule
-desc:Your attacks ignore 2% of your opponent's armour per point of Song.
+desc:Your attacks ignore 2 percent of your opponent's armour per point of Song.
 desc: Works for edged weapons, axes, polearms, and arrows.
 type:crown
 type:amulet
