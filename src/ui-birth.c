@@ -334,6 +334,10 @@ static void house_help(int i, void *db, const region *l)
 						   list_player_flag_names[j]);
 			}
 		}
+		if (pf_has(r->pflags, j)) {
+			text_out_c(COLOUR_GREEN, "%s proficiency\n",
+					   list_player_flag_names[j]);
+		}
 	}
 
 	Term_gotoxy(HOUSE_AUX_COL, HIST_INSTRUCT_ROW);
