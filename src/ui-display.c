@@ -931,10 +931,10 @@ static size_t prt_speed(int row, int col)
 	/* 2 is normal speed, and requires no display */
 	if (i > 2) {
 		attr = COLOUR_L_GREEN;
-		type = "Fast";
+		type = "Fast ";
 	} else if (i < 2) {
 		attr = COLOUR_ORANGE;
-		type = "Slow";
+		type = "Slow ";
 	}
 
 	if (type)

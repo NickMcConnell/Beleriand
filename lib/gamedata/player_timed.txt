@@ -54,13 +54,13 @@ msgt:HUNGRY
 
 name:FAST
 desc:haste
-grade:G:10000:Haste:You feel yourself moving faster!
+grade:G:10000:Hasted:You feel yourself moving faster!
 on-end:You feel yourself slow down.
 msgt:SPEED
 
 name:SLOW
 desc:slowness
-grade:U:10000:Slow:You feel yourself moving slower!
+grade:U:10000:Slowed:You feel yourself moving slower!
 on-end:You feel yourself speed up.
 msgt:SLOW
 fail:FREE_ACT
