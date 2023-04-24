@@ -140,6 +140,7 @@ static void reset_smithing_objects(struct object_kind *kind)
 	memset(smith_art, 0, sizeof(*smith_art));
 	create_base_object(kind, smith_obj);
 	object_know(smith_obj);
+	object_copy(smith_obj_backup, smith_obj);
 }
 
 /**
@@ -390,8 +391,14 @@ static void sval_display(struct menu *menu, int oid, bool cursor, int row,
 	}
 	create_base_object(choice[oid], obj);
 	object_know(obj);
+	if (cursor) {
+		object_copy(smith_obj_backup, smith_obj);
+	}
 	include_pval(obj);
 	attr = smith_affordable(obj, &dummy) ? COLOUR_WHITE : COLOUR_SLATE;
+	if (cursor) {
+		show_smith_obj();
+	}
 	exclude_pval(obj);
 	object_kind_name(name, sizeof(name), choice[oid], true);
 	c_put_str(attr, name, row, col);
