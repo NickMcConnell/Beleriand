@@ -1494,8 +1494,9 @@ depgen:
  list-skills.h list-object-modifiers.h object.h z-quark.h z-dice.h \
  z-expression.h list-elements.h list-origins.h option.h list-options.h \
  list-player-flags.h cmd-core.h game-world.h cave.h list-square-flags.h \
- list-terrain-flags.h player-skills.h ui-menu.h ui-output.h ui-event.h \
- ui-term.h z-textblock.h ui-input.h ui-player.h ui-skills.h ui-target.h
+ list-terrain-flags.h player-calcs.h player-skills.h ui-menu.h \
+ ui-output.h ui-event.h ui-term.h z-textblock.h ui-input.h ui-player.h \
+ ui-skills.h ui-target.h
 ./ui-smith.o: ui-smith.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \

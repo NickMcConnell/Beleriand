@@ -1727,7 +1727,7 @@ void move_player(int dir, bool disarm)
 		bool step = true;
 
 		/* Check before walking on known traps/chasms on movement */
-		if (!confused) {
+		if (!confused && square_ismark(cave, grid)) {
 			/* If the player hasn't already leapt */
 			if (square_ischasm(cave, grid)) {
 				/* Disturb the player */
