@@ -528,7 +528,17 @@ void ident_on_wield(struct player *p, struct object *obj)
 	 * (since they have no hidden abilities, they must already be obvious) */
 	if (obj->ego) {
 		struct ego_item *ego = obj->ego;
-		if (of_is_empty(ego->flags) && (ego->abilities == NULL)) {
+		bool mods = false;
+		bool elements = false;
+		int i;
+		for (i = 0; i < OBJ_MOD_MAX; i++) {
+			if (obj->ego->modifiers[i]) mods = true;
+		}
+		for (i = 0; i < ELEM_MAX; i++) {
+			if (obj->ego->el_info[i].res_level) elements = true;
+		}
+		if (of_is_empty(ego->flags) && (ego->abilities == NULL) &&
+			!ego->slays && !ego->brands && !mods && !elements) {
 			notice = true;
 		}
 	}
