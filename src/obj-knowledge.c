@@ -443,7 +443,7 @@ void pseudo_id_everything(void)
 		obj = cave->objects[i];
 
 		/* Skip dead objects */
-		if (!obj->kind) continue;
+		if (!obj || !obj->kind) continue;
 
 		/* Ignore known objects */
 		if (object_is_known(obj)) continue;
