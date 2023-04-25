@@ -1326,6 +1326,7 @@ static void create_smithing_item(struct object *obj, struct smithing_cost *cost)
 	struct object *created = object_new();
 	char o_name[80];
 
+	player->smithing_leftover = 0;
 	msg("You complete your work.");
 
 	/* Pay the ability/experience costs of smithing */
@@ -1346,6 +1347,7 @@ static void create_smithing_item(struct object *obj, struct smithing_cost *cost)
 	object_copy(created, obj);
 	
 	/* Identify the object */
+	object_flavor_aware(player, created);
 	object_know(created);
 
 	/* Create description */
@@ -1437,6 +1439,7 @@ void do_cmd_smith_aux(void)
 	if (cmd_get_nrepeats() == 1) {
 		obj = smith_object(&cost);
 		create_smithing_item(obj, &cost);
+		player->upkeep->smithing = false;
 	}
 
 	/* Redraw the state if requested */

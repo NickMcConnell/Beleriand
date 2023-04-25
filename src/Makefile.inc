@@ -1506,7 +1506,7 @@ depgen:
  list-player-flags.h cmds.h cave.h list-square-flags.h \
  list-terrain-flags.h cmd-core.h game-input.h obj-smith.h init.h \
  datafile.h parser.h list-parser-errors.h obj-desc.h obj-info.h \
- z-textblock.h obj-knowledge.h obj-pile.h player-abilities.h \
+ z-textblock.h obj-knowledge.h obj-pile.h obj-tval.h player-abilities.h \
  player-calcs.h trap.h list-trap-flags.h ui-input.h ui-event.h ui-term.h \
  ui-menu.h ui-output.h ui-options.h obj-ignore.h list-ignore-types.h \
  ui-smith.h

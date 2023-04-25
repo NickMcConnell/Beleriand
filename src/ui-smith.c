@@ -27,6 +27,7 @@
 #include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-smith.h"
+#include "obj-tval.h"
 #include "object.h"
 #include "player-abilities.h"
 #include "player-calcs.h"
@@ -83,6 +84,7 @@ static struct menu *smithing_menu;
 static bool no_forge;
 static bool exhausted;
 static bool create_smithed_item;
+static bool numbers_changed;
 
 /**
  * Locations of the menus, etc. on the screen
@@ -496,6 +498,7 @@ static void tval_menu(const char *name, int row)
 	menu.browse_hook = smith_obj_browser;
 	menu_setpriv(&menu, MAX_SMITHING_TVALS, (void *)smithing_tvals);
 	region_erase(&big);
+	numbers_changed = false;
 	menu_layout(&menu, &area);
 
 	/* Select an entry */
@@ -1097,6 +1100,7 @@ static bool numbers_action(struct menu *m, const ui_event *event, int oid)
 	if (event->type == EVT_SELECT) {
 		if (numbers_valid[oid]) {
 			modify_numbers(smith_obj, oid, &pval);
+			numbers_changed = true;
 		}
 	}
 	return false;
@@ -1208,6 +1212,8 @@ static void smithing_menu_browser(int oid, void *data, const region *loc)
 		text_out_c(attr, extra[4]);
 	} else if (exhausted && (oid == 5)) {
 		text_out_c(attr, extra[2]);
+	} else if (numbers_changed && (oid == 1)) {
+		text_out_c(attr, extra[0]);
 	} else {
 		text_out_c(attr, desc[oid * 2]);
 	}
@@ -1216,10 +1222,11 @@ static void smithing_menu_browser(int oid, void *data, const region *loc)
 		text_out_c(attr, extra[5]);
 	} else if (exhausted && (oid == 5)) {
 		text_out_c(attr, extra[3]);
+	} else if (numbers_changed && (oid == 1)) {
+		text_out_c(attr, extra[1]);
 	} else {
 		text_out_c(attr, desc[oid * 2 + 1]);
 	}
-	//TODO test for if numbers have been changed
 	if (smith_obj->kind) {
 		show_smith_obj();
 	}
@@ -1241,7 +1248,9 @@ static void check_smithing_menu_row_colors(void)
 			}
 		}
 		if (i == 1) {
-			if (!smith_obj->kind) {
+			if (!smith_obj->kind || smith_obj->artifact || numbers_changed ||
+				tval_is_jewelry(smith_obj) || tval_is_horn(smith_obj) ||
+				strstr(smith_obj->kind->name, "Shovel")) {
 				smithing_actions[i].flags = MN_ACT_GRAYED;
 			} else if (player_active_ability(player, "Enchantment")) {
 				smithing_actions[i].flags = 0;
@@ -1250,7 +1259,8 @@ static void check_smithing_menu_row_colors(void)
 			}
 		}
 		if (i == 2) {
-			if (!smith_obj->kind) {
+			if (!smith_obj->kind || smith_obj->ego || tval_is_horn(smith_obj) ||
+				(player->self_made_arts >= z_info->self_arts_max)) {
 				smithing_actions[i].flags = MN_ACT_GRAYED;
 			} else if (player_active_ability(player, "Artifice")) {
 				smithing_actions[i].flags = 0;
@@ -1269,7 +1279,8 @@ static void check_smithing_menu_row_colors(void)
 			}
 		}
 		if (i == 5) {
-			if (!smith_obj->kind) {
+			if (!smith_obj->kind || !square_isforge(cave, player->grid) ||
+				!square_forge_uses(cave, player->grid)) {
 				smithing_actions[i].flags = MN_ACT_GRAYED;
 			}
 		}
@@ -1323,12 +1334,13 @@ struct object *textui_smith_object(struct smithing_cost *cost)
 	menu_layout(smithing_menu, &area);
 	while (!create_smithed_item) {
 		ui_event evt = EVENT_EMPTY;
-
-		evt = menu_select(smithing_menu, EVT_MOVE, false);
 		check_smithing_menu_row_colors();
+
+		evt = menu_select(smithing_menu, EVT_KBRD, false);
 		if (evt.type == EVT_ESCAPE) {
 			/* Wipe the smithing object and artefact */
 			wipe_smithing_objects();
+			create_smithed_item = false;
 
 			break;
 		}

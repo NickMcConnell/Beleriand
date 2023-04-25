@@ -157,7 +157,7 @@ obj-make:default-lamp:3000
 obj-make:fuel-lamp:7000
 
 # Maximum number of self-made artefacts
-#obj-make:self-arts:50
+obj-make:self-arts:50
 
 #---------------------------------------------------------------------
 # Player constants
