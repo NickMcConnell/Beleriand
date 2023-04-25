@@ -646,6 +646,9 @@ static void adjust_smithing_cost(int diff, struct obj_property *prop, struct smi
 int object_difficulty(struct object *obj, struct smithing_cost *smithing_cost)
 {
 	struct object_kind *kind = obj->kind;
+	int att = (kind->att == SPECIAL_VALUE) ? 0 : kind->att;
+	int evn = (kind->evn == SPECIAL_VALUE) ? 0 : kind->evn;
+	int ps = (kind->ps == SPECIAL_VALUE) ? 0 : kind->ps;
 	bitflag flags[OF_MAX];
 	int dif_inc = 0, dif_dec = 0;
 	int i, weight_factor, diff, new, base;
@@ -704,7 +707,7 @@ int object_difficulty(struct object *obj, struct smithing_cost *smithing_cost)
 	dif_inc += (weight_factor - 100) / 10;
 
 	/* Attack bonus */
-	diff = obj->att - kind->att;
+	diff = obj->att - att;
 
 	/* Special costs for attack bonus for arrows (half difficulty modifier) */
 	if (tval_is_ammo(obj) && (diff > 0)) {	
@@ -717,7 +720,7 @@ int object_difficulty(struct object *obj, struct smithing_cost *smithing_cost)
 	}
 
 	/* Evasion bonus */
-	diff = obj->evn - kind->evn;
+	diff = obj->evn - evn;
 	dif_mod(diff, 5, &dif_inc);
 
 	/* Damage bonus */
@@ -725,7 +728,7 @@ int object_difficulty(struct object *obj, struct smithing_cost *smithing_cost)
 	dif_mod(diff, 8 + obj->dd, &dif_inc);
 
 	/* Protection bonus */
-	base = (kind->ps > 0) ? ((kind->ps + 1) * kind->pd) : 0;
+	base = (ps > 0) ? ((ps + 1) * kind->pd) : 0;
 	new = (obj->ps > 0) ? ((obj->ps + 1) * obj->pd) : 0;
 	diff = new - base;
 	dif_mod(diff, 4, &dif_inc);
@@ -808,7 +811,7 @@ int object_difficulty(struct object *obj, struct smithing_cost *smithing_cost)
 	diff = dif_inc - dif_dec;
 
 	/* Increased difficulties for minor slots */
-	if (tval_is_jewelry(obj) || tval_is_light(obj) || tval_is_cloak(obj) ||
+	if (tval_is_ring(obj) || tval_is_light(obj) || tval_is_cloak(obj) ||
 		tval_is_gloves(obj) || tval_is_boots(obj) || tval_is_ammo(obj)) {
 		dif_mult += 20;
 	}

@@ -150,9 +150,9 @@ static void reset_smithing_objects(struct object_kind *kind)
  */
 static void show_smith_obj(void)
 {
-	int ability = player->state.skill_use[SKILL_SMITHING] +
+	int effective_skill = player->state.skill_use[SKILL_SMITHING] +
 		square_forge_bonus(cave, player->grid);
-		//TODO allow for masterpiece, probably by adding ability to data
+		//TODO allow for masterpiece, probably by adding effective_skill to data
 	int dif;
 	uint8_t attr;
 	bool affordable = true;
@@ -170,7 +170,7 @@ static void show_smith_obj(void)
 	/* Evaluate difficulty */
 	include_pval(smith_obj);
 	dif = object_difficulty(smith_obj, &current_cost);
-	attr = ability < dif ? COLOUR_SLATE : COLOUR_L_DARK;
+	attr = effective_skill < dif ? COLOUR_SLATE : COLOUR_L_DARK;
 	exclude_pval(smith_obj);
 
 	/* Redirect output to the screen */
@@ -188,7 +188,7 @@ static void show_smith_obj(void)
 		attr = COLOUR_BLUE;
 	}
 	text_out_c(attr, "%3d", dif);
-	text_out_c(COLOUR_L_DARK, "  (max %d)", ability);
+	text_out_c(COLOUR_L_DARK, "  (max %d)", effective_skill);
 
 	/* Object costs */
 	Term_gotoxy(COL_SMT4, ROW_SMT2);
