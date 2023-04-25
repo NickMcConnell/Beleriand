@@ -380,6 +380,8 @@ static size_t obj_desc_mods(const struct object *obj, char *buf, size_t max,
 	int i, j, num_mods = 0;
 	int mods[OBJ_MOD_MAX] = { 0 };
 
+	if (!object_is_known(obj)) return end;
+
 	/* Run through possible modifiers and store distinct ones */
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		/* Check for known non-zero mods */

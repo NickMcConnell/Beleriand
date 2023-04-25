@@ -124,15 +124,21 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 	/* Fact of but not size of mods is known for egos and flavoured items
 	 * the player is aware of */
 	bool known_effect = false;
-	if (tval_can_have_flavor_k(obj->kind) && object_flavor_is_aware(obj))
+	if (tval_can_have_flavor_k(obj->kind) && object_flavor_is_aware(obj)) {
 		known_effect = true;
+	}
+
+	/* Detail only for known objects */
+	if (object_is_known(obj)) {
+		detail = true;
+	}
 
 	/* See what we've got */
-	for (i = 0; i < OBJ_MOD_MAX; i++)
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		if (obj->modifiers[i]) {
 			count++;
-			detail = true;
 		}
+	}
 
 	if (!count)
 		return false;
@@ -146,9 +152,10 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 		if (detail && !suppress_details) {
 			int attr = (val > 0) ? COLOUR_L_GREEN : COLOUR_RED;
 			textblock_append_c(tb, attr, "%+i %s.\n", val, desc);
-		} else if (known_effect)
+		} else if (known_effect) {
 			/* Ego type or jewellery description */
 			textblock_append(tb, "Affects your %s\n", desc);
+		}
 	}
 
 	return true;
