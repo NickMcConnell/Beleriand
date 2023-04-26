@@ -320,6 +320,17 @@ static void show_smith_obj(void)
 		costs++;
 		Term_gotoxy(COL_SMT4 + 2, ROW_SMT3 + costs);
 	}
+	if (current_cost.exp > 0) {
+		if (player->new_exp >= current_cost.exp) {
+			attr = COLOUR_SLATE;
+		} else {
+			attr = COLOUR_L_DARK;
+			affordable = false;
+		}													
+		text_out_c(attr, "%d Exp", current_cost.exp);
+		costs++;
+		Term_gotoxy(COL_SMT4 + 2, ROW_SMT3 + costs);
+	}
 	attr = COLOUR_SLATE;
 	text_out_c(attr, "%d Turns", MAX(10, dif * 10));
 
@@ -389,7 +400,6 @@ static void sval_display(struct menu *menu, int oid, bool cursor, int row,
 	uint8_t attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 	struct object object_body;
 	struct object *obj = &object_body;
-	struct smithing_cost dummy;
 	if (cursor) {
 		obj = smith_obj;
 	}
@@ -399,7 +409,7 @@ static void sval_display(struct menu *menu, int oid, bool cursor, int row,
 		object_copy(smith_obj_backup, smith_obj);
 	}
 	include_pval(obj);
-	attr = smith_affordable(obj, &dummy) ? COLOUR_WHITE : COLOUR_SLATE;
+	attr = smith_affordable(obj, &current_cost) ? COLOUR_WHITE : COLOUR_SLATE;
 	if (cursor) {
 		show_smith_obj();
 	}
@@ -541,12 +551,11 @@ static void special_display(struct menu *menu, int oid, bool cursor, int row,
 {
 	struct ego_item **choice = (struct ego_item **) menu->menu_data;
 	uint8_t attr = COLOUR_SLATE;
-	struct smithing_cost dummy;
 	if (cursor) {
 		create_special(smith_obj, choice[oid]);
 		object_know(smith_obj);
 		include_pval(smith_obj);
-		attr = smith_affordable(smith_obj, &dummy) ? COLOUR_WHITE :COLOUR_SLATE;
+		attr = smith_affordable(smith_obj, &current_cost) ? COLOUR_WHITE :COLOUR_SLATE;
 		show_smith_obj();
 		exclude_pval(smith_obj);
 	}
@@ -1059,15 +1068,13 @@ static void numbers_set_validity(void)
 	/* Affordability */
 	for (i = 0; i < SMITH_NUM_MAX; i++) {
 		if (numbers_valid[i]) {
-			struct smithing_cost dummy;
-
 			/* Back up the object */
 			object_copy(&backup, smith_obj);
 
 			/* See if we can afford the change */
 			modify_numbers(smith_obj, i, &pval);
 			include_pval(smith_obj);
-			numbers_can_afford[i] = smith_affordable(smith_obj, &dummy);
+			numbers_can_afford[i] = smith_affordable(smith_obj, &current_cost);
 
 			/* Restore the object */
 			pval = old_pval;
@@ -1138,7 +1145,8 @@ static void numbers_menu(const char *name, int row)
 
 static void accept_item(const char *name, int row)
 {
-	if (!square_isforge(cave, player->grid) ||
+	if (!smith_affordable(smith_obj, &current_cost) ||
+		!square_isforge(cave, player->grid) ||
 		!square_forge_uses(cave, player->grid)) {
 		return;
 	}
@@ -1279,7 +1287,9 @@ static void check_smithing_menu_row_colors(void)
 			}
 		}
 		if (i == 5) {
-			if (!smith_obj->kind || !square_isforge(cave, player->grid) ||
+			if (!smith_obj->kind ||
+				!smith_affordable(smith_obj, &current_cost) ||
+				!square_isforge(cave, player->grid) ||
 				!square_forge_uses(cave, player->grid)) {
 				smithing_actions[i].flags = MN_ACT_GRAYED;
 			}
