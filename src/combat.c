@@ -701,8 +701,8 @@ int protection_roll(struct player *p, int typ, bool melee, aspect prot_aspect)
 	}
 	
 	/* Armour: */
-	for (i = 0; i < player->body.count; i++) {
-		struct object *obj = player->body.slots[i].obj;
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = p->body.slots[i].obj;
 		if (!obj) continue;
         
 		/* Skip off-hand weapons */

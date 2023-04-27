@@ -400,7 +400,7 @@ void player_update_light(struct player *p)
  */
 bool player_radiates(struct player *p)
 {
-	struct object *boots = equipped_item_by_slot_name(player, "feet");
+	struct object *boots = equipped_item_by_slot_name(p, "feet");
 	if (boots && of_has(boots->flags, OF_RADIANCE) &&
 		!square_isglow(cave, p->grid)) {
 		if (!object_is_known(boots) && one_in_(10)) {
@@ -509,7 +509,7 @@ void player_falling_damage(struct player *p, bool stun)
 	take_hit(p, dam, message);
 
 	if (stun) { 
-		(void)player_inc_timed(player, TMD_STUN, dam * 5, true, true);
+		(void)player_inc_timed(p, TMD_STUN, dam * 5, true, true);
 	}
 
 	/* Reset staircasiness */
@@ -622,7 +622,7 @@ bool player_can_leap(struct player *p, struct loc grid, int dir)
 	bool run_up = false;
 	struct loc mid, end;
 
-	if (player->timed[TMD_CONFUSED]) return false;
+	if (p->timed[TMD_CONFUSED]) return false;
 	if (!square_isleapable(cave, grid)) return false;
 	if (!player_active_ability(p, "Leaping")) return false;
 
@@ -678,7 +678,7 @@ bool player_break_web(struct player *p)
 	int score = MAX(p->state.stat_use[STAT_STR] * 2, difficulty - 8);
 
 	/* Disturb the player */
-	disturb(player, false);
+	disturb(p, false);
 
 	/* Free action helps a lot */
 	difficulty -= 10 * p->state.flags[OF_FREE_ACT];
@@ -698,7 +698,7 @@ bool player_break_web(struct player *p)
 		return false;
 	} else {
 		msg("You break free!");
-		square_destroy_trap(cave, player->grid);
+		square_destroy_trap(cave, p->grid);
 
 		return true;
 	}
@@ -711,7 +711,7 @@ bool player_break_web(struct player *p)
 bool player_escape_pit(struct player *p)
 {
 	/* Disturb the player */
-	disturb(player, false);
+	disturb(p, false);
 
 	if (check_hit(square_pit_difficulty(cave, p->grid), false,
 				  source_grid(p->grid))) {
@@ -784,7 +784,7 @@ void player_blast_floor(struct player *p)
 			event_signal(EVENT_MESSAGE_FLUSH);
 
 			/* Add to the history */
-			history_add(player, "Fell through the floor with a horn blast.",
+			history_add(p, "Fell through the floor with a horn blast.",
 						HIST_FELL_DOWN_LEVEL);
 
 			/* Take some damage */
@@ -1332,7 +1332,7 @@ static void search_square(struct player *p, struct loc grid, int dist,
 {
 	int score = 0;
 	int difficulty = 0;
-	struct object *obj = chest_check(player, grid, CHEST_TRAPPED);
+	struct object *obj = chest_check(p, grid, CHEST_TRAPPED);
 	int chest_level = obj && is_trapped_chest(obj) ? obj->pval : 0;
 
 	/* If searching, discover unknown adjacent squares of interest */

@@ -574,7 +574,7 @@ static bool run_test(const struct player *p)
 		new_dir = cycle[chome[prev_dir] + i];
 
 		/* New location */
-		grid = loc_sum(player->grid, ddgrid[new_dir]);
+		grid = loc_sum(p->grid, ddgrid[new_dir]);
 
 		/* Visible monsters abort running */
 		if (square(cave, grid)->mon > 0) {
@@ -650,7 +650,7 @@ static bool run_test(const struct player *p)
 		new_dir = cycle[chome[prev_dir] + i];
 		
 		/* New location */
-		grid = loc_sum(player->grid,
+		grid = loc_sum(p->grid,
 					   loc_sum(ddgrid[prev_dir], ddgrid[new_dir]));
 		
 		/* HACK: Ugh. Sometimes we come up with illegal bounds. This will
@@ -670,7 +670,7 @@ static bool run_test(const struct player *p)
 		/* Hack -- look again */
 		for (i = -max; i < 0; i++) {
 			new_dir = cycle[chome[prev_dir] + i];
-			grid = loc_sum(player->grid, ddgrid[new_dir]);
+			grid = loc_sum(p->grid, ddgrid[new_dir]);
 
 			/* Unknown grid or non-wall */
 			if (!square_isknown(cave, grid) || square_ispassable(cave, grid)) {
@@ -689,7 +689,7 @@ static bool run_test(const struct player *p)
 		/* Hack -- look again */
 		for (i = max; i > 0; i--) {
 			new_dir = cycle[chome[prev_dir] + i];
-			grid = loc_sum(player->grid, ddgrid[new_dir]);
+			grid = loc_sum(p->grid, ddgrid[new_dir]);
 
 			/* Unknown grid or non-wall */
 			if (!square_isknown(cave, grid) || square_ispassable(cave, grid)) {
@@ -724,7 +724,7 @@ static bool run_test(const struct player *p)
 	}
 
 	/* About to hit a known wall, stop */
-		if (see_wall(run_cur_dir, player->grid))
+		if (see_wall(run_cur_dir, p->grid))
 		return true;
 
 	/* Failure */

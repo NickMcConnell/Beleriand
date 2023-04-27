@@ -1385,7 +1385,7 @@ bool pick_and_place_monster_on_stairs(struct chunk *c, struct player *p,
 	int tries = 0;
 
 	/* No monsters come through the stairs on tutorial/challenge levels */
-	if (player->game_type != 0)	return false;
+	if (p->game_type != 0)	return false;
 
 	/* Get a stair location */
 	if (!cave_find(c, &stair, square_isstairs))	return false;

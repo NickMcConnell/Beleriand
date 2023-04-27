@@ -387,7 +387,7 @@ void wield_all(struct player *p)
 
 	/* Now add the unwielded split objects to the gear */
 	if (new_pile) {
-		pile_insert_end(&player->gear, new_pile);
+		pile_insert_end(&p->gear, new_pile);
 	}
 	return;
 }

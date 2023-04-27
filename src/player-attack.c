@@ -262,7 +262,7 @@ static void whirlwind(struct player *p, struct loc grid)
 		if (mon) {
 			if (p->timed[TMD_RAGE]) {
 				py_attack_real(p, adj_grid, ATT_RAGE);
-			} else if ((i == 0) || !OPT(player, forgo_attacking_unwary) ||
+			} else if ((i == 0) || !OPT(p, forgo_attacking_unwary) ||
 					   (mon->alertness >= ALERTNESS_ALERT)) {
 				py_attack_real(p, adj_grid, ATT_WHIRLWIND);
 			}

@@ -986,18 +986,18 @@ struct chunk *cave_gen(struct player *p)
 	/* Guarantee a forge if one hasn't been generated in a while */
 	if (p->forge_drought >= rand_range(2000, 5000)) {
 		struct room_profile profile = lookup_room_profile("Interesting room");
-		if (OPT(player, cheat_room)) msg("Trying to force a forge:");
+		if (OPT(p, cheat_room)) msg("Trying to force a forge:");
 		p->upkeep->force_forge = true;
 
 		/* Failure (not clear why this would happen) */
 		if (!room_build(c, profile)) {
 			p->upkeep->force_forge = false;
-			if (OPT(player, cheat_room)) msg("failed.");
+			if (OPT(p, cheat_room)) msg("failed.");
 			uncreate_artifacts(c);
 			return NULL;
 		}
 
-		if (OPT(player, cheat_room)) msg("succeeded.");
+		if (OPT(p, cheat_room)) msg("succeeded.");
 		p->upkeep->force_forge = false;
 	}
 
@@ -1034,7 +1034,7 @@ struct chunk *cave_gen(struct player *p)
 
 	/* Start over on levels with less than two rooms due to inevitable crash */
 	if (dun->cent_n < z_info->level_room_min) {
-		if (OPT(player, cheat_room)) msg("Not enough rooms.");
+		if (OPT(p, cheat_room)) msg("Not enough rooms.");
 		uncreate_artifacts(c);
 		return NULL;
 	}
@@ -1042,7 +1042,7 @@ struct chunk *cave_gen(struct player *p)
 	/* Make the tunnels
 	 * Sil - This has been changed considerably */
 	if (!connect_rooms_stairs(c)) {
-		if (OPT(player, cheat_room)) msg("Couldn't connect the rooms.");
+		if (OPT(p, cheat_room)) msg("Couldn't connect the rooms.");
 		uncreate_artifacts(c);
 		return NULL;
 	}
@@ -1073,7 +1073,7 @@ struct chunk *cave_gen(struct player *p)
 
 	/* Check dungeon connectivity */
 	if (!check_connectivity(c)) {
-		if (OPT(player, cheat_room)) msg("Failed connectivity.");
+		if (OPT(p, cheat_room)) msg("Failed connectivity.");
 		uncreate_artifacts(c);
 		return NULL;
 	}

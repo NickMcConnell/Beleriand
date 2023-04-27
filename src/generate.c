@@ -528,11 +528,11 @@ static const struct cave_profile *choose_profile(struct player *p)
 static void cave_clear(struct chunk *c, struct player *p)
 {
 	/* Reset smithing leftover (as there is no access to the old forge) */
-	player->smithing_leftover = 0;
+	p->smithing_leftover = 0;
 
     /* Reset the forced skipping of next turn (a bit rough to miss
 	 * first turn if you fell down) */
-    player->upkeep->knocked_back = false;
+    p->upkeep->knocked_back = false;
 
 	/* Clear the monsters */
 	wipe_mon_list(c, p);
