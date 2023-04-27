@@ -928,7 +928,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	}
 
 	/* Determine the monster's evasion after all modifiers */
-	total_evasion_mod = total_monster_evasion(p, mon, false);
+	total_evasion_mod = total_monster_evasion(p, mon, true);
 
 	/* Did we hit it */
 	result.hit = hit_roll(total_attack_mod, total_evasion_mod,
