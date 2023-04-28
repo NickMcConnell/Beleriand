@@ -628,9 +628,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 			return false;
 		} else {
 			/* Random direction */
-			d = ddd[randint0(8)];
-
-			grid = loc_sum(grid1, ddgrid_ddd[d]);
+			grid = loc_sum(grid1, ddgrid_ddd[randint0(8)]);
 
 			/* Check Bounds */
 			if (!square_in_bounds(cave, grid)) return false;
@@ -1154,7 +1152,7 @@ static bool get_move_retreat(struct monster *mon, struct loc *tgrid)
 
 		/* Look for adjacent hiding places */
 		for (i = start; i < 8 + start; i++) {
-			grid = loc_sum(mon->grid, ddgrid_ddd[i]);
+			grid = loc_sum(mon->grid, ddgrid_ddd[i % 8]);
 
 			/* Check Bounds */
 			if (!square_in_bounds(cave, grid)) continue;
