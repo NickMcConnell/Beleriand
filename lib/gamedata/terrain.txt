@@ -139,7 +139,7 @@ desc:A shaft down to a deeper part of the dungeon.
 name:chasm
 graphics:%:D
 priority:20
-flags:LOS | PROJECT | PASSABLE | CHASM
+flags:LOS | PROJECT | PASSABLE | CHASM | INTERESTING
 desc:Empty space - only flying creatures can pass across without falling.  All 
 desc:spells and missiles can pass through.
 walk-msg:It's a cliff! Really step off it?
@@ -222,7 +222,7 @@ name:forge
 graphics:0:s
 priority:20
 info:0:0:0
-flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH
+flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH | INTERESTING
 desc:A forge for smithing objects.
 
 # 0x46 --> good forge -- 0 uses
@@ -231,7 +231,7 @@ name:enchanted forge
 graphics:0:Y
 priority:20
 info:3:0:0
-flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH
+flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH | INTERESTING
 desc:An enchanted forge for smithing objects.
 
 # 0x4C --> unique forge -- 0 uses
@@ -240,7 +240,7 @@ name:forge 'Orodruth'
 graphics:0:D
 priority:20
 info:7:0:0
-flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH
+flags:LOS | PROJECT | PASSABLE | FORGE | EASY | TORCH | INTERESTING
 desc:A uniquely enchanted forge for smithing objects.
 
 # # 0x11 --> visible trap -- open pit
