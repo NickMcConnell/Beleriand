@@ -1570,7 +1570,7 @@ static bool get_move(struct monster *mon, struct loc *tgrid, bool *fear,
 	}
 
 	/* If far too close, step back towards the monster's minimum range */
-	if (mon->cdis < mon->min_range - 2) {
+	if (!*fear && (mon->cdis < mon->min_range - 2)) {
 		if (get_move_retreat(mon, tgrid)) {
 			*fear = true;
 			return true;
@@ -1581,7 +1581,7 @@ static bool get_move(struct monster *mon, struct loc *tgrid, bool *fear,
 	}
 
 	/* If the character is adjacent, back off, surround the player, or attack */
-	if (mon->cdis <= 1) {
+	if (!*fear && (mon->cdis <= 1)) {
 		/* Smart monsters try harder to surround the player */
 		if (rf_has(race->flags, RF_SMART)) {
 			struct loc mgrid = mon->grid;
@@ -1700,15 +1700,15 @@ static bool get_move(struct monster *mon, struct loc *tgrid, bool *fear,
 					}
 				}
 			}
-
-			/* All other monsters attack. */
-			*tgrid = player->grid;
-			return true;
 		}
+
+		/* All other monsters attack. */
+		*tgrid = player->grid;
+		return true;
 	}
-		
+
 	/* Smart monsters try to lure the character into the open. */
-	if (rf_has(race->flags, RF_SMART) &&
+	if (!*fear && rf_has(race->flags, RF_SMART) &&
 		!rf_has(race->flags, RF_PASS_WALL) &&
 		!rf_has(race->flags, RF_KILL_WALL) &&
 		(mon->stance == STANCE_CONFIDENT)) {
