@@ -400,6 +400,7 @@ static int prt_health_aux(int row, int col)
 {
 	struct monster *mon = player->upkeep->health_who;
 	char buf[20];
+	int len = 0;
 	uint8_t attr = COLOUR_L_DARK;
 
 	/* Not tracking */
@@ -422,7 +423,7 @@ static int prt_health_aux(int row, int col)
 		attr = health_attr(mon->hp, mon->maxhp);
 
 		/* Convert into health bar (using ceiling for length) */
-		int len = (8 * mon->hp + mon->maxhp - 1) / mon->maxhp;
+		len = (8 * mon->hp + mon->maxhp - 1) / mon->maxhp;
 
 		/* Default to "unknown" */
 		Term_putstr(col, row, 12, COLOUR_WHITE, "  --------  ");
@@ -443,15 +444,16 @@ static int prt_health_aux(int row, int col)
 	if (mon->alertness < ALERTNESS_UNWARY) {
 		my_strcpy(buf, "Sleeping", sizeof(buf));
 		attr = COLOUR_BLUE;
+		len = strlen(buf);
 	} else if (mon->alertness < ALERTNESS_ALERT) {
 		my_strcpy(buf, "Unwary", sizeof(buf));
 		attr = COLOUR_L_BLUE;
+		len = strlen(buf);
 	} else {
-		int len = 0;
-
 		if (rf_has(mon->race->flags, RF_MINDLESS)) {
 			my_strcpy(buf, "Mindless", sizeof(buf));
 			attr = COLOUR_L_DARK;
+			len = strlen(buf);
 		} else {
 			char tmp[20];
 
@@ -479,10 +481,10 @@ static int prt_health_aux(int row, int col)
 				len = strnfmt(buf, sizeof(buf), "%s %d", tmp, mon->morale / 10);
 			}
 		}
-
-		Term_putstr(col, row + 1, 12, COLOUR_DARK, "            ");
-		Term_putstr(col + (13 - len) / 2, row + 1, MIN(len, 12), attr, buf);
 	}
+
+	Term_putstr(col, row + 1, 12, COLOUR_DARK, "            ");
+	Term_putstr(col + (13 - len) / 2, row + 1, MIN(len, 12), attr, buf);
 
 	return 12;
 }
