@@ -459,6 +459,7 @@ static bool tval_action(struct menu *m, const ui_event *event, int oid)
 	region area = { COL_SMT3, ROW_SMT1, COL_SMT4 - COL_SMT3, MAX_SMITHING_TVALS };
 	ui_event evt;
 	int count = 0;
+	bool selected = false;
 
 	/* Save */
 	screen_save();
@@ -477,13 +478,15 @@ static bool tval_action(struct menu *m, const ui_event *event, int oid)
 	evt = menu_select(&menu, 0, true);
 
 	/* Set the new value appropriately */
-	if (evt.type == EVT_SELECT)
+	if (evt.type == EVT_SELECT) {
 		smith_obj->kind = smithing_svals[menu.cursor];
+		selected = true;
+	}
 	menu_refresh(smithing_menu, false);
 
 	/* Load and finish */
 	screen_load();
-	return true;
+	return !selected;
 }
 
 /**
@@ -1120,6 +1123,7 @@ static void numbers_menu(const char *name, int row)
 {
 	struct menu menu;
 	menu_iter menu_f = { NULL, NULL, numbers_display, numbers_action, NULL };
+	ui_event evt = EVENT_EMPTY;
 	region area = { COL_SMT2, ROW_SMT1, COL_SMT3 - COL_SMT2, MAX_SMITHING_TVALS };
 	region old = { COL_SMT2, ROW_SMT1, COL_SMT4 - COL_SMT2,
 					MAX_SMITHING_TVALS  };
@@ -1138,7 +1142,9 @@ static void numbers_menu(const char *name, int row)
 	menu_layout(&menu, &area);
 
 	/* Select an entry */
-	menu_select(&menu, 0, false);
+	while (evt.type != EVT_ESCAPE) {
+		evt = menu_select(&menu, 0, false);
+	}
 
 	return;
 }
