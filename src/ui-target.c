@@ -805,16 +805,15 @@ static bool aux_object(struct chunk *c, struct player *p,
 static bool aux_terrain(struct chunk *c, struct player *p,
 		struct target_aux_state *auxst)
 {
-	const char *name, *lphrase2, *lphrase3;
+	const char *lphrase2, *lphrase3;
+	char name[50];
 	char out_val[TARGET_OUT_VAL_SIZE];
 
 	if (!auxst->boring && !square_isinteresting(c, auxst->grid))
 		return false;
 
 	/* Terrain feature if needed */
-	name = square_apparent_name(c, auxst->grid);
-
-	/* Hack -- handle unknown grids */
+	square_apparent_name(c, auxst->grid, name, sizeof(name));
 
 	/* Pick a preposition if needed */
 	lphrase2 = (*auxst->phrase2) ?

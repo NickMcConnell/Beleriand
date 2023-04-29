@@ -439,7 +439,8 @@ void square_force_floor(struct chunk *c, struct loc grid);
 int square_digging(struct chunk *c, struct loc grid);
 int square_pit_difficulty(struct chunk *c, struct loc grid);
 int square_forge_bonus(struct chunk *c, struct loc grid);
-const char *square_apparent_name(struct chunk *c, struct loc grid);
+void square_apparent_name(struct chunk *c, struct loc grid, char *name,
+						  int size);
 const char *square_apparent_look_prefix(struct chunk *c, struct loc grid);
 const char *square_apparent_look_in_preposition(struct chunk *c, struct loc grid);
 

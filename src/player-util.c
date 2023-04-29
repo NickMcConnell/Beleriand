@@ -424,7 +424,8 @@ void player_fall_in_pit(struct player *p, bool spiked)
 {
 	/* Falling damage */
 	int dam = damroll(2, 4);
-	char *name = format("%s", square_apparent_name(cave, p->grid));
+	char name[50];
+	square_apparent_name(cave, p->grid, name, sizeof(name));
 
 	msg("You fall into a %s", name);
 

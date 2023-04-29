@@ -512,8 +512,9 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 				   o_name), 0, 0);
 	} else {
 		/* Feature (apply mimic) */
-		const char *name = square_apparent_name(c, grid);
+		char name[50];
 		const char *prefix = square_apparent_look_prefix(c, grid);
+		square_apparent_name(c, grid, name, sizeof(name));
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s%s:", prefix, name), 0, 0);
 	}

@@ -1261,11 +1261,30 @@ int square_pit_difficulty(struct chunk *c, struct loc grid) {
 	return 0;
 }
 
-const char *square_apparent_name(struct chunk *c, struct loc grid) {
+void square_apparent_name(struct chunk *c, struct loc grid, char *name,
+						  int size)
+{
 	int actual = square_isknown(cave, grid) ? square(cave, grid)->feat : 0;
 	char *mimic_name = f_info[actual].mimic;
 	int f = mimic_name ? lookup_feat(mimic_name) : actual;
-	return f_info[f].name;
+	char forge_string[40];
+
+	/* Handle forges */
+	if (square_isforge(c, grid)) {
+		int uses = square_forge_uses(c, grid);
+		if (!uses) {
+			my_strcpy(forge_string, " (exhausted)", sizeof(forge_string));
+		} else if (uses == 1) {
+			my_strcpy(forge_string, " (1 use remaining)", sizeof(forge_string));
+		} else {
+			strnfmt(forge_string, sizeof(forge_string), " (%d uses remaining)",
+					uses);
+		}
+	} else {
+		my_strcpy(forge_string, "", sizeof(forge_string));
+	}
+
+	strnfmt(name, size, "%s%s", f_info[f].name, forge_string);
 }
 
 const char *square_apparent_look_prefix(struct chunk *c, struct loc grid) {
