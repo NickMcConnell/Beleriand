@@ -298,7 +298,9 @@ void display_combat_rolls(game_event_type type, game_event_data *data, void *use
 			if ((combat_rolls[round][i].defender_char == r_info[0].d_char) &&
 				(combat_rolls[round][i].defender_attr == r_info[0].d_attr)) {
 				int dam_type = combat_rolls[round][i].dam_type;
-				res = player->state.el_info[dam_type].res_level;
+				if (dam_type && (dam_type < ELEM_MAX)) {
+					res = player->state.el_info[dam_type].res_level;
+				}
 			}
 
 			if ((combat_rolls[round][i].attacker_char == r_info[0].d_char) &&
