@@ -365,14 +365,11 @@ static bool do_cmd_open_aux(struct loc grid)
 	/* Verify legality */
 	if (!do_cmd_open_test(grid)) return (false);
 
-	/* Jammed door */
+	/* Check the type of door */
 	if (square_isjammeddoor(cave, grid)) {
 		/* Stuck */
 		msg("The door appears to be stuck.");
-	}
-
-	/* Locked door */
-	if (square_islockeddoor(cave, grid)) {
+	} else if (square_islockeddoor(cave, grid)) {
 		/* Get the score in favour (=perception) */
 		score = player->state.skill_use[SKILL_PERCEPTION];
 
