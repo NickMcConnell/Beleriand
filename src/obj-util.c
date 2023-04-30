@@ -1000,9 +1000,6 @@ void write_self_made_artefact_entries(ang_file *fff)
 		/* Output abilities */
 		write_abilities(fff, art->abilities);
 
-		/* Output description again */
-		file_putf(fff, "desc:%s\n", art->text);
-
 		file_putf(fff, "\n");
 	}
 }

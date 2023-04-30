@@ -1121,8 +1121,6 @@ void add_artefact_details(struct artifact *art, struct object *obj)
 	}
 	art->level = object_difficulty(obj, &dummy);
 	art->rarity = 10;
-	mark_artifact_created(art, true);
-	mark_artifact_seen(art, true);
 }
 
 
@@ -1335,12 +1333,21 @@ static void create_smithing_item(struct object *obj, struct smithing_cost *cost)
 	/* If making an artefact, copy its attributes into the proper place in
 	 * the a_info array (noting aidx has already been set) */
 	if (obj->artifact) {
+		uint16_t aidx = z_info->a_max;
+		assert(aidx == obj->artifact->aidx);
 		z_info->a_max++;
 		a_info = mem_realloc(a_info, z_info->a_max * sizeof(struct artifact));
+		aup_info = mem_realloc(aup_info, z_info->a_max * sizeof(*aup_info));
 
-		artefact_copy(&a_info[obj->artifact->aidx],
-					  (struct artifact *) obj->artifact);
+		artefact_copy(&a_info[aidx], (struct artifact *) obj->artifact);
+		a_info[aidx].name = string_make(a_info[aidx].name);
 		player->self_made_arts++;
+
+		/* Set update info by hand */
+		aup_info[aidx].aidx = aidx;
+		aup_info[aidx].created = true;
+		aup_info[aidx].seen = true;
+		aup_info[aidx].everseen = true;
 	}
 
 	/* Create the object */

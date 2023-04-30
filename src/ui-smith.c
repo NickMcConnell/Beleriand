@@ -685,13 +685,15 @@ static int get_smith_art_abilities(int skill)
 static void rename_artefact(void)
 {
 	char tmp[20];
-	char old_name[20];
 	char o_desc[30];
 	bool name_selected = false;
 
-	/* Clear the names */
+	/* Clear the name */
 	tmp[0] = '\0';
-	old_name[0] = '\0';
+
+	/* Use old name as a default */
+	my_strcpy(tmp, smith_art->name, sizeof(tmp));
+	my_strcpy(smith_art_name, "", sizeof(smith_art_name));
 
 	/* Determine object name */
 	object_desc(o_desc, sizeof(o_desc), smith_obj, ODESC_BASE, player);
@@ -699,28 +701,24 @@ static void rename_artefact(void)
 	/* Display shortened object name */
 	Term_putstr(COL_SMT2, MAX_SMITHING_TVALS + 3, -1, COLOUR_L_WHITE, o_desc);
 
-	/* Use old name as a default */
-	my_strcpy(tmp, smith_art->name, sizeof(tmp));
-
-	/* Save a copy of the player name too */
-	my_strcpy(old_name, player->full_name, sizeof(old_name));
-
 	/* Prompt for a new name */
-	Term_gotoxy(COL_SMT2 + strlen(o_desc) + 1, MAX_SMITHING_TVALS + 3);
+	Term_gotoxy(COL_SMT2 + strlen(o_desc), MAX_SMITHING_TVALS + 3);
 
 	while (!name_selected) {
 		if (askfor_aux(tmp, sizeof(tmp), NULL)) {
 			my_strcpy(smith_art->name, tmp, MAX_LEN_ART_NAME);
 			player->upkeep->redraw |= (PR_MISC);
 		} else {
-			my_strcpy(smith_art->name, old_name, MAX_LEN_ART_NAME);
+			my_strcpy(smith_art_name, format("of %s", player->full_name),
+					  sizeof(smith_art_name));
 			return;
 		}
 
 		if (tmp[0] != '\0')	{
 			name_selected = true;
 		} else {
-			my_strcpy(smith_art->name, old_name, MAX_LEN_ART_NAME);
+			my_strcpy(smith_art_name, format("of %s", player->full_name),
+					  sizeof(smith_art_name));
 		}
 	}
 }
@@ -733,7 +731,7 @@ static void skill_display(struct menu *menu, int oid, bool cursor, int row,
 {
 	struct ability **choice = menu->menu_data;
 	bool chosen = !!locate_ability(smith_obj->abilities, choice[oid]);
-	uint8_t attr = chosen ? COLOUR_SLATE : COLOUR_BLUE;
+	uint8_t attr = chosen ? COLOUR_BLUE : COLOUR_SLATE;
 	struct object backup;
 	if (!applicable_ability(choice[oid], smith_obj)) {
 		attr = COLOUR_L_DARK;
@@ -742,9 +740,9 @@ static void skill_display(struct menu *menu, int oid, bool cursor, int row,
 		object_copy(&backup, smith_obj);
 		if (!chosen) {
 			add_ability(&smith_obj->abilities, choice[oid]);
-		}
-		if (smith_affordable(smith_obj, &current_cost) && cursor) {
-			attr = COLOUR_WHITE;
+			if (smith_affordable(smith_obj, &current_cost) && cursor) {
+				attr = COLOUR_BLUE;
+			}
 		}
 		if (!chosen) {
 			remove_ability(&smith_obj->abilities, choice[oid]);
