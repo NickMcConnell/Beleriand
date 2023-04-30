@@ -1002,12 +1002,15 @@ int rd_artifacts(void)
 	/* Load the Artifacts */
 	rd_u16b(&tmp16u);
 	if (tmp16u > z_info->a_max) {
-		note(format("Too many (%u) artifacts!", tmp16u));
-		return (-1);
+		/* Saved number may be greater for dead characters, skip the check */
+		if (!player->is_dead) {
+			note(format("Too many (%u) artifacts!", tmp16u));
+			return (-1);
+		}
 	}
 
 	/* Read the artifact flags */
-	for (i = 0; i < tmp16u; i++) {
+	for (i = 0; i < z_info->a_max; i++) {
 		uint8_t tmp8u;
 
 		rd_byte(&tmp8u);
