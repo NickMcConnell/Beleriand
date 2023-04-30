@@ -61,9 +61,10 @@ static int choose_attack_spell_fast(struct monster *mon, bool do_random)
 	}
 
 	/* Extract the spells  */
-	for (i = FLAG_START; i < RSF_MAX; i = rsf_next(mon->race->spell_flags, i)) {
+	for (i = FLAG_START; ; i = rsf_next(mon->race->spell_flags, i + 1)) {
 		if (rsf_has(mon->race->spell_flags, i)) {
 			spells[num++] = i;
+			if (num >= rsf_count(mon->race->spell_flags)) break;
 		}
 	}
 

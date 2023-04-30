@@ -823,6 +823,7 @@ void update_fire(struct chunk *c, struct player *p)
 
 	/* Assume fireable */
 	fire_info[g] = true;
+	sqinfo_on(square(c, p->grid)->info, SQUARE_FIRE);
 
 	/* Save in array */
 	fire_g[fire_n++] = g;

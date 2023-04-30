@@ -111,14 +111,15 @@ static void spell_message(struct monster *mon,
 		in_cursor = find_alternate_spell_message(mon->race,	spell->index,
 												 MON_ALTMSG_UNSEEN);
 		if (in_cursor == NULL) {
-			if (smart) {
-				if (silence) {
+			if (smart && (level->smart_blind_silence_message ||
+						  level->smart_blind_message)) {
+				if (silence && level->smart_blind_silence_message) {
 					in_cursor = level->smart_blind_silence_message;
 				} else {
 					in_cursor = level->smart_blind_message;
 				}
 			} else {
-				if (silence) {
+				if (silence && level->blind_silence_message) {
 					in_cursor = level->blind_silence_message;
 				} else {
 					in_cursor = level->blind_message;
@@ -131,14 +132,15 @@ static void spell_message(struct monster *mon,
 		in_cursor = find_alternate_spell_message(mon->race,	spell->index,
 												 MON_ALTMSG_SEEN);
 		if (in_cursor == NULL) {
-			if (smart) {
-				if (silence) {
+			if (smart && (level->smart_silence_message ||
+								level->smart_message)) {
+				if (silence && level->smart_silence_message) {
 					in_cursor = level->smart_silence_message;
 				} else {
 					in_cursor = level->smart_message;
 				}
 			} else {
-				if (silence) {
+				if (silence && level->silence_message) {
 					in_cursor = level->silence_message;
 				} else {
 					in_cursor = level->message;
@@ -211,9 +213,9 @@ static void spell_message(struct monster *mon,
 }
 
 /**
- * Check if a monster has a chance of casting a spell this turn
+ * Return the chance of a monster casting a spell this turn
  */
-bool monster_cast_chance(struct monster *mon)
+int monster_cast_chance(struct monster *mon)
 {
 	int chance = mon->race->freq_ranged;
 

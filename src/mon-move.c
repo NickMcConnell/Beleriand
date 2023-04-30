@@ -664,7 +664,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 			delete_monster(cave, mon->grid);
 			return false;
 		}
-					
+
 		/* Using flow information, check nearby grids, diagonals first. */
 		for (d = 7; d >= 0; d--) {
 			/* Get the location */
@@ -3282,7 +3282,6 @@ static void monster_turn(struct monster *mon)
 			+ flow_dist(cave->player_noise, mon->grid);
 		if (skill_check(source_player(), pskill, mskill,
 						source_monster(mon->midx)) > 0) {
-
             /* Make sure the monster doesn't do any free attacks before its
 			 * next turn */
             mon->skip_this_turn = true;
@@ -3296,9 +3295,8 @@ static void monster_turn(struct monster *mon)
     if (mon->song) {
         int dist = flow_dist(cave->player_noise, mon->grid);
 
-        if ((mon->mana == 0) ||
-			((mon->song == lookup_song("Piercing")) &&
-			 (mon->alertness >= ALERTNESS_ALERT))) {
+        if ((mon->mana == 0) ||	((mon->song == lookup_song("Piercing")) &&
+								 (mon->alertness >= ALERTNESS_ALERT))) {
             if (monster_is_visible(mon)) {
 				msg("%s ends his song.", m_name);
 			} else if (dist <= 30) {

@@ -60,7 +60,7 @@ enum mon_spell_type {
 
 /** Functions **/
 const struct monster_spell *monster_spell_by_index(int index);
-bool monster_cast_chance(struct monster *mon);
+int monster_cast_chance(struct monster *mon);
 void do_mon_spell(int index, struct monster *mon, bool seen);
 void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE]);
 void create_mon_spell_mask(bitflag *f, ...);
