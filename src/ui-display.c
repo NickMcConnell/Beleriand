@@ -415,7 +415,7 @@ static int prt_health_aux(int row, int col)
 	/* Tracking an unseen, hallucinatory, or dead monster */
 	if (!monster_is_visible(mon) || /* Unseen */
 		(player->timed[TMD_IMAGE]) || /* Hallucination */
-		(mon->hp < 0)) { /* Dead (?) */
+		(mon->hp <= 0)) { /* Dead (?) */
 		/* The monster health is "unknown" */
 		Term_putstr(col, row, 12, attr, "  --------  ");
 	} else {

@@ -2866,7 +2866,10 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
 
 		/* Move the monster */
 		monster_swap(current, next);
-        
+
+		/* Monster may have been killed in the swap */
+		if (!mon->race) return;
+
 		/* Cancel target when reached */
 		if (loc_eq(mon->target.grid, next)) {
 			mon->target.grid = loc(0, 0);

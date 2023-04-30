@@ -439,7 +439,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	mon->hp -= dam;
 
 	/* Dead or damaged monster */
-	if (mon->hp < 0) {
+	if (mon->hp <= 0) {
 		/* Give detailed messages if destroyed */
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
 

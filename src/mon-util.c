@@ -304,7 +304,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 			}
 
 			/* Monster may be dead */
-			if (mon->hp < 0) return;
+			if (mon->hp <= 0) return;
 		}
 
 		/* Makes noise when moving */
@@ -1058,7 +1058,7 @@ bool mon_take_hit(struct monster *mon, struct player *p, int dam,
 
 	/* Hurt it */
 	mon->hp -= dam;
-	if (mon->hp < 0) {
+	if (mon->hp <= 0) {
 		/* It is dead now */
 		monster_death(mon, p, true, note, false);
 
