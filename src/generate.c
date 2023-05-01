@@ -655,6 +655,9 @@ static struct chunk *cave_generate(struct player *p)
 	/* Validate the dungeon (we could use more checks here) */
 	chunk_validate_objects(chunk);
 
+	/* Clear stair creation */
+	p->upkeep->create_stair = FEAT_NONE;
+
 	return chunk;
 }
 

@@ -1254,9 +1254,6 @@ void player_place(struct chunk *c, struct player *p, struct loc grid)
 
 	/* Mark cave grid */
 	square_set_mon(c, grid, -1);
-
-	/* Clear stair creation */
-	p->upkeep->create_stair = FEAT_NONE;
 }
 
 /*
