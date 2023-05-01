@@ -20,6 +20,7 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "player-abilities.h"
+#include "player-timed.h"
 #include "ui-mon-lore.h"
 #include "ui-output.h"
 #include "ui-prefs.h"
@@ -91,6 +92,11 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	bitflag known_flags[RF_SIZE];
 
 	assert(tb && race && original_lore);
+
+	if (player->timed[TMD_IMAGE] > 0) {
+		textblock_append(tb, "Your hallucinations are too wild to see things clearly.\n");
+		return;
+	}
 
 	/* Hack -- create a copy of the monster-memory that we can modify */
 	memcpy(lore, original_lore, sizeof(struct monster_lore));

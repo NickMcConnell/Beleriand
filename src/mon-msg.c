@@ -23,6 +23,7 @@
 #include "mon-util.h"
 #include "game-input.h"
 #include "player-calcs.h"
+#include "player-timed.h"
 #include "songs.h"
 
 /**
@@ -92,9 +93,11 @@ static const struct {
 void message_pain(struct monster *mon, int dam)
 {
 	int msg_code = MON_MSG_UNHARMED;
+	struct monster_race *race = player->timed[TMD_IMAGE] ? mon->image_race :
+		mon->race;
 
 	/* Return now for monsters with no pain messages */
-	if (mon->race->base->pain == NULL) return;
+	if (race->base->pain == NULL) return;
 
 	/* Calculate damage levels */
 	if (dam > 0) {
@@ -120,9 +123,11 @@ void message_pursuit(struct monster *mon)
 {
 	int msg_code = MON_MSG_NONE;
 	int dist = distance(player->grid, mon->grid);
+	struct monster_race *race = player->timed[TMD_IMAGE] ? mon->image_race :
+		mon->race;
 
 	/* Return now for monsters with no pursuit messages */
-	if (mon->race->base->pursuit == NULL) return;
+	if (race->base->pursuit == NULL) return;
 
 	/* Visible, or near or far */
 	if (monster_is_visible(mon)) {
@@ -144,9 +149,11 @@ void message_warning(struct monster *mon)
 {
 	int msg_code = MON_MSG_NONE;
 	bool silence = player_is_singing(player, lookup_song("Silence"));
+	struct monster_race *race = player->timed[TMD_IMAGE] ? mon->image_race :
+		mon->race;
 
 	/* Return now for monsters with no warning messages */
-	if (mon->race->base->warning == NULL) return;
+	if (race->base->warning == NULL) return;
 
 	/* Visible, or near or far */
 	if (monster_is_visible(mon)) {
@@ -225,12 +232,14 @@ static void store_monster(struct monster *mon, int msg_code)
 static bool stack_message(struct monster *mon, int msg_code, int flags)
 {
 	int i;
+	struct monster_race *race = player->timed[TMD_IMAGE] ? mon->image_race :
+		mon->race;
 
 	for (i = 0; i < size_mon_msg; i++) {
 		/* We found the race and the message code */
-		if (mon_msg[i].race == mon->race &&
-					mon_msg[i].flags == flags &&
-					mon_msg[i].msg_code == msg_code) {
+		if (mon_msg[i].race == race &&
+			mon_msg[i].flags == flags &&
+			mon_msg[i].msg_code == msg_code) {
 			mon_msg[i].count++;
 			store_monster(mon, msg_code);
 			return true;
@@ -266,7 +275,8 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 	if (!redundant_monster_message(mon, msg_code) &&
 			!stack_message(mon, msg_code, flags) &&
 			size_mon_msg < MAX_STORED_MON_MSG) {
-		mon_msg[size_mon_msg].race = mon->race;
+		mon_msg[size_mon_msg].race = player->timed[TMD_IMAGE] ?
+			mon->image_race : mon->race;
 		mon_msg[size_mon_msg].flags = flags;
 		mon_msg[size_mon_msg].msg_code = msg_code;
 		mon_msg[size_mon_msg].count = 1;

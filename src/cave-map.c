@@ -164,7 +164,7 @@ void map_info(struct loc grid, struct grid_data *g)
 	/* Rare random hallucination on non-outer walls */
 	if (g->hallucinate && g->m_idx == 0 && g->first_kind == 0) {
 		if (one_in_(128) && (int) g->f_idx != FEAT_PERM)
-			g->m_idx = 1;
+			g->m_idx = z_info->r_max + 1;
 		else if (one_in_(128) && (int) g->f_idx != FEAT_PERM)
 			/* if hallucinating, we just need first_kind to not be NULL */
 			g->first_kind = k_info;

@@ -462,7 +462,8 @@ depgen:
  list-player-flags.h game-input.h cmd-core.h obj-smith.h mon-desc.h \
  monster.h cave.h list-square-flags.h list-terrain-flags.h target.h \
  mon-predicate.h mon-timed.h list-mon-timed.h mon-blows.h \
- list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h
+ list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h \
+ player-timed.h list-player-timed.h
 ./mon-group.o: mon-group.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
  z-type.h message.h list-message.h player.h guid.h obj-properties.h \
@@ -557,7 +558,8 @@ depgen:
  list-terrain-flags.h target.h mon-predicate.h mon-timed.h \
  list-mon-timed.h mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
  list-mon-spells.h mon-msg.h list-mon-message.h mon-util.h game-input.h \
- cmd-core.h obj-smith.h player-calcs.h songs.h
+ cmd-core.h obj-smith.h player-calcs.h player-timed.h list-player-timed.h \
+ songs.h
 ./mon-predicate.o: mon-predicate.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
  z-type.h message.h list-message.h player.h guid.h obj-properties.h \
@@ -1394,8 +1396,8 @@ depgen:
  mon-lore.h z-textblock.h monster.h cave.h list-square-flags.h \
  list-terrain-flags.h target.h mon-predicate.h mon-timed.h \
  list-mon-timed.h mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
- list-mon-spells.h player-abilities.h ui-mon-lore.h ui-output.h \
- ui-event.h ui-term.h ui-prefs.h ui-keymap.h
+ list-mon-spells.h player-abilities.h player-timed.h list-player-timed.h \
+ ui-mon-lore.h ui-output.h ui-event.h ui-term.h ui-prefs.h ui-keymap.h
 ./ui-obj-list.o: ui-obj-list.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
  z-type.h message.h list-message.h player.h guid.h obj-properties.h \

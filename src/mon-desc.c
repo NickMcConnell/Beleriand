@@ -20,6 +20,7 @@
 #include "game-input.h"
 #include "mon-desc.h"
 #include "mon-predicate.h"
+#include "player-timed.h"
 
 /**
  * Perform simple English pluralization on a monster name.
@@ -117,6 +118,10 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 	bool use_pronoun = (seen && (mode & MDESC_PRO_VIS)) ||
 			(!seen && (mode & MDESC_PRO_HID));
 
+	/* Monster race, or hallucinatory race */
+	struct monster_race *race = (player && player->timed[TMD_IMAGE]) ?
+		mon->image_race : mon->race;
+
 	/* First, try using pronouns, or describing hidden monsters */
 	if (!seen || use_pronoun) {
 		const char *choice = "it";
@@ -126,9 +131,9 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 
 		/* Extract the gender (if applicable) */
 		if (use_pronoun) {
-			if (rf_has(mon->race->flags, RF_FEMALE)) {
+			if (rf_has(race->flags, RF_FEMALE)) {
 				msex = 0x20;
-			} else if (rf_has(mon->race->flags, RF_MALE)) {
+			} else if (rf_has(race->flags, RF_MALE)) {
 				msex = 0x10;
 			}
 		}
@@ -169,9 +174,9 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 		my_strcpy(desc, choice, max);
 	} else if ((mode & MDESC_POSS) && (mode & MDESC_OBJE)) {
 		/* The monster is visible, so use its gender */
-		if (rf_has(mon->race->flags, RF_FEMALE))
+		if (rf_has(race->flags, RF_FEMALE))
 			my_strcpy(desc, "herself", max);
-		else if (rf_has(mon->race->flags, RF_MALE))
+		else if (rf_has(race->flags, RF_MALE))
 			my_strcpy(desc, "himself", max);
 		else
 			my_strcpy(desc, "itself", max);
@@ -179,27 +184,27 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 		const char *comma_pos;
 
 		/* Unique, indefinite or definite */
-		if (rf_has(mon->race->flags, RF_UNIQUE)) {
+		if (rf_has(race->flags, RF_UNIQUE)) {
 			/* Start with the name (thus nominative and objective) */
 			/*
 			 * Strip off descriptive phrase if a possessive will be
 			 * added.
 			 */
 			if ((mode & MDESC_POSS)
-					&& rf_has(mon->race->flags, RF_NAME_COMMA)
-					&& (comma_pos = strchr(mon->race->name, ','))
-					&& comma_pos - mon->race->name < 1024) {
+					&& rf_has(race->flags, RF_NAME_COMMA)
+					&& (comma_pos = strchr(race->name, ','))
+					&& comma_pos - race->name < 1024) {
 				strnfmt(desc, max, "%.*s",
-					(int) (comma_pos - mon->race->name),
-					mon->race->name);
+					(int) (comma_pos - race->name),
+					race->name);
 			} else {
-				my_strcpy(desc, mon->race->name, max);
+				my_strcpy(desc, race->name, max);
 			}
 		} else {
 			if (mode & MDESC_IND_VIS) {
 				/* XXX Check plurality for "some" */
 				/* Indefinite monsters need an indefinite article */
-				my_strcpy(desc, is_a_vowel(mon->race->name[0]) ? "an " : "a ", max);
+				my_strcpy(desc, is_a_vowel(race->name[0]) ? "an " : "a ", max);
 			} else {
 				/* Definite monsters need a definite article */
 				my_strcpy(desc, "the ", max);
@@ -210,19 +215,19 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 			 * will be added.
 			 */
 			if ((mode & MDESC_POSS)
-					&& rf_has(mon->race->flags, RF_NAME_COMMA)
-					&& (comma_pos = strchr(mon->race->name, ','))
-					&& comma_pos - mon->race->name < 1024) {
+					&& rf_has(race->flags, RF_NAME_COMMA)
+					&& (comma_pos = strchr(race->name, ','))
+					&& comma_pos - race->name < 1024) {
 				my_strcat(desc, format("%.*s",
-					(int) (comma_pos - mon->race->name),
-					mon->race->name), max);
+					(int) (comma_pos - race->name),
+					race->name), max);
 			} else {
-				my_strcat(desc, mon->race->name, max);
+				my_strcat(desc, race->name, max);
 			}
 		}
 
 		if ((mode & MDESC_COMMA)
-				&& rf_has(mon->race->flags, RF_NAME_COMMA)) {
+				&& rf_has(race->flags, RF_NAME_COMMA)) {
 			my_strcat(desc, ",", max);
 		}
 

@@ -60,29 +60,47 @@ static void hallucinatory_monster(int midx, int *a, wchar_t *c)
 
 
 /**
+ * Hack -- Hallucinatory monster
+ */
+static void image_monster(int *a, wchar_t *c)
+{
+	while (1) {
+		/* Select a random monster */
+		struct monster_race *race = &r_info[randint0(z_info->r_max)];
+
+		/* Skip non-entries */
+		if (!race->name) continue;
+
+		/* Retrieve attr/char */
+		*a = monster_x_attr[race->ridx];
+		*c = monster_x_char[race->ridx];
+		return;
+	}
+}
+
+
+/**
  * Hack -- Hallucinatory object
  */
-static void hallucinatory_object(int *a, wchar_t *c)
+static void image_object(int *a, wchar_t *c)
 {
-	
 	while (1) {
 		/* Select a random object */
 		struct object_kind *kind = &k_info[randint0(z_info->k_max - 1) + 1];
 
 		/* Skip non-entries */
 		if (!kind->name) continue;
-		
+
 		/* Retrieve attr/char (HACK - without flavors) */
 		*a = kind_x_attr[kind->kidx];
 		*c = kind_x_char[kind->kidx];
-		
+
 		/* HACK - Skip empty entries */
 		if (*a == 0 || *c == 0) continue;
 
 		return;
 	}
 }
-
 
 /**
  * Get the graphics of a listed trap.
@@ -198,7 +216,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	if (g->first_kind) {
 		if (g->hallucinate) {
 			/* Just pick a random object to display. */
-			hallucinatory_object(&a, &c);
+			image_object(&a, &c);
 		} else if (g->multiple_objects) {
 			/* Get the "pile" feature instead */
 			a = object_kind_attr(pile_kind);
@@ -213,8 +231,13 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	/* Handle monsters, the player and trap borders */
 	if (g->m_idx > 0) {
 		if (g->hallucinate) {
-			/* Just pick a random monster to display. */
-			hallucinatory_monster(g->m_idx, &a, &c);
+			if (g->m_idx < z_info->r_max) {
+				/* Show this monster's image race */
+				hallucinatory_monster(g->m_idx, &a, &c);
+			} else {
+				/* Just pick a random monster to display. */
+				image_monster(&a, &c);
+			}
 		} else if (monster_is_listened(cave_monster(cave, g->m_idx))) {
 			/* Simplest possible hack - NRM */
 			a = COLOUR_SLATE;
