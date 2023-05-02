@@ -1357,7 +1357,7 @@ depgen:
  list-skills.h list-object-modifiers.h object.h z-quark.h z-dice.h \
  z-expression.h list-elements.h list-origins.h option.h list-options.h \
  list-player-flags.h cave.h list-square-flags.h list-terrain-flags.h \
- grafmode.h init.h datafile.h parser.h list-parser-errors.h \
+ grafmode.h init.h datafile.h parser.h list-parser-errors.h mon-move.h \
  mon-predicate.h mon-util.h monster.h target.h mon-timed.h \
  list-mon-timed.h mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
  list-mon-spells.h mon-msg.h list-mon-message.h obj-tval.h obj-util.h \

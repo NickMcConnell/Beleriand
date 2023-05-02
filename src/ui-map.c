@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "grafmode.h"
 #include "init.h"
+#include "mon-move.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -281,6 +282,11 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 			/* Store the drawing attr so we can use it elsewhere */
 			mon->attr = a;
+
+			if (use_graphics == GRAPHICS_NONE && OPT(player, highlight_unwary)
+				&& (mon->alertness < ALERTNESS_ALERT)) {
+				a = a + (MAX_COLORS * BG_DARK);
+			}
 		}
 	} else if (g->is_player) {
 		struct monster_race *race = &r_info[0];

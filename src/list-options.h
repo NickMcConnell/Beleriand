@@ -16,23 +16,23 @@ INTERFACE, false)
 OP(use_sound,             "Use sound",
 INTERFACE, false)
 OP(quick_messages,        "Dismiss '-more-' and 'y/n' prompts with any key",
-INTERFACE, false)
-OP(angband_keyset,         "Use a keyset more closely based on Angband",
+INTERFACE, true)
+OP(angband_keyset,        "Use a keyset more closely based on Angband",
 INTERFACE, false)
 OP(stop_singing_on_rest,  "Stop singing when you use the rest command",
-INTERFACE, false)
+INTERFACE, true)
 OP(forgo_attacking_unwary,"Forgo bonus attacks on non-alert enemies",
-INTERFACE, false)
+INTERFACE, true)
 OP(beep,                  "Audible beep (on errors/warnings)",
 INTERFACE, false)
 OP(highlight_player,      "Highlight the player with the cursor",
 INTERFACE, false)
 OP(highlight_target,      "Highlight the target with the cursor",
-INTERFACE, false)
+INTERFACE, true)
 OP(highlight_unwary,      "Highlight sleeping and unwary creatures",
-INTERFACE, false)
+INTERFACE, true)
 OP(solid_walls,           "Show walls as solid blocks",
-INTERFACE, false)
+INTERFACE, true)
 OP(hybrid_walls,          "Show walls with shaded background",
 INTERFACE, false)
 OP(instant_run,           "Faster display while running",
@@ -50,7 +50,7 @@ INTERFACE, true)
 OP(mouse_movement,        "Allow mouse clicks to move the player",
 INTERFACE, true)
 OP(display_hits,          "Display a mark when something gets hit",
-INTERFACE, false)
+INTERFACE, true)
 OP(pickup_always,         "Always pickup items",
 INTERFACE, false)
 OP(pickup_inven,          "Always pickup items matching inventory",
