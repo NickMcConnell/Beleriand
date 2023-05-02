@@ -889,7 +889,7 @@ bool place_new_monster_one(struct chunk *c, struct loc grid,
 
 		/* Enforce sleeping if needed */
 		if (race->sleep) {
-			amount = race->sleep;
+			amount = randint1(race->sleep);
 		}
 
 		/* If there is a lead monster, copy its value */
