@@ -199,7 +199,7 @@ struct obj_property *lookup_obj_property(int type, int index);
 void create_obj_flag_mask(bitflag *f, int id, ...);
 void insert_name(char *buf, size_t size, char *msg, char *name);
 void flag_message(int flag, char *name);
-void flag_slay_message(int flag, char *name, char *message, int len);
+bool flag_slay_message(int flag, char *name, char *message, int len);
 void element_message(int elem, char *name, bool vuln);
 int sustain_flag(int stat);
 

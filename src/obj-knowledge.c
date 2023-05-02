@@ -966,13 +966,17 @@ void ident_hunger(struct player *p)
  */
 static void slay_desc(char *desc, int len, int flag, int brand, char *m_name)
 {
+	bool done = false;
+
 	/* Description depends on the type of 'slay' */
 	if (flag) {
-		flag_slay_message(flag, m_name, desc, len);
+		done = flag_slay_message(flag, m_name, desc, len);
 	} else if (brand) {
-		brand_message(brand, m_name, desc, len);
-	} else {
-		my_strcpy(desc, "strikes truly", sizeof(desc));
+		done = brand_message(brand, m_name, desc, len);
+	}
+
+	if (!done) {
+		my_strcpy(desc, "strikes truly", len);
 	}
 }
 

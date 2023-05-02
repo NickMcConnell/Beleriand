@@ -246,15 +246,16 @@ int slay_bonus(struct player *p, struct object *obj, const struct monster *mon,
  * \param brand is the brand being noticed
  * \param name is the monster name 
  */
-void brand_message(int brand, char *name, char *message, int len)
+bool brand_message(int brand, char *name, char *message, int len)
 {
 	char buf[1024] = "\0";
 
 	/* See if we have a message */
-	if (!brands[brand].desc) return;
+	if (!brands[brand].desc) return false;
 
 	/* Insert */
 	insert_name(buf, 1024, brands[brand].desc, name);
 	my_strcpy(message, buf, len);
+	return true;
 }
 

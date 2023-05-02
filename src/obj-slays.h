@@ -34,6 +34,6 @@ int slay_count(const bool *slays_on);
 bool react_to_slay(struct slay *slay, const struct monster *mon);
 int slay_bonus(struct player *p, struct object *obj, const struct monster *mon,
 			   int *slay, int *brand);
-void brand_message(int brand, char *name, char *message, int len);
+bool brand_message(int brand, char *name, char *message, int len);
 
 #endif /* OBJECT_SLAYS_H */
