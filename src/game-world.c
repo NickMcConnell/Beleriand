@@ -339,7 +339,7 @@ void update_flow(struct chunk *c, struct flow *flow, struct monster *mon)
 	value++;
 
 	/* Propagate outwards */
-	while (q_len(queue) > 0) {
+	while ((q_len(queue) > 0) && (value < z_info->flow_max)) {
 		/* Process only the grids currently on the queue */
 		int count = q_len(queue);
 		while (count) {
