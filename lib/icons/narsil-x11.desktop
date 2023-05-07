@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=Angband (SDL)
+Name=NarSil (X11)
 Type=Application
 Comment=A roguelike dungeon exploration game based on the books of J.R.R.Tolkien
-Exec=angband -msdl
-TryExec=angband
-Icon=/usr/share/angband/xtra/icon/att-32.png
+Exec=narsil -mx11
+TryExec=narsil
+Icon=narsil
 Categories=Game;RolePlaying;
