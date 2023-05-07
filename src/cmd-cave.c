@@ -1777,8 +1777,6 @@ void move_player(int dir, bool disarm)
 
 		/* We can move */
 		if (step) {
-			struct object *obj = square_object(cave, grid);
-
 			/* Do flanking or controlled retreat attack if any */
 			player_flanking_or_retreat(player, grid);
 

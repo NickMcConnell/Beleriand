@@ -965,7 +965,7 @@ note:final note
 text:That's it. You know enough about Sil to really get started.
 text: If you need to know any more, then have a look through the manual.
 text: Through here lies your final challenge, and one that will
-text: almost certainly mean your demise. See if you an make it past the
+text: almost certainly mean your demise. See if you can make it past the
 text: challenge and reach the staircase, using it by
 text: {commanding:Go up staircase}.
 
