@@ -61,6 +61,7 @@
 #include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
+#include "option.h"
 #include "savefile.h"
 #include "tutorial.h"
 #include "ui-command.h"
@@ -3530,7 +3531,11 @@ static void process_menus(WORD wCmd)
 		}
 
 		case IDM_WINDOW_OPT: {
-			Term_keypress('=',0);
+			if (OPT(player, angband_keyset)) {
+				Term_keypress('=',0);
+			} else {
+				Term_keypress('O',0);
+			}
 			Term_keypress('w',0);
 
 			break;
