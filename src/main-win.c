@@ -846,7 +846,7 @@ static void load_prefs(void)
 	}
 
 	if (first_start) {
-		default_layout_win(data,MAX_TERM_DATA);
+		//default_layout_win(data,MAX_TERM_DATA);
 	}
 
 	/* Paranoia */
