@@ -563,7 +563,7 @@ void process_world(struct chunk *c)
 /**
  * Housekeeping after the processing monsters but before processing the player
  */
-void pre_process_player(void)
+static void pre_process_player(void)
 {
 	int i;
 
