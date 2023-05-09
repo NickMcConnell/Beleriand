@@ -648,14 +648,11 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 			!rf_has(race->flags, RF_TERRITORIAL) &&
 			(player->depth != z_info->dun_depth) && 
 			square_isstairs(cave, mon->grid) && (mon->wandering_dist == 0)) {
-			char m_name[80];
-
 			if (monster_is_visible(mon)) {
-				monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 				if (square_isdownstairs(cave, mon->grid)) {
-					msg("%s goes down the stairs.", m_name);
+					add_monster_message(mon, MON_MSG_GO_DOWN_STAIRS, true);
 				} else {
-					msg("%s goes up the stairs.", m_name);
+					add_monster_message(mon, MON_MSG_GO_UP_STAIRS, true);
 				}
 			}
 
@@ -1183,13 +1180,8 @@ static bool get_move_retreat(struct monster *mon, struct loc *tgrid)
 			!player->truce && (race->freq_ranged < 50)) {			
 			/* Message if visible */
 			if (monster_is_visible(mon)) {
-				char m_name[80];
-
-				/* Get the monster name */
-				monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
-
 				/* Dump a message */
-				msg("%s panics.", m_name);
+				add_monster_message(mon, MON_MSG_PANIC, true);
 			}
 
             /* Boost morale and make the monster aggressive */
@@ -2064,14 +2056,10 @@ static bool make_move_get_route_to_target(struct monster *mon,
  */
 static void make_confused_move(struct monster *mon, struct loc grid)
 {
-	char m_name[80];
 	bool seen = monster_is_visible(mon) && square_isseen(cave, grid);
 
 	/* Check Bounds (fully) */
 	if (!square_in_bounds_fully(cave, grid)) return;
-
-	/* Get the monster name/poss */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 
     /* Feature is a chasm */
     if (square_ischasm(cave, grid)) {
@@ -2083,13 +2071,13 @@ static void make_confused_move(struct monster *mon, struct loc grid)
     } else if (square_iswall(cave, grid)) {
 		if (square_isdoor(cave, grid)) {
 			if (seen)
-				msg("%s staggers into a door.", m_name);
+				add_monster_message(mon, MON_MSG_STAGGER_DOOR, true);
 		} else if (square_isrubble(cave, grid)) {
 			if (seen)
-				msg("%s staggers into some rubble.", m_name);
+				add_monster_message(mon, MON_MSG_STAGGER_RUBBLE, true);
 		} else {
 			if (seen)
-				msg("%s bashes into a wall.", m_name);
+				add_monster_message(mon, MON_MSG_STAGGER_WALL, true);
 		}
 
 		/* Possibly update the monster health bar */
@@ -2131,7 +2119,6 @@ static bool make_move(struct monster *mon, struct loc *tgrid, bool fear,
 					  bool *bash)
 {
 	int i, j;
-	char m_name[80];
 
 	/* Start direction, current direction */
 	int dir0, dir;
@@ -2150,9 +2137,6 @@ static bool make_move(struct monster *mon, struct loc *tgrid, bool fear,
 		int move_chance;
 		bool move_bash;
 	} moves_data[8];
-
-	/* Get the monster name */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 
 	/* Get the direction needed to get to the target */
 	dir0 = make_move_choose_direction(loc_diff(*tgrid, current));
@@ -2255,7 +2239,7 @@ static bool make_move(struct monster *mon, struct loc *tgrid, bool fear,
 						(square_isfire(cave, current)) &&
 						!player->truce && (mon->race->freq_ranged < 50)) {
 						/* Dump a message */
-						msg("%s panics.", m_name);
+						add_monster_message(mon, MON_MSG_PANIC, true);
 
 						/* Boost morale and make the monster aggressive */
 						mon->tmp_morale = MAX(mon->tmp_morale + 60, 60);
@@ -2405,7 +2389,7 @@ static bool make_move(struct monster *mon, struct loc *tgrid, bool fear,
 		/* Message if visible */
 		if (monster_is_visible(mon)) {
 			/* Dump a message */
-			msg("%s panics.", m_name);
+			add_monster_message(mon, MON_MSG_PANIC, true);
 		}
 
 		/* Boost morale and make the monster aggressive */
@@ -2431,15 +2415,13 @@ static void process_move_exchange_places(struct monster *mon)
     struct monster_lore *lore = get_lore(mon->race);
     char m_name1[80];
     char m_name2[80];
-    char m_name3[80];
     struct loc grid = mon->grid;
 
-	monster_desc(m_name1, sizeof(m_name1), mon, MDESC_STANDARD);
-	monster_desc(m_name2, sizeof(m_name2), mon, (MDESC_PRO_VIS | MDESC_OBJE));
-    monster_desc(m_name3, sizeof(m_name3), mon, MDESC_PRO_VIS);
+	monster_desc(m_name1, sizeof(m_name1), mon, (MDESC_PRO_VIS | MDESC_OBJE));
+    monster_desc(m_name2, sizeof(m_name2), mon, MDESC_PRO_VIS);
 
     /* Message */
-    msg("%s exchanges places with you.", m_name1);
+	add_monster_message(mon, MON_MSG_EXCHANGE, true);
 
     /* Swap positions with the player */
     monster_swap(mon->grid, player->grid);
@@ -2452,7 +2434,7 @@ static void process_move_exchange_places(struct monster *mon)
 		(player->timed[TMD_STUN] <= 100)) {
         /* This might be the most complicated auto-grammatical message
 		 * in the game... */
-        msg("You attack %s as %s slips past.", m_name2, m_name3);
+        msg("You attack %s as %s slips past.", m_name1, m_name2);
         py_attack_real(player, mon->grid, ATT_OPPORTUNITY);
     }
 
@@ -2519,12 +2501,12 @@ static bool process_move_push_aside(struct monster *mon, struct monster *mon1)
 /**
  * Grab all objects from the grid.
  */
-static void process_move_grab_objects(struct monster *mon, const char *m_name,
-									  struct loc new)
+static void process_move_grab_objects(struct monster *mon, struct loc new)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	struct object *obj = square_object(cave, new);
 	bool visible = monster_is_visible(mon);
+	char m_name[80];
 
 	/*
 	 * Don't allow item pickup or smashing in the tutorial:  items on the
@@ -2537,6 +2519,9 @@ static void process_move_grab_objects(struct monster *mon, const char *m_name,
 
 	/* Abort if can't pickup */
 	if (!rf_has(mon->race->flags, RF_TAKE_ITEM)) return;
+
+	/* Get the monster name/poss */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 
 	/* Take objects on the floor */
 	obj = square_object(cave, new);
@@ -2853,10 +2838,6 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
 	/* Monster can (still) move */
 	if (do_move) {
 		struct monster *mon1;
-		char m_name[80];
-
-		/* Get the monster name */
-		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 
 		/* Deal with possible flanking attack */
         if (rf_has(race->flags, RF_FLANKING) &&
@@ -2865,7 +2846,7 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
             (mon->alertness >= ALERTNESS_ALERT) &&
 			(mon->stance != STANCE_FLEEING) && !mon->m_timed[MON_TMD_CONF] &&
 			!did_swap) {
-			msg("%s attacks you as it moves by.", m_name);
+			add_monster_message(mon, MON_MSG_FLANK, false);
             make_attack_normal(mon, player);
 
             /* Remember that the monster can do this */
@@ -2944,7 +2925,7 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
 			/* Report passing through doors */
 			if (square_isdoor(cave, mon->grid)) {
 				if (rf_has(race->flags, RF_PASS_DOOR)) {
-					msg("%s passes under the door.", m_name);
+					add_monster_message(mon, MON_MSG_PASS_DOOR, true);
 				}
 			}
 
@@ -2953,7 +2934,7 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
 		}
 
 		/* Take objects on the floor */
-		process_move_grab_objects(mon, m_name, next);
+		process_move_grab_objects(mon, next);
 	}
 
 
@@ -3269,7 +3250,6 @@ static bool monster_turn_random_move(struct monster *mon)
  */
 static void monster_turn(struct monster *mon)
 {
-	char m_name[80];
 	struct song *mastery = lookup_song("Mastery");
 	int i;
 	struct loc tgrid = loc(0, 0), grid;
@@ -3279,10 +3259,6 @@ static void monster_turn(struct monster *mon)
 
 	/* Assume the monster doesn't have a target */
 	bool must_use_target = false;
-
-	/* Get the monster name */
-	monster_desc(m_name, sizeof(m_name), mon,
-				 MDESC_CAPITAL | MDESC_IND_HID | MDESC_COMMA);
 
     /* Assume we are not under the influence of the Song of Mastery */
     mon->skip_this_turn = false;
@@ -3311,7 +3287,7 @@ static void monster_turn(struct monster *mon)
         if ((mon->mana == 0) ||	((mon->song == lookup_song("Piercing")) &&
 								 (mon->alertness >= ALERTNESS_ALERT))) {
             if (monster_is_visible(mon)) {
-				msg("%s ends his song.", m_name);
+				add_monster_message(mon, MON_MSG_END_SONG, false);
 			} else if (dist <= 30) {
 				msg("The song ends.");
 			}
@@ -3493,9 +3469,9 @@ static void monster_turn(struct monster *mon)
 			square_isstairs(cave, mon->grid)) {
 			if (monster_is_visible(mon)) {
 				if (square_isdownstairs(cave, mon->grid)) {
-					msg("%s flees down the stairs.", m_name);
+					add_monster_message(mon, MON_MSG_FLEE_DOWN_STAIRS, true);
 				} else {
-					msg("%s flees up the stairs.", m_name);
+					add_monster_message(mon, MON_MSG_FLEE_UP_STAIRS, true);
 				}
 			}
 
