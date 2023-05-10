@@ -546,7 +546,7 @@ bool modify_panel(term *t, int wy, int wx)
 	return (false);
 }
 
-static void verify_panel_int(bool centered)
+static void verify_panel_int(bool centered, bool avoid_center)
 {
 	int wy, wx;
 	int screen_hgt, screen_wid;
@@ -579,7 +579,8 @@ static void verify_panel_int(bool centered)
 
 
 		/* Scroll screen vertically when off-center */
-		if (centered && !player->upkeep->running && (py != wy + panel_hgt))
+		if (centered && (!player->upkeep->running || !avoid_center) &&
+			(py != wy + panel_hgt))
 			wy = py - panel_hgt;
 
 		/* Scroll screen vertically when 3 grids from top/bottom edge */
@@ -588,7 +589,8 @@ static void verify_panel_int(bool centered)
 
 
 		/* Scroll screen horizontally when off-center */
-		if (centered && !player->upkeep->running && (px != wx + panel_wid))
+		if (centered && (!player->upkeep->running || !avoid_center) &&
+			(px != wx + panel_wid))
 			wx = px - panel_wid;
 
 		/* Scroll screen horizontally when 3 grids from left/right edge */
@@ -652,12 +654,12 @@ bool change_panel(int dir)
  */
 void verify_panel(void)
 {
-	verify_panel_int(OPT(player, center_player));
+	verify_panel_int(OPT(player, center_player), OPT(player, run_avoid_center));
 }
 
 void center_panel(void)
 {
-	verify_panel_int(true);
+	verify_panel_int(true, OPT(player, run_avoid_center));
 }
 
 void textui_get_panel(int *min_y, int *min_x, int *max_y, int *max_x)

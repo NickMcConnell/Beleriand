@@ -35,8 +35,6 @@ OP(solid_walls,           "Show walls as solid blocks",
 INTERFACE, true)
 OP(hybrid_walls,          "Show walls with shaded background",
 INTERFACE, false)
-OP(instant_run,           "Faster display while running",
-INTERFACE, false)
 OP(animate_flicker,       "Color: Shimmer multi-colored things",
 INTERFACE, false)
 OP(center_player,         "Center map continuously",
