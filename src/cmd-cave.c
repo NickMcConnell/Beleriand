@@ -1836,6 +1836,7 @@ void move_player(int dir, bool disarm)
 
 			/* Update view */
 			update_view(cave, player);
+			cmdq_push(CMD_AUTOPICKUP);
 		}
 	}
 

@@ -45,8 +45,6 @@ OP(run_avoid_center,      "Avoid centering while running",
 INTERFACE, false)
 OP(auto_more,             "Automatically clear '-more-' prompts",
 INTERFACE, false)
-OP(easy_main_menu,        "Use the Escape key to access the main menu",
-INTERFACE, true)
 OP(mouse_movement,        "Allow mouse clicks to move the player",
 INTERFACE, true)
 OP(display_hits,          "Display a mark when something gets hit",
