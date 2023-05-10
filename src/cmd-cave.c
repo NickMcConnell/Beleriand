@@ -310,7 +310,7 @@ void do_cmd_toggle_stealth(struct command *cmd)
 	/* Toggle stealth mode */
 	if (player->stealth_mode) {
 		/* Clear the stealth mode flag */
-		player->stealth_mode = false;
+		player->stealth_mode = STEALTH_MODE_OFF;
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);
@@ -319,7 +319,7 @@ void do_cmd_toggle_stealth(struct command *cmd)
 		player->upkeep->redraw |= (PR_STATE);
 	} else {
 		/* Set the stealth mode flag */
-		player->stealth_mode = true;
+		player->stealth_mode = STEALTH_MODE_ON;
 
 		/* Update stuff */
 		player->upkeep->update |= (PU_BONUS);

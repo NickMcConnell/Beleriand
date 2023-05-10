@@ -35,6 +35,7 @@
 #include "player-abilities.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-util.h"
 #include "trap.h"
 
 /**
@@ -1443,7 +1444,7 @@ void do_cmd_smith_aux(void)
 		}
 
 		/* Cancel stealth mode */
-		player->stealth_mode = false;
+		player->stealth_mode = STEALTH_MODE_OFF;
 
 		start_smithing(player, turns);
 	}

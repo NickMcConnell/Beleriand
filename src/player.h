@@ -519,7 +519,7 @@ struct player {
 	uint16_t forge_drought;	/* Number of turns since a forge was generated */
 	uint16_t forge_count;	/* The number of forges that have been generated */
 
-	bool stealth_mode;	/* Stealth mode */
+	uint8_t stealth_mode;	/* Stealth mode */
 
 	uint8_t self_made_arts;	/* Number of self-made artefacts so far */
 

@@ -832,7 +832,7 @@ int rd_player(void)
 	rd_u16b(&player->forge_drought);
 	rd_u16b(&player->forge_count);
 	rd_byte(&tmp8u);
-	player->stealth_mode = tmp8u ? true : false;
+	player->stealth_mode = tmp8u;
 	rd_byte(&player->self_made_arts);
 	rd_byte(&tmp8u);
 	player->truce = tmp8u ? true : false;
