@@ -1085,6 +1085,12 @@ static bool do_cmd_disarm_aux(struct loc grid)
 	/* Get the base disarming skill */
 	skill = player->state.skill_use[SKILL_PERCEPTION];
 
+	/* Special case: player is stuck in a web */
+	if (square_iswebbed(cave, grid) && loc_eq(grid, player->grid)) {
+		more = player_break_web(player);
+		return !more;
+	}
+
 	/* Determine trap power */
 	power = trap->power;
 	if (power < 0) {
@@ -1160,8 +1166,7 @@ void do_cmd_disarm(struct command *cmd)
 		if (n_traps + n_chests == 1) {
 			dir = motion_dir(player->grid, grid1);
 			cmd_set_arg_direction(cmd, "direction", dir);
-		} else if (cmd_get_direction(cmd, "direction", &dir, n_chests > 0)) {
-			/* If there are chests to disarm, 5 is allowed as a direction */
+		} else if (cmd_get_direction(cmd, "direction", &dir, true)) {
 			return;
 		}
 	}
