@@ -415,8 +415,12 @@ bool project_p(struct source origin, struct loc grid, int dd, int ds, int typ)
 		msg("You are hit by %s!", projections[typ].blind_desc);
 	}
 
-	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	context.dam = adjust_dam(player, context.dd, context.ds, context.type);
+	/* Adjust damage for resistance, immunity or vulnerability */
+	if (typ < ELEM_MAX) {
+		context.dam = adjust_dam(player, context.dd, context.ds, context.type);
+	}
+
+	/* Apply the damage */
 	if (context.dam && projections[typ].damaging) {
 		/* Some attacks get a chance to evade and/or protect */
 		if (projections[typ].evade) {

@@ -1296,9 +1296,10 @@ int project_path(struct chunk *c, struct loc *gp, int range, struct loc grid1,
 			}
 
 			/* Try to avoid monsters/players between the endpoints */
-			if (square_monster(c, grid) && (blockage[i] < 2)) {
+			if ((square_monster(c, grid) || square_isplayer(c, grid)) &&
+				(blockage[i] < 2)) {
 				/* Hack: ignore monsters on the designated square on request */
-				if (!loc_eq(c->project_path_ignore, loc(0, 0))) {
+				if (!loc_eq(c->project_path_ignore, grid)) {
 					if (flg & (PROJECT_STOP)) {
 						blockage[i] = 2;
 					} else if (flg & (PROJECT_CHCK)) {

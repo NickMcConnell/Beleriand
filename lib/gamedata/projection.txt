@@ -124,6 +124,7 @@ player-desc:arrows
 blind-desc:something sharp
 msgt:GENERIC
 damaging:1
+evade:1
 obvious:1
 wake:1
 color:White
@@ -136,6 +137,7 @@ player-desc:boulders
 blind-desc:something very heavy
 msgt:GENERIC
 damaging:1
+evade:1
 obvious:1
 wake:1
 color:White
