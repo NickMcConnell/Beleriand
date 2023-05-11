@@ -506,7 +506,7 @@ void ident(struct object *obj)
 	player->upkeep->notice |= (PN_COMBINE);
 
 	/* Redraw stuff */
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+	player->upkeep->redraw |= (PR_BASIC | PR_INVEN | PR_EQUIP);
 
 	return;
 }
