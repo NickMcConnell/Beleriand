@@ -1217,8 +1217,9 @@ bool target_set_interactive(int mode, struct loc grid, int range)
 		}
 
 		/* Find the path. */
-		path_n = project_path(cave, path_g, adjusted_range, player->grid, &grid,
-							  PROJECT_THRU | PROJECT_INFO | PROJECT_LEAVE);
+		path_n = ABS(project_path(cave, path_g, adjusted_range, player->grid,
+								  &grid,
+								  PROJECT_THRU | PROJECT_INFO | PROJECT_LEAVE));
 
 		/* Draw the path in "target" mode. If there is one */
 		if (mode & (TARGET_KILL))

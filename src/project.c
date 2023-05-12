@@ -387,7 +387,7 @@ int projectable(struct chunk *c, struct loc grid1, struct loc grid2, int flg)
 	if (!square_ispassable(c, final)) return PROJECT_PATH_NO;
 
 	/* May not end in an unrequested grid */
-	if (!loc_eq(grid_g[grid_n - 1], final)) return PROJECT_PATH_NO;
+	if (!loc_eq(grid_g[ABS(grid_n) - 1], final)) return PROJECT_PATH_NO;
 
 	/* Promise a clear bolt shot if we have verified that there is one */
 	if ((flg & (PROJECT_STOP)) || (flg & (PROJECT_CHCK))) {
@@ -689,8 +689,8 @@ bool project(struct source origin, int rad, struct loc finish,
 		} else {
 			dist_from_centre = rad;
 		}
-		num_path_grids = project_path(cave, path_grid, dist_from_centre,
-									  start, &finish, flg);
+		num_path_grids = ABS(project_path(cave, path_grid, dist_from_centre,
+										  start, &finish, flg));
 
 		/* Project along the path (except for arcs) */
 		if (!(flg & (PROJECT_ARC))) {
