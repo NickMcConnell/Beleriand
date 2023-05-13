@@ -66,7 +66,7 @@ bool knock_back(struct loc grid1, struct loc grid2)
 
         /* Try both directions */
         for (i = 0; i < 2; i++) {
-            d = cycle[chome[dir_from_delta(next.y, next.x)] + mod];
+            d = cycle[chome[dir_from_delta(ddy[dir], ddx[dir])] + mod];
             grid3 = loc_sum(grid2, ddgrid[d]);
             if (!square_iswall(cave, grid3) &&
 				(square_monster(cave, next) == NULL)) {

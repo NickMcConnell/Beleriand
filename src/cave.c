@@ -323,7 +323,7 @@ int dir_from_delta(int delta_y, int delta_x)
 	int16_t dird[3][3] = { { 7, 8, 9 },
 						   { 4, 5, 6 },
 						   { 1, 2, 3 } };
-	
+	assert((ABS(delta_y) < 2) && (ABS(delta_x) < 2));
 	return (dird[delta_y + 1][delta_x + 1]);
 }
 
