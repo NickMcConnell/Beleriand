@@ -1032,6 +1032,11 @@ void create_base_object(struct object_kind *kind, struct object *obj)
 	/* Set the pval to 1 if needed (and evasion/accuracy for rings) */
 	set_base_values(obj);
 
+	/* Lanterns are empty */
+	if (tval_is_light(obj) && of_has(obj->flags, OF_TAKES_FUEL)) {
+		obj->timeout = 0;
+	}
+
 	/* Create arrows by the two dozen */
 	if (tval_is_ammo(obj)) {
 		obj->number = 24;
