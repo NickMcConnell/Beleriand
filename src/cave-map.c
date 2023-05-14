@@ -90,6 +90,7 @@ void map_info(struct loc grid, struct grid_data *g)
 	g->first_kind = NULL;
 	g->trap = NULL;
 	g->multiple_objects = false;
+	g->glow = false;
 	g->lighting = LIGHTING_LIT;
 
 	/* Use real feature (remove later) */
@@ -148,6 +149,7 @@ void map_info(struct loc grid, struct grid_data *g)
 			/* Item stays hidden */
 		} else if (!g->first_kind) {
 			g->first_kind = obj->kind;
+			g->glow = weapon_glows(obj);
 		} else {
 			g->multiple_objects = true;
 			break;

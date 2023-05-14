@@ -163,6 +163,7 @@ struct grid_data {
 	bool in_view; 			/* Can the player can currently see the grid? */
 	bool is_player;
 	bool hallucinate;
+	bool glow;
 };
 
 struct square {
