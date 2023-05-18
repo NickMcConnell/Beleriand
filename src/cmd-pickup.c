@@ -308,13 +308,14 @@ void player_pickup_item(struct player *p, struct object *obj, bool menu)
 /**
  * Pick up everything on the floor that requires no player action
  */
-static void do_autopickup(struct player *p)
+static bool do_autopickup(struct player *p)
 {
 	struct object *obj, *next;
+	bool picked_up = false;
 
 	/* Nothing to pick up -- return */
 	if (!square_object(cave, p->grid))
-		return;
+		return false;
 
 	/* Scan the remaining objects */
 	obj = square_object(cave, p->grid);
@@ -333,10 +334,12 @@ static void do_autopickup(struct player *p)
 			if (auto_num) {
 				/* Pick up the object (as much as possible) with message */
 				player_pickup_aux(p, obj, auto_num, true);
+				picked_up = true;
 			}
 		}
 		obj = next;
 	}
+	return picked_up;
 }
 
 /**
@@ -363,10 +366,10 @@ void do_cmd_pickup(struct command *cmd)
 void do_cmd_autopickup(struct command *cmd)
 {
 	/* Get the obvious things */
-	do_autopickup(player);
-
-	/* Look at or feel what's left */
-	event_signal(EVENT_SEEFLOOR);
+	if (do_autopickup(player)) {
+		/* Look at or feel what's left */
+		event_signal(EVENT_SEEFLOOR);
+	}
 
 	/* Redraw the object list using the upkeep flag so that the update can be
 	 * somewhat coalesced. Use event_signal(EVENT_ITEMLIST to force update. */
