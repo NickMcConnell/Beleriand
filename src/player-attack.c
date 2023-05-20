@@ -183,15 +183,16 @@ int prt_after_sharpness(struct player *p, const struct object *obj, int *flag)
 	return MAX(protection, 0);
 }
 
-void attack_punctuation(char *punctuation, int net_dam, int crit_bonus_dice)
+void attack_punctuation(char *punctuation, size_t len, int net_dam,
+						int crit_bonus_dice)
 {
 	if (net_dam == 0) {
-		my_strcpy(punctuation, "...", sizeof(punctuation));
-	} else if (crit_bonus_dice == 0) {
-		my_strcpy(punctuation, ".", sizeof(punctuation));
+		my_strcpy(punctuation, "...", len);
+	} else if (crit_bonus_dice <= 0) {
+		my_strcpy(punctuation, ".", len);
 	} else {
-		int i;
-		for (i = 0; (i < crit_bonus_dice) && (i < 20); i++) {
+		size_t i;
+		for (i = 0; (i < (size_t) crit_bonus_dice) && (i < len - 1); i++) {
 			punctuation[i] = '!';
 		}
 		punctuation[i] = '\0';
@@ -301,7 +302,7 @@ void py_attack_real(struct player *p, struct loc grid, int attack_type)
 	bool rapid_attack = false;
 
 	char verb[20];
-	char punctuation[20];
+	char punct[20];
 	int weight;
 	const struct artifact *crown = lookup_artifact_name("of Morgoth");
 
@@ -497,17 +498,17 @@ void py_attack_real(struct player *p, struct loc grid, int attack_type)
 			/* No negative damage */
 			net_dam = MAX(dam - prt, 0);
 
-			/* determine the punctuation for the attack ("...", ".", "!" etc) */
-			attack_punctuation(punctuation, net_dam, crit_bonus_dice);
+			/* Determine the punctuation for the attack ("...", ".", "!" etc) */
+			attack_punctuation(punct, sizeof(punct), net_dam, crit_bonus_dice);
 
 			/* Special message for visible unalert creatures */
 			if (stealth_bonus) {
 				msgt(MSG_HIT, "You stealthily attack %s%s", m_name,
-					 punctuation);
+					 punct);
 			} else if (charge) {
-					msgt(MSG_HIT, "You charge %s%s", m_name, punctuation);
+					msgt(MSG_HIT, "You charge %s%s", m_name, punct);
 			} else {
-				msgt(MSG_HIT, "You hit %s%s", m_name, punctuation);
+				msgt(MSG_HIT, "You hit %s%s", m_name, punct);
 			}
 
 			event_signal_combat_damage(EVENT_COMBAT_DAMAGE, total_dice, mds,
@@ -1298,7 +1299,8 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 
 						/* Determine the punctuation for the attack
 						 * ("...", ".", "!" etc) */
-						attack_punctuation(punct, result.dmg, result.crit_dice);
+						attack_punctuation(punct, sizeof(punct), result.dmg,
+										   result.crit_dice);
 
 						monster_desc(m_name, sizeof(m_name), mon, MDESC_OBJE);
 

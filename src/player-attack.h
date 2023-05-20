@@ -76,7 +76,8 @@ extern void do_cmd_throw(struct command *cmd);
 
 
 int prt_after_sharpness(struct player *p, const struct object *obj, int *flag);
-void attack_punctuation(char *punctuation, int net_dam, int crit_bonus_dice);
+void attack_punctuation(char *punctuation, size_t len, int net_dam,
+						int crit_bonus_dice);
 extern int breakage_chance(const struct object *obj, bool hit_target);
 int archery_range(const struct object *bow);
 int throwing_range(const struct object *obj);

@@ -442,9 +442,9 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 		/* Message */
 		if (act) {
-			char punctuation[20];
+			char punct[20];
 			/* Determine the punctuation for the attack ("...", ".", "!" etc) */
-			attack_punctuation(punctuation, net_dam, crit_bonus_dice);
+			attack_punctuation(punct, sizeof(punct), net_dam, crit_bonus_dice);
 
 			if (monster_charge(mon, p)) {
 				/* Remember that the monster can do this */
@@ -458,7 +458,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
                 }
 			}
                 
-			msgt(sound_msg, "%s %s%s", m_name, act, punctuation);
+			msgt(sound_msg, "%s %s%s", m_name, act, punct);
 			if (act_allocated) {
 				string_free(act);
 			}
