@@ -164,9 +164,6 @@ bool player_stat_res(struct player *p, int stat, int points)
 
 /**
  * Decreases a stat by one level.
- *
- * Note that "permanent" means that the *given* amount is permanent,
- * not that the new value becomes permanent.
  */
 void player_stat_dec(struct player *p, int stat)
 {

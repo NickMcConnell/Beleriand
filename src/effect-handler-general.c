@@ -303,6 +303,7 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 	}
 
 	/* Reduce the stat */
+	player_stat_dec(player, stat);
 	msgt(MSG_DRAIN_STAT, "You feel %s.", desc_stat(stat, false));
 
 	/* ID */
