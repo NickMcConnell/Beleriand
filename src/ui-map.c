@@ -201,8 +201,10 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	wchar_t c = feat_x_char[g->lighting][feat->fidx];
 
 	/* Get the colour for ASCII */
-	if (use_graphics == GRAPHICS_NONE)
+	if (use_graphics == GRAPHICS_NONE) {
 		grid_get_attr(g, &a);
+		if (g->rage) a = COLOUR_RED;
+	}
 
 	/* Save the terrain info for the transparency effects */
 	(*tap) = a;
@@ -228,6 +230,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 			a = g->glow ? COLOUR_L_BLUE : object_kind_attr(g->first_kind);
 			c = object_kind_char(g->first_kind);
 		}
+		if (g->rage) a = COLOUR_RED;
 	}
 
 	/* Handle monsters, the player and trap borders */
@@ -288,6 +291,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				&& (mon->alertness < ALERTNESS_ALERT)) {
 				a = a + (MAX_COLORS * BG_DARK);
 			}
+			if (g->rage) a = COLOUR_RED;
 		}
 	} else if (g->is_player) {
 		struct monster_race *race = &r_info[0];

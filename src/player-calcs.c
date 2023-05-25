@@ -1185,6 +1185,9 @@ void health_track(struct player_upkeep *upkeep, struct monster *mon)
  */
 void monster_race_track(struct player_upkeep *upkeep, struct monster_race *race)
 {
+	/* Don't track when hallucinating or raging */
+	if (player->timed[TMD_IMAGE] || player->timed[TMD_RAGE]) return;
+
 	/* Save this monster ID */
 	upkeep->monster_race = race;
 

@@ -144,8 +144,8 @@ void update_combat_rolls_attack(game_event_type type, game_event_data *data,
 			combat_rolls[0][combat_number].attacker_attr = COLOUR_SLATE;
 		}
 
-		/* Hack for Iron Crown */
 		if ((defender.what == SRC_NONE) && melee) {
+			/* Hack for Iron Crown */
 			combat_rolls[0][combat_number].defender_char = ']';
 			combat_rolls[0][combat_number].defender_attr = COLOUR_L_DARK;
 		} else if (vis || (defender.what == SRC_PLAYER)) {

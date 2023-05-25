@@ -755,6 +755,9 @@ bool player_inc_check(struct player *p, int idx, bool lore)
 		return (resistance == 0);
 	}
 
+	/* Special case for rage */
+	if ((idx == TMD_AFRAID) && p->timed[TMD_RAGE]) return false;
+
 	/* Check whether @ has resistance to this effect */
 	if (resistance) {
 		/* Possibly identify relevant items */

@@ -102,6 +102,7 @@ void map_info(struct loc grid, struct grid_data *g)
 	g->is_player = (square(cave, grid)->mon < 0) ? true : false;
 	g->m_idx = (g->is_player) ? 0 : square(cave, grid)->mon;
 	g->hallucinate = player->timed[TMD_IMAGE] ? true : false;
+	g->rage = player->timed[TMD_RAGE] ? true : false;
 
 	if (g->in_view) {
 		bool lit = square_islit(cave, grid);
@@ -112,6 +113,11 @@ void map_info(struct loc grid, struct grid_data *g)
 
 		/* Remember seen feature */
 		square_mark(cave, grid);
+	} else if (g->rage) {
+		/* Rage shows nothing out of view */
+		g->f_idx = FEAT_NONE;
+		g->m_idx = 0;
+		return;
 	} else if (!square_isknown(cave, grid)) {
 		g->f_idx = FEAT_NONE;
 	} else if (square_isglow(cave, grid)) {

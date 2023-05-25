@@ -446,7 +446,11 @@ static bool aux_monster(struct chunk *c, struct player *p,
 	auxst->boring = false;
 
 	/* Get the monster name ("a kobold") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
+	if (p->timed[TMD_RAGE]) {
+		my_strcpy(m_name, "an enemy", sizeof(m_name));
+	} else {
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
+	}
 
 	/* Track this monster's race and health */
 	monster_race_track(p->upkeep, mon->race);
@@ -457,7 +461,7 @@ static bool aux_monster(struct chunk *c, struct player *p,
 	recall = false;
 	while (1) {
 		/* Recall or target */
-		if (recall) {
+		if (recall && !p->timed[TMD_RAGE]) {
 			lore_show_interactive(mon->race, lore);
 			auxst->press = inkey_m();
 		} else {
