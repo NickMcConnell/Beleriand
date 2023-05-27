@@ -551,6 +551,32 @@ static void prt_poisoned(int row, int col)
 	}
 }
 
+/**
+ * Prints the speed of a character.
+ */
+static void prt_speed(int row, int col)
+{
+	int i = player->state.speed;
+	const char *type = NULL;
+	uint8_t attr = COLOUR_WHITE;
+	char buf[32] = "";
+
+	/* 2 is normal speed, and requires no display */
+	if (i > 2) {
+		attr = COLOUR_L_GREEN;
+		type = "Fast ";
+	} else if (i < 2) {
+		attr = COLOUR_ORANGE;
+		type = "Slow ";
+	}
+
+	if (type)
+		strnfmt(buf, sizeof(buf), "%s", type);
+
+	/* Display the speed */
+	c_put_str(attr, format("%-4s", buf), row, col);
+}
+
 
 
 /**
@@ -682,29 +708,31 @@ static const struct side_handler_t
 	int priority;		 /* 1 is most important (always displayed) */
 	game_event_type type;	 /* PR_* flag this corresponds to */
 } side_handlers[] = {
-	{ NULL,        13, 0 },
-	{ prt_name,    12, EVENT_NAME },
-	{ NULL,        14, 0 },
+	{ NULL,        21, 0 },
+	{ prt_name,    13, EVENT_NAME },
+	{ NULL,        22, 0 },
 	{ prt_str,      4, EVENT_STATS },
 	{ prt_dex,      3, EVENT_STATS },
 	{ prt_con,      2, EVENT_STATS },
 	{ prt_gra,      1, EVENT_STATS },
-	{ NULL,        15, 0 },
+	{ NULL,        23, 0 },
 	{ prt_exp,      5, EVENT_EXPERIENCE },
-	{ NULL,        16, 0 },
+	{ NULL,        24, 0 },
 	{ prt_hp,       6, EVENT_HP },
 	{ prt_sp,       7, EVENT_MANA },
 	{ NULL,        17, 0 },
 	{ prt_mel,      8, EVENT_MELEE },/* May overlap upwards */
 	{ prt_arc,      9, EVENT_ARCHERY },
 	{ prt_evn,     10, EVENT_ARMOR },
-	{ NULL,        18, 0 },
+	{ NULL,        25, 0 },
 	{ prt_health,  11, EVENT_MONSTERHEALTH },/* May overlap downwards */
-	{ NULL,        19, 0 },
-	{ NULL,        19, 0 },
-	{ prt_cut,     10, EVENT_STATUS },/* May overlap upwards */
-	{ prt_poisoned,10, EVENT_STATUS },
-	{ prt_song,    11, EVENT_SONG },/* May overlap downwards */
+	{ NULL,        14, 0 },
+	{ NULL,        20, 0 },
+	{ prt_cut,     15, EVENT_STATUS },/* May overlap upwards */
+	{ prt_poisoned,16, EVENT_STATUS },
+	{ prt_song,    12, EVENT_SONG },/* May overlap downwards */
+	{ NULL,        18, 0 },
+	{ prt_speed,   19, EVENT_STATUS },
 };
 
 
@@ -921,34 +949,6 @@ static size_t prt_terrain(int row, int col)
 }
 
 /**
- * Prints the speed of a character.
- */
-static size_t prt_speed(int row, int col)
-{
-	int i = player->state.speed;
-	const char *type = NULL;
-	uint8_t attr = COLOUR_WHITE;
-	char buf[32] = "";
-
-	/* 2 is normal speed, and requires no display */
-	if (i > 2) {
-		attr = COLOUR_L_GREEN;
-		type = "Fast ";
-	} else if (i < 2) {
-		attr = COLOUR_ORANGE;
-		type = "Slow ";
-	}
-
-	if (type)
-		strnfmt(buf, sizeof(buf), "%s", type);
-
-	/* Display the speed */
-	c_put_str(attr, format("%-4s", buf), row, col);
-
-	return strlen(buf);
-}
-
-/**
  * Print all timed effects.
  */
 static size_t prt_tmd(int row, int col)
@@ -1021,7 +1021,7 @@ static size_t prt_depth(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_light, prt_unignore, prt_state, prt_speed, prt_tmd, prt_terrain, prt_depth };
+{ prt_light, prt_unignore, prt_state, prt_tmd, prt_terrain, prt_depth };
 
 
 static void update_statusline_aux(int row, int col)
