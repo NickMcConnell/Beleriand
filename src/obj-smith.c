@@ -1411,7 +1411,7 @@ static void start_smithing(struct player *p, int turns)
 /**
  * Start or continue smithing an item.
  */
-void do_cmd_smith_aux(void)
+void do_cmd_smith_aux(bool flush)
 {
 	bool forge = square_isforge(cave, player->grid);
 	bool useless = (square_forge_uses(cave, player->grid) == 0);
@@ -1451,6 +1451,12 @@ void do_cmd_smith_aux(void)
 		/* Cancel stealth mode */
 		player->stealth_mode = STEALTH_MODE_OFF;
 
+		/* If called from a different command, substitute the correct one */
+		if (flush) {
+			cmdq_push(CMD_SMITH);
+			cmdq_pop(CTX_GAME);
+		}
+
 		start_smithing(player, turns);
 	}
 
@@ -1473,5 +1479,5 @@ void do_cmd_smith_aux(void)
  */
 void do_cmd_smith(struct command *cmd)
 {
-	do_cmd_smith_aux();
+	do_cmd_smith_aux(false);
 }

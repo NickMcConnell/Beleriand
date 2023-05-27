@@ -142,7 +142,7 @@ bool object_has_property(struct obj_property *prop, struct object *obj,
 void add_object_property(struct obj_property *prop, struct object *obj,
 						   bool negative);
 void remove_object_property(struct obj_property *prop, struct object *obj);
-void do_cmd_smith_aux(void);
+void do_cmd_smith_aux(bool flush);
 void do_cmd_smith(struct command *cmd);
 
 #endif /* !INCLUDED_OBJSMITH_H */

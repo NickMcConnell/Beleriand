@@ -1467,8 +1467,11 @@ static void do_cmd_alter_aux(int dir)
 			do_cmd_go_down_aux();
 		}
 	} else if ((dir == DIR_NONE) && square_isforge(cave, grid)) {
+		/* Cancel the alter command */
+		cmd_cancel_repeat();
+
 		/* Use forge */
-		do_cmd_smith_aux();
+		do_cmd_smith_aux(true);
 		more = true;
 
 		/* Don't take a turn... */
