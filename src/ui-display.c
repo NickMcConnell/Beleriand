@@ -2508,7 +2508,13 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 
 		/* Message */
 		event_signal(EVENT_MESSAGE_FLUSH);
-		msg("You %s %s.", p, o_name);
+		/* Arms and armour show weight */
+		if (tval_is_weapon(obj) || tval_is_armor(obj)) {
+			int wgt = obj->weight;
+			msg("You %s %s %d.%1d lb.", p, o_name, wgt / 10, wgt % 10);
+		} else {
+			msg("You %s %s.", p, o_name);
+		}
 
 		/* Special explanation the first time you step over the crown */
 		if (obj->artifact && streq(obj->artifact->name, "of Morgoth") &&
