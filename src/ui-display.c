@@ -836,8 +836,10 @@ static size_t prt_state(int row, int col)
 	char text[16] = "";
 
 
-	/* Displayed states are resting and repeating */
-	if (player_is_resting(player)) {
+	/* Smithing */
+	if (player->upkeep->smithing) {		
+		my_strcpy(text, "Smithing  ", sizeof (text));
+	} else if (player_is_resting(player)) {
 		int i;
 		int n = player_resting_count(player);
 
@@ -883,6 +885,8 @@ static size_t prt_state(int row, int col)
 			strnfmt(text, sizeof(text), "Rep. %3d00", nrepeats / 100);
 		else
 			strnfmt(text, sizeof(text), "Repeat %3d", nrepeats);
+	} else if (player->stealth_mode) {
+		my_strcpy(text, "Stealth   ", sizeof (text));
 	}
 
 	/* Display the info (or blanks) */
