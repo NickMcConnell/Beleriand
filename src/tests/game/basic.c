@@ -151,6 +151,7 @@ static int test_drop_pickup(void *state) {
 	eq(savefile_load("Test1", false), true);
 
 	dir = choose_direction(cave, player);
+	player->opts.opt[OPT_pickup_inven] = true;
 	if (dir >= 0) {
 		cmdq_push(CMD_WALK);
 		cmd_set_arg_direction(cmdq_peek(), "direction", dir);
