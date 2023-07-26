@@ -226,6 +226,7 @@ struct monster_spell {
 	int use_past_range;
 	bool disturb_stealth;
 	struct effect *effect;	/* Effect(s) of the spell */
+	struct effect *effect_xtra;	/* Extra effect(s) of the spell */
 	struct monster_spell_level *level;	/* Spell power dependent details */
 };
 

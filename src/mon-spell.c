@@ -273,7 +273,8 @@ static bool spell_check_for_save(const struct monster_spell *spell)
 	struct effect *effect = spell->effect;
 	bool save = false;
 	while (effect) {
-		if (effect->index == EF_TIMED_INC) {
+		if ((effect->index == EF_TIMED_INC) ||
+			(effect->index == EF_TIMED_INC_NO_RES)) {
 			/* Timed effects */
 			save = player_inc_check(player, effect->subtype, false);
 		} else {
@@ -301,6 +302,10 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	struct monster_spell_level *level = spell->level;
 	bool ident = false;
 
+	/* Hacks for SCARE spell - NRM */
+	bool afraid = player->timed[TMD_AFRAID] && (spell->index == RSF_SCARE);
+	if (spell->effect_xtra && seen && one_in_(2)) seen = false;
+
 	/* Tell the player what's going on */
 	disturb(player, spell->disturb_stealth);
 	spell_message(mon, spell, seen);
@@ -310,8 +315,14 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 		level = level->next;
 	}
 
+	/* Extra effect - only for SCARE spell currently */
+	if (spell->effect_xtra && !seen) { 
+		effect_do(spell->effect_xtra, source_monster(mon->midx), NULL,
+				  &ident, true, 0, NULL);
+	}
+
 	/* Try a saving throw if available */
-	if (level->save_message && spell_check_for_save(spell)) {
+	if (level->save_message && spell_check_for_save(spell) && !afraid) {
 		msg("%s", level->save_message);
 	} else {
 		if (level->no_save_message) {

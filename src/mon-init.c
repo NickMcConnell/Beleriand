@@ -915,6 +915,105 @@ static enum parser_error parse_mon_spell_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_mon_spell_effect_xtra(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (s->effect_xtra) {
+		effect = s->effect_xtra;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		s->effect_xtra = new_effect;
+
+	/* Fill in the detail */
+	return grab_effect_data(p, new_effect);
+}
+
+static enum parser_error parse_mon_spell_dice_xtra(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	dice_t *dice = NULL;
+	struct effect *effect = s->effect_xtra;
+	const char *string = NULL;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INVALID_DICE;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		effect->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_INVALID_DICE;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_expr_xtra(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	struct effect *effect = s->effect_xtra;
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (effect->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INVALID_EXPRESSION;
+
+	function = effect_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
+
+	if (dice_bind_expression(effect->dice, name, expression) < 0)
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_mon_spell_power_cutoff(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	struct monster_spell_level *l, *new;
@@ -1091,9 +1190,15 @@ static struct parser *init_parse_mon_spell(void) {
 	parser_reg(p, "desire uint desire", parse_mon_spell_desire);
 	parser_reg(p, "disturb uint value", parse_mon_spell_disturb);
 	parser_reg(p, "use-past-range uint value", parse_mon_spell_use_past_range);
-	parser_reg(p, "effect sym eff ?sym type ?int radius ?int other", parse_mon_spell_effect);
+	parser_reg(p, "effect sym eff ?sym type ?int radius ?int other",
+			   parse_mon_spell_effect);
 	parser_reg(p, "dice str dice", parse_mon_spell_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_mon_spell_expr);
+	parser_reg(p, "effect-xtra sym eff ?sym type ?int radius ?int other",
+			   parse_mon_spell_effect_xtra);
+	parser_reg(p, "dice-xtra str dice", parse_mon_spell_dice_xtra);
+	parser_reg(p, "expr-xtra sym name sym base str expr",
+			   parse_mon_spell_expr_xtra);
 	parser_reg(p, "power-cutoff int power", parse_mon_spell_power_cutoff);
 	parser_reg(p, "lore str text", parse_mon_spell_lore_desc);
 	parser_reg(p, "message-vis str text", parse_mon_spell_message);
@@ -1133,6 +1238,9 @@ static void cleanup_mon_spell(void)
 	while (rs) {
 		next = rs->next;
 		level = rs->level;
+		if (rs->effect_xtra) {
+			free_effect(rs->effect_xtra);
+		}
 		free_effect(rs->effect);
 		while (level) {
 			struct monster_spell_level *next_level = level->next;
