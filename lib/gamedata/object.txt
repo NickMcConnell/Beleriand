@@ -76,7 +76,7 @@
 
 # Index 0
 name:<pile>
-graphics:&:w
+graphics:$:w
 
 
 
