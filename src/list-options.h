@@ -11,11 +11,11 @@
 type     normal */
 OP(none,                  "",
 SPECIAL, false)
-OP(hjkl_movement,         "Move with hjkl etc. (use ^ for underlying keys)",
+OP(hjkl_movement,         "Move with hjkl etc. (^ for underlying keys)",
 INTERFACE, false)
 OP(use_sound,             "Use sound",
 INTERFACE, false)
-OP(quick_messages,        "Dismiss '-more-' and 'y/n' prompts with any key",
+OP(quick_messages,        "Dismiss '-more-', 'y/n' prompts with any key",
 INTERFACE, true)
 OP(angband_keyset,        "Use a keyset more closely based on Angband",
 INTERFACE, false)

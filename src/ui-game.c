@@ -128,7 +128,7 @@ struct cmd_info cmd_item[] =
 	{ "Quaff a potion", { 'q' }, CMD_QUAFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Fuel your light source", { KTRL('F') }, CMD_REFUEL, NULL, player_can_refuel_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Use an item", { 'u', KTRL('U'), 'U', KTRL('U') }, CMD_USE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Smith an item", { '0' }, CMD_SMITH, NULL, NULL, 0, NULL, NULL, NULL, 0 }
+	{ "Smith an item", { '0', '0', KTRL('D'), KTRL('D') }, CMD_SMITH, NULL, NULL, 0, NULL, NULL, NULL, 0 }
 };
 
 /**
@@ -164,7 +164,7 @@ struct cmd_info cmd_item_manage[] =
 	{ "Display equipment listing", { 'e' }, CMD_NULL, do_cmd_equip, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Display inventory listing", { 'i' }, CMD_NULL, do_cmd_inven, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Pick up objects", { 'g' }, CMD_PICKUP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Ignore an item", { KTRL('D') }, CMD_IGNORE, textui_cmd_ignore, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Ignore an item", { 'G' }, CMD_IGNORE, textui_cmd_ignore, NULL, 0, NULL, NULL, NULL, 0 },
 };
 
 /**
@@ -173,12 +173,12 @@ struct cmd_info cmd_item_manage[] =
 struct cmd_info cmd_info[] =
 {
 	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Toggle ignoring of items", { 'K' }, CMD_NULL, textui_cmd_toggle_ignore, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Toggle ignoring of items", { 'P' }, CMD_NULL, textui_cmd_toggle_ignore, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Display visible monster list", { '[' }, CMD_NULL, do_cmd_monlist, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Locate player on map", { 'L', 'W', 'L', 'W' }, CMD_NULL, do_cmd_locate, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Help", { '?' }, CMD_NULL, do_cmd_help, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Identify symbol", { '|' }, CMD_NULL, do_cmd_query_symbol, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Identify symbol", { '|', '|', '/', '/',}, CMD_NULL, do_cmd_query_symbol, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Character description", { '@', '@', 'C', 'C' }, CMD_NULL, do_cmd_change_name, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Abilities list", { KC_TAB, KC_TAB, KC_TAB, KC_TAB }, CMD_NULL, do_cmd_abilities, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge, NULL, 0, NULL, NULL, NULL, 0 },
@@ -212,9 +212,9 @@ struct cmd_info cmd_hidden[] =
 	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip, NULL, 0, NULL, NULL, NULL, 0 }, /* XXX */
 	{ "Alter a grid", { '/', '/', '+', '+' }, CMD_ALTER, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Walk", { ';' }, CMD_WALK, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Start running", { '.', ',', '.', ',' }, CMD_RUN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Stand still", { 'z' }, CMD_HOLD, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Center map", { KTRL('L') }, CMD_NULL, do_cmd_center_map, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Start running", { '.' }, CMD_RUN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Stand still", { 'z', 'z', 's', 's' }, CMD_HOLD, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Center map", { 'C', 'C', '@', '@' }, CMD_NULL, do_cmd_center_map, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Repeat previous command", { 'n', KTRL('N'), 'n', KTRL('N') }, CMD_REPEAT, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
