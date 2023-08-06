@@ -3237,7 +3237,7 @@ static bool monster_turn_random_move(struct monster *mon)
 	}
 
 	/* Adjacent to the character means more chance of just attacking normally */
-	if (mon->cdis > 1) {
+	if (mon->cdis == 1) {
 		chance /= 2;
 	}
 
