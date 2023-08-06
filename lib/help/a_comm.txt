@@ -42,12 +42,12 @@ combination and does not pass it on):
   e    List equipped items             E    Eat some food
   f    Fire from first quiver          F    Fire from second quiver
   g    Get objects on floor            G    Ignore an item
-  h    Fire at nearest target          H    -
+  h    -                               H    -
   i    List contents of pack           I    Inspect an item
   j    -                               J    -
   k    Destroy an item                 K    -
   l    Look around                     L    Locate player on map
-  m    -                               M    Display map of entire level
+  m    Fire at nearest target          M    Display map of entire level
   n    Repeat previous command         N    -
   o    Open a door or chest            O    -
   p    Blow a horn                     P    Toggle ignoring/unignoring

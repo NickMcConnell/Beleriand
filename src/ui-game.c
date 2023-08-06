@@ -147,7 +147,7 @@ struct cmd_info cmd_action[] =
 	{ "Open a door or a chest", { 'o' }, CMD_OPEN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Close a door", { 'c' }, CMD_CLOSE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Bash a door", { 'b', KTRL('B'), 'B', KTRL('B') }, CMD_BASH, NULL, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Fire at nearest target", { 'h' }, CMD_NULL, do_cmd_fire_at_nearest, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Fire at nearest target", { 'm' }, CMD_NULL, do_cmd_fire_at_nearest, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Throw an item", { 't', 't', 'v', 'v' }, CMD_THROW, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Throw automatically", { KTRL('T') }, CMD_NULL, do_cmd_automatic_throw, player_has_throwable_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Change song", { 's', 's', 'a', 'a' }, CMD_SING, NULL, NULL, 0, NULL, NULL, NULL, 0 },
