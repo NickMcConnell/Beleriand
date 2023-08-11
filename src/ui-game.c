@@ -1110,8 +1110,10 @@ void close_game(bool prompt_failed_save)
 	screen_save_depth++;
 
 	/* Deal with the randarts file */
-	write_self_made_artefacts();
-	deactivate_randart_file();
+	if (player->self_made_arts > 0) {
+		write_self_made_artefacts();
+		deactivate_randart_file();
+	}
 
 	/* Handle death or life */
 	if (!in_tutorial()) {
