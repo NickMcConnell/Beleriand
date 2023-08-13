@@ -59,6 +59,5 @@ void effect_simple(int index,
 	int radius,
 	int other,
 	bool *ident);
-int recharge_failure_chance(const struct object *obj, int strength);
 
 #endif /* INCLUDED_EFFECTS_H */

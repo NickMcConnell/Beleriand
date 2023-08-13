@@ -243,6 +243,26 @@ bool effect_handler_TIMED_INC_NO_RES(effect_handler_context_t *context)
 }
 
 /**
+ * Special timed effect for herbs of terror.
+ */
+bool effect_handler_TERROR(effect_handler_context_t *context)
+{
+	bool afraid = player_inc_check(player, TMD_AFRAID, false);
+	if (afraid) {
+		int fear_amount, haste_amount;
+		fear_amount = damroll(context->value.dice, context->value.sides);
+		haste_amount = damroll(context->value.dice / 2, context->value.sides);
+		context->ident = !player->timed[TMD_AFRAID] || !player->timed[TMD_FAST];
+		player_inc_timed(player, TMD_AFRAID, MAX(fear_amount, 0), true, false);
+		player_inc_timed(player, TMD_FAST, MAX(haste_amount, 0), true, false);
+	} else {
+		msg("You feel nervous for a moment.");
+		context->ident = true;
+	}
+	return true;
+}
+
+/**
  * Create a glyph.
  */
 bool effect_handler_GLYPH(effect_handler_context_t *context)

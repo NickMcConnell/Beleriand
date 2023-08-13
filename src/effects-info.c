@@ -181,6 +181,10 @@ textblock *effect_describe(const struct effect *e, const char *prefix)
 					dice_string);
 			break;
 
+		case EFINFO_TERROR:
+			strnfmt(desc, sizeof(desc), edesc, dice_string);
+			break;
+
 		case EFINFO_STAT:
 			{
 				int stat = e->subtype;
@@ -284,6 +288,7 @@ size_t effect_get_menu_name(char *buf, size_t max, const struct effect *e)
 	case EFINFO_DICE:
 	case EFINFO_HEAL:
 	case EFINFO_QUAKE:
+	case EFINFO_TERROR:
 	case EFINFO_NONE:
 		len = strnfmt(buf, max, "%s", fmt);
 		break;

@@ -34,6 +34,7 @@ EFFECT(TIMED_SET,					false,	NULL,		2,		EFINFO_TIMED,	"administers %s for %s tur
 EFFECT(TIMED_INC,					false,	"dur",		2,		EFINFO_TIMED,	"extends %s for %s turns",	"extend %s")
 EFFECT(TIMED_INC_CHECK,				false,	"dur",		1,		EFINFO_TIMED,	"checks if %s can be extended",	"checks %s extension")
 EFFECT(TIMED_INC_NO_RES,			false,	"dur",		2,		EFINFO_TIMED,	"extends %s for %s turns (unresistable)",	"extend %s")
+EFFECT(TERROR,						false,	NULL,		1,		EFINFO_TERROR,	"administers fear for %s turns, and haste for about half as long",	"administer fear/haste")
 EFFECT(GLYPH,						false,	NULL,		1,		EFINFO_NONE,	"inscribes a glyph beneath you",	"inscribe a glyph")
 EFFECT(RESTORE_STAT,				false,	NULL,		1,		EFINFO_STAT,	"restores your %s",	"restore %s")
 EFFECT(DRAIN_STAT,					false,	NULL,		1,		EFINFO_STAT,	"reduces your %s",	"drains %s")
