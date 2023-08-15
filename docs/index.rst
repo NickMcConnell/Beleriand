@@ -23,6 +23,12 @@ NarSil is a very complex game, and it may be difficult to grasp everything at fi
 
 .. toctree::
    :maxdepth: 1
+   :caption: The Manual
+
+   dungeon
+
+.. toctree::
+   :maxdepth: 1
    :caption: Meta
 
    version
