@@ -2,7 +2,7 @@
 Copying and licence information
 ===============================
 
-Angband is free software; you can redistribute it and/or modify it under the
+NarSil is free software; you can redistribute it and/or modify it under the
 terms of either the `GNU General Public License, version 2 <http://www.gnu.org/licenses/gpl-2.0.html>`_ as published by the Free Software Foundation, or the "Angband licence":
 
   Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -15,7 +15,7 @@ With the following exceptions:
 * The SDL runtime libraries (if provided with your copy of the game) are under
   the following licence:
 
-    The Simple DirectMedia Layer (SDL for short) is a cross-platform library designed to make it easy to write multi-media software, such as games and emulators.
+    The Simple DirectMedia Layer (SDL for short) is a cross-platform library designed to make it easydocs/stealth.rst to write multi-media software, such as games and emulators.
 
     The Simple DirectMedia Layer library source code is available from: http://www.libsdl.org/
 

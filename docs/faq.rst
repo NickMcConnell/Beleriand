@@ -23,11 +23,6 @@ Bug reports should include:
 
 Savefiles that show the problem might be requested, because they help tracking bugs down.
 
-Dark monsters are hard to see
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Fix (reduce) the alpha on your screen, or use the "Interact with colors" screen under the options (``=``) menu.  Navigate to the ``8`` using ``n`` and increase the color intensity with r(ed)/g(reen)/b(lue).
-
 Is there a way to disable that thing that pops up when you hit the enter key?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -44,14 +39,12 @@ Development
 What are the current plans for the game?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Ever-changing and subject to U-turning with public dissent. Discussion typically happens in the `Vanilla section`_ of the forums.
+It was chiefly written to form the codebase for the in-development Beleriand_. The best place for discussion is the `Sil section`_ of the forums.
 
 How do I suggest an idea/feature?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Post it on the forums.  If people think it's a good idea, it will generally get some discussion; if they don't, it won't.  The developers keep an eye on the forums, and ideas deemed OK will get filed for future implementation.
-
-Sometimes a suggestion may not be right for the game, though. Some suggestions would change aspects of Angband that are essential to its nature; Angband has a long history, and so has developed a certain character over the years.  Some suggestions might make a good game, perhaps even a better game than Angband, but would make a game that is not Angband. To some extent, variants exist to address this, but even so they tend to adhere to the core Angband principles.
+Post it on the forums.  If people think it's a good idea, it will generally get some discussion; if they don't, it won't.
 
 How do I get a copy of the source code?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,6 +73,7 @@ If the patch is a bugfix, then you can reasonably expect it to be integrated int
 Non-code activities are different. Documentation can be written on the wiki, or if you're a graphics designer (and they're always welcome) then please talk on the mailing list about your work.
 
 
-.. _GitHub: https://github.com/angband/angband/
+.. _GitHub: https://github.com/NickMcConnell/NarSil/
+.. _Beleriand: https://github.com/NickMcConnell/Beleriand/
 .. _Angband forum: http://angband.oook.cz/forum
-.. _Vanilla section: http://angband.oook.cz/forum/forumdisplay.php?f=3
+.. _Sil section: http://angband.oook.cz/forum/forumdisplay.php?f=12

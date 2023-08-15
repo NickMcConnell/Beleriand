@@ -1,11 +1,13 @@
-Welcome to Angband
-==================
+Welcome to NarSil
+=================
 
-Angband is a complex single player dungeon simulation. A player (you!) creates a character, choosing from a variety of races and classes, and then plays that character over a period of days, weeks, even months.
+NarSil is an almost-faithful rewrite of Sil version 1.3.0.  Much of this manual is copied with little change from the Sil manual.
 
-The player will begin their adventure on the town level where they may acquire supplies, weapons, armor, and magical devices by buying from various shop owners. Then the player can descend into the Pits of Angband, where they will explore the many levels of the dungeon, gaining experience by killing fierce creatures, collecting powerful objects and valuable treasure, and returning to town occasionally to buy supplies. Eventually, as the player grows more experienced, they may attempt to win the game by defeating Morgoth, the Lord of Darkness, who resides far below the surface.
+NarSil is a role-playing game with a strong emphasis on discovery and tactical combat. It has a simple but rich combat system which allows for a great variety of choice: should you wear heavy armour that makes you easier to hit but reduces the damage you take? should you wield heavier weapons to overcome your opponents’ armour, or wield lighter weapons for more accuracy and a greater chance of critical hits? It depends on the situation and the type of character you become. You will also have the chance to retreat back into shadowy corridors to take the enemy one by one, or to stealthily creep up to your opponent and take him unawares.
 
-Angband is a very complex game, and it may be difficult to grasp everything at first, especially if you have never played a roguelike game before.  A key resource for Angband players is the `forum`_, where you can ask for help, and also post compliments, complaints, suggestions, bug reports, and interesting experiences.  Don't be shy!
+It is also one of very few games that stays true to the writings of Tolkien. Carefully researched, it dispenses with many generic fantasy tropes and reveals a different world. There are no wizards or priests, no plate mail or magical scrolls. Instead, it is the Norse Saga inspired world that Tolkien imagined, with warriors clad in shining mail, singing songs of rage or sorrow as they slay. The magic of the world is subtle yet powerful: there are songs of fear and of binding, rather than spells of fireball and teleportation.
+
+NarSil is a very complex game, and it may be difficult to grasp everything at first, especially if you have never played a roguelike game before.  A key resource for NarSil players is the `forum`_, where you can ask for help, and also post compliments, complaints, suggestions, bug reports, and interesting experiences.  Don't be shy!
 
 .. _forum: http://angband.oook.cz
 
@@ -15,17 +17,26 @@ Angband is a very complex game, and it may be difficult to grasp everything at f
    :maxdepth: 1
    :caption: Getting Started
 
-   a-quick-demo
-   guide
+   basics
+   angband-notes
    faq
 
 .. toctree::
    :maxdepth: 2
    :caption: The Manual
 
-   birth
    dungeon
-   attack
+   race-house
+   stats
+   skills
+   combat
+   elements
+   morale
+   stealth
+   smithing
+   status
+   experience
+   abilities
    playing
    command
    option

@@ -2,6 +2,18 @@
 Version Information
 ===================
 
+Sil is a roguelike game technically forked from NPPAngband, but very different
+in play.  It was written by Toby Ord and Owen Cotton-Barratt.  The last version
+of Sil by its original authors was 1.3.0, released in 2016.
+
+NarSil was written using the Angband 4.2 codebase, and altering that to produce
+an almost faithful copy of Sil 1.3.0.
+
+Below is some history of Angband.
+
+Angband History
+===============
+
 Angband has been maintained and developed by a succession of volunteers since
 it was written in the early 1990s. The current maintainer is Nick McConnell.
 

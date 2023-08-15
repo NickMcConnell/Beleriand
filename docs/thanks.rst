@@ -2,8 +2,8 @@
 Credits
 =======
 
-Version 4.2.x
-=============
+Angband 4.2.x
+-------------
 
 Code contribution:
 
@@ -203,7 +203,7 @@ Special thanks to Luke McConnell for many, many conversations on game design
 which influenced design decisions across the breadth and depth of Angband.
 
 Previous maintainers
-====================
+--------------------
 
 Angband 3.0.8 - 3.5.1:
   Anna Sidwell <anna at takkaria.org>
@@ -222,7 +222,7 @@ Based on Moria, Copyright |copyright| 1985 Robert Alan Koeneke
 and Umoria, Copyright |copyright| 1989 James E. Wilson
 
 Contributors
-============
+------------
 
 Many thanks go to the following people who have contributed patches,
 bugfixes, and other stuff for Angband prior to 4.0:
@@ -348,8 +348,8 @@ Antony Sidwell (ajps)
 "PowerWyrm"
   Numerous bug fixes and code improvements
 
-Version 4.0.x
-=============
+Angband 4.0.x
+-------------
 
 Code contribution:
 
@@ -418,8 +418,8 @@ Beta testing and bug reporting/fixing:
  * zog
  * troycheek
 
-Version 4.1.x
-=============
+Angband 4.1.x
+-------------
 
 Code contribution:
 
