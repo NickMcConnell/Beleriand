@@ -7,7 +7,7 @@ Sil borrows much from the looks and interface of Angband, but almost every game 
 You might be interested to know that Sil is actually descended from a variant of Angband (NPPAngband). However, this is scarcely evident in gameplay as so many NPP features have been changed or removed. The main legacy is the 4GAI code.
 
 Main changes
-````````````
+------------
 * You are no longer trying to kill Morgoth
   * The aim is now to free a Silmaril from Morgoth’s crown, then escape
 * The game is much shorter
@@ -33,7 +33,7 @@ Main changes
   * You can thus play each level more than once, but not indefinitely
 
 System changes
-``````````````
+--------------
 * Stats
   * Based around the average for the Men of the first age (set as 0)
   * There are no ‘stat potions’, so initial stats matter a lot more

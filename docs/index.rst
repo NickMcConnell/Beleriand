@@ -22,27 +22,6 @@ NarSil is a very complex game, and it may be difficult to grasp everything at fi
    faq
 
 .. toctree::
-   :maxdepth: 2
-   :caption: The Manual
-
-   dungeon
-   race-house
-   stats
-   skills
-   combat
-   elements
-   morale
-   stealth
-   smithing
-   status
-   experience
-   abilities
-   playing
-   command
-   option
-   customize
-
-.. toctree::
    :maxdepth: 1
    :caption: Meta
 
