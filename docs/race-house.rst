@@ -9,23 +9,31 @@ Each race and house gives you various modifiers to your statistics (Strength, De
 Affinities
 ----------
 * If you have an affinity with a skill, you get:
-  * a bonus of 1 to your skill total
-  * all abilities linked to that skill are 500 experience points cheaper
-  * in particular your first ability is free!
+
+  - a bonus of 1 to your skill total
+  - all abilities linked to that skill are 500 experience points cheaper
+  - in particular your first ability is free!
 
 Skill mastery or penalty
 ------------------------
 * Mastery is like a double affinity for a single skill
-  * you get a bonus of 2 to your skill total
-  * all abilities linked to that skill are 1000 experience points cheaper
-    * (except your first one, which is free rather than giving you experience!)
+
+  - you get a bonus of 2 to your skill total
+  - all abilities linked to that skill are 1000 experience points cheaper
+
+    + (except your first one, which is free rather than giving you experience!)
+
 * Penalty is the opposite of an affinity
-  * You get a penalty of 1 to your skill total
-  * All abilities linked to that skill are 500 experience points more expensive.
+
+  - You get a penalty of 1 to your skill total
+  - All abilities linked to that skill are 500 experience points more expensive.
 
 Weapon proficiency
 ------------------
 * All elves (Noldor and Sindar) have a blade proficiency
-  * This gives them a bonus of 1 to their melee so long as they are using a blade (sword or dagger).
+
+  - This gives them a bonus of 1 to their melee so long as they are using a blade (sword or dagger).
+
 * Dwarves (Naugrim) have an axe proficiency
-  * This gives them a bonus of 1 to their melee so long as they are using an axe.
+
+  - This gives them a bonus of 1 to their melee so long as they are using an axe.

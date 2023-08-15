@@ -7,7 +7,9 @@ You have 13 points to spend between your four stats (Strength, Dexterity, Consti
 Strength
 --------
 * Increases the damage you do in combat
-  * But effect is limited by the weapon weight (see the section on Combat)
+
+  - But effect is limited by the weapon weight (see the section on Combat)
+
 * Increases your range with bows (as it is based on the weapon damage)
 * Increases your carrying capacity by 20% per point of Strength
 * Allows you to throw things 20% further per point of Strength
