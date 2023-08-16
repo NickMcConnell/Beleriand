@@ -472,13 +472,12 @@ Song of Staying
 
 Song of Lorien
 ``````````````
-* Lowers the alertness of nearby enemies, making them unwary and then ultimately
-putting them to sleep.
+* Lowers the alertness of nearby enemies, making them unwary and then ultimately putting them to sleep.
 * This is done through a skill check of your Song skill versus:
 
   - difficulty = enemy’s Will skill + 5
-    +1 per square of distance along the shortest sound path
-    +5 per closed door along the shortest sound path
+  - +1 per square of distance along the shortest sound path
+  - +5 per closed door along the shortest sound path
 * Voice: 1 per turn.
 * Noise: 4
 
@@ -505,8 +504,8 @@ Song of Mastery
 * This skill check uses your Song skill against:
 
   - difficulty = enemy’s Will skill + 5
-    +1 per square of distance along the shortest sound path
-    +5 per closed door along the shortest sound path
+  - +1 per square of distance along the shortest sound path
+  - +5 per closed door along the shortest sound path
 * Voice: 1 per turn.
 * Noise: 8
 
@@ -518,5 +517,4 @@ Woven Themes
 * You can end the minor theme without ending the major theme by attempting to sing the major theme again, and you can swap the order of the themes by attempting to sing song ‘x’.
 
 Grace
-`````
-* You gain a point of Grace.
+  * You gain a point of Grace.
