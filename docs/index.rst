@@ -22,13 +22,14 @@ NarSil is a very complex game, and it may be difficult to grasp everything at fi
    faq
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: The Manual
 
    dungeon
    race-house
    stats
    skills
+   combat
 
 .. toctree::
    :maxdepth: 1

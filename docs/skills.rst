@@ -52,8 +52,7 @@ Stealth
   - difficulty = opponent’s perception + numerous modifiers
   - See Stealth section for full details
 
-* Provides a bonus to melee against unwary or sleeping opponents if you have the
-‘assassination’ ability.
+* Provides a bonus to melee against unwary or sleeping opponents if you have the ‘assassination’ ability.
 * There is a penalty of –1 to Stealth for each 10 lb of armour worn
 * Stealth mode (command: ‘S’) gives +5 to Stealth, but –1 to speed.
 
@@ -84,7 +83,7 @@ Perception
 
   - difficulty = opponent’s will + 2 per square of distance between you
 
-Helps you avoid stepping on a caltrop trap.
+* Helps you avoid stepping on a caltrop trap.
 
   - difficulty = 10
 
