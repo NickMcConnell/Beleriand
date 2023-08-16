@@ -30,6 +30,12 @@ NarSil is a very complex game, and it may be difficult to grasp everything at fi
    stats
    skills
    combat
+   elements
+   morale
+   stealth
+   smithing
+   status
+   experience
 
 .. toctree::
    :maxdepth: 1

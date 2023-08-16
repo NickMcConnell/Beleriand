@@ -7,23 +7,25 @@ As well as its many treasures, Angband has mighty forges, to arm the hosts who f
 To create an item, you need:
 * to be at a forge which has enough resources left,
 * to have the relevant Smithing Ability:
-  * Weaponsmith for weapons, including bows, arrows, and digging implements
-  * Armoursmith for armour, including cloaks and shields
-  * Jeweller for amulets, rings, and light sources
-  * Artistry if you want to make a particularly fine weapon or piece of armour
-  * Enchantment if you want to add a special enchantment to a weapon, piece of armour, or light source
+
+  - Weaponsmith for weapons, including bows, arrows, and digging implements
+  - Armoursmith for armour, including cloaks and shields
+  - Jeweller for amulets, rings, and light sources
+  - Artistry if you want to make a particularly fine weapon or piece of armour
+  - Enchantment if you want to add a special enchantment to a weapon, piece of armour, or light source
+
 * to have enough mithril, if the item requires it,
-* to have a high enough Smithing skill (which depends on the item type and the
-bonuses you add to it),
+* to have a high enough Smithing skill (which depends on the item type and the bonuses you add to it),
 * to put a part of yourself into the item, for certain types of enchantment:
-  * this can be experience points, which is a permanent cost (this is normally the cost for items which grant Abilities or give bonuses to Skills),
-  * it may instead be one or more stat points (which will be drained until such time as you eat or drink something which can restore them).
+
+  - this can be experience points, which is a permanent cost (this is normally the cost for items which grant Abilities or give bonuses to Skills),
+  - it may instead be one or more stat points (which will be drained until such time as you eat or drink something which can restore them).
 
 Making an item will take ten turns per point of difficulty, and makes noise, so you may be interrupted during this time. If this occurs you can resume your forging where you left off.
 
 Some items are particularly easy to enchant. The costs for weapons (including bows), shields, body armour, helms, and amulets are lower than those for other equipment slots. The costs for robes, sceptres, and crowns are even lower.
 
-When not at a forge, you can still plan what you'd like to make if you find one by pressing '0' to enter Smithing planning mode and explore the possibilities.
+When not at a forge, you can still plan what you'd like to make if you find one by pressing ``0`` to enter Smithing planning mode and explore the possibilities.
 
 Creating artefacts
 ------------------

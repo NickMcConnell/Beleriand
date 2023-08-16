@@ -29,24 +29,31 @@ Helpful factors:
 * Each closed door on path reduces monster perception by 5.
 * If you are in Stealth mode (press (S) to activate, but be warned that it makes you move more slowly than normal), you get a bonus of +5 to your stealth
 * If you passed last turn (pressed (5) or (z), or (Z)), you get a bonus of +7 to your stealth (not cumulative with Stealth mode).
+
 Hindrances:
 ```````````
 * For each 10 lb of armour you are wearing (–1)
 * Being attacked by one or more enemies (–2)
 * Attacking one or more enemies (–2)
 * Awake but unwary monsters which are in line of sight get some additional bonuses:
-  * Doubles the modifiers for attacking or being attacked
-  * For every adjacent passable square (–1)
-  * So you may do well to stick to walls and corners.
+
+  - Doubles the modifiers for attacking or being attacked
+  - For every adjacent passable square (–1)
+  - So you may do well to stick to walls and corners.
+
 * If you are singing, this reduces your stealth by a value equal to the noise level of the Song (see the list of Songs).
 * Setting off some traps (–5 to –10)
 * Landing from a leap (–5)
+
 One-off effects that are not modified by stealth:
 `````````````````````````````````````````````````
 * Player actions:
-  * Earthquakes (30), horns (10 to 40), smithing (10), bashing doors (5 or 10), tunneling (5 or 10), setting off some traps (–10 to 20).
+
+  - Earthquakes (30), horns (10 to 40), smithing (10), bashing doors (5 or 10), tunneling (5 or 10), setting off some traps (–10 to 20).
+
 * Monster abilities:
-  * Earthquakes (30), arrows (5), boulders (10), crying out (10), breath weapons (10), unearthly screeching (20).
+
+  - Earthquakes (30), arrows (5), boulders (10), crying out (10), breath weapons (10), unearthly screeching (20).
 
 Stealth is thus quite abstract: a high stealth may mean little noise made, or that you kept in the shadows, or that you moved in an unobtrusive way, or let the noises that did occur sound like the natural background noises in the dungeon.
 

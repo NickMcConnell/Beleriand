@@ -8,8 +8,10 @@ Each attack you make has two stages:
 
 Weapons and Armour
 ------------------
-Weapons and armour have a few numbers displayed next to their names which explain how they relate to these two phases of an attack. Take an axe for example:
+Weapons and armour have a few numbers displayed next to their names which explain how they relate to these two phases of an attack. Take an axe for example::
+
   Battle axe (-3,3d4)
+
 This battle axe provides a penalty of –3 to accuracy, and if it hits it does 3d4 points of damage. Armour is quite similar::
 
   Leather armour [-1,1d4]
