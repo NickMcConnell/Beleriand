@@ -7,12 +7,15 @@ In the tale on which Sil is based, Beren and Luthien did manage to enter Angband
 Mechanics
 ---------
 At any time, an individual monster may be in one of three states:
+
 Asleep
 ``````
 * They cannot move and their evasion is set to [–5].
+
 Unwary
 ``````
 * They are awake and going about their business, but they do not know that you are there. Their evasion is halved.
+
 Alert
 `````
 * This is further subdivided into whether they are Confident, Aggressive, or Fleeing, but this is a matter of morale rather than stealth.

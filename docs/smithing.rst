@@ -5,6 +5,7 @@ Smithing
 As well as its many treasures, Angband has mighty forges, to arm the hosts who fight under Morgoth's banner. If you find one, you may be able to use such a forge to make yourself arms or armour, or even items of great power.
 
 To create an item, you need:
+
 * to be at a forge which has enough resources left,
 * to have the relevant Smithing Ability:
 

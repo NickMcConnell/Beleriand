@@ -87,5 +87,6 @@ Resistances
 There are various positive status effects which may be granted by pieces of equipment or consumables (in the latter case they are always temporary). These include resistances, increased stats or light radius, speed, etc, which are generally explained elsewhere.
 
 Of special note is Regeneration:
+
 * You regain health at three times the normal rate.
 * You also suffer from great hunger, and will grow hungry at three times the normal rate.

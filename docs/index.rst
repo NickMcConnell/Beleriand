@@ -36,6 +36,7 @@ NarSil is a very complex game, and it may be difficult to grasp everything at fi
    smithing
    status
    experience
+   abilities
 
 .. toctree::
    :maxdepth: 1
