@@ -3209,7 +3209,7 @@ static void start_screensaver(void)
 
 
 	/* Play game */
-	play_game();
+	play_game(GAME_LOAD);
 }
 
 #endif /* USE_SAVER */

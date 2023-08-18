@@ -880,8 +880,6 @@ static enum game_mode_type select_savefile(bool retry)
 void play_game(enum game_mode_type mode)
 {
 	while (1) {
-		enum game_mode_type next_mode = GAME_NEW;
-
 		play_again = false;
 
 		/* Load a savefile or birth a character, or both */
@@ -897,7 +895,6 @@ void play_game(enum game_mode_type mode)
 			{
 				bool retry = false;
 
-				next_mode = GAME_SELECT;
 				while (1) {
 					mode = select_savefile(retry);
 					if (mode == GAME_LOAD
@@ -917,7 +914,6 @@ void play_game(enum game_mode_type mode)
 			break;
 
 		case GAME_TUTORIAL:
-			next_mode = GAME_SELECT;
 			play_again = true;
 			start_tutorial();
 			break;
@@ -948,7 +944,7 @@ void play_game(enum game_mode_type mode)
 		if (reinit_hook != NULL) {
 			(*reinit_hook)();
 		}
-		mode = next_mode;
+		mode = GAME_SELECT;
 	}
 }
 
