@@ -86,7 +86,7 @@ which is most convenient when using the original keyset.
 Original Keyset Command Summary
 ===============================
 
-====== ============================= ====== ============================
+===== ============================== ======= ============================
 ``a``  Use a staff                   ``A``   (unused)
 ``b``  Bash a door                   ``B``   (unused)
 ``c``  Close a door                  ``C``   Center map
@@ -143,12 +143,12 @@ Original Keyset Command Summary
 `````  (special - escape)             ``?``  Display help
 ``|``  Identify symbol               ``Tab`` Display ability menu
 ``0``  Forge an item
-====== ============================= ====== ============================
+===== ============================== ======= ============================
 
 Angband-like Keyset Command Summary
 ===================================
 
-======= ============================= ====== ============================
+====== ============================= ======= ============================
 ``a``  Change song                   ``A``   (unused)
 ``b``  (unused)                      ``B``   Bash a door
 ``c``  Close a door                  ``C``   Character description
@@ -205,7 +205,7 @@ Angband-like Keyset Command Summary
  `\    (special - escape)            ``?``   Display help
 ``/``  Identify symbol               ``Tab`` Display ability menu
 ``0``  Enter a command count
-======= ============================= ====== ============================
+====== ============================= ======= ============================
 
 Special Keys
 ============
