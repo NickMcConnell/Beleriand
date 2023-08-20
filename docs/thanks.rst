@@ -2,205 +2,20 @@
 Credits
 =======
 
-Angband 4.2.x
--------------
+NarSil
+======
 
-Code contribution:
+Thanks chiefly to Toby Ord and Owen Cotton-Barratt for Sil, and to JRRT for
+Middle Earth.
 
-* Adriankhl
-* Adrian Siekierka (asiekierka)
-* Alex Mooney
-* Anna Sidwell (takkaria)
-* bacchist
-* backwardsEric
-* Ben Semmler (molybdenum)
-* Bardur Arantsson
-* Bill Peterson
-* Binrui Dong
-* bron
-* Cameron Ball
-* Colin Woodbury
-* Cuboideb (Diego Gonzalez)
-* Dag Arneson (sanedragon)
-* Daniel Burgener
-* David Medley
-* Derakon
-* Eastwind921
-* Elly Fong-Jones (elly)
-* fizzix (Aaron Bader)
-* fruviad
-* Joan Andrés
-* John Weismiller (emar)
-* Kusunose Toru
-* magnate (Chris Carr)
-* MarbleDice
-* Michael Courtney (wobbly)
-* Mikolaj Konarski
-* Paul Johnson
-* PowerWyrm
-* pwinckles (moosferatu)
-* Rodent/Sideways/sulkasormi
-* Ryan Schmidt
-* Shanoah Alkire
-* spenserblack
-* Stefan Strogin
-* tangar
-* Tim Schumacher (timschumi)
-* Vic K
-* wkmanire
-* wobbly
-* Yutao Yuan (infmagic2047)
+Thanks to MITZE, Eric Branlund, Bill Peterson, davidk64, Karkaroth and wobbly
+for testing and bug reporting/fixing.
 
-Thanks are due to many people for, reporting bugs, suggesting changes and
-contributing to discussion which has influenced this version.  The following is
-an (undoubtedly poor) attempt to list you all, please let me know if you think
-you ought to be included:
+NarSil would never have been made without the contributions of all the people
+mentioned in the Angband section below and the amazing Angband community.
 
-* Adam
-* Anarchic Fox
-* animal_waves
-* AnonymousHero
-* Antoine
-* archolewa
-* Aszazin
-* Atriel
-* bio_hazard
-* Bogatyr
-* bughunter
-* bunnies
-* Capn_Carpaccio
-* Carg
-* Carnivean
-* cccfire
-* Chud
-* cjslates
-* ClaytonAguiar
-* Clearshade
-* clouded
-* Cold_Heart
-* Combatereak
-* Darin
-* debo (cyberdemons pls)
-* desstorm
-* dionysian
-* Djbanete
-* dos350
-* Dragget
-* drquicksilver
-* Ed_47569
-* Egavactip
-* emulord
-* EpicMan
-* Eric
-* Estie
-* Estragon
-* Evilpotatoe
-* ewert
-* Flambard
-* floatRand
-* FogSpear
-* fph
-* Gauss
-* Geoff Hill (yes, that one)
-* geoff_tewierik
-* gglibertine
-* Glorfindel
-* Goaticus
-* Grotug
-* gtrudeau88
-* Gwarl
-* half
-* HallucinationMushroom
-* HebrewToYou
-* Holy_Rage
-* Hounded
-* Hrrunstar
-* Huqhox
-* ImEsteban
-* Ingwe Ingweron
-* JBright
-* Jeff Greene (nppangband)
-* jevansau
-* jml34
-* jsv
-* Julian (jl8e)
-* Jungle_Boy
-* kandrc
-* kaypy
-* khearn
-* Kinematics
-* lanactoor
-* lonadar
-* luneya
-* Mark
-* MattB
-* Mike
-* misanthropope
-* MITZE
-* MKula
-* Mondkalb
-* Monkey Face
-* Moving Pictures
-* mrfy
-* Muscleguy
-* MWGE
-* Narry
-* NCountr
-* Netbrian
-* NightLizard
-* Nomad
-* olivertheorem
-* Once
-* Oraticus
-* Pahasusi
-* Patashu
-* Pete Mack
-* Philip
-* Pondlife
-* Pussy Galore
-* quarague
-* Quirk
-* Raerick
-* Raxmei
-* renato
-* Rydel
-* Saru
-* Scatha
-* schatz
-* scrarth
-* Selkie
-* shirish
-* Sinquen
-* Sky
-* spara
-* Sparrow the Dunadan
-* Sphara
-* swaggert
-* the Invisible Stalker
-* Therem Harth
-* Thraalbee
-* Tibarius
-* Timo Pietilä
-* TJA
-* TJS
-* topazg
-* Torr
-* Vivit
-* Voovus
-* Vorczar
-* Werbaer
-* whartung
-* Whelk
-* will_asher
-* WindLord
-* Wiwaxia
-* Xaxyx
-* Youssarian
-* Zikke
-* Zirael
-
-Special thanks to Luke McConnell for many, many conversations on game design
-which influenced design decisions across the breadth and depth of Angband.
+Angband
+=======
 
 Previous maintainers
 --------------------
@@ -459,8 +274,206 @@ version to a great many people (too many to list) on
 * the roguelikes subreddit (https://www.reddit.com/r/roguelikes/)
 * the #band channel on the roguelikes discord
 
+Angband 4.2.x
+-------------
+
+Code contribution:
+
+* Adriankhl
+* Adrian Siekierka (asiekierka)
+* Alex Mooney
+* Anna Sidwell (takkaria)
+* bacchist
+* backwardsEric
+* Ben Semmler (molybdenum)
+* Bardur Arantsson
+* Bill Peterson
+* Binrui Dong
+* bron
+* Cameron Ball
+* Colin Woodbury
+* Cuboideb (Diego Gonzalez)
+* Dag Arneson (sanedragon)
+* Daniel Burgener
+* David Medley
+* Derakon
+* Eastwind921
+* Elly Fong-Jones (elly)
+* fizzix (Aaron Bader)
+* fruviad
+* Joan Andrés
+* John Weismiller (emar)
+* Kusunose Toru
+* magnate (Chris Carr)
+* MarbleDice
+* Michael Courtney (wobbly)
+* Mikolaj Konarski
+* Paul Johnson
+* PowerWyrm
+* pwinckles (moosferatu)
+* Rodent/Sideways/sulkasormi
+* Ryan Schmidt
+* Shanoah Alkire
+* spenserblack
+* Stefan Strogin
+* tangar
+* Tim Schumacher (timschumi)
+* Vic K
+* wkmanire
+* wobbly
+* Yutao Yuan (infmagic2047)
+
+Thanks are due to many people for, reporting bugs, suggesting changes and
+contributing to discussion which has influenced this version.  The following is
+an (undoubtedly poor) attempt to list you all, please let me know if you think
+you ought to be included:
+
+* Adam
+* Anarchic Fox
+* animal_waves
+* AnonymousHero
+* Antoine
+* archolewa
+* Aszazin
+* Atriel
+* bio_hazard
+* Bogatyr
+* bughunter
+* bunnies
+* Capn_Carpaccio
+* Carg
+* Carnivean
+* cccfire
+* Chud
+* cjslates
+* ClaytonAguiar
+* Clearshade
+* clouded
+* Cold_Heart
+* Combatereak
+* Darin
+* debo (cyberdemons pls)
+* desstorm
+* dionysian
+* Djbanete
+* dos350
+* Dragget
+* drquicksilver
+* Ed_47569
+* Egavactip
+* emulord
+* EpicMan
+* Eric
+* Estie
+* Estragon
+* Evilpotatoe
+* ewert
+* Flambard
+* floatRand
+* FogSpear
+* fph
+* Gauss
+* Geoff Hill (yes, that one)
+* geoff_tewierik
+* gglibertine
+* Glorfindel
+* Goaticus
+* Grotug
+* gtrudeau88
+* Gwarl
+* half
+* HallucinationMushroom
+* HebrewToYou
+* Holy_Rage
+* Hounded
+* Hrrunstar
+* Huqhox
+* ImEsteban
+* Ingwe Ingweron
+* JBright
+* Jeff Greene (nppangband)
+* jevansau
+* jml34
+* jsv
+* Julian (jl8e)
+* Jungle_Boy
+* kandrc
+* kaypy
+* khearn
+* Kinematics
+* lanactoor
+* lonadar
+* luneya
+* Mark
+* MattB
+* Mike
+* misanthropope
+* MITZE
+* MKula
+* Mondkalb
+* Monkey Face
+* Moving Pictures
+* mrfy
+* Muscleguy
+* MWGE
+* Narry
+* NCountr
+* Netbrian
+* NightLizard
+* Nomad
+* olivertheorem
+* Once
+* Oraticus
+* Pahasusi
+* Patashu
+* Pete Mack
+* Philip
+* Pondlife
+* Pussy Galore
+* quarague
+* Quirk
+* Raerick
+* Raxmei
+* renato
+* Rydel
+* Saru
+* Scatha
+* schatz
+* scrarth
+* Selkie
+* shirish
+* Sinquen
+* Sky
+* spara
+* Sparrow the Dunadan
+* Sphara
+* swaggert
+* the Invisible Stalker
+* Therem Harth
+* Thraalbee
+* Tibarius
+* Timo Pietilä
+* TJA
+* TJS
+* topazg
+* Torr
+* Vivit
+* Voovus
+* Vorczar
+* Werbaer
+* whartung
+* Whelk
+* will_asher
+* WindLord
+* Wiwaxia
+* Xaxyx
+* Youssarian
+* Zikke
+* Zirael
+
 Special thanks to Luke McConnell for many, many conversations on game design
-which influenced design decisions across the breadth and depth of Angband.
+which influenced design decisions across the breadth and depth of Angband,
+FAangband, Beleriand and NarSil.
 
 .. |copyright| unicode:: 0xA9
 
