@@ -244,13 +244,13 @@ Listen
   * This chance takes the form of a perception skill check:
 
     - difficulty = opponent’s stealth score
-     –3 if it is awake but unwary
-     –5 if it moved
-     –10 if it called out or smashed a door
-     –15 if it tunnelled through rock
-     +(Song/2) if you are singing the Song of Silence
-     +1 per square of distance along the shortest sound path
-     +5 per closed door along the shortest sound path
+    - –3 if it is awake but unwary
+    - –5 if it moved
+    - –10 if it called out or smashed a door
+    - –15 if it tunnelled through rock
+    - +(Song/2) if you are singing the Song of Silence
+    - +1 per square of distance along the shortest sound path
+    - +5 per closed door along the shortest sound path
   * Successes represent the opponent as a grey asterisk, unless you succeed by 10 or more, in which case they are completely revealed.
 
 Master Hunter
@@ -341,8 +341,8 @@ Song of Elbereth
   * This is done through a skill check of your Song skill versus:
 
     - difficulty = enemy’s Will skill
-    +1 per square of distance along the shortest sound path
-    +5 per closed door along the shortest sound path
+    - +1 per square of distance along the shortest sound path
+    - +5 per closed door along the shortest sound path
   * Temporarily lowers their morale by 1 per point you succeed by.
   * Voice: 1⁄3 per turn.
   * Noise: 8
@@ -371,8 +371,8 @@ Song of Freedom
   * This is done through a skill check of your Song skill versus:
 
     - difficulty = base of: dungeon-level/2 + 5
-    +1 per square of distance along the shortest sound path
-    +5 per closed door along the shortest sound path
+    - +1 per square of distance along the shortest sound path
+    - +5 per closed door along the shortest sound path
   * Voice: 1⁄3 per turn.
   * Noise: 4
 

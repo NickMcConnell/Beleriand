@@ -140,7 +140,7 @@ Original Keyset Command Summary
 ``.``  Run                           ``^Y``  (unused)
 ``>``  Go down staircase             ``^Z``  (unused)
 ``\``  (special - bypass keymap)      ``~``  Check knowledge
-`````  (special - escape)             ``?``  Display help
+ \`  (special - escape)             ``?``  Display help
 ``|``  Identify symbol               ``Tab`` Display ability menu
 ``0``  Forge an item
 ===== ============================== ======= ============================
@@ -202,7 +202,7 @@ Angband-like Keyset Command Summary
 ``.``  Run                           ``^Y``  (unused)
 ``>``  Go down staircase             ``^Z``  (unused)
 ``\``  (special - bypass keymap)     ``~``   Check knowledge
- `\    (special - escape)            ``?``   Display help
+ \`    (special - escape)            ``?``   Display help
 ``/``  Identify symbol               ``Tab`` Display ability menu
 ``0``  Enter a command count
 ====== ============================= ======= ============================
@@ -233,7 +233,7 @@ Pressing backslash (``\``) before a command will bypass all keymaps, and
 the next keypress will be interpreted as an "underlying command" key,
 unless it is a caret (``^``), in which case the keypress after that will be
 turned into a control-key and interpreted as a command in the underlying
- keyset. The backslash key is useful for creating actions which are
+keyset. The backslash key is useful for creating actions which are
 not affected by any keymap definitions that may be in force, for example,
 the sequence ``\`` + ``.`` + ``6`` will always mean "run east", even if the
 ``.`` key has been mapped to a different underlying command.
