@@ -140,7 +140,7 @@ Original Keyset Command Summary
 ``.``  Run                           ``^Y``  (unused)
 ``>``  Go down staircase             ``^Z``  (unused)
 ``\``  (special - bypass keymap)      ``~``  Check knowledge
- \`  (special - escape)             ``?``  Display help
+ \`    (special - escape)             ``?``  Display help
 ``|``  Identify symbol               ``Tab`` Display ability menu
 ``0``  Forge an item
 ===== ============================== ======= ============================
