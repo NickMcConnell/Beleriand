@@ -14,7 +14,7 @@
 # This file defines the types of themed object drops that are used by the game.
 # Most of these are just single object base types (tvals).
 
-# 'name' is the name of the drop type, unused in the actual code.
+# 'name' is the name of the drop type.
 
 # A 'chest' line appears if the drop type is used for themed chest contents.
 

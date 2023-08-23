@@ -1,8 +1,8 @@
 =================
-Modifying Angband
+Modifying NarSil
 =================
 
-Angband is not just a great game in its own right, it is really easy to modify.
+NarSil is not just a great game in its own right, it is really easy to modify.
 Much of the detail of the game is contained in text data files.  These can be
 changed using nothing more than a text editor for an immediate change to how
 the game works.
@@ -23,50 +23,48 @@ The data files
 
 constants.txt
   This file contains game values such as carried item capacity, visual range
-  and dungeon level and town dimensions.
+  and dungeon level dimensions.
 
 object_base.txt
   This file contains the names and common properties of the basic object
-  classes - scroll, sword, ring, and so on.  All objects have an object base.
+  classes - potion, sword, ring, and so on.  All objects have an object base.
   Each object base is assigned a 'tval' - a numeric index.  The tvals are
   defined in src/list-tvals.h.  While adding new object bases is possible,
   it is unlikely to do much without deeper changes to the game.
 
 object.txt
   This file contains the names, properties and description of all the object
-  types that appear in Angband.  New object kinds can easily be added to this
+  types that appear in NarSil.  New object kinds can easily be added to this
   file, or existing ones edited.  Each object defined by this file has an
   object base, and is also allocated another numeric index called an 'sval'.
   A tval-sval pair completely identifies an object - since the tval and sval
   are saved to savefiles, removing or adding objects is likely to render
   existing save files unusable.
 
-ego_item.txt
-  This file contains the names, properties and description of ego items, which
-  are magically enhanced weapons and armour.  New ego items can be added or
+special.txt
+  This file contains the names, properties and description of special items,
+  which are magically enhanced weapons and armour.  New specials can be added or
   removed at will, although removing or changing one with an instance currently
   in the game might cause problems.
 
-artifact.txt
-  This file contains the names, properties and description of artifacts, which
+artefact.txt
+  This file contains the names, properties and description of artefacts, which
   are unique items - only one of each will ever be generated.  If you are
-  considering major changes, new artifacts are one of the most visible signs of
-  a change of theme.  Regardless, new artifacts are easy and fun to design.
+  considering major changes, new artefacts are one of the most visible signs of
+  a change of theme.  Regardless, new artefacts are easy and fun to design.
+
+drop.txt
+  This file defines themed chest contents, and is used in generating higher
+  quality items on level generation.  Altering it will affect the way these
+  processes work.
 
 names.txt
   This file contains lists of words which are used to generate names for
   random character names, random artifacts and scrolls.  Again, in the case
   of a change of theme, this is a good way of displaying the new theme.
 
-activation.txt
-  Activations are used for artifacts and some regular objects, and could be
-  used for ego items (although none currently are).  Some standard artifacts
-  from artifact.txt have activations, and random artifacts may have any
-  activation from this file chosen for them.  Activations can be made up of
-  any effects (see list-effects.h and effect-handler-*something*.c).
-
 flavor.txt
-  Items such as potions and wands are assigned a flavor per object kind,
+  Items such as potions and staves are assigned a flavor per object kind,
   different in each game.  There need to be at least as many flavors for each
   flavored object base as objects with that base.
 
@@ -89,20 +87,33 @@ pain.txt
   This file contains the various messages that are given to describe how a
   monster responds to attack.
 
-pit.txt
-  Dungeon levels can contain pits - rooms full of a particular selection of
-  monsters.  This file defines these selections.  They can also be used, for
-  example, to generate partial or complete dungeon levels with themed monsters.
+warning.txt
+  This file contains the various messages that are given to describe how a
+  monster calls to other monsters.
 
-class.txt
-  This file completely defines how player classes work, including all details
-  of castable spells.  There are some class-specific properties hard-coded,
-  which are referred to via the 'flags:' lines, and appear in
-  list-player-flags.h.
+pursuit.txt
+  This file contains the various messages that are given to describe the
+  sounds a monster makes while pursuing the player.
 
-p_race.txt
-  This file defines all player race characteristics.  Race-specific code is
-  handled as for classes.
+race.txt
+  This file defines all player race characteristics, such as stats and skills,
+  as well as starting equipment and other qualities.
+
+house.txt
+  This file defines all characteristics of the houses within the player races.
+  House-specific code is handled as for races.
+
+sex.txt
+  This file defines player sexes.
+
+ability.txt
+  This file lists all the player abilities that can be learned for each player
+  skill.  New or changed abilities will need code changes to make them do
+  anything, as will changing of ability names.
+
+song.txt
+  This file describes the songs of power that a character can sing, including
+  some details of how they operate.
 
 body.txt
   Every player race has a body, which defines what equipment they can use.
@@ -114,33 +125,24 @@ history.txt
   screen.  If a new race is introduced, a selection of background information
   for it will need to be added.
 
-hints.txt
-  This is simply a list of general pieces of advice that shopkeepers will give
-  to their customers.
-
-quest.txt
-  This file defines the quest monsters (Sauron and Morgoth) and where they
-  appear.  This currently can't easily be changed, as there are still
-  hard-coded aspects of the quests.
-
 terrain.txt
-  This file defines the kind of terrain which can appear in Angband, and its
+  This file defines the kind of terrain which can appear in NarSil, and its
   properties.  Current terrain can be changed (with possibly large effects),
   but removing it without code changes is likely to break the game.  Adding
   new terrain will have no effect by itself, because there is no mechanism
   for it to appear.
 
 trap.txt
-  This defines all traps, door locks and runes.  Actual trap effects appear in
+  This defines all traps, door locks and glyphs.  Actual trap effects appear in
   list-effects.h and effect-handler-*something*.c.
 
-room_template.txt
-  This is a list of templates for interesting-shaped rooms which appear in the
-  dungeon.  These can easily be changed and new ones added.
+chest_trap.txt
+  This defines all chest traps.  As for floor traps, actual effects appear in
+  list-effects.h and effect-handler-*something*.c.
 
 vault.txt
-  Similar to room_template.txt, this handles vaults, which are very dangerous
-  and lucrative rooms.
+  This is a list of templates for vaults, which are very dangerous and
+  lucrative rooms.  These can easily be changed and new ones added.
 
 dungeon_profile.txt
   This file contains fairly technical details about the different types of
@@ -148,8 +150,9 @@ dungeon_profile.txt
   gen-cave.c; the information here consists of parameters for generating
   individual levels, and for how often given level types appear.
 
-store.txt
-  This details the shop owners and their relative generosity.
+world.txt
+  This file defines the names of all the places (dungeon levels, etc) in the
+  game and how they are connected.
 
 blow_effects.txt
   This defines effects to the player caused by monster attacks.  The simplest
@@ -166,11 +169,6 @@ brand.txt
 
 slay.txt
   This details how weapons can be more effective against certain monsters.
-
-curse.txt
-  This file contains all the different curses that can be applied to objects.
-  It includes what type of object they can be applied to, random effects they
-  can cause, and how they change an object's properties.
 
 object_property.txt
   This file gives details about what properties an object can have (apart from
@@ -192,14 +190,10 @@ projection.txt
   effects which can be produced at a distance by player or monsters, and
   affecting player, monsters, objects, and/or terrain.  In particular, this
   file defines details of the effects of elemental attacks (such as fire or
-  shards) and the effectiveness of corresponding player resistance.  New
+  cold) and the effectiveness of corresponding player resistance.  New
   projections have to be included in src/list-projections.h, and the code to
   implement their effects put in other source files - src/project-obj.c for
   effects on objects, and other similarly-named files.
-
-realm.txt
-  This contains a small amount of information about the two current magic
-  realms.
 
 summon.txt
   This contains definitions for the types of monsters that can be summoned.
@@ -209,26 +203,16 @@ summon.txt
 tutorial.txt
   This defines the contents of the tutorial.
 
-ui_entry.txt
-  Defines entries that will be displayed in the second part of the character
-  sheet and in the knowledge menu's equipable comparison.  You can modify
-  properties in object_property.txt and project_property.txt to bind them to
-  those entries.  The intent is to make it possible to add or remove a property
-  without having to update ui-player.c or ui-equipcmp.c in addition to the
-  changes necessary to have that property affect core gameplay.
-
-ui_entry_base.txt
-  Provides templates for use by ui_entry.txt.
-
-ui_entry_renderer.txt
-  Defines techniques, referenced in ui_entry.txt, for rendering a property in
-  the character sheet or equipable comparison.  While it is possible to add
-  something that simply uses different palettes of symbols or colors than
-  one of the current renderers, the basic rendering techniques are hard-coded
-  in list-ui-entry-renderers.h.
+female_entry_poetry.txt, male_entry_poetry.txt, throne_poetry.txt and
+ultimate_bug.txt define various messages that are given at special events in
+the game.
 
 Making Graphical Tilesets
 =========================
+
+NarSil does not currently use graphical tilesets, although this is planned for
+inclusion in the future.  This section details the mechanism for including
+tiles which NarSil will use - namely that currently used in Angband.
 
 You can make new graphical tilesets for Angband or customize existing ones. In
 this section we'll dive into how tilesets are defined and describe how to set
@@ -380,17 +364,17 @@ game code and recompile it.  The first place to look is in the compiled data
 files, some of which have already been mentioned:
 
 =====================  =========================  =========================
+list-bane-types.h      list-mon-spells.h          list-room-flags.h
 list-dun-profiles.h    list-mon-temp-flags.h      list-rooms.h
-list-effects.h         list-mon-timed.h           list-room-flags.h
-list-elements.h        list-object-flags.h        list-square-flags.h
-list-equip-slots.h     list-object-modifiers.h    list-stats.h
-list-history-types.h   list-options.h             list-terrain-flags.h
-list-ignore-types.h    list-origins.h             list-trap-flags.h
-list-kind-flags.h      list-parser-errors.h       list-tutorial-sym.h
-list-message.h         list-player-flags.h        list-tvals.h
-list-mon-message.h     list-player-timed.h        list-ui-entry-renderers.h
+list-effects.h         list-mon-timed.h           list-skills.h
+list-elements.h        list-object-flags.h        list-smith-types.h
+list-equip-slots.h     list-object-modifiers.h    list-square-flags.h
+list-history-types.h   list-options.h             list-stats.h
+list-ignore-types.h    list-origins.h             list-terrain-flags.h
+list-kind-flags.h      list-parser-errors.h       list-trap-flags.h
+list-message.h         list-player-flags.h        list-tutorial-sym.h
+list-mon-message.h     list-player-timed.h        list-tvals.h
 list-mon-race-flags.h  list-projections.h
-list-mon-spells.h      list-randart-properties.h
 =====================  =========================  =========================
 
 Beyond this, you will have to have some knowledge of the C programming
