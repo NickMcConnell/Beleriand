@@ -887,7 +887,7 @@ void do_cmd_wiz_cure_all(struct command *cmd)
 
 	/* Restore stats */
 	for (i = 0; i < STAT_MAX; i++) {
-		effect_simple(EF_RESTORE_STAT, source_player(), "0", i, 0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_player(), "20", i, 0, 0, NULL);
 	}
 
 	/* Heal the player */
