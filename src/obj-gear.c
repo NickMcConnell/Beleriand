@@ -648,9 +648,11 @@ int inven_carry_num(const struct player *p, const struct object *obj)
 	num_to_quiver = 0;
 	for (i = 0; i < p->body.count; i++) {
 		struct object *q_obj = p->body.slots[i].obj;
+		int num_already = q_obj ? q_obj->number : 0;
 		if (!slot_type_is(p, i, EQUIP_QUIVER)) continue;
-		if (object_stackable(q_obj, obj, OSTACK_PACK)) {
-			num_to_quiver += obj->kind->base->max_stack - q_obj->number;
+		if (!tval_is_ammo(obj)) continue;
+		if (!num_already || object_stackable(q_obj, obj, OSTACK_PACK)) {
+			num_to_quiver += obj->kind->base->max_stack - num_already;
 		}
 	}
 
