@@ -181,7 +181,6 @@
 name:of Barahir
 base-object:ring:Serpentine Ring
 graphics:=:t
-pval:0
 depth:10
 rarity:20
 weight:1
@@ -204,7 +203,6 @@ desc: faithfulness.
 name:of Melian
 base-object:ring:Filigree Ring
 graphics:=:D
-pval:7
 depth:14
 rarity:30
 weight:1
@@ -225,7 +223,6 @@ desc: Above all else, she is famed for her insight.
 name:of Tinfang Gelion
 base-object:amulet:Pendant
 graphics:":D
-pval:2
 depth:12
 rarity:20
 weight:1
@@ -246,7 +243,6 @@ desc: great heroes and a desire to sing of their deeds.
 name:'Nimphelos'
 base-object:amulet:Pearl
 graphics:":w
-pval:2
 depth:12
 rarity:20
 weight:1
@@ -267,7 +263,6 @@ desc: by Thingol Greycloak, King of Doriath.
 name:'Elessar'
 base-object:amulet:Jewel
 graphics:":g
-pval:1
 depth:14
 rarity:20
 weight:1
@@ -289,7 +284,6 @@ desc: can see the withered and old as if they were young and supple once more.
 name:of the Dwarves
 base-object:amulet:Necklace
 graphics:":y
-pval:1
 depth:16
 rarity:30
 weight:1
@@ -317,7 +311,6 @@ desc: of Valinor. It was made by the dwarves of Ered Luin for Finrod Felagund.
 # Index 20
 name:of Dungalef
 base-object:soft armor:Filthy Rag
-pval:1
 depth:5
 rarity:10
 weight:20
@@ -338,7 +331,6 @@ desc: he might pass for an orc and evade the watchful eye of Thu.
 name:of Aredhel
 color:w
 base-object:soft armor:Robe
-pval:0
 depth:8
 rarity:10
 weight:30
@@ -356,7 +348,6 @@ desc: finest white cloth and hemmed with silver thread.
 # Index 22
 name:of Idril Celebrindal
 base-object:soft armor:Robe
-pval:0
 depth:16
 rarity:18
 weight:30
@@ -375,7 +366,6 @@ desc: you with thoughts of the swift eagles of Manwe.
 # Index 24
 name:of Gorlim
 base-object:soft armor:Leather Armour
-pval:0
 depth:3
 rarity:15
 weight:70
@@ -396,7 +386,6 @@ desc: promises about his dead wife.
 # Index 25
 name:of Caranthir
 base-object:soft armor:Leather Armour
-pval:4
 depth:8
 rarity:15
 weight:60
@@ -414,7 +403,6 @@ desc: and quick to anger.
 # Index 26
 name:'Catskin'
 base-object:soft armor:Leather Armour
-pval:0
 depth:10
 rarity:30
 weight:50
@@ -433,7 +421,6 @@ desc: don it it fits perfectly. You feel a desire to hunt.
 # Index 28
 name:of Beor
 base-object:soft armor:Studded Leather
-pval:0
 depth:8
 rarity:20
 weight:120
@@ -455,7 +442,6 @@ desc: the heart in the dark places of the world.
 # Index 29
 name:of Aegnor
 base-object:soft armor:Studded Leather
-pval:1
 depth:4
 rarity:30
 weight:100
@@ -475,7 +461,6 @@ desc: It lends its wearer determination and sureness of heart.
 # Index 32
 name:of Maeglin
 base-object:soft armor:Galvorn Armour
-pval:3
 depth:15
 rarity:1
 weight:70
@@ -499,7 +484,6 @@ desc: and given as a gift to his son, Maeglin.
 # Index 34
 name:of Fingon
 base-object:mail:Mail Corslet
-pval:1
 depth:8
 rarity:25
 weight:260
@@ -517,7 +501,6 @@ desc:A bright mail corslet worn by Fingon, the eldest son of Fingolfin.
 # Index 35
 name:of Durin
 base-object:mail:Mail Corslet
-pval:0
 depth:13
 rarity:30
 weight:280
@@ -537,7 +520,6 @@ desc: exquisite suits of mail, armour to protect a King.
 # Index 36
 name:of Maedhros
 base-object:mail:Hauberk
-pval:0
 depth:13
 rarity:12
 weight:330
@@ -557,7 +539,6 @@ desc: stripped from him and stored in Morgoth's iron vaults.
 # Index 37
 name:of Amon Rudh
 base-object:mail:Hauberk
-pval:0
 depth:13
 rarity:15
 weight:300
@@ -575,7 +556,6 @@ desc: Rudh, and hard is the armour they wear.
 # Index 39
 name:of Gundor
 base-object:mail:Mail Corslet
-pval:1
 depth:5
 rarity:30
 weight:350
@@ -594,7 +574,6 @@ desc: strength to walk among a host of foes.
 # Index 40
 name:of Nevrast
 base-object:mail:Hauberk
-pval:0
 depth:11
 rarity:18
 weight:500
@@ -613,7 +592,6 @@ desc: many a blow that might cleave through a lesser suit.
 # Index 41
 name:'Starlight'
 base-object:mail:Mithril Corslet
-pval:1
 depth:16
 rarity:10
 weight:120
@@ -638,7 +616,6 @@ desc: as the stars of Varda twinkle in the night sky.
 name:of Angrod
 color:b
 base-object:shield:Round Shield
-pval:0
 depth:10
 rarity:10
 weight:50
@@ -657,7 +634,6 @@ desc: of the Noldor.
 # Index 43
 name:of Glorfindel
 base-object:shield:Round Shield
-pval:0
 depth:8
 rarity:20
 weight:60
@@ -677,7 +653,6 @@ desc: elves to take swift vengeance upon their foes.
 name:of Hador
 color:r
 base-object:shield:Kite Shield
-pval:0
 depth:8
 rarity:12
 weight:90
@@ -696,7 +671,6 @@ desc: leader of the folk of Marach, and lord of Dor-lomin.
 name:of Fingolfin
 color:Z
 base-object:shield:Kite Shield
-pval:1
 depth:13
 rarity:15
 weight:70
@@ -716,7 +690,6 @@ desc: Fingolfin, high-king of the Noldor.
 name:of Valinor
 color:w
 base-object:shield:Mithril Shield
-pval:1
 depth:18
 rarity:12
 weight:30
@@ -736,7 +709,6 @@ desc: the Blessed Realm. It gladdens your heart.
 name:of the Swan
 color:b
 base-object:shield:Kite Shield
-pval:4
 depth:10
 rarity:15
 weight:70
@@ -760,7 +732,6 @@ desc: it conveys the same powers of endurance to its bearer.
 # Index 50
 name:of Amras
 base-object:sword:Broken Sword
-pval:2
 depth:4
 rarity:12
 weight:10
@@ -784,7 +755,6 @@ desc: been changed by the fire.
 # Index 52
 name:of Nargil
 base-object:sword:Dagger
-pval:0
 depth:7
 rarity:20
 weight:5
@@ -801,7 +771,6 @@ desc:'...the knife of the north, in Nogrod smithied.'
 # Index 53
 name:of Azaghal
 base-object:sword:Dagger
-pval:0
 depth:13
 rarity:8
 weight:10
@@ -823,7 +792,6 @@ desc: was at first believed to be mortally wounded.
 # Index 54
 name:'Angrist'
 base-object:sword:Dagger
-pval:0
 depth:14
 rarity:4
 weight:5
@@ -842,7 +810,6 @@ desc: name: 'Iron Cleaver'.
 # Index 58
 name:of Amrod
 base-object:sword:Shortsword
-pval:2
 depth:8
 rarity:10
 weight:15
@@ -862,7 +829,6 @@ desc: reduced to a whisper and his senses sharpen.
 # Index 59
 name:'Dagmor'
 base-object:sword:Shortsword
-pval:1
 depth:12
 rarity:10
 weight:20
@@ -880,7 +846,6 @@ desc:The 'dark-slayer'; a short blade borne by Beren, son of Barahir.
 # Index 60
 name:of Galadriel
 base-object:sword:Shortsword
-pval:0
 depth:9
 rarity:30
 weight:20
@@ -901,7 +866,6 @@ desc: at far-off Alqualonde.
 # Index 64
 name:'Orcrist'
 base-object:sword:Longsword
-pval:2
 depth:10
 rarity:20
 weight:30
@@ -921,7 +885,6 @@ desc: "Biter" by orcs who came to know its power all too well.
 # Index 65
 name:'Glamdring'
 base-object:sword:Longsword
-pval:2
 depth:14
 rarity:20
 weight:30
@@ -944,7 +907,6 @@ desc: is the bane of many of Morgoth's servants.
 # Index 66
 name:'Narsil'
 base-object:sword:Longsword
-pval:0
 depth:12
 rarity:30
 weight:25
@@ -964,7 +926,6 @@ desc: a great part to play in future events.
 # Index 67
 name:'Aranruth'
 base-object:sword:Longsword
-pval:3
 depth:20
 rarity:30
 weight:40
@@ -984,7 +945,6 @@ desc: filled with unshakeable confidence when you clasp its jeweled hilt.
 name:'Anglachel'
 color:D
 base-object:sword:Bastard Sword
-pval:0
 depth:15
 rarity:15
 weight:50
@@ -1004,7 +964,6 @@ desc:suffering Eol to live in Nan Elmoth.
 name:'Anguirel'
 color:D
 base-object:sword:Bastard Sword
-pval:0
 depth:15
 rarity:15
 weight:50
@@ -1023,7 +982,6 @@ desc:it is the twin to Anglachel.
 # Index 74
 name:'Glend'
 base-object:sword:Greatsword
-pval:1
 depth:12
 rarity:1
 weight:120
@@ -1041,7 +999,6 @@ desc:The long deadly blade of Nan, the Giant.
 # Index 75
 name:of Saithnar
 base-object:sword:Greatsword
-pval:0
 depth:17
 rarity:15
 weight:70
@@ -1061,7 +1018,6 @@ desc:A shining greatsword, inlaid with runes of silver.
 name:'Calris'
 color:r
 base-object:sword:Greatsword
-pval:1
 depth:15
 rarity:15
 weight:110
@@ -1082,7 +1038,6 @@ desc: the hosts of Morgoth.
 # Index 80
 name:'Celeg Aithorn'
 base-object:sword:Mithril Longsword
-pval:0
 depth:20
 rarity:10
 weight:20
@@ -1102,7 +1057,6 @@ desc: even Celeg Aithorn that shall cleave the world.'
 # Index 81
 name:'Ringil'
 base-object:sword:Mithril Longsword
-pval:1
 depth:20
 rarity:7
 weight:20
@@ -1124,7 +1078,6 @@ desc: might should he face it again.
 # Index 84
 name:'Delmereth'
 base-object:sword:Deathblade
-pval:2
 depth:18
 rarity:1
 weight:20
@@ -1149,7 +1102,6 @@ desc: you, though.
 name:of Boldog
 color:s
 base-object:polearm:Spear
-pval:0
 depth:8
 rarity:1
 weight:50
@@ -1167,7 +1119,6 @@ desc:The iron spear of Boldog, a fierce captain of the orcs.
 # Index 87
 name:'Aeglos'
 base-object:polearm:Spear
-pval:0
 depth:14
 rarity:15
 weight:30
@@ -1186,7 +1137,6 @@ desc: Elves.
 # Index 89
 name:of Ogbar
 base-object:polearm:Great Spear
-pval:0
 depth:10
 rarity:30
 weight:60
@@ -1205,7 +1155,6 @@ desc:A long spear, with a point like a sharp thorn of steel.
 name:of Melkor
 color:D
 base-object:polearm:Great Spear
-pval:-1
 depth:15
 rarity:20
 weight:80
@@ -1226,7 +1175,6 @@ desc: the Two Trees with wounds that would not heal.
 # Index 93
 name:'Dramborleg'
 base-object:polearm:Battle Axe
-pval:0
 depth:12
 rarity:15
 weight:50
@@ -1247,7 +1195,6 @@ desc: but cuts like a sword.
 # Index 94
 name:of Hurin
 base-object:polearm:Battle Axe
-pval:1
 depth:15
 rarity:20
 weight:45
@@ -1271,7 +1218,6 @@ desc: war-cry: "Aure entuluva!" - "Day shall come again!"
 # Index 95
 name:of Nogrod
 base-object:polearm:Great Axe
-pval:1
 depth:18
 rarity:15
 weight:110
@@ -1292,7 +1238,6 @@ desc: fight some of Morgoth's foulest servants.
 # Index 99
 name:of Gaurin
 base-object:polearm:Glaive
-pval:3
 depth:10
 rarity:30
 weight:80
@@ -1311,7 +1256,6 @@ desc: did rive the rocks of Rodrim's hall.'
 # Index 100
 name:of the Sirion
 base-object:polearm:Glaive
-pval:3
 depth:10
 rarity:20
 weight:70
@@ -1331,7 +1275,6 @@ desc: every opening, no matter how brief.
 # Index 101
 name:'Celebrist'
 base-object:polearm:Glaive
-pval:1
 depth:10
 rarity:20
 weight:50
@@ -1354,7 +1297,6 @@ desc: in your hands, its point guiding itself to where it is needed.
 # Index 104
 name:of Halmir
 base-object:hafted:Quarterstaff
-pval:3
 depth:5
 rarity:30
 weight:40
@@ -1374,7 +1316,6 @@ desc: and resolute always against the power of Morgoth.
 # Index 107
 name:of Telchar
 base-object:hafted:War Hammer
-pval:3
 depth:11
 rarity:20
 weight:45
@@ -1394,7 +1335,6 @@ desc: Its hard steel rung against both dwarf-forge and orc-shield.
 name:of Thu
 color:D
 base-object:hafted:Sceptre
-pval:2
 depth:20
 rarity:20
 weight:40
@@ -1418,7 +1358,6 @@ desc: his ghastly temples in the shade.'
 # Index 114
 name:'Burkfelek'
 base-object:digger:Mattock
-pval:3
 depth:20
 rarity:10
 weight:110
@@ -1439,7 +1378,6 @@ desc: and enchanted for both battle and mine.
 # Index 118
 name:of Curufin
 base-object:helm:Helm
-pval:2
 depth:15
 rarity:10
 weight:45
@@ -1459,7 +1397,6 @@ desc: snared many in Beleriand.
 # Index 120
 name:of Dor-Lomin
 base-object:helm:Great Helm
-pval:1
 depth:20
 rarity:15
 weight:90
@@ -1479,7 +1416,6 @@ desc: servants of Morgoth.
 name:of Utumno
 color:D
 base-object:helm:Great Helm
-pval:2
 depth:20
 rarity:30
 weight:100
@@ -1499,7 +1435,6 @@ desc: wears it to its own dark purposes.
 # Index 122
 name:of the Dwarrowdelf
 base-object:helm:Dwarf Mask
-pval:2
 depth:16
 rarity:10
 weight:70
@@ -1521,7 +1456,6 @@ desc: to fight on, no matter the circumstances.
 name:of Ecthelion
 color:w
 base-object:helm:Mithril Helm
-pval:2
 depth:16
 rarity:12
 weight:40
@@ -1542,7 +1476,6 @@ desc: It rises gracefully to a tall point as sharp as any spear.
 name:of Daeron
 color:g
 base-object:crown:Crown
-pval:4
 depth:14
 rarity:30
 weight:5
@@ -1562,7 +1495,6 @@ desc: music for breaking of the heart.'
 name:of Dark Secrets
 color:D
 base-object:crown:Crown
-pval:1
 depth:10
 rarity:15
 weight:40
@@ -1584,7 +1516,6 @@ desc: ways of power.
 # Index 129
 name:of Feanor
 base-object:crown:Jewelled Crown
-pval:3
 depth:20
 rarity:15
 weight:35
@@ -1611,7 +1542,6 @@ desc: well-bought.  For the price could be no other."
 name:of Maglor
 color:b
 base-object:cloak:Cloak
-pval:2
 depth:13
 rarity:10
 weight:20
@@ -1630,7 +1560,6 @@ desc:A cloak worn by Maglor, the mighty singer, and gentlest of Feanor's sons.
 name:of Thingol
 color:s
 base-object:cloak:Cloak
-pval:1
 depth:20
 rarity:20
 weight:15
@@ -1649,7 +1578,6 @@ desc: to the hoards of Angband, you cannot say.
 # Index 134
 name:of Luthien
 base-object:cloak:Shadow Cloak
-pval:4
 depth:13
 rarity:10
 weight:10
@@ -1671,7 +1599,6 @@ desc: beautiful being who ever knew death.
 # Index 137
 name:of Draugluin
 base-object:cloak:Wolf-Hame
-pval:2
 depth:20
 rarity:1
 weight:130
@@ -1692,7 +1619,6 @@ desc: over yourself you may deceive some of the enemy's servants.
 # Index 138
 name:of Thuringwethil
 base-object:cloak:Bat-Fell
-pval:2
 depth:23
 rarity:1
 weight:50
@@ -1714,7 +1640,6 @@ desc: let you pass as a messenger journeying to Morgoth?
 # Index 142
 name:of Celegorm
 base-object:bow:Shortbow
-pval:-1
 depth:7
 rarity:10
 weight:20
@@ -1733,7 +1658,6 @@ desc: who in days of old hunted with Orome himself.
 # Index 143
 name:'Death's Sting'
 base-object:bow:Shortbow
-pval:0
 depth:10
 rarity:15
 weight:10
@@ -1753,7 +1677,6 @@ desc: vulnerable places in your foe's armour.
 name:'Belthronding'
 color:D
 base-object:bow:Longbow
-pval:1
 depth:14
 rarity:10
 weight:30
@@ -1771,7 +1694,6 @@ desc: elven hair that faintly shimmers a pale clear gold.
 # Index 146
 name:'Wyrm's End'
 base-object:bow:Longbow
-pval:0
 depth:16
 rarity:25
 weight:60
@@ -1790,7 +1712,6 @@ desc: release an arrow it flies with great force -- and with fire.
 # Index 148
 name:of Arvernien
 base-object:bow:Dragon-horn Bow
-pval:0
 depth:20
 rarity:3
 weight:20
@@ -1813,7 +1734,6 @@ desc: dragon. Many are the blessings of the Eldar laid over it.
 name:'Dailir'
 color:u
 base-object:arrow:Arrow
-pval:0
 depth:7
 rarity:40
 weight:1
@@ -1831,7 +1751,6 @@ desc:The unerring arrow of Beleg Cuthalion.
 # Index 154
 name:of Finrod
 base-object:boots:Pair of Boots
-pval:0
 depth:15
 rarity:10
 weight:20
@@ -1851,7 +1770,6 @@ desc: the ground, letting you pass through combat as a dance.
 # Index 155
 name:of Taur-nu-Fuin
 base-object:boots:Pair of Boots
-pval:2
 depth:12
 rarity:15
 weight:20
@@ -1870,7 +1788,6 @@ desc: dread forest of Taur-nu-Fuin.
 # Index 156
 name:of Irime
 base-object:boots:Pair of Boots
-pval:0
 depth:5
 rarity:20
 weight:15
@@ -1889,7 +1806,6 @@ desc: footsteps to glow with a clear white light for hours after they pass by.
 # Index 158
 name:of Orodreth
 base-object:boots:Pair of Greaves
-pval:1
 depth:10
 rarity:20
 weight:70
@@ -1908,7 +1824,6 @@ desc: years of the Wars of Beleriand.
 # Index 159
 name:of the Helcaraxe
 base-object:boots:Pair of Greaves
-pval:0
 depth:14
 rarity:20
 weight:80
@@ -1930,7 +1845,6 @@ desc: of the ice of the Helcaraxe.
 # Index 162
 name:of Celebrimbor
 base-object:gloves:Set of Gloves
-pval:4
 depth:10
 rarity:15
 weight:5
@@ -1948,7 +1862,6 @@ desc: who would one day forge the rings of power.
 # Index 163
 name:of Rumil
 base-object:gloves:Set of Gloves
-pval:1
 depth:8
 rarity:25
 weight:5
@@ -1967,7 +1880,6 @@ desc: They lend you subtlety of hand and mind.
 # Index 164
 name:of Brethil
 base-object:gloves:Set of Gloves
-pval:0
 depth:5
 rarity:20
 weight:10
@@ -1987,7 +1899,6 @@ desc: your hand is swift and accurate.
 # Index 166
 name:of Gamil Zirak
 base-object:gloves:Set of Gauntlets
-pval:3
 depth:15
 rarity:15
 weight:40
@@ -2004,7 +1915,6 @@ desc: taught Telchar the arts of the forge.
 # Index 167
 name:'Silverhand'
 base-object:gloves:Set of Mithril Gauntlets
-pval:1
 depth:15
 rarity:10
 weight:10
@@ -2027,7 +1937,6 @@ desc: can move more delicately and swiftly than if bare.
 name:of Finwe
 color:o
 base-object:light:Lesser Jewel
-pval:2
 depth:6
 rarity:10
 weight:1
@@ -2136,7 +2045,6 @@ desc: a Silmaril from the crown, stand over it and press (k).
 name:'Grond'
 base-object:hafted:Mighty Hammer
 graphics:\:D
-pval:3
 depth:20
 rarity:1
 weight:1000

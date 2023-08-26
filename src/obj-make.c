@@ -422,6 +422,7 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 	obj->pd = art->pd;
 	obj->ps = art->ps;
 	obj->weight = art->weight;
+	obj->pval = art->pval;
 
 	/* Add the abilities */
 	while (ability) {
