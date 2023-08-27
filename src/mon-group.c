@@ -376,12 +376,17 @@ void monster_groups_verify(struct chunk *c)
 		if (c->monster_groups[i]) {
 			struct monster_group *group = c->monster_groups[i];
 			struct mon_group_list_entry *entry = group->member_list;
+			bool leader_found = false;
 			while (entry) {
 				struct monster *mon = cave_monster(c, entry->midx);
 				struct monster_group_info info = mon->group_info;
 				if (info.index != i) {
 					quit_fmt("Bad group index: group: %d, monster: %d", i,
 							 info.index);
+				}
+				if (info.role == MON_GROUP_LEADER) {
+					assert (!leader_found);
+					leader_found = true;
 				}
 				entry = entry->next;
 			}

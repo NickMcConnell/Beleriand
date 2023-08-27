@@ -549,6 +549,7 @@ bool weapon_glows(struct object *obj)
 	/* Out of LOS objects don't glow (or it can't be seen) */
 	for (grid.y = obj_grid.y - 1; grid.y <= obj_grid.y + 1; grid.y++) {
 		for (grid.x = obj_grid.x - 1; grid.x <= obj_grid.x + 1; grid.x++) {
+			if (!square_in_bounds(cave, grid)) continue;
 			if (square_isview(cave, grid)) viewable = true;
 		}
 	}

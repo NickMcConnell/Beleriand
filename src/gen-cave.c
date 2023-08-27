@@ -1289,6 +1289,11 @@ struct chunk *gates_gen(struct player *p)
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM, SQUARE_NONE,
 				   true);
 
+	/* Remove the bottom wall */
+	for (x = 1; x < c->width - 1; x++) {
+		square_set_feat(c, loc(x, c->height - 1), FEAT_FLOOR);
+	}
+
 	/* Build it */
 	room_build(c, profile);
 

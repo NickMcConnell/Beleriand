@@ -132,7 +132,7 @@ static void do_cmd_go_up_aux(void)
 	player->previous_action[0] = ACTION_MISC;
 
 	/* Cannot flee Morgoth's throne room without a Silmaril */
-	if ((player->depth == z_info->dun_depth) &&
+	if ((player->max_depth == z_info->dun_depth) &&
 		(silmarils_possessed(player) == 0)) {
 		msg("You enter a maze of staircases, but cannot find your way.");
 		return;
@@ -145,7 +145,7 @@ static void do_cmd_go_up_aux(void)
 	player->upkeep->create_stair = (change == -2) ? FEAT_MORE_SHAFT : FEAT_MORE;
 	
 	/* Deal with most cases where you can't find your way */
-	if ((new_depth < min) && (player->depth != z_info->dun_depth)) {
+	if ((new_depth < min) && (player->max_depth != z_info->dun_depth)) {
 		msgt(MSG_STAIRS_UP, "You enter a maze of up staircases, but cannot find your way.");
 
 		/* Deal with trapped stairs when trying and failing to go upwards */
@@ -1642,10 +1642,7 @@ void move_player(int dir, bool disarm)
 	bool confused = player->timed[TMD_CONFUSED] > 0;
 
 	/* Many things can happen on movement */
-	if (!square_in_bounds(cave, grid)) {
-		/* Deal with leaving the map */
-		do_cmd_escape();
-	} else if (mon && monster_is_visible(mon)) {
+	if (mon && monster_is_visible(mon)) {
 		/* Attack visible monsters */
 		py_attack(player, grid, ATT_MAIN);
 	} else if (((trap && disarm) || door) && square_isknown(cave, grid)) {
@@ -1966,10 +1963,15 @@ void do_cmd_walk(struct command *cmd)
 		/* Confused movements use energy no matter what */
 		player->upkeep->energy_use = z_info->move_energy;
 	
-	/* Verify walkability */
+	/* Verify walkability, first checking for if the player is escaping */
 	grid = loc_sum(player->grid, ddgrid[dir]);
-	if (!do_cmd_walk_test(grid))
+	if (!square_in_bounds(cave, grid)) {
+		/* Deal with leaving the map */
+		do_cmd_escape();
 		return;
+	} else if (!do_cmd_walk_test(grid)) {
+		return;
+	}
 
 	player->upkeep->energy_use = z_info->move_energy;
 

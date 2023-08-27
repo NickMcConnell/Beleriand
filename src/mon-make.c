@@ -691,7 +691,6 @@ static void set_hallucinatory_race(struct monster *mon)
  */
 static void new_wandering_destination(struct chunk *c, struct monster *mon)
 {
-	int i;
 	struct monster_race *race = mon->race;
 
 	/* Many monsters don't get wandering destinations: */
@@ -700,21 +699,6 @@ static void new_wandering_destination(struct chunk *c, struct monster *mon)
 		!(rf_has(race->flags, RF_SMART) ||
 		  rf_has(race->spell_flags, RSF_SHRIEK))) {
 		return;
-	}
-
-	/* There is a special way of grouping monsters at the Gates level */
-	if (player->depth == 0) {		
-		for (i = 1; i < cave_monster_max(c); i++) {
-			struct monster *mon1 = cave_monster(c, i);
-			struct monster_group_info info1 = mon1->group_info;
-
-			/* Skip dead monsters */
-			if (!mon1->race) continue;
-
-			if ((mon1->race == mon->race) && one_in_(2)) {
-				monster_group_assign(c, mon, info1, false);
-			}
-		}
 	}
 
 	mon->wandering_dist = z_info->wander_range;
