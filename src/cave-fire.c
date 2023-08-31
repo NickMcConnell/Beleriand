@@ -1159,7 +1159,7 @@ int project_path(struct chunk *c, struct loc *gp, int range, struct loc grid1,
 		 * Extract grid value.  Use pointer shifting to get the
 		 * correct grid offset for this octant.
 		 */
-		g = g0 + *((int16_t*)(((uint8_t*)(point)) + (octant * 2)));
+		g = g0 + point->grid[octant];
 		grid = grid_to_loc(g);
 
 		/* Must be legal (this is important) */
