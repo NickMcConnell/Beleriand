@@ -133,8 +133,8 @@ depgen:
  obj-desc.h obj-gear.h list-equip-slots.h obj-ignore.h \
  list-ignore-types.h obj-info.h z-textblock.h obj-knowledge.h obj-make.h \
  obj-pile.h obj-tval.h obj-util.h player-abilities.h player-calcs.h \
- player-quest.h player-timed.h list-player-timed.h player-util.h target.h \
- mon-predicate.h trap.h list-trap-flags.h
+ player-quest.h player-timed.h list-player-timed.h player-util.h songs.h \
+ target.h mon-predicate.h trap.h list-trap-flags.h
 ./cmd-pickup.o: cmd-pickup.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
  z-type.h message.h list-message.h player.h guid.h obj-properties.h \
@@ -556,12 +556,12 @@ depgen:
  list-tvals.h list-object-flags.h list-kind-flags.h list-stats.h \
  list-skills.h list-object-modifiers.h object.h z-quark.h z-dice.h \
  z-expression.h list-elements.h list-origins.h option.h list-options.h \
- list-player-flags.h mon-desc.h monster.h cave.h list-square-flags.h \
- list-terrain-flags.h target.h mon-predicate.h mon-timed.h \
- list-mon-timed.h mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
- list-mon-spells.h mon-msg.h list-mon-message.h mon-util.h game-input.h \
- cmd-core.h obj-smith.h player-calcs.h player-timed.h list-player-timed.h \
- songs.h
+ list-player-flags.h game-world.h cave.h list-square-flags.h \
+ list-terrain-flags.h mon-desc.h monster.h target.h mon-predicate.h \
+ mon-timed.h list-mon-timed.h mon-blows.h list-mon-temp-flags.h \
+ list-mon-race-flags.h list-mon-spells.h mon-msg.h list-mon-message.h \
+ mon-util.h game-input.h cmd-core.h obj-smith.h player-calcs.h \
+ player-timed.h list-player-timed.h songs.h
 ./mon-predicate.o: mon-predicate.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
  z-type.h message.h list-message.h player.h guid.h obj-properties.h \
@@ -1226,10 +1226,10 @@ depgen:
  target.h mon-predicate.h mon-timed.h list-mon-timed.h mon-blows.h \
  list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h obj-gear.h \
  list-equip-slots.h obj-util.h player-attack.h player-calcs.h \
- player-timed.h list-player-timed.h player-util.h ui-command.h ui-term.h \
- ui-event.h ui-display.h ui-help.h ui-input.h ui-keymap.h ui-map.h \
- ui-menu.h ui-output.h z-textblock.h ui-options.h obj-ignore.h \
- list-ignore-types.h ui-player.h ui-prefs.h ui-target.h
+ player-timed.h list-player-timed.h player-util.h tutorial.h \
+ z-textblock.h ui-command.h ui-term.h ui-event.h ui-display.h ui-help.h \
+ ui-input.h ui-keymap.h ui-map.h ui-menu.h ui-output.h ui-options.h \
+ obj-ignore.h list-ignore-types.h ui-player.h ui-prefs.h ui-target.h
 ./ui-context.o: ui-context.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h source.h \
  z-type.h message.h list-message.h player.h guid.h obj-properties.h \
@@ -1306,13 +1306,13 @@ depgen:
  mon-predicate.h mon-timed.h list-mon-timed.h mon-blows.h \
  list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h \
  list-room-flags.h grafmode.h init.h mon-lore.h z-textblock.h mon-make.h \
- obj-knowledge.h obj-util.h player-attack.h player-calcs.h player-path.h \
- player-util.h savefile.h tutorial.h ui-abilities.h ui-birth.h \
- ui-command.h ui-term.h ui-event.h ui-context.h ui-input.h ui-death.h \
- ui-display.h ui-game.h ui-help.h ui-init.h ui-keymap.h ui-knowledge.h \
- ui-map.h ui-menu.h ui-output.h ui-object.h ui-player.h ui-prefs.h \
- ui-score.h score.h ui-signals.h ui-skills.h ui-spoil.h ui-target.h \
- ui-tutorial.h ui-wizard.h
+ obj-gear.h list-equip-slots.h obj-knowledge.h obj-util.h player-attack.h \
+ player-calcs.h player-path.h player-util.h savefile.h tutorial.h \
+ ui-abilities.h ui-birth.h ui-command.h ui-term.h ui-event.h ui-context.h \
+ ui-input.h ui-death.h ui-display.h ui-game.h ui-help.h ui-init.h \
+ ui-keymap.h ui-knowledge.h ui-map.h ui-menu.h ui-output.h ui-object.h \
+ ui-player.h ui-prefs.h ui-score.h score.h ui-signals.h ui-skills.h \
+ ui-spoil.h ui-target.h ui-tutorial.h ui-wizard.h
 ./ui-help.o: ui-help.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \

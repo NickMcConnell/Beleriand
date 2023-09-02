@@ -1,3 +1,3 @@
 # NarSil 1.3.0
 
-This is an unfinished rewrite of Sil 1.3.0.  Use at own risk.
+NarSil is an almost-faithful rewrite of Sil 1.3.0 using modern Angband code.

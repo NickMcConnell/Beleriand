@@ -257,7 +257,7 @@ static menu_action death_actions[] =
 	{ 0, 'a', "Add comment to history",       death_note      },
 	{ 0, 'f', "Save character sheet",         death_file      },
 	{ 0, 's', "Spoilers",                     death_spoilers  },
-	{ 0, 'g', "Another Game",                 death_new_game  },
+	{ 0, 'g', "Another game",                 death_new_game  },
 	{ 0, 'q', "Quit",                         NULL            },
 };
 
