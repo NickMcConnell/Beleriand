@@ -1653,7 +1653,7 @@ alloc:7:6
 charges:6d2
 effect:SUMMON:ANY:0:1
 dice:1d4
-desc:It summons 1d4 monsters out of sight on the current level. 
+desc:It summons 1d4 monsters to the stairs on the current level. 
 
 
 # Index 211
