@@ -506,11 +506,11 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\z-virt.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="lib\icons\att-128.png" />
-    <Image Include="lib\icons\att-16.png" />
-    <Image Include="lib\icons\att-256.png" />
-    <Image Include="lib\icons\att-32.png" />
-    <Image Include="lib\icons\att-512.png" />
+    <Image Include="lib\icons\luthien-128.png" />
+    <Image Include="lib\icons\luthien-16.png" />
+    <Image Include="lib\icons\luthien-256.png" />
+    <Image Include="lib\icons\luthien-32.png" />
+    <Image Include="lib\icons\luthien-512.png" />
     <Image Include="lib\tiles\adam-bolt\16x16.png" />
     <Image Include="lib\tiles\gervais\32x32.png" />
     <Image Include="lib\tiles\nomad\8x16.png" />
