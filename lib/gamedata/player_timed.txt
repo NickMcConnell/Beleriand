@@ -32,6 +32,7 @@
 # on-decrease - the message on the effect decreasing
 # msgt - the message type for this effect
 # fail - determines what makes the effect fail (after a skill check).
+# save - whether the player gets a save against the effect
 # resist - (optional) when this timed property is active, the recipient gains
 #         a temporary resistance to the named element
 # flag-synonym - (optional) indicate that this timed property is (largely)
@@ -63,6 +64,7 @@ desc:slowness
 grade:U:10000:Slowed:You feel yourself moving slower!
 on-end:You feel yourself speed up.
 msgt:SLOW
+save:1
 fail:FREE_ACT
 
 name:BLIND
@@ -71,6 +73,7 @@ este:1
 grade:o:10000:Blind:You are blind.
 on-end:You can see again.
 msgt:BLIND
+save:1
 fail:PROT_BLIND
 
 name:ENTRANCED
@@ -79,6 +82,7 @@ este:1
 grade:r:10000:Entranced!:You fall into a deep trance!
 on-end:The trance is broken!
 msgt:PARALYZED
+save:1
 fail:FREE_ACT
 
 name:CONFUSED
@@ -87,6 +91,7 @@ este:1
 grade:o:10000:Confused:You are confused!
 on-end:You feel less confused now.
 msgt:CONFUSED
+save:1
 fail:PROT_CONF
 
 name:AFRAID
@@ -95,6 +100,7 @@ este:1
 grade:o:10000:Afraid:You are terrified!
 on-end:You feel bolder now.
 msgt:AFRAID
+save:1
 fail:PROT_FEAR
 
 name:IMAGE
@@ -103,6 +109,7 @@ este:1
 grade:o:10000:Halluc:Fantastic visions appear before your eyes.
 on-end:You can see clearly again.
 msgt:DRUGGED
+save:1
 fail:PROT_HALLU
 
 name:POISONED
@@ -135,6 +142,7 @@ grade:o:100:Heavy Stun:You have been heavily stunned.:You wake up.
 grade:r:105:Knocked Out:You have been knocked out.
 on-end:You are no longer stunned.
 msgt:STUN
+save:1
 fail:PROT_STUN
 
 name:DARKENED

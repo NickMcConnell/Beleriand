@@ -48,7 +48,7 @@ int PY_FOOD_STARVE;
  * ------------------------------------------------------------------------ */
 
 struct timed_effect_data timed_effects[TMD_MAX] = {
-#define TMD(a, b, c)	{ #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, { 0 }, 0, false },
+#define TMD(a, b, c)	{ #a, b, c, 0, NULL, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, { 0 }, 0, false, false },
 	#include "list-player-timed.h"
 	#undef TMD
 };
@@ -346,6 +346,15 @@ static enum parser_error parse_player_timed_este(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_player_timed_save(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+
+	assert(t);
+	t->save = parser_getuint(p, "value") ? true : false;
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_player_timed(void)
 {
 	struct parser *p = parser_new();
@@ -367,6 +376,7 @@ static struct parser *init_parse_player_timed(void)
 			   parse_player_timed_change_grade);
 	parser_reg(p, "resist sym elem", parse_player_timed_resist);
 	parser_reg(p, "este uint value", parse_player_timed_este);
+	parser_reg(p, "save uint value", parse_player_timed_save);
 	return p;
 }
 
@@ -767,7 +777,7 @@ bool player_inc_check(struct player *p, int idx, bool lore)
 	}
 
 	/* Determine whether the player saves */
-	if (player_saving_throw(p, mon, resistance)) {
+	if (effect->save && player_saving_throw(p, mon, resistance)) {
 		return false;
 	}
 

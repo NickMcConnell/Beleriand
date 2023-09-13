@@ -79,6 +79,7 @@ struct timed_effect_data {
 	struct timed_change decrease;
 	int temp_resist;
 	bool este;
+	bool save;
 };
 
 /**
