@@ -700,8 +700,7 @@ int protection_roll(struct player *p, int typ, bool melee, aspect prot_aspect)
 	}
 	
 	if (player_active_ability(p, "Hardiness")) {
-		prt += damcalc(1, MIN(1, p->state.skill_use[SKILL_WILL] / 6),
-					   prot_aspect);
+		prt += damcalc(1, p->state.skill_use[SKILL_WILL] / 6, prot_aspect);
 	}
 	
 	/* Armour: */
