@@ -635,7 +635,7 @@ static void melee_effect_handler_DISARM(melee_effect_handler_context_t *context)
 	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, context->p);
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), context->mon, MDESC_DEFAULT);
+	monster_desc(m_name, sizeof(m_name), context->mon, MDESC_STANDARD);
 
 	/* Adjustment for two handed weapons */
 	if (two_handed_melee(context->p)) {
