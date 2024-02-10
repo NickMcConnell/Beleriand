@@ -204,8 +204,9 @@ bool effect_handler_CURE(effect_handler_context_t *context)
 bool effect_handler_TIMED_SET(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context);
-	player_set_timed(player, context->subtype, MAX(amount, 0), true);
-	context->ident = true;
+	if (player_set_timed(player, context->subtype, MAX(amount, 0), true)) {
+		context->ident = true;
+	}
 	return true;
 }
 

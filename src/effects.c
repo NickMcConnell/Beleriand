@@ -349,6 +349,7 @@ bool effect_do(struct effect *effect,
 		struct command *cmd)
 {
 	bool completed = false;
+	bool first = true;
 	effect_handler_f handler;
 	random_value value = { 0, 0, 0, 0 };
 
@@ -382,7 +383,12 @@ bool effect_do(struct effect *effect,
 			};
 
 			completed = handler(&context) || completed;
-			*ident = context.ident;
+
+			/* Don't identify by NOURISH unless it's the only effect */
+			if ((effect->index != EF_NOURISH) || (!effect->next && first)) {
+				*ident = context.ident;
+			}
+			first = false;
 		}
 
 		/* Get the next effect, if there is one */
