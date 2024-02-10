@@ -1502,13 +1502,12 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
  * Fire an object from the quiver, pack or floor at a target.
  */
 void do_cmd_fire(struct command *cmd) {
-	int dir;
+	int dir, range;
 	int shots = 1;
 
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	struct object *obj;
 	bool radiance;
-	int range = archery_range(bow);
 
 	/* Require a usable launcher */
 	if (!bow || !player->state.ammo_tval) {
@@ -1537,6 +1536,7 @@ void do_cmd_fire(struct command *cmd) {
 		return;
 	}
 
+	range = archery_range(bow);
 	if (cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK) {
 		player_confuse_dir(player, &dir, false);
 		if (player->timed[TMD_AFRAID]) {
