@@ -3587,6 +3587,7 @@ static void process_monster_recover(struct monster *mon)
         if (!still_singing && one_in_(2)) {
             /* Remove the monster */
             delete_monster(cave, mon->grid);
+			return;
         }
     }
 
