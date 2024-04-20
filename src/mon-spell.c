@@ -562,3 +562,16 @@ random_value mon_spell_lore_damage(int index)
 	}
 	return val;
 }
+
+/**
+ * Probably breaks with negative power, but eh, four other things
+ * probably break too with negative power.
+ */
+int mon_spell_lore_archery_bonus(int index, const struct monster_race *race)
+{
+    int power = 0;
+    if (mon_spell_is_valid(index) && mon_spell_is_archery(index)) {
+        power = race->spell_power;
+    }
+    return power;
+}

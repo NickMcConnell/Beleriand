@@ -521,6 +521,8 @@ static void lore_append_spell_clause(textblock *tb, bitflag *f,
 		for (spell = rsf_next(f, FLAG_START); spell;
 			 spell = rsf_next(f, spell + 1)) {
 			random_value damage = mon_spell_lore_damage(spell);
+            int archery_bonus = 0;
+            archery_bonus = mon_spell_lore_archery_bonus(spell, race);
 
 			/* First entry starts immediately */
 			if (spell != rsf_next(f, FLAG_START)) {
@@ -535,7 +537,12 @@ static void lore_append_spell_clause(textblock *tb, bitflag *f,
 			}
 			textblock_append_c(tb, attr, "%s",
 							   mon_spell_lore_description(spell, race));
-			if (damage.dice && damage.sides) {
+
+            /* If it's not an archery spell, archery_bonus is 0 */
+            if (damage.dice && damage.sides && archery_bonus) {
+                textblock_append_c(tb, dam_attr, " (+%d, %dd%d)",
+								   archery_bonus, damage.dice, damage.sides);
+            } else if (damage.dice && damage.sides) {
 				textblock_append_c(tb, dam_attr, " (%dd%d)", damage.dice,
 								   damage.sides);
 			}

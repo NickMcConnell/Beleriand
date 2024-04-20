@@ -67,5 +67,6 @@ void create_mon_spell_mask(bitflag *f, ...);
 const char *mon_spell_lore_description(int index,
 									   const struct monster_race *race);
 random_value mon_spell_lore_damage(int index);
+int mon_spell_lore_archery_bonus(int index, const struct monster_race *race);
 
 #endif /* MONSTER_SPELL_H */
