@@ -18,7 +18,19 @@
 # attack: plus to-hit : damage dice
 # defence: plus to-evasion : protection dice
 # alloc: depth: rarity
+# charges: charges
+# effect: effect when used : subtype (optional) : radius (optional) : parameter (optional)
+# dice:dice string
+# expr:substitution code:base value:expression
+# thrown-effect: effect when thrown : subtype (optional) : radius (optional) : parameter (optional)
+# thrown-dice:dice string
+# thrown:expr:substitution code:base value:expression
 # flags: flag | flag | etc
+# values: label[value] | label[value] | etc.
+# brand: code
+# slay: code
+# special: value: minimum
+# msg: message on using the object
 # desc: description
 #
 # 'name' indicates the beginning of an entry. The '&' and '~' symbols are used
@@ -62,9 +74,53 @@
 #     are found throughout the dungeon. The 'allocation' depth need not
 #     match the depth as specified in the 'depth:' line.
 #
+# 'charges' is for charges (staves only).  This field accepts randomized values.
+#
+# 'effect' is for the effect when an object is eaten, activated or whatever.
+# Fields are the name of the effect (as found in src/list-effects.h), the
+# subtype which is either an index or a name (look at effect_subtype()
+# in src/effects.c for more information about the available subtypes), the
+# radius, and the other parameter.  The effect name is required.  The others
+# are optional, and the trailing ones that are unused can be omitted.
+#
+# 'dice' provides a random value to be used by an effect (for damage,
+# healing, etc).  As well as the normal random value fields described above,
+# it can contain expressions like $B, which refer forward to an 'expr' line.
+#
+# 'expr' provides an expression for use in effect dice.  It consists of a
+# code letter (eg B) for the expression, a base function to use (for example
+# PLAYER_LEVEL), and a sequence of operations to perform on that base.
+#
+# 'thrown-effect', 'thrown-dice' and 'thrown-expr' manage effects for thrown
+# potions
+#
 # 'flags' is for flags. These are fairly self-explanatory. As many F:
 #     lines may be used as are needed to specify all the flags and flags
 #     are separated by the '|' symbol.
+#
+# 'values' is for properties that take a value.  Valid properties are the
+# object modifiers (as found in list-stats.h and list-object-modifiers.h)
+# or resistances ('RES_' prepended to the element name from list-elements.h).
+# The value appears in brackets after the property name.  For object modifiers,
+# the value can be any random expression.  For resistances, it must be a plain
+# integer value with the useful ones being 1 (resist), 3 (immune), and -1
+# (vulnerable).  Like flags, values are separated by '|' and as many values:
+# lines as needed can be used.
+#
+# 'brand' adds a brand to the object.  It should be omitted for objects
+# without brands and may appear more than once for objects with multiple brands.
+# Specify the brand to be added by its code in brand.txt.
+#
+# 'slay' adds a slay to the object.  It should be omitted for objects without
+# slays and may appear more than once for objects with multiple slays.  Specify
+# the slay to be added by its code in slay.txt.
+#
+# 'special' handles ring types where for other objects a field takes an
+# integer, but for this type it takes a random value.  These fields are given
+# the value 99 in this file, which is then replaced by the special calculation
+# on object creation.
+#
+# 'msg' is any message printed on using the object.
 #
 # 'desc' is for description. As many desc: lines may be used as are needed
 #     to describe the object. Note that lines will need spaces at their
