@@ -846,7 +846,7 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Clear old messages, add new starting message */
 	history_clear(player);
-	history_add(player, "Began the quest to destroy Morgoth.", HIST_PLAYER_BIRTH);
+	history_add(player, "Began the quest to recover a Silmaril.", HIST_PLAYER_BIRTH);
 
 	/* Note player birth in the message recall */
 	message_add(" ", MSG_GENERIC);
