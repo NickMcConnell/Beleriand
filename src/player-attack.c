@@ -1458,21 +1458,8 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 			missile = floor_object_for_use(p, obj, 1, true, &none_left);
 		}
 
-		/* Inscribe the object with "=g" for auto-pickup */
-		if (missile->note) {
-			if (strstr(quark_str(missile->note), "=g")) {
-				/* Already fine */
-			} else {
-				char *new;
-				int len = strlen(quark_str(missile->note));
-				new = mem_zalloc((len + 5) * sizeof(char));
-				my_strcpy(new, quark_str(missile->note), len);
-				my_strcat(new, ", =g", len + 5);
-				missile->note = quark_add((const char *)new);
-			}
-		} else {
-			missile->note = quark_add("=g");
-		}
+		/* Set to auto-pickup */
+		missile->notice |= OBJ_NOTICE_PICKUP;
 
 		/* Drop (or break) near that location */
 		drop_near(cave, &missile, breakage_chance(missile, hit_wall),

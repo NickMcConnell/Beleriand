@@ -91,6 +91,7 @@ static int auto_pickup_okay(const struct object *obj)
 	if (!num) return 0;
 
 	if (OPT(player, pickup_always)) return num;
+	if (obj->notice & OBJ_NOTICE_PICKUP) return num;
 	if (check_for_inscrip(obj, "!g")) return 0;
 
 	obj_has_auto = check_for_inscrip(obj, "=g");
@@ -185,6 +186,9 @@ static void player_pickup_aux(struct player *p, struct object *obj,
 		picked_up = floor_object_for_use(p, obj, num, false, &dummy);
 		inven_carry(p, picked_up, true, domsg);
 	}
+
+	/* If it's auto-pickup of thrown/fired things we're done */
+	if (obj->notice & OBJ_NOTICE_PICKUP) return;
 
 	/* Store the action type */
 	p->previous_action[0] = ACTION_MISC;
