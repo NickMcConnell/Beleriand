@@ -66,6 +66,7 @@ mana:0
 best-range:4
 max-range:16
 desire:2
+disturb:1
 use-past-range:100
 effect:BOLT:ARROW
 dice:2d7m$M
