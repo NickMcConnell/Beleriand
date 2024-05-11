@@ -2139,7 +2139,7 @@ cost:0
 attack:0:0d0
 defence:0:0d0
 alloc:3:3
-effect:SPOT:POIS:0
+effect:TIMED_INC:POISONED
 dice:5d4
 effect:NOURISH:INC_BY
 dice:100
