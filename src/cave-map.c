@@ -104,6 +104,9 @@ void map_info(struct loc grid, struct grid_data *g)
 	g->hallucinate = player->timed[TMD_IMAGE] ? true : false;
 	g->rage = player->timed[TMD_RAGE] ? true : false;
 
+	if (square_isglow(cave, grid)) {
+		g->lighting = LIGHTING_LIT;
+	}
 	if (g->in_view) {
 		bool lit = square_islit(cave, grid);
 
@@ -120,8 +123,6 @@ void map_info(struct loc grid, struct grid_data *g)
 		return;
 	} else if (!square_isknown(cave, grid)) {
 		g->f_idx = FEAT_NONE;
-	} else if (square_isglow(cave, grid)) {
-		g->lighting = LIGHTING_LIT;
 	}
 
 	/* Use known feature */
