@@ -729,7 +729,13 @@ void do_cmd_exchange(struct command *cmd)
 	/* Attack of opportunity */
 	if ((mon->alertness >= ALERTNESS_ALERT) && !mon->m_timed[MON_TMD_CONF] &&
 		!rf_has(mon->race->flags, RF_MINDLESS)) {
-		msg("It attacks you as you slip past.");
+		char m_pronoun[80];
+
+		/* Calculate pronoun for the first time */
+		monster_desc(m_pronoun, sizeof(m_pronoun), mon,
+					 MDESC_PRO_VIS | MDESC_CAPITAL);
+
+		msg("%s attacks you as you slip past.", m_pronoun);
 		make_attack_normal(mon, player);
 	}
 
