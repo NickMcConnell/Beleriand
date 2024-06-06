@@ -458,8 +458,10 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		make_alert(mon, 0);
 
 		/* Give detailed messages if visible or destroyed */
-		if ((hurt_msg != MON_MSG_NONE) && seen) {
-			add_monster_message(mon, hurt_msg, false);
+		if (seen) {
+			if (hurt_msg != MON_MSG_NONE) {
+				add_monster_message(mon, hurt_msg, false);
+			}
 		} else if (dam > 0) {
 			/* Pain message */
 			message_pain(mon, dam);
@@ -510,8 +512,10 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 	 * based on the amount of damage dealt. Also display a message
 	 * if the hit caused the monster to flee. */
 	if (!mon_died) {
-		if (seen && hurt_msg != MON_MSG_NONE) {
-			add_monster_message(mon, hurt_msg, false);
+		if (seen) {
+			if (hurt_msg != MON_MSG_NONE) {
+				add_monster_message(mon, hurt_msg, false);
+			}
 		} else if (dam > 0) {
 			message_pain(mon, dam);
 		}
