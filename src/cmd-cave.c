@@ -1982,7 +1982,7 @@ void do_cmd_walk(struct command *cmd)
 	
 	/* Verify walkability, first checking for if the player is escaping */
 	grid = loc_sum(player->grid, ddgrid[dir]);
-	if (!square_in_bounds(cave, grid)) {
+	if (!square_in_bounds_fully(cave, grid)) {
 		/* Deal with leaving the map */
 		do_cmd_escape();
 		return;

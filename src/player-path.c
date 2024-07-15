@@ -844,6 +844,13 @@ void run_step(int dir)
 	/* Move the player; running straight into a trap == trying to disarm */
 	move_player(run_cur_dir, dir && disarm ? true : false);
 
+	/* Check if the player is escaping */
+	if (!square_in_bounds_fully(cave, player->grid)) {
+		/* Deal with leaving the map */
+		do_cmd_escape();
+		return;
+	}
+
 	/* Decrease counter if it hasn't been cancelled */
 	/* occurs after movement so that using p->u->running as flag works */
 	if (player->upkeep->running) {
