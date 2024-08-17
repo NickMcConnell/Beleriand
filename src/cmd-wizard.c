@@ -1678,7 +1678,7 @@ void do_cmd_wiz_play_item(struct command *cmd)
 		}
 
 		/* Release the preserved copy. */
-		object_delete(cave, &orig_obj);
+		object_delete(cave, player->cave, &orig_obj);
 
 		/*
 		 * Reset the original_item and changed arguments so repeating
@@ -2113,10 +2113,10 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 		/* Record old pile information. */
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
+		struct object *known_obj = obj->known;
 		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
-		bool marked = obj->marked;
 
 		/*
 		 * Free slays, brands, and abilities on the old object by hand.
@@ -2132,10 +2132,11 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 		object_copy(obj, new);
 		obj->prev = prev;
 		obj->next = next;
+		obj->known = known_obj;
+		obj->known->ego = obj->ego;
 		obj->oidx = oidx;
 		obj->grid = grid;
 		obj->notice = notice;
-		obj->marked = marked;
 	}
 
 	/* Mark as cheat */
@@ -2149,7 +2150,7 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 	}
 
 	/* Free the copy. */
-	object_delete(cave, &new);
+	object_delete(cave, player->cave, &new);
 }
 
 
@@ -2306,7 +2307,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		/* Test for same tval and sval. */
 		if (obj->tval != test_obj->tval ||
 				obj->sval != test_obj->sval) {
-			object_delete(cave, &test_obj);
+			object_delete(cave, player->cave, &test_obj);
 			continue;
 		}
 
@@ -2352,7 +2353,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		}
 
 		/* Nuke the test object. */
-		object_delete(cave, &test_obj);
+		object_delete(cave, player->cave, &test_obj);
 	}
 
 	/* Final dump */
@@ -2545,6 +2546,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		struct ego_item *e = obj->ego;
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
+		struct object *known = obj->known;
 		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
@@ -2553,6 +2555,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		obj->ego = e;
 		obj->prev = prev;
 		obj->next = next;
+		obj->known = known;
 		obj->oidx = oidx;
 		obj->grid = grid;
 		obj->notice = notice;
@@ -2589,6 +2592,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		const struct artifact *a = obj->artifact;
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
+		struct object *known = obj->known;
 		uint16_t oidx = obj->oidx;
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
@@ -2598,6 +2602,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		obj->artifact = a;
 		obj->prev = prev;
 		obj->next = next;
+		obj->known = known;
 		obj->oidx = oidx;
 		obj->grid = grid;
 		obj->notice = notice;

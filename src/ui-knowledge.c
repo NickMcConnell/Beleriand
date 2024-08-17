@@ -1863,7 +1863,7 @@ static void desc_obj_fake(int k_idx)
 	struct object_kind *kind = &k_info[k_idx];
 	struct object_kind *old_kind = player->upkeep->object_kind;
 	struct object *old_obj = player->upkeep->object;
-	struct object *obj = object_new();
+	struct object *obj = object_new(), *known_obj = object_new();
 
 	char header[120];
 
@@ -1879,7 +1879,8 @@ static void desc_obj_fake(int k_idx)
 
 	/* It's fully known */
 	if (kind->aware || !kind->flavor)
-		object_know(obj);
+		object_copy(known_obj, obj);
+	obj->known = known_obj;
 
 	/* Hack -- Handle stuff */
 	handle_stuff(player);
@@ -1889,7 +1890,8 @@ static void desc_obj_fake(int k_idx)
 		ODESC_PREFIX | ODESC_CAPITAL, player);
 
 	textui_textblock_show(tb, area, header);
-	object_delete(NULL, &obj);
+	object_delete(NULL, NULL, &known_obj);
+	object_delete(NULL, NULL, &obj);
 	textblock_free(tb);
 
 	/* Restore the old trackee */

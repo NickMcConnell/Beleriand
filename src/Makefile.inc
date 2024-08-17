@@ -460,7 +460,8 @@ depgen:
  mon-group.h mon-lore.h z-textblock.h mon-move.h mon-util.h mon-msg.h \
  list-mon-message.h obj-knowledge.h player-abilities.h player-calcs.h \
  player-history.h list-history-types.h player-quest.h player-timed.h \
- list-player-timed.h player-util.h cmd-core.h songs.h
+ list-player-timed.h player-util.h cmd-core.h project.h \
+ list-projections.h songs.h
 ./mon-desc.o: mon-desc.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h source.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
