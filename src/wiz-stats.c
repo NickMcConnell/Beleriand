@@ -2317,7 +2317,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 	int i;
 
 	file_put(fo, "Number of Successful Levels::\n");
-	file_putf(fo, "%d\n\n", (unsigned long) gs->nsuccess);
+	file_putf(fo, "%d\n\n", gs->nsuccess);
 
 	file_put(fo, "Level Builder Success Count, Probability, and Failure Rate Per Successful Level::\n");
 	for (i = 0; i < z_info->profile_max; ++i) {
