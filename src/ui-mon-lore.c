@@ -105,7 +105,7 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	monster_flags_known(race, lore, known_flags);
 
 	/* Spoilers -- know everything */
-	if (spoilers || player_active_ability(player, "Lore-Keeper"))
+	if (spoilers || player_active_ability(player, "Lore-Master"))
 		cheat_monster_lore(race, lore);
 
 	/* Appending the title here simplifies code in the callers. It also causes
