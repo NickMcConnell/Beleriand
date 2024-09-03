@@ -134,7 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -195,7 +195,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -228,7 +228,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
@@ -272,7 +272,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Download Artifact with Configuration Information
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.CONFIG_ARTIFACT }}
 
@@ -300,7 +300,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download Artifact with Converted Documents
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ env.DOC_ARTIFACT }}
 
