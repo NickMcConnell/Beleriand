@@ -1255,9 +1255,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, " (");
 			/* Describe damage */
 			if (dice.base || (dice.dice && dice.sides)) {
-				if (dice.base) {
-					textblock_append_c(tb, COLOUR_L_WHITE, "%+d", dice.base);
-				}
+				textblock_append_c(tb, COLOUR_L_WHITE, "%+d", dice.base);
 				if (dice.dice && dice.sides) {
 					textblock_append(tb, ", %dd%d", dice.dice, dice.sides);
 				}
