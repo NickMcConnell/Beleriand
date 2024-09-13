@@ -75,7 +75,8 @@ static void wr_item(const struct object *obj)
 	struct ability *ability;
 
 	wr_u16b(0xffff);
-	wr_byte(ITEM_VERSION);
+	/* Ugly hack */
+	wr_byte(obj->used);
 
 	wr_u16b(obj->oidx);
 

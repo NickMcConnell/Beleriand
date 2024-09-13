@@ -479,7 +479,7 @@ struct object {
 	bool *slays;			/**< Flag absence/presence of each slay */
 
 	int16_t timeout;		/**< Timeout Counter */
-	int16_t used;			/**< Times used (for staffs) */
+	uint8_t used;			/**< Times used (for staffs) */
 
 	uint8_t number;			/**< Number of items */
 	bitflag notice;			/**< Sil - ID status */

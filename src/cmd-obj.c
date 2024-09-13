@@ -603,6 +603,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				charges = obj->pval;
 				/* Use a single charge */
 				obj->pval--;
+				obj->used++;
 			}
 			work_obj = object_new();
 			object_copy(work_obj, obj);
@@ -640,6 +641,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 				}
 			} else if (use == USE_CHARGE) {
 				obj->pval = charges;
+				obj->used--;
 			}
 
 			/*

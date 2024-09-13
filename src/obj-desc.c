@@ -421,12 +421,17 @@ static size_t obj_desc_mods(const struct object *obj, char *buf, size_t max,
 static size_t obj_desc_charges(const struct object *obj, char *buf, size_t max,
 		size_t end, uint32_t mode)
 {
-	bool aware = object_flavor_is_aware(obj);
+	bool known = object_is_known(obj);
+
+	if (!tval_can_have_charges(obj)) return end;
 
 	/* Wands and staffs have charges, others may be charging */
-	if (aware && tval_can_have_charges(obj)) {
+	if (known || player_active_ability(player, "Channeling")) {
 		strnfcat(buf, max, &end, " (%d charge%s)", obj->pval,
 				 PLURAL(obj->pval));
+	} else if ((obj->used > 0) && !(obj->notice & OBJ_NOTICE_EMPTY)) {
+		strnfcat(buf, max, &end, " (used %d time%s)", obj->used,
+				 PLURAL(obj->used));
 	}
 
 	return end;

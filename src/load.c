@@ -79,11 +79,6 @@ static uint8_t mflag_size = 0;
 static uint8_t trf_size = 0;
 
 /**
- * Shorthand function pointer for rd_item version
- */
-typedef struct object *(*rd_item_t)(void);
-
-/**
  * Read an object.
  */
 static struct object *rd_item(void)
@@ -94,10 +89,10 @@ static struct object *rd_item(void)
 	uint16_t tmp16u;
 	size_t i;
 	char buf[128];
-	uint8_t ver = 1;
 
 	rd_u16b(&tmp16u);
-	rd_byte(&ver);
+	/* Ugly hack */
+	rd_byte(&obj->used);
 	if (tmp16u != 0xffff)
 		return NULL;
 
@@ -1045,7 +1040,7 @@ int rd_artifacts(void)
 /**
  * Read the player gear
  */
-static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
+static int rd_gear_aux(struct object **gear)
 {
 	uint8_t code;
 	struct object *last_gear_obj = NULL;
@@ -1055,7 +1050,7 @@ static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
 
 	/* Read until done */
 	while (code != FINISHED_CODE) {
-		struct object *obj = (*rd_item_version)();
+		struct object *obj = rd_item();
 
 		/* Read the item */
 		if (!obj) {
@@ -1093,7 +1088,7 @@ int rd_gear(void)
 	struct object *obj;
 
 	/* Get gear */
-	if (rd_gear_aux(rd_item, &player->gear))
+	if (rd_gear_aux(&player->gear))
 		return -1;
 
 	/* Add weight */
@@ -1206,7 +1201,7 @@ static int rd_dungeon_aux(struct chunk **c)
 /**
  * Read the floor object list
  */
-static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
+static int rd_objects_aux(struct chunk *c)
 {
 	int i;
 
@@ -1223,7 +1218,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 
 	/* Read the dungeon items until one isn't returned */
 	while (true) {
-		struct object *obj = (*rd_item_version)();
+		struct object *obj = rd_item();
 		if (!obj)
 			break;
 		if (square_in_bounds_fully(c, obj->grid)) {
@@ -1364,7 +1359,7 @@ int rd_dungeon(void)
  */
 int rd_objects(void)
 {
-	if (rd_objects_aux(rd_item, cave))
+	if (rd_objects_aux(cave))
 		return -1;
 
 	return 0;

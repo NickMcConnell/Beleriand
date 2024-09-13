@@ -368,7 +368,7 @@ name:staff:Staff~
 graphics:light umber
 break:5
 # max-stack:5
-flags:HATES_ACID | HATES_FIRE | EASY_KNOW
+flags:HATES_ACID | HATES_FIRE
 
 name:horn:Horn~
 graphics:green
