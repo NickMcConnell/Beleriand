@@ -892,7 +892,7 @@ static bool connect_room_to_corridor(struct chunk *c, int r)
 static bool connect_rooms_stairs(struct chunk *c)
 {
 	int i;
-	int corridor_attempts;
+	int corridor_attempts = dun->cent_n * dun->cent_n * 10;
 	int r1, r2;
 	int pieces = 0;
     int width;
@@ -924,13 +924,6 @@ static bool connect_rooms_stairs(struct chunk *c)
 	/* Phase 2: */
 	/* Make some random connections between rooms so long as they don't
 	 * intersect things */
-	switch (c->height / z_info->block_hgt) {
-		case 3:		corridor_attempts = dun->cent_n * dun->cent_n; break;
-		case 4:		corridor_attempts = dun->cent_n * dun->cent_n * 2; break;
-		case 5:		corridor_attempts = dun->cent_n * dun->cent_n * 10; break;
-		default:	corridor_attempts = dun->cent_n * dun->cent_n * 10;
-	}
-
 	for (i = 0; i < corridor_attempts; i++) {
 		r1 = randint0(dun->cent_n);
 		r2 = randint0(dun->cent_n);
