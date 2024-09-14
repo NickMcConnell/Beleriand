@@ -725,6 +725,9 @@ void do_cmd_birth_init(struct command *cmd)
 	 * If not, default to whatever the first of the choices is.
 	 */
 	if (player->ht_birth) {
+		int i, total_stat_cost = 0;
+		bool stats_ok = true;
+
 		/* Handle incrementing name suffix */
 		buf = find_roman_suffix_start(player->full_name);
 		if (buf) {
@@ -739,8 +742,31 @@ void do_cmd_birth_init(struct command *cmd)
 			}
 		}
 
-		save_birth_data(&quickstart_prev);
-		quickstart_allowed = true;
+		/* Sanity check stats */
+		for (i = 0; i < STAT_MAX; i++) {
+			int stat = player->stat_base[i];
+
+			/* This stat is too expensive, must be debug altered */
+			if (stat > 6) {
+				stats_ok = false;
+				break;
+			}
+
+			/* Check if the total cost is too much */
+			while (stat) {
+				total_stat_cost += birth_stat_costs[4 + 1 + stat];
+				if (total_stat_cost > MAX_COST) {
+					stats_ok = false;
+					break;
+				}
+			}
+			if (!stats_ok) break;
+		}
+
+		if (stats_ok) {
+			save_birth_data(&quickstart_prev);
+			quickstart_allowed = true;
+		}
 	} else {
 		player_generate(player, player_id2race(0), player_house_from_count(0),
 						player_id2sex(0), false);
