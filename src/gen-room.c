@@ -939,7 +939,7 @@ bool build_crossed(struct chunk *c, struct loc centre)
 	int light = false;
 
 	/* Occasional light - always at level 1 down to never at Morgoth's level */
-	if (c->depth <= randint1(z_info->dun_depth)) light = true;
+	if (c->depth <= randint1(z_info->dun_depth - 1)) light = true;
 
 	/* Pick a room size */
 	h_hgt = 1;                /* 3 */
