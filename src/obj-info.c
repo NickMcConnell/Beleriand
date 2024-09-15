@@ -650,100 +650,6 @@ static bool describe_light(textblock *tb, const struct object *obj,
 
 
 /**
- * Gives the known effects of using the given item.
- *
- * Fills in:
- *  - the effect
- *  - whether the effect can be aimed
- *  -  the minimum and maximum time in game turns for the item to recharge 
- *     (or zero if it does not recharge)
- *  - the percentage chance of the effect failing when used
- *
- * Return false if the object has no effect.
- */
-static bool obj_known_effect(const struct object *obj, struct effect **effect,
-								 bool *aimed)
-{
-	*effect = NULL;
-	*aimed = false;
-
-	if (object_is_known(obj)) {
-		*effect = object_effect(obj);
-		if (effect_aim(*effect))
-			*aimed = true;;
-	} else if (object_effect(obj)) {
-		/* Don't know much - be vague */
-		*effect = NULL;
-		if (tval_is_horn(obj)) {
-			*aimed = true;
-		}
-		return true;
-	} else {
-		/* No effect - no info */
-		return false;
-	}
-
-	return true;
-}
-
-/**
- * Describe an object's effect, if any.
- */
-static bool describe_effect(textblock *tb, const struct object *obj,
-		bool only_artifacts, bool subjective)
-{
-	struct effect *effect = NULL;
-	bool aimed = false;
-	const char *prefix;
-	textblock *tbe;
-
-	/* Sometimes we only print artifact activation info */
-	if (only_artifacts && !obj->artifact) {
-		return false;
-	}
-
-	if (obj_known_effect(obj, &effect, &aimed) == false) {
-		return false;
-	}
-
-	/* Effect not known, mouth platitudes */
-	if (!effect && object_effect(obj)) {
-		if (tval_is_edible(obj)) {
-			textblock_append(tb, "It can be eaten.\n");
-		} else if (tval_is_potion(obj)) {
-			textblock_append(tb, "It can be drunk.\n");
-		} else if (aimed) {
-			textblock_append(tb, "It can be aimed.\n");
-		} else {
-			textblock_append(tb, "It can be activated.\n");
-		}
-
-		return true;
-	}
-
-	/* Activations get a special message */
-	if (aimed)
-		prefix = "When aimed, it ";
-	else if (tval_is_edible(obj))
-		prefix = "When eaten, it ";
-	else if (tval_is_potion(obj))
-		prefix = "When quaffed, it ";
-	else
-		prefix = "When activated, it ";
-
-	tbe = effect_describe(effect, prefix);
-	if (! tbe) {
-		return false;
-	}
-	textblock_append_textblock(tb, tbe);
-	textblock_free(tbe);
-
-	textblock_append(tb, ".\n");
-
-	return true;
-}
-
-/**
  * Describe an item's origin
  */
 static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
@@ -909,17 +815,8 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (describe_hates(tb, el_info)) something = true;
 	if (something) textblock_append(tb, "\n");
 
-	/* Skip all the very specific information where we are giving general
-	   ego knowledge rather than for a single item - abilities can vary */
-	if (!(ego || smith)) {
-		if (describe_effect(tb, obj, terse, subjective)) {
-			something = true;
-			textblock_append(tb, "\n");
-		}
-	}
-
 	/* Don't append anything in terse (for chararacter dump) */
-	if (!something && !terse && !smith)
+	if (!something && !terse && !smith && !object_effect(obj))
 		textblock_append(tb, "\n\nThis item does not seem to possess any special abilities.");
 
 	return tb;
