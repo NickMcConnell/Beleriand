@@ -1,4 +1,4 @@
-Welcome to the changelog for NarSil 1.3.0.
+Welcome to the changelog for NarSil 1.3.1.
 
 Changes so far - take out everything that looks like Angband and replace it
 with things that look like Sil.

@@ -8,8 +8,9 @@ NarSil
 Thanks chiefly to Toby Ord and Owen Cotton-Barratt for Sil, and to JRRT for
 Middle Earth.
 
-Thanks to MITZE, Eric Branlund, Bill Peterson, davidk64, Karkaroth and wobbly
-for testing and bug reporting/fixing.
+Thanks to MITZE, Bill Peterson, davidk64, Karkaroth, wobbly and Infinitum for
+testing and bug reporting/fixing, and especially to Eric Branlund for making
+NarSil closer to Sil and for importing many, many improvements from Angband.
 
 NarSil would never have been made without the contributions of all the people
 mentioned in the Angband section below and the amazing Angband community.
