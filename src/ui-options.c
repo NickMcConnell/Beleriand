@@ -304,6 +304,7 @@ static const menu_iter option_toggle_iter = {
  */
 static void option_toggle_menu(const char *name, int page)
 {
+	static const char selections[] = "abcdefgimopquvwzABCDEFGHIJKLMOPQUVWZ";
 	int i;
 	
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &option_toggle_iter);
@@ -311,7 +312,7 @@ static void option_toggle_menu(const char *name, int page)
 	/* for all menus */
 	m->prompt = "Set option (y/n/t), select with movement keys or index";
 	m->cmd_keys = "YyNnTt";
-	m->selections = "abcdefghijklmopqrsuvwxz";
+	m->selections = selections;
 	m->flags = MN_DBL_TAP;
 
 	/* We add 10 onto the page amount to indicate we're at birth */
@@ -322,7 +323,6 @@ static void option_toggle_menu(const char *name, int page)
 	} else if (page == OPT_PAGE_BIRTH + 10 || page == OP_INTERFACE) {
 		m->prompt = "Set option (y/n/t), 's' to save, 'r' to restore, 'x' to reset";
 		m->cmd_keys = "YyNnTtSsRrXx";
-		m->selections = "abcdefghijklmopquvwzABC";
 		/* Provide a context menu for equivalents to 's', 'r', .... */
 		m->context_hook = use_option_context_menu;
 		if (page == OPT_PAGE_BIRTH + 10) {
@@ -1858,7 +1858,7 @@ static char tag_options_item(struct menu *menu, int oid)
 	size_t line = (size_t) oid;
 
 	if (line < N_ELEMENTS(sval_dependent))
-		return I2A(oid);
+		return all_letters_nohjkl[oid];
 
 	/* Separator - blank line. */
 	if (line == N_ELEMENTS(sval_dependent))
@@ -1991,8 +1991,8 @@ static menu_action option_actions[] =
 	{ 0, 's', "Save subwindow setup to pref file", do_dump_options },
 	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },
 	{ 0, 0, NULL, NULL },
-	{ 0, 'l', "Load a user pref file", options_load_pref_file },
-	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },
+	{ 0, 'p', "Load a user pref file", options_load_pref_file },
+	{ 0, 'e', "Edit keymaps (advanced)", do_cmd_keymaps },
 	{ 0, 'c', "Edit colours (advanced)", do_cmd_colors },
 	{ 0, 'v', "Save visuals (advanced)", do_cmd_visuals },
 };
