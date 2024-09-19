@@ -462,11 +462,21 @@ void cmd_disable_repeat_floor_item(void)
 	cmd_prev = cmd_head - 1;
 	if (cmd_prev < 0) cmd_prev = CMD_QUEUE_SIZE - 1;
 	if (cmd_queue[cmd_prev].code != CMD_NULL) {
-		struct object *obj;
+		struct command *cmd = &cmd_queue[cmd_prev];
+		int i = 0;
 
-		if (cmd_get_arg_item(&cmd_queue[cmd_prev], "item", &obj) == CMD_OK
-				&& (obj->grid.x != 0 || obj->grid.y != 0)) {
-			repeat_prev_allowed = false;
+		while (1) {
+			if (i >= CMD_MAX_ARGS) {
+				break;
+			}
+			if (cmd->arg[i].type == arg_ITEM
+				&& cmd->arg[i].data.obj
+				&& (cmd->arg[i].data.obj->grid.x != 0
+					|| cmd->arg[i].data.obj->grid.y != 0)) {
+				repeat_prev_allowed = false;
+				break;
+			}
+			++i;
 		}
 	}
 }
