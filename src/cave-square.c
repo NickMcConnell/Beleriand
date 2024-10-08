@@ -200,6 +200,94 @@ bool feat_is_upstair(int feat)
 }
 
 /**
+ * True if the feature is first choice running terrain.
+ */
+bool feat_is_run1(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_RUN1);
+}
+
+/**
+ * True if the feature is second choice running terrain.
+ */
+bool feat_is_run2(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_RUN2);
+}
+
+/**
+ * True if the feature should have smooth boundaries (for dungeon generation).
+ */
+bool feat_is_smooth(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_SMOOTH);
+}
+
+/**
+ * True if the feature is a tree.
+ */
+bool feat_is_tree(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_TREE);
+}
+
+/**
+ * True if the feature hides objects.
+ */
+bool feat_is_hide_obj(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_HIDE_OBJ);
+}
+
+/**
+ * True if the feature is organic.
+ */
+bool feat_is_organic(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_ORGANIC);
+}
+
+/**
+ * True if the feature can freeze.
+ */
+bool feat_is_freeze(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_FREEZE);
+}
+
+/**
+ * True if the feature is watery.
+ */
+bool feat_is_watery(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_WATERY);
+}
+
+/**
+ * True if the feature is icy.
+ */
+bool feat_is_icy(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_ICY);
+}
+
+/**
+ * True if the feature protects the occupant.
+ */
+bool feat_is_protect(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_PROTECT);
+}
+
+/**
+ * True if the feature exposes the occupant.
+ */
+bool feat_is_expose(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_EXPOSE);
+}
+
+/**
  * SQUARE FEATURE PREDICATES
  *
  * These functions are used to figure out what kind of square something is,

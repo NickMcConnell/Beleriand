@@ -54,6 +54,7 @@
  * Array of pit types
  */
 struct vault *vaults;
+struct surface_profile *surface_profiles;
 static struct cave_profile *cave_profiles;
 struct dun_data *dun;
 struct room_template *room_templates;
@@ -88,8 +89,252 @@ static const char *room_flags[] = {
 
 
 /**
+ * ------------------------------------------------------------------------
+ * Parsing functions for surface_profile.txt
+ * ------------------------------------------------------------------------ */
+static enum parser_error parse_surface_name(struct parser *p) {
+	struct surface_profile *h = parser_priv(p);
+	struct surface_profile *s = mem_zalloc(sizeof *s);
+	//size_t i;
+
+	s->name = string_make(parser_getstr(p, "name"));
+	s->base_feats = mem_zalloc(sizeof(char));
+	s->base_feats[0] = '\0';
+	s->next = h;
+	parser_setpriv(p, s);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_surface_code(struct parser *p) {
+	struct surface_profile *s = parser_priv(p);
+	char code = parser_getchar(p, "code");
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	s->code = code;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_surface_feat(struct parser *p) {
+	struct surface_profile *s = parser_priv(p);
+	struct area_profile *a;
+	struct formation_profile *f;
+	int feat = lookup_feat(parser_getstr(p, "feat"));
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (s->formations.name) {
+		f = &s->formations;
+		f->feats = mem_realloc(f->feats, (f->num_feats + 2) * sizeof(char));
+		f->feats[f->num_feats] = feat;
+		f->num_feats++;
+		f->feats[f->num_feats] = '\0';
+	} else if (s->areas) {
+		a = s->areas;
+		while (a->next) {
+			a = a->next;
+		}
+		a->feat = feat;
+	} else {
+		s->base_feats = mem_realloc(s->base_feats,
+									(s->num_base_feats + 2) * sizeof(char));
+		s->base_feats[s->num_base_feats] = feat;
+		s->num_base_feats++;
+		s->base_feats[s->num_base_feats] = '\0';
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_surface_area(struct parser *p) {
+	struct surface_profile *s = parser_priv(p);
+	struct area_profile *a;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the last valid area profile, then allocate a new one */
+	a = s->areas;
+	if (!a) {
+		s->areas = mem_zalloc(sizeof(struct area_profile));
+		a = s->areas;
+	} else {
+		while (a->next) {
+			a = a->next;
+		}
+		a->next = mem_zalloc(sizeof(struct area_profile));
+		a = a->next;
+	}
+
+	a->name = string_make(parser_getstr(p, "name"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_surface_frequency(struct parser *p) {
+	struct surface_profile *s = parser_priv(p);
+	struct area_profile *a;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the last valid area profile */
+	a = s->areas;
+	assert(a);
+	while (a->next) {
+		a = a->next;
+	}
+	a->frequency = parser_getint(p, "frequency");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_surface_attempts(struct parser *p) {
+	struct surface_profile *s = parser_priv(p);
+	struct area_profile *a;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the last valid area profile */
+	a = s->areas;
+	assert(a);
+	while (a->next) {
+		a = a->next;
+	}
+	a->attempts = parser_getint(p, "num");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_surface_size(struct parser *p) {
+	struct surface_profile *s = parser_priv(p);
+	struct formation_profile *f;
+	struct area_profile *a;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (s->formations.name) {
+		f = &s->formations;
+		f->size = parser_getrand(p, "size");
+	} else {
+		/* Go to the last valid area profile */
+		a = s->areas;
+		assert(a);
+		while (a->next) {
+			a = a->next;
+		}
+		a->size = parser_getrand(p, "size");
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_surface_formation(struct parser *p) {
+	struct surface_profile *s = parser_priv(p);
+	struct formation_profile *f;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	f = &s->formations;
+	f->name = string_make(parser_getstr(p, "name"));
+	f->feats = mem_zalloc(sizeof(char));
+	f->feats[0] = '\0';
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_surface_proportion(struct parser *p) {
+	struct surface_profile *s = parser_priv(p);
+	struct formation_profile *f;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	f = &s->formations;
+	f->proportion = parser_getint(p, "proportion");
+	return PARSE_ERROR_NONE;
+}
+
+
+static struct parser *init_parse_surface(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_surface_name);
+	parser_reg(p, "code char code", parse_surface_code);
+	parser_reg(p, "feat str feat", parse_surface_feat);
+	parser_reg(p, "area str name", parse_surface_area);
+	parser_reg(p, "frequency int frequency", parse_surface_frequency);
+	parser_reg(p, "attempts int num", parse_surface_attempts);
+	parser_reg(p, "size rand size", parse_surface_size);
+	parser_reg(p, "formation str name", parse_surface_formation);
+	parser_reg(p, "proportion int proportion", parse_surface_proportion);
+	return p;
+}
+
+static errr run_parse_surface(struct parser *p) {
+	return parse_file_quit_not_found(p, "surface_profile");
+}
+
+static errr finish_parse_surface(struct parser *p) {
+	struct surface_profile *n, *s = parser_priv(p);
+	int num;
+
+	z_info->surface_max = 0;
+	/* Count the list */
+	while (s) {
+		z_info->surface_max++;
+		s = s->next;
+	}
+
+	/* Allocate the array and copy the records to it */
+	surface_profiles = mem_zalloc(z_info->surface_max * sizeof(*s));
+	num = z_info->surface_max - 1;
+	for (s = parser_priv(p); s; s = n) {
+		/* Main record */
+		memcpy(&surface_profiles[num], s, sizeof(*s));
+		n = s->next;
+		if (num < z_info->surface_max - 1)
+			surface_profiles[num].next = &surface_profiles[num + 1];
+		else
+			surface_profiles[num].next = NULL;
+
+		mem_free(s);
+		num--;
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_surface(void)
+{
+	int i;
+	for (i = 0; i < z_info->surface_max; i++) {
+		struct area_profile *a = surface_profiles[i].areas, *n;
+		while (a) {
+			n = a->next;
+			string_free((char *) a->name);
+			mem_free(a);
+			a = n;
+		}
+		string_free((char *) surface_profiles[i].name);
+		string_free(surface_profiles[i].base_feats);
+		string_free((char *) surface_profiles[i].formations.name);
+		string_free(surface_profiles[i].formations.feats);
+	}
+	mem_free(surface_profiles);
+}
+
+static struct file_parser surface_parser = {
+	"surface_profile",
+	init_parse_surface,
+	run_parse_surface,
+	finish_parse_surface,
+	cleanup_surface
+};
+
+
+/**
+ * ------------------------------------------------------------------------
  * Parsing functions for dungeon_profile.txt
- */
+ * ------------------------------------------------------------------------ */
 static enum parser_error parse_profile_name(struct parser *p) {
 	struct cave_profile *h = parser_priv(p);
 	struct cave_profile *c = mem_zalloc(sizeof *c);
@@ -191,20 +436,20 @@ static errr finish_parse_profile(struct parser *p) {
 	int num;
 
 	/* Count the list */
-	z_info->profile_max = 0;
+	z_info->dungeon_max = 0;
 	while (c) {
-		z_info->profile_max++;
+		z_info->dungeon_max++;
 		c = c->next;
 	}
 
 	/* Allocate the array and copy the records to it */
-	cave_profiles = mem_zalloc(z_info->profile_max * sizeof(*c));
-	num = z_info->profile_max - 1;
+	cave_profiles = mem_zalloc(z_info->dungeon_max * sizeof(*c));
+	num = z_info->dungeon_max - 1;
 	for (c = parser_priv(p); c; c = n) {
 		/* Main record */
 		memcpy(&cave_profiles[num], c, sizeof(*c));
 		n = c->next;
-		if (num < z_info->profile_max - 1) {
+		if (num < z_info->dungeon_max - 1) {
 			cave_profiles[num].next = &cave_profiles[num + 1];
 		} else {
 			cave_profiles[num].next = NULL;
@@ -260,7 +505,7 @@ static errr finish_parse_profile(struct parser *p) {
 static void cleanup_profile(void)
 {
 	int i, j;
-	for (i = 0; i < z_info->profile_max; i++) {
+	for (i = 0; i < z_info->dungeon_max; i++) {
 		for (j = 0; j < cave_profiles[i].n_room_profiles; j++)
 			string_free((char *) cave_profiles[i].room_profiles[j].name);
 		mem_free(cave_profiles[i].room_profiles);
@@ -269,7 +514,7 @@ static void cleanup_profile(void)
 	mem_free(cave_profiles);
 }
 
-static struct file_parser profile_parser = {
+static struct file_parser dungeon_parser = {
 	"dungeon_profile",
 	init_parse_profile,
 	run_parse_profile,
@@ -480,10 +725,16 @@ static struct file_parser vault_parser = {
 };
 
 static void run_template_parser(void) {
-	/* Initialize room info */
+	/* Initialize surface info */
+	event_signal_message(EVENT_INITSTATUS, 0,
+						 "Initializing arrays... (surface profiles)");
+	if (run_parser(&surface_parser))
+		quit("Cannot initialize surface profiles");
+
+	/* Initialize dungeon info */
 	event_signal_message(EVENT_INITSTATUS, 0,
 						 "Initializing arrays... (dungeon profiles)");
-	if (run_parser(&profile_parser))
+	if (run_parser(&dungeon_parser))
 		quit("Cannot initialize dungeon profiles");
 
 	/* Initialize vault info */
@@ -499,7 +750,8 @@ static void run_template_parser(void) {
  */
 static void cleanup_template_parser(void)
 {
-	cleanup_parser(&profile_parser);
+	cleanup_parser(&surface_parser);
+	cleanup_parser(&dungeon_parser);
 	cleanup_parser(&vault_parser);
 }
 
@@ -512,7 +764,7 @@ static const struct cave_profile *find_cave_profile(const char *name)
 {
 	int i;
 
-	for (i = 0; i < z_info->profile_max; i++) {
+	for (i = 0; i < z_info->dungeon_max; i++) {
 		const struct cave_profile *profile;
 
 		profile = &cave_profiles[i];
@@ -554,7 +806,7 @@ static const struct cave_profile *choose_profile(struct player *p)
 		 * alloc(l))) which, by the canceling of successive numerators
 		 * and denominators is alloc(m) / sum(l = 0 to n - 1, alloc(l)).
 		 */
-		for (i = 0; i < z_info->profile_max; i++) {
+		for (i = 0; i < z_info->dungeon_max; i++) {
 			struct cave_profile *test_profile = &cave_profiles[i];
 			if (test_profile->alloc <= 0) continue;
 			total_alloc += test_profile->alloc;
@@ -866,11 +1118,11 @@ int get_level_profile_index_from_name(const char *name)
 /**
  * Get the name of a level profile given its index.  Return NULL if the index
  * is out of bounds (less than one or greater than or equal to
- * z_info->profile_max).
+ * z_info->dungeon_max).
  */
 const char *get_level_profile_name_from_index(int i)
 {
-	return (i >= 0 && i < z_info->profile_max) ?
+	return (i >= 0 && i < z_info->dungeon_max) ?
 		cave_profiles[i].name : NULL;
 }
 

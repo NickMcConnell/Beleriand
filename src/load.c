@@ -103,6 +103,8 @@ static struct object *rd_item(void)
 	obj->grid.y = tmp8u;
 	rd_byte(&tmp8u);
 	obj->grid.x = tmp8u;
+	rd_byte(&tmp8u);
+	obj->floor = tmp8u ? true : false;
 
 	/* Type/Subtype */
 	rd_string(buf, sizeof(buf));
@@ -244,6 +246,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 {
 	uint8_t tmp8u;
 	uint16_t tmp16u;
+	int16_t tmp16s;
 	char race_name[80];
 	size_t j;
 
@@ -268,6 +271,9 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	mon->grid.y = tmp8u;
 	rd_byte(&tmp8u);
 	mon->grid.x = tmp8u;
+	rd_s16b(&tmp16s);
+	mon->place = tmp16s;
+	//c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
 	rd_s16b(&mon->hp);
 	rd_s16b(&mon->maxhp);
 	rd_byte(&mon->mana);
@@ -1469,34 +1475,89 @@ int rd_traps(void)
 int rd_chunks(void)
 {
 	int j;
-	u16b old_chunk_max;
 
 	if (player->is_dead)
 		return 0;
 
-	rd_u16b(&old_chunk_max);
-	for (j = 0; j < old_chunk_max; j++) {
-		struct chunk *c;
+	rd_u16b(&chunk_max);
+	rd_u16b(&chunk_cnt);
+	for (j = 0; j < chunk_max; j++) {
+		struct chunk_ref *ref = &chunk_list[j];
+		struct chunk *c, *p_c;
+		int i;
+		uint16_t tmp16u;
+		uint8_t tmp8u;
+
+		ref->place = j;
+		rd_s32b(&ref->turn);
+		rd_u16b(&ref->region);
+		rd_u16b(&ref->z_pos);
+		rd_u16b(&ref->y_pos);
+		rd_u16b(&ref->x_pos);
+		rd_u32b(&ref->gen_loc_idx);
+		for (i = 0; i < 11; i++) {
+			rd_u16b(&tmp16u);
+			ref->adjacent[i] = tmp16u;
+		}
+
+		rd_byte(&tmp8u);
+		if (tmp8u) {
+			c = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
+			p_c = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
+		} else {
+			continue;
+		}
 
 		/* Read the dungeon */
 		if (rd_dungeon_aux(&c))
+			return -1;
+		if (rd_dungeon_aux(&p_c))
 			return -1;
 
 		/* Read the objects */
 		if (rd_objects_aux(c))
 			return -1;
-
-		/* Read the monsters */
-		if (rd_monsters_aux(c))
+		if (rd_objects_aux(p_c))
 			return -1;
+
+#if OBJ_RECOVER
+		p_c->objects = mem_zalloc((c->obj_max + 1) * sizeof(struct object*));
+		p_c->obj_max = c->obj_max;
+		for (i = 0; i <= c->obj_max; i++) {
+			struct object *obj = c->objects[i], *known_obj;
+			if (!obj) continue;
+			known_obj = object_new();
+			obj->known = known_obj;
+			object_copy(known_obj, obj);
+			p_c->objects[i] = known_obj;
+		}
+#else
+		/* Associate known objects */
+		for (i = 0; i < player->cave->obj_max; i++) {
+			if (c->objects[i] && p_c->objects[i]) {
+				c->objects[i]->known = p_c->objects[i];
+			}
+		}
+#endif
 
 		/* Read traps */
 		if (rd_traps_aux(c))
 			return -1;
+		if (rd_traps_aux(p_c))
+			return -1;
 
 
 		/* Read other chunk info */
-		/* To add later */
+		rd_u16b(&tmp16u);
+		c->height = tmp16u;
+		rd_u16b(&tmp16u);
+		c->width = tmp16u;
+		for (i = 0; i < FEAT_MAX + 1; i++) {
+			rd_u16b(&tmp16u);
+			c->feat_count[i] = tmp16u;
+		}
+		ref->chunk = c;
+		ref->p_chunk = p_c;
 	}
 
 	return 0;
@@ -1505,7 +1566,7 @@ int rd_chunks(void)
 int rd_locations(void)
 {
 
-	size_t i, j;
+	size_t i, j, k;
 	//u16b square_size;
 
 	/* Only if the player's alive */
@@ -1518,10 +1579,9 @@ int rd_locations(void)
 	for (i = 0; i < gen_loc_cnt; i++) {
 		byte tmp8u;
 		u16b tmp16u;
+		uint32_t tmp32u;
 		struct gen_loc *location = NULL;
 		u16b num_changes = 0, num_joins = 0;
-		struct terrain_change *change = NULL;
-		struct connector *join = NULL;
 
 		/* Increase the array size if necessary */
 		if (((i % GEN_LOC_INCR) == 0) && (i > 0)) {
@@ -1537,45 +1597,39 @@ int rd_locations(void)
 		location->y_pos = tmp16u;
 		rd_u16b(&tmp16u);
 		location->z_pos = tmp16u;
+		rd_u32b(&tmp32u);
+		location->seed = tmp32u;
 
 		/* Read the terrain changes */
 		rd_u16b(&num_changes);
-		if (num_changes)
-			change = mem_zalloc(num_changes * sizeof(struct terrain_change));
-		location->change = change;
 		for (j = 0; j < num_changes; j++) {
+			struct terrain_change *change = mem_zalloc(sizeof(*change));
 			rd_byte(&tmp8u);
-			change[j].grid.y = tmp8u;
+			change->grid.y = tmp8u;
 			rd_byte(&tmp8u);
-			change[j].grid.x = tmp8u;
+			change->grid.x = tmp8u;
 			rd_byte(&tmp8u);
-			change[j].feat = tmp8u;
-			if (j + 1 < num_changes)
-				change[j].next = &change[j + 1];
-			else
-				change[j].next = NULL;
+			change->feat = tmp8u;
+			change->next = location->change;
+			location->change = change;
 		}
 
 		/* Read the joins */
 		rd_u16b(&num_joins);
-		if (num_joins)
-			join = mem_zalloc(num_joins * sizeof(struct connector));
-		location->join = join;
 		for (j = 0; j < num_joins; j++) {
-			int k;
-
+			struct connector *join = mem_zalloc(sizeof(*join));
 			rd_byte(&tmp8u);
-			join[j].grid.y = tmp8u;
+			join->grid.y = tmp8u;
 			rd_byte(&tmp8u);
-			join[j].grid.x = tmp8u;
+			join->grid.x = tmp8u;
 			rd_byte(&tmp8u);
-			join[j].feat = tmp8u;
-			for (k = 0; k < square_size; k++)
-				rd_byte(&join[j].info[k]);
-			if (j + 1 < num_joins)
-				join[j].next = &join[j + 1];
-			else
-				join[j].next = NULL;
+			join->feat = tmp8u;
+			for (k = 0; k < square_size; k++) {
+				rd_byte(&tmp8u);
+				join->info[k] = tmp8u;
+			}
+			join->next = location->join;
+			location->join = join;
 		}
 	}
 	return 0;

@@ -71,6 +71,38 @@ struct rectangle {
 	struct loc bottom_right;
 };
 
+struct area_profile {
+	struct area_profile *next;
+
+	const char *name;
+	int frequency;
+	int attempts;
+	int feat;
+	random_value size;
+};
+
+struct formation_profile {
+	const char *name;
+	char *feats;
+	int num_feats;
+	int proportion;
+	random_value size;
+};
+
+struct surface_profile {
+    struct surface_profile *next;
+
+    const char *name;
+	enum biome_type code;
+	char *base_feats;
+	int num_base_feats;
+	struct area_profile *areas;
+	struct formation_profile formations;
+	int num_form_types;
+};
+
+extern struct surface_profile *surface_profiles;
+
 /**
  * Structure to hold all "dungeon generation" data
  */
@@ -179,6 +211,19 @@ struct vault {
 #define SYMTR_FLAG_FORCE_REF (4)
 #define SYMTR_MAX_WEIGHT (32768)
 
+/**
+ * Constants for the map.  Note that MAX_CHUNKS needs to be at least three times
+ * ARENA_CHUNKS squared to allow proper saving off and reloading of chunks from
+ * the chunk_list
+ */
+#define CHUNK_SIDE 44
+#define ARENA_CHUNKS 5
+#define ARENA_SIDE (CHUNK_SIDE * ARENA_CHUNKS)
+#define CPM 20
+#define MAX_CHUNKS 256
+#define CHUNK_TEMP -2
+#define CHUNK_CUR -1
+
 extern struct dun_data *dun;
 extern struct vault *vaults;
 extern struct room_template *room_templates;
@@ -195,14 +240,14 @@ const char *get_level_profile_name_from_index(int i);
 struct chunk *cave_gen(struct player *p);
 struct chunk *throne_gen(struct player *p);
 struct chunk *gates_gen(struct player *p);
+bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
+					int y_coord, int x_coord);
+
+/* gen-surface.c */
+void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
+				 int x_coord, struct connector *first);
 
 /* gen-chunk.c */
-struct chunk *chunk_new(int height, int width);
-void chunk_wipe(struct chunk *c);
-struct chunk *old_chunk_write(struct chunk *c);
-void old_chunk_list_add(struct chunk *c);
-bool old_chunk_list_remove(const char *name);
-struct chunk *chunk_find_name(const char *name);
 void symmetry_transform(struct loc *grid, int y0, int x0, int height, int width,
 	int rotate, bool reflect);
 void get_random_symmetry_transform(int height, int width, int flags,
@@ -211,7 +256,21 @@ void get_random_symmetry_transform(int height, int width, int flags,
 int calc_default_transpose_weight(int height, int width);
 bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 	 int y0, int x0, int rotate, bool reflect);
-void cave_connectors_free(struct connector *join);
+void chunk_read(int idx, int y_coord, int x_coord);
+void chunk_validate_objects(struct chunk *c);
+int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset);
+int find_region(int y_pos, int x_pos);
+void chunk_offset_data(struct chunk_ref *ref, int z_offset, int y_offset,
+						 int x_offset);
+void connectors_free(struct connector *join);
+void chunk_list_init(void);
+void chunk_list_cleanup(void);
+int chunk_find(struct chunk_ref ref);
+int chunk_store(int y_coord, int x_coord, uint16_t region, uint16_t z_pos,
+				uint16_t y_pos, uint16_t x_pos, uint32_t gen_loc_idx,
+				bool write);
+int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_coord,
+			   int x_coord);
 int chunk_get_centre(void);
 void chunk_change(int z_offset, int y_offset, int x_offset);
 
@@ -224,6 +283,9 @@ void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag);
 void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat, 
 					int flag, bool overwrite_perm);
 void set_marked_granite(struct chunk *c, struct loc grid, int flag);
+extern bool generate_starburst_room(struct chunk *c, struct point_set *set,
+									int y1, int x1, int y2, int x2,
+									bool light, int feat, bool special_ok);
 bool build_vault(struct chunk *c, struct loc centre, struct vault *v,
 				 bool flip);
 

@@ -424,6 +424,76 @@ void flow_free(struct chunk *c, struct flow *flow) {
 /**
  * Allocate a new chunk of the world
  */
+struct chunk *chunk_new(int height, int width)
+{
+	int y, x;
+
+	struct chunk *c = mem_zalloc(sizeof *c);
+	c->height = height;
+	c->width = width;
+	c->feat_count = mem_zalloc((FEAT_MAX + 1) * sizeof(int));
+
+	c->squares = mem_zalloc(c->height * sizeof(struct square*));
+
+	flow_new(c, &c->player_noise);
+	flow_new(c, &c->monster_noise);
+	flow_new(c, &c->scent);
+
+	for (y = 0; y < c->height; y++) {
+		c->squares[y] = mem_zalloc(c->width * sizeof(struct square));
+		for (x = 0; x < c->width; x++) {
+			c->squares[y][x].info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
+		}
+	}
+
+	c->objects = mem_zalloc(OBJECT_LIST_SIZE * sizeof(struct object*));
+	c->obj_max = OBJECT_LIST_SIZE - 1;
+
+
+	return c;
+}
+
+/**
+ * Wipe the actual details of a chunk
+ */
+void chunk_wipe(struct chunk *c)
+{
+	int y, x, i;
+	struct chunk *p_c = (c == cave && player) ? player->cave : NULL;
+
+	/* Look for orphaned objects and delete them. */
+	for (i = 0; i < c->obj_max; i++) {
+		if (c->objects[i] && !c->objects[i]->floor &&
+			!c->objects[i]->held_m_idx) {
+			assert(loc_is_zero(c->objects[i]->grid));
+			object_delete(c, NULL, &c->objects[i]);
+		}
+	}
+
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			mem_free(c->squares[y][x].info);
+			if (c->squares[y][x].trap)
+				square_free_trap(c, loc(x, y));
+			if (c->squares[y][x].obj)
+				object_pile_free(c, p_c, c->squares[y][x].obj);
+		}
+		mem_free(c->squares[y]);
+	}
+	mem_free(c->squares);
+
+	flow_free(c, &c->player_noise);
+	flow_free(c, &c->monster_noise);
+	flow_free(c, &c->scent);
+
+	mem_free(c->feat_count);
+	mem_free(c->objects);
+	mem_free(c);
+}
+
+/**
+ * Allocate a new chunk of the world
+ */
 struct chunk *cave_new(int height, int width) {
 	int y, x;
 

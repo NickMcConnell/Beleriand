@@ -442,6 +442,7 @@ struct object {
 	uint16_t oidx;		/**< Item list index, if any */
 
 	struct loc grid;	/**< position on map, or (0, 0) */
+	bool floor;				/**< Floor item ((0, 0) may be a valid grid) */
 
 	uint8_t tval;		/**< Item type (from kind) */
 	uint8_t sval;		/**< Item sub-type (from kind) */

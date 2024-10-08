@@ -310,6 +310,369 @@ void set_marked_granite(struct chunk *c, struct loc grid, int flag)
 }
 
 /**
+ * Make a starburst room. -LM-
+ *
+ * \param c the current chunk
+ * \param y1 boundaries which will contain the starburst
+ * \param x1 boundaries which will contain the starburst
+ * \param y2 boundaries which will contain the starburst
+ * \param x2 boundaries which will contain the starburst
+ * \param light lit or not
+ * \param feat the terrain feature to make the starburst of
+ * \param special_ok allow wacky cloverleaf rooms
+ * \return success
+ *
+ * Starburst rooms are made in three steps:
+ * 1: Choose a room size-dependent number of arcs.  Large rooms need to 
+ *    look less granular and alter their shape more often, so they need 
+ *    more arcs.
+ * 2: For each of the arcs, calculate the portion of the full circle it 
+ *    includes, and its maximum effect range (how far in that direction 
+ *    we can change features in).  This depends on room size, shape, and 
+ *    the maximum effect range of the previous arc.
+ * 3: Use the table "get_angle_to_grid" to supply angles to each grid in 
+ *    the room.  If the distance to that grid is not greater than the 
+ *    maximum effect range that applies at that angle, change the feature 
+ *    if appropriate (this depends on feature type).
+ *
+ * Usage notes:
+ * - This function uses a table that cannot handle distances larger than 
+ *   20, so it calculates a distance conversion factor for larger rooms.
+ * - This function is not good at handling rooms much longer along one axis 
+ *   than the other, so it divides such rooms up, and calls itself to handle
+ *   each section.  
+ * - It is safe to call this function on areas that might contain vaults or 
+ *   pits, because "icky" and occupied grids are left untouched.
+ *
+ * - Mixing these rooms (using normal floor) with rectangular ones on a 
+ *   regular basis produces a somewhat chaotic looking dungeon.  However, 
+ *   this code does works well for lakes, etc.
+ *
+ */
+extern bool generate_starburst_room(struct chunk *c, struct point_set *set,
+									int y1, int x1, int y2, int x2,
+									bool light, int feat, bool special_ok)
+{
+	int y0, x0, y, x, ny, nx;
+	int i, d;
+	int dist, max_dist, dist_conv, dist_check;
+	int height, width;
+	int degree_first, center_of_arc, degree;
+
+	/* Special variant room.  Discovered by accident. */
+	bool make_cloverleaf = false;
+
+	/* Holds first degree of arc, maximum effect distance in arc. */
+	int arc[45][2];
+
+	/* Number (max 45) of arcs. */
+	int arc_num;
+
+	/* Make certain the room does not cross the dungeon edge. */
+	if ((!square_in_bounds(c, loc(x1, y1))) ||
+		(!square_in_bounds(c, loc(x2, y2))))
+		return (false);
+
+	/* Robustness -- test sanity of input coordinates. */
+	if ((y1 + 2 >= y2) || (x1 + 2 >= x2))
+		return (false);
+
+
+	/* Get room height and width. */
+	height = 1 + y2 - y1;
+	width = 1 + x2 - x1;
+
+
+	/* Handle long, narrow rooms by dividing them up. */
+	if ((height > 5 * width / 2) || (width > 5 * height / 2)) {
+		int tmp_ay, tmp_ax, tmp_by, tmp_bx;
+
+		/* Get bottom-left borders of the first room. */
+		tmp_ay = y2;
+		tmp_ax = x2;
+		if (height > width)
+			tmp_ay = y1 + 2 * height / 3;
+		else
+			tmp_ax = x1 + 2 * width / 3;
+
+		/* Make the first room. */
+		(void) generate_starburst_room(c, set, y1, x1, tmp_ay, tmp_ax, light,
+									   feat, false);
+
+
+		/* Get top_right borders of the second room. */
+		tmp_by = y1;
+		tmp_bx = x1;
+		if (height > width)
+			tmp_by = y1 + 1 * height / 3;
+		else
+			tmp_bx = x1 + 1 * width / 3;
+
+		/* Make the second room. */
+		(void) generate_starburst_room(c, set, tmp_by, tmp_bx, y2, x2, light,
+									   feat, false);
+
+
+		/* If floor, extend a "corridor" between room centers, to ensure 
+		 * that the rooms are connected together. */
+		if (feat_is_floor(feat)) {
+			for (y = (y1 + tmp_ay) / 2; y <= (tmp_by + y2) / 2; y++) {
+				for (x = (x1 + tmp_ax) / 2; x <= (tmp_bx + x2) / 2; x++) {
+					if (set && !point_set_contains(set, loc(x, y))) continue;
+					square_set_feat(c, loc(x, y), feat);
+				}
+			}
+		} else {
+			/* Otherwise fill any gap between two starbursts. */
+			int tmp_cy1, tmp_cx1, tmp_cy2, tmp_cx2;
+
+			if (height > width) {
+				tmp_cy1 = y1 + (height - width) / 2;
+				tmp_cx1 = x1;
+				tmp_cy2 = tmp_cy1 - (height - width) / 2;
+				tmp_cx2 = x2;
+			} else {
+				tmp_cy1 = y1;
+				tmp_cx1 = x1 + (width - height) / 2;
+				tmp_cy2 = y2;
+				tmp_cx2 = tmp_cx1 + (width - height) / 2;
+			}
+
+			/* Make the third room. */
+			(void) generate_starburst_room(c, set, tmp_cy1, tmp_cx1, tmp_cy2,
+										   tmp_cx2, light, feat, false);
+		}
+
+		/* Return. */
+		return (true);
+	}
+
+
+	/* Get a shrinkage ratio for large rooms, as table is limited. */
+	if ((width > 44) || (height > 44)) {
+		if (width > height)
+			dist_conv = 10 * width / 44;
+		else
+			dist_conv = 10 * height / 44;
+	} else
+		dist_conv = 10;
+
+
+	/* Make a cloverleaf room sometimes. */
+	if ((special_ok) && (height > 10) && (randint0(20) == 0)) {
+		arc_num = 12;
+		make_cloverleaf = true;
+	}
+
+	/* Usually, we make a normal starburst. */
+	else {
+		/* Ask for a reasonable number of arcs. */
+		arc_num = 8 + (height * width / 80);
+		arc_num = arc_num + 3 - randint0(7);
+		if (arc_num < 8)
+			arc_num = 8;
+		if (arc_num > 45)
+			arc_num = 45;
+	}
+
+
+	/* Get the center of the starburst. */
+	y0 = y1 + height / 2;
+	x0 = x1 + width / 2;
+
+	/* Start out at zero degrees. */
+	degree_first = 0;
+
+
+	/* Determine the start degrees and expansion distance for each arc. */
+	for (i = 0; i < arc_num; i++) {
+		/* Get the first degree for this arc. */
+		arc[i][0] = degree_first;
+
+		/* Get a slightly randomized start degree for the next arc. */
+		degree_first += (180 + randint0(arc_num)) / arc_num;
+		if (degree_first < 180 * (i + 1) / arc_num)
+			degree_first = 180 * (i + 1) / arc_num;
+		if (degree_first > (180 + arc_num) * (i + 1) / arc_num)
+			degree_first = (180 + arc_num) * (i + 1) / arc_num;
+
+
+		/* Get the center of the arc. */
+		center_of_arc = degree_first + arc[i][0];
+
+		/* Calculate a reasonable distance to expand vertically. */
+		if (((center_of_arc > 45) && (center_of_arc < 135))
+			|| ((center_of_arc > 225) && (center_of_arc < 315))) {
+			arc[i][1] = height / 4 + randint0((height + 3) / 4);
+		}
+
+		/* Calculate a reasonable distance to expand horizontally. */
+		else if (((center_of_arc < 45) || (center_of_arc > 315))
+				 || ((center_of_arc < 225) && (center_of_arc > 135))) {
+			arc[i][1] = width / 4 + randint0((width + 3) / 4);
+		}
+
+		/* Handle arcs that count as neither vertical nor horizontal */
+		else if (i != 0) {
+			if (make_cloverleaf)
+				arc[i][1] = 0;
+			else
+				arc[i][1] = arc[i - 1][1] + 3 - randint0(7);
+		}
+
+
+		/* Keep variability under control. */
+		if ((!make_cloverleaf) && (i != 0) && (i != arc_num - 1)) {
+			/* Water edges must be quite smooth. */
+			if (feat_is_smooth(feat)) {
+				if (arc[i][1] > arc[i - 1][1] + 2)
+					arc[i][1] = arc[i - 1][1] + 2;
+
+				if (arc[i][1] > arc[i - 1][1] - 2)
+					arc[i][1] = arc[i - 1][1] - 2;
+			} else {
+				if (arc[i][1] > 3 * (arc[i - 1][1] + 1) / 2)
+					arc[i][1] = 3 * (arc[i - 1][1] + 1) / 2;
+
+				if (arc[i][1] < 2 * (arc[i - 1][1] - 1) / 3)
+					arc[i][1] = 2 * (arc[i - 1][1] - 1) / 3;
+			}
+		}
+
+		/* Neaten up final arc of circle by comparing it to the first. */
+		if ((i == arc_num - 1) && (ABS(arc[i][1] - arc[0][1]) > 3)) {
+			if (arc[i][1] > arc[0][1])
+				arc[i][1] -= randint0(arc[i][1] - arc[0][1]);
+			else if (arc[i][1] < arc[0][1])
+				arc[i][1] += randint0(arc[0][1] - arc[i][1]);
+		}
+	}
+
+
+	/* Precalculate check distance. */
+	dist_check = 21 * dist_conv / 10;
+
+	/* Change grids between (and not including) the edges. */
+	for (y = y1 + 1; y < y2; y++) {
+		for (x = x1 + 1; x < x2; x++) {
+			struct loc grid = loc(x, y);
+
+			/* Do not touch vault grids. */
+			if (square_isvault(c, grid)) continue;
+
+			/* Do not touch occupied grids. */
+			if (square_monster(c, grid)) continue;
+			if (square_object(c, grid)) continue;
+
+			/* Be in any point set */
+			if (set && !point_set_contains(set, grid)) continue;
+
+			/* Get distance to grid. */
+			dist = distance(loc(x0, y0), grid);
+
+			/* Reject grid if outside check distance. */
+			if (dist >= dist_check) continue;
+
+			/* Convert and reorient grid for table access. */
+			ny = 20 + 10 * (y - y0) / dist_conv;
+			nx = 20 + 10 * (x - x0) / dist_conv;
+
+			/* Illegal table access is bad. */
+			if ((ny < 0) || (ny > 40) || (nx < 0) || (nx > 40)) continue;
+
+			/* Get angle to current grid. */
+			degree = get_angle_to_grid[ny][nx];
+
+			/* Scan arcs to find the one that applies here. */
+			for (i = arc_num - 1; i >= 0; i--) {
+				if (arc[i][0] <= degree) {
+					max_dist = arc[i][1];
+
+					/* Must be within effect range. */
+					if (max_dist >= dist) {
+						/* If new feature is not passable, or floor, always 
+						 * place it. */
+						if (feat_is_floor(feat) || !feat_is_passable(feat)) {
+							square_set_feat(c, grid, feat);
+
+							if (feat_is_floor(feat)) {
+								sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
+							} else {
+								sqinfo_off(square(c, grid)->info, SQUARE_ROOM);
+							}
+
+							if (light) {
+								sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+							}
+						}
+
+						/* If new feature is non-floor passable terrain,
+						 * place it only over floor. */
+						else {
+							/* Replace old feature entirely in some cases. */
+							if (feat_is_smooth(feat)) {
+								if (square_isfloor(c, grid))
+									square_set_feat(c, grid, feat);
+							} else {
+								/* Make denser in the middle. */
+								if (square_isfloor(c, grid) &&
+									(randint1(max_dist + 5) >= dist + 5))
+									square_set_feat(c, grid, feat);
+							}
+
+							/* Light grid. */
+							if (light)
+								sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+						}
+					}
+
+					/* Arc found.  End search */
+					break;
+				}
+			}
+		}
+	}
+
+	/*
+	 * If we placed floors or dungeon granite, all dungeon granite next
+	 * to floors needs to become outer wall.
+	 */
+	if (feat_is_floor(feat) || feat == FEAT_GRANITE) {
+		for (y = y1 + 1; y < y2; y++) {
+			for (x = x1 + 1; x < x2; x++) {
+
+				struct loc grid = loc(x, y);
+				/* Floor grids only */
+				if (square_isfloor(c, grid)) {
+					/* Look in all directions. */
+					for (d = 0; d < 8; d++) {
+						/* Extract adjacent location */
+						struct loc grid1 = loc_sum(grid, ddgrid_ddd[d]);
+
+						/* Join to room, forbid stairs */
+						sqinfo_on(square(c, grid1)->info, SQUARE_ROOM);
+						//sqinfo_on(square(c, grid1)->info, SQUARE_NO_STAIRS);
+
+						/* Illuminate if requested. */
+						if (light)
+							sqinfo_on(square(c, grid1)->info, SQUARE_GLOW);
+
+						/* Look for dungeon granite. */
+						if (square(c, grid1)->feat == FEAT_GRANITE) {
+							/* Mark as outer wall. */
+							set_marked_granite(c, grid1, SQUARE_WALL_OUTER);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/* Success */
+	return (true);
+}
+
+/**
  * Build a vault from its string representation.
  * \param c the chunk the room is being built in
  * \param centre the room centre; out of chunk centre invokes find_space()
