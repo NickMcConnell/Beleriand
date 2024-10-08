@@ -32,6 +32,7 @@ struct monster_race *get_mon_num(int level, bool special, bool allow_non_smart,
 								 bool vault);
 void mon_create_mimicked_object(struct chunk *c, struct monster *mon,
 								int index);
+void set_monster_place_current(void);
 int16_t place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	uint8_t origin);
 int mon_hp(const struct monster_race *race, aspect hp_aspect);

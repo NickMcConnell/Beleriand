@@ -41,6 +41,24 @@ enum {
 #define MAX_Y_REGION 588
 #define MAX_X_REGION 735
 
+/**
+ * Codes for the different surface biomes
+ */
+enum biome_type {
+	BIOME_PLAIN = 0x2e,			/**< . */
+	BIOME_FOREST = 0x2b,		/**< + */
+	BIOME_LAKE = 0x2d,			/**< - */
+	BIOME_SNOW = 0x2a,			/**< * */
+	BIOME_DESERT = 0x2f,		/**< ? */
+	BIOME_DARK = 0x7c,			/**< | */
+	BIOME_MOUNTAIN = 0x5e,		/**< ^ */
+	BIOME_MOOR = 0x2c,			/**< , */
+	BIOME_SWAMP = 0x5f,			/**< _ */
+	BIOME_IMPASS = 0x58,		/**< X */
+	BIOME_TOWN = 0x3d,			/**< = */
+	BIOME_OCEAN = 0x7e,			/**< ~ */
+};
+
 struct level {
 	int depth;
 	char *name;
@@ -118,22 +136,19 @@ struct river_chunk {
 /**
  * Information about a piece of river at a square mile
  */
-//struct river_mile {
-//	struct square_mile *mile;
-//	enum river_part part;
-//	struct river_stretch *in1;
-//	struct river_stretch *in2;
-//	struct river_stretch *out1;
-//	struct river_stretch *out2;
-//	struct river *river;
-//};
+struct river_mile {
+	enum river_part part;
+	struct square_mile *sq_mile;
+	struct river_mile *downstream;
+	struct river_mile *next;
+};
 
 /**
  * Information about river stretches
  */
 struct river_stretch {
 	int index;
-	struct square_mile *miles;
+	struct river_mile *miles;
 	struct river_stretch *in1;
 	struct river_stretch *in2;
 	struct river_stretch *out1;
@@ -174,7 +189,7 @@ struct road_chunk {
 struct road {
 	char *name;
 	struct map_square *map_squares;
-	struct river_chunk *chunks;
+	struct road_chunk *chunks;
 };
 
 /**
@@ -201,13 +216,13 @@ struct map_square {
  * as a single grid in region.txt.
  */
 struct square_mile {
+	enum biome_type biome;
+	struct world_region *region;	/**< The region containing us */
 	struct map_square map_square;	/**< The map square containing us */
 	struct loc map_square_grid;		/**< Our position (49x49) in map_square */
-	//struct world_region *region;	/**< Region containing us */
-	enum river_part river_type;		/**< Part of a river, if any */
+	struct river_mile *river_miles;	/**< River miles we contain */
 	//struct river *rivers;			/**< Rivers passing through us */
 	//struct road *roads;				/**< Roads passing through us */
-	struct square_mile *next;
 };
 
 /**
@@ -223,6 +238,7 @@ struct connector {
 	struct loc grid;
 	byte feat;
 	bitflag info[SQUARE_SIZE];
+	enum biome_type type;
 	struct connector *next;
 };
 
@@ -267,6 +283,7 @@ struct terrain_change {
  * to be restored if the have aged off from the chunk list.
  */
 struct gen_loc {
+	enum biome_type type;	/**< Biome of the location */
     int x_pos;			/**< x position of the chunk */
     int y_pos;			/**< y position of the chunk */
     int z_pos;			/**< Depth of the chunk below ground */
@@ -281,10 +298,8 @@ extern s32b turn;
 extern bool character_generated;
 extern bool character_dungeon;
 extern const byte extract_energy[8];
-extern struct level *maps;
-extern struct level *world;
 extern struct world_region *region_info;
-extern char **region_terrain;
+extern struct square_mile **square_miles;
 extern struct landmark *landmark_info;
 extern struct gen_loc *gen_loc_list;
 extern struct river *river_info;
@@ -293,11 +308,15 @@ extern u16b chunk_cnt;
 extern struct chunk_ref *chunk_list;
 extern u32b gen_loc_max;
 extern u32b gen_loc_cnt;
+extern struct gen_loc *gen_loc_list;
 
+void gen_loc_list_init(void);
+void gen_loc_list_cleanup(void);
 bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
 void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx);
 struct level *level_by_name(const char *name);
 struct level *level_by_depth(int depth);
+struct square_mile *square_mile(wchar_t letter, int number, int y, int x);
 bool is_daytime(void);
 int turn_energy(int speed);
 int regen_amount(int turn_number, int max, int period);

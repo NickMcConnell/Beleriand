@@ -52,7 +52,7 @@ bool character_dungeon;		/* The character has a dungeon */
 struct level *maps;
 struct level *world;
 struct world_region *region_info;
-char **region_terrain;
+struct square_mile **square_miles;
 struct landmark *landmark_info;
 struct river *river_info;
 struct gen_loc *gen_loc_list;	/* List of generated locations */
@@ -82,6 +82,36 @@ const uint8_t extract_energy[8] =
  * ------------------------------------------------------------------------
  * Map-related functions
  * ------------------------------------------------------------------------ */
+/**
+ * Initialise the generated locations list
+ */
+void gen_loc_list_init(void)
+{
+	gen_loc_list = mem_zalloc(GEN_LOC_INCR * sizeof(struct gen_loc));
+}
+
+/**
+ * Clean up the generated locations list
+ */
+void gen_loc_list_cleanup(void)
+{
+	size_t i;
+
+	/* Free the locations list */
+	for (i = 0; i < gen_loc_cnt; i++) {
+		if (gen_loc_list[i].change) {
+			struct terrain_change *change = gen_loc_list[i].change;
+			while (change) {
+				change = change->next;
+				mem_free(change);
+			}
+		}
+		connectors_free(gen_loc_list[i].join);
+	}
+	mem_free(gen_loc_list);
+	gen_loc_list = NULL;
+}
+
 /**
  * Find a given generation location in the list, or failing that the one
  * after it
@@ -181,13 +211,24 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
 		gen_loc_max += GEN_LOC_INCR;
 		gen_loc_list = mem_realloc(gen_loc_list,
 								   gen_loc_max * sizeof(struct gen_loc));
+		for (i = gen_loc_max - GEN_LOC_INCR; i < (int) gen_loc_max; i++) {
+			memset(&gen_loc_list[i], 0, sizeof(struct gen_loc));
+		}
 	}
 
 	/* Move everything along one to make space */
 	for (i = gen_loc_cnt; i > idx; i--)
 		memcpy(&gen_loc_list[i], &gen_loc_list[i - 1], sizeof(struct gen_loc));
 
+	/* Relabel any live chunks */
+	for (i = 0; i < MAX_CHUNKS; i++) {
+		if ((int) chunk_list[i].gen_loc_idx >= idx) {
+			chunk_list[i].gen_loc_idx++;
+		}
+	}
+
 	/* Copy the new data in */
+	gen_loc_list[idx].type = square_miles[y_pos / CPM][x_pos / CPM].biome;
 	gen_loc_list[idx].x_pos = x_pos;
 	gen_loc_list[idx].y_pos = y_pos;
 	gen_loc_list[idx].z_pos = z_pos;
@@ -223,6 +264,12 @@ struct level *level_by_depth(int depth)
 		lev = lev->next;
 	}
 	return lev;
+}
+
+struct square_mile *square_mile(wchar_t letter, int number, int y, int x)
+{
+	int letter_trans = letter > L'I' ? letter - L'B' : letter - L'A';
+	return &square_miles[49 * letter_trans + y][49 * (number - 1) + x];
 }
 
 /**

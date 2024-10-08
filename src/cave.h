@@ -222,9 +222,6 @@ enum {
 
 /* Current level */
 extern struct chunk *cave;
-/* Stored levels */
-extern struct chunk **old_chunk_list;
-extern u16b old_chunk_list_max;
 
 /* cave-fire.c */
 errr vinfo_init(void);
@@ -287,6 +284,17 @@ bool feat_is_expose(int feat);
 bool feat_is_stair(int feat);
 bool feat_is_downstair(int feat);
 bool feat_is_upstair(int feat);
+bool feat_is_run1(int feat);
+bool feat_is_run2(int feat);
+bool feat_is_smooth(int feat);
+bool feat_is_tree(int feat);
+bool feat_is_hide_obj(int feat);
+bool feat_is_organic(int feat);
+bool feat_is_freeze(int feat);
+bool feat_is_watery(int feat);
+bool feat_is_icy(int feat);
+bool feat_is_protect(int feat);
+bool feat_is_expose(int feat);
 
 /* SQUARE FEATURE PREDICATES */
 bool square_isfloor(struct chunk *c, struct loc grid);
@@ -442,6 +450,8 @@ int lookup_feat_code(const char *code);
 const char *get_feat_code_name(int idx);
 void flow_new(struct chunk *c, struct flow *flow);
 void flow_free(struct chunk *c, struct flow *flow);
+struct chunk *chunk_new(int height, int width);
+void chunk_wipe(struct chunk *c);
 struct chunk *cave_new(int height, int width);
 void cave_free(struct chunk *c);
 void list_object(struct chunk *c, struct object *obj);

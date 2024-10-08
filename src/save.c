@@ -83,6 +83,10 @@ static void wr_item(const struct object *obj)
 	/* Location */
 	wr_byte(obj->grid.y);
 	wr_byte(obj->grid.x);
+	if (obj->floor)
+		wr_byte(1);
+	else
+		wr_byte(0);
 
 	/* Names of object type and object */
 	wr_string(tval_find_name(obj->tval));
@@ -218,6 +222,7 @@ static void wr_monster(const struct monster *mon)
 	}
 	wr_byte(mon->grid.y);
 	wr_byte(mon->grid.x);
+	wr_s16b(mon->place);
 	wr_s16b(mon->hp);
 	wr_s16b(mon->maxhp);
 	wr_byte(mon->mana);
@@ -945,31 +950,60 @@ void wr_traps(void)
  */
 void wr_chunks(void)
 {
-	int j;
+	int i, j;
 
 	if (player->is_dead)
 		return;
 
-	wr_u16b(old_chunk_list_max);
+	wr_u16b(chunk_max);
+	wr_u16b(chunk_cnt);
 
 	/* Now write each chunk */
-	for (j = 0; j < old_chunk_list_max; j++) {
-		struct chunk *c = old_chunk_list[j];
+	for (j = 0; j < chunk_max; j++) {
+		struct chunk_ref *ref = &chunk_list[j];
+		struct chunk *c = ref->chunk;
+		struct chunk *p_c = ref->p_chunk;
+		uint8_t tmp8u;
+
+		wr_s32b(ref->turn);
+		wr_u16b(ref->region);
+		wr_u16b(ref->z_pos);
+		wr_u16b(ref->y_pos);
+		wr_u16b(ref->x_pos);
+		wr_u32b(ref->gen_loc_idx);
+		for (i = 0; i < 11; i++)
+			wr_u16b(ref->adjacent[i]);
+
+		/* Skip dead chunks */
+		if (c) {
+			assert(p_c);
+			tmp8u = 1;
+		} else {
+			assert(p_c == NULL);
+			tmp8u = 0;
+		}
+
+		wr_byte(tmp8u);
+		if (!c)	continue;
 
 		/* Write the terrain and info */
 		wr_dungeon_aux(c);
+		wr_dungeon_aux(p_c);
 
 		/* Write the objects */
 		wr_objects_aux(c);
-
-		/* Write the monsters */
-		wr_monsters_aux(c);
+		wr_objects_aux(p_c);
 
 		/* Write the traps */
 		wr_traps_aux(c);
+		wr_traps_aux(p_c);
 
 		/* Write other chunk info */
-		/* Later */
+		wr_u16b(c->height);
+		wr_u16b(c->width);
+		for (i = 0; i < FEAT_MAX + 1; i++) {
+			wr_u16b(c->feat_count[i]);
+		}
 	}
 }
 
@@ -992,6 +1026,7 @@ void wr_locations(void)
 		wr_u16b(location->x_pos);
 		wr_u16b(location->y_pos);
 		wr_u16b(location->z_pos);
+		wr_u32b(location->seed);
 
 		/* Count the terrain changes */
 		for (change = location->change; change; change = change->next) {

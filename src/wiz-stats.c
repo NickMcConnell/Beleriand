@@ -2018,20 +2018,20 @@ static void add_to_grid_count_aggregate(struct grid_count_aggregate *ga,
 
 struct cgen_stats {
 	/*
-	 * This is effectively a 2 x z_info->profile_max array where
+	 * This is effectively a 2 x z_info->dungeon_max array where
 	 * level_counts[0][i] element is the number of successful builds of
 	 * the ith level type and level_counts[1][i] is the number of
 	 * unsuccessful builds of the ith level type.
 	 */
 	uint32_t *level_counts[2];
 	/*
-	 * This is a z_info->profile_max element array where total_rooms[i] has
+	 * This is a z_info->dungeon_max element array where total_rooms[i] has
 	 * the results for the total number of rooms per successful level in
 	 * the ith level type.
 	 */
 	struct i_sum_sum2* total_rooms;
 	/*
-	 * This is effectively a z_info->profile_max x 2 x room_type_count array
+	 * This is effectively a z_info->dungeon_max x 2 x room_type_count array
 	 * where room_counts[i][0][j] has the results for the number of
 	 * successful rooms of the jth type in the ith level type and
 	 * room_counts[i][1][j] has the results for number of unsuccessful
@@ -2039,12 +2039,12 @@ struct cgen_stats {
 	 */
 	struct i_sum_sum2*** room_counts;
 	/*
-	 * This is a z_info_profile_max element array of the aggregate results,
+	 * This is a z_info_dungeon_max element array of the aggregate results,
 	 * by level profile, for tunneling.
 	 */
 	struct tunnel_aggregate *ta;
 	/*
-	 * This is a z_info_profile_max x 3 element array of the aggregate
+	 * This is a z_info_dungeon_max x 3 element array of the aggregate
 	 * results, by level profile, for grid types.
 	 */
 	struct grid_count_aggregate **ga;
@@ -2100,7 +2100,7 @@ static void cgenstat_handle_new_level(game_event_type et, game_event_data *ed,
 	gs = (struct cgen_stats*) ud;
 	gs->level_type = (ed->string) ?
 		get_level_profile_index_from_name(ed->string) : -1;
-	assert(gs->level_type >= 0 && gs->level_type < z_info->profile_max);
+	assert(gs->level_type >= 0 && gs->level_type < z_info->dungeon_max);
 
 	/* Reset counters for the current level. */
 	for (i = 0; i < gs->room_type_count; ++i) {
@@ -2117,7 +2117,7 @@ static void cgenstat_handle_level_end(game_event_type et, game_event_data *ed,
 
 	assert(et == EVENT_GEN_LEVEL_END && ud);
 	gs = (struct cgen_stats*) ud;
-	assert(gs->level_type >= 0 && gs->level_type < z_info->profile_max);
+	assert(gs->level_type >= 0 && gs->level_type < z_info->dungeon_max);
 	if (ed->flag) {
 		int room_count = 0;
 		struct grid_counts gcounts[3];
@@ -2166,7 +2166,7 @@ static void cgenstat_handle_new_room(game_event_type et, game_event_data *ed,
 
 	assert(et == EVENT_GEN_ROOM_START && ud);
 	gs = (struct cgen_stats*) ud;
-	assert(gs->level_type >= 0 && gs->level_type < z_info->profile_max);
+	assert(gs->level_type >= 0 && gs->level_type < z_info->dungeon_max);
 	gs->room_type = (ed->string) ?
 		get_room_builder_index_from_name(ed->string) : -1;
 	assert(gs->room_type >= 0 && gs->room_type < gs->room_type_count);
@@ -2179,7 +2179,7 @@ static void cgenstat_handle_room_end(game_event_type et, game_event_data *ed,
 
 	assert(et == EVENT_GEN_ROOM_END && ud);
 	gs = (struct cgen_stats*) ud;
-	assert(gs->level_type >= 0 && gs->level_type < z_info->profile_max);
+	assert(gs->level_type >= 0 && gs->level_type < z_info->dungeon_max);
 	assert(gs->room_type >= 0 && gs->room_type < gs->room_type_count);
 
 	/* Update room count for the current level. */
@@ -2193,7 +2193,7 @@ static void cgenstat_handle_tunnel(game_event_type et, game_event_data *ed,
 
 	assert(et == EVENT_GEN_TUNNEL_FINISHED && ud);
 	gs = (struct cgen_stats*) ud;
-	assert(gs->level_type >= 0 && gs->level_type < z_info->profile_max);
+	assert(gs->level_type >= 0 && gs->level_type < z_info->dungeon_max);
 
 	/* Add to the tunneling records. */
 	assert(gs->n_curr_tunn >= 0 && gs->n_curr_tunn <= gs->alloc_curr_tunn);
@@ -2220,17 +2220,17 @@ static void initialize_generation_stats(struct cgen_stats *gs)
 	gs->room_type = -1;
 	gs->room_type_count = get_room_builder_count();
 
-	gs->level_counts[0] = mem_zalloc(z_info->profile_max *
+	gs->level_counts[0] = mem_zalloc(z_info->dungeon_max *
 		sizeof(*gs->level_counts[0]));
-	gs->level_counts[1] = mem_zalloc(z_info->profile_max *
+	gs->level_counts[1] = mem_zalloc(z_info->dungeon_max *
 		sizeof(*gs->level_counts[1]));
 
-	gs->total_rooms = mem_zalloc(z_info->profile_max *
+	gs->total_rooms = mem_zalloc(z_info->dungeon_max *
 		sizeof(*gs->total_rooms));
 
-	gs->room_counts = mem_alloc(z_info->profile_max *
+	gs->room_counts = mem_alloc(z_info->dungeon_max *
 		sizeof(*gs->room_counts));
-	for (i = 0; i < z_info->profile_max; ++i) {
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		gs->room_counts[i] = mem_alloc(2 * sizeof(*gs->room_counts[i]));
 		gs->room_counts[i][0] = mem_zalloc(gs->room_type_count *
 			sizeof(*gs->room_counts[i][0]));
@@ -2238,13 +2238,13 @@ static void initialize_generation_stats(struct cgen_stats *gs)
 			sizeof(*gs->room_counts[i][1]));
 	}
 
-	gs->ta = mem_alloc(z_info->profile_max * sizeof(*gs->ta));
-	for (i = 0; i < z_info->profile_max; ++i) {
+	gs->ta = mem_alloc(z_info->dungeon_max * sizeof(*gs->ta));
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		initialize_tunnel_aggregate(&gs->ta[i]);
 	}
 
-	gs->ga = mem_alloc(z_info->profile_max * sizeof(*gs->ga));
-	for (i = 0; i < z_info->profile_max; ++i) {
+	gs->ga = mem_alloc(z_info->dungeon_max * sizeof(*gs->ga));
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		gs->ga[i] = mem_alloc(3 * sizeof(*gs->ga[i]));
 		initialize_grid_count_aggregate(&gs->ga[i][0]);
 		initialize_grid_count_aggregate(&gs->ga[i][1]);
@@ -2260,11 +2260,11 @@ static void initialize_generation_stats(struct cgen_stats *gs)
 	gs->n_curr_tunn = 0;
 	gs->alloc_curr_tunn = 0;
 
-	gs->badst_counts = mem_zalloc(z_info->profile_max *
+	gs->badst_counts = mem_zalloc(z_info->dungeon_max *
 		sizeof(*gs->badst_counts));
-	gs->disarea_counts = mem_zalloc(z_info->profile_max *
+	gs->disarea_counts = mem_zalloc(z_info->dungeon_max *
 		sizeof(*gs->disarea_counts));
-	gs->disdstair_counts = mem_zalloc(z_info->profile_max *
+	gs->disdstair_counts = mem_zalloc(z_info->dungeon_max *
 		sizeof(*gs->disdstair_counts));
 
 	event_add_handler(EVENT_GEN_LEVEL_START, cgenstat_handle_new_level, gs);
@@ -2298,14 +2298,14 @@ static void cleanup_generation_stats(struct cgen_stats *gs)
 	mem_free(gs->curr_room_counts[1]);
 	mem_free(gs->curr_room_counts[0]);
 
-	for (i = 0; i < z_info->profile_max; ++i) {
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		mem_free(gs->ga[i]);
 	}
 	mem_free(gs->ga);
 
 	mem_free(gs->ta);
 
-	for (i = 0; i < z_info->profile_max; ++i) {
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		mem_free(gs->room_counts[i][1]);
 		mem_free(gs->room_counts[i][0]);
 		mem_free(gs->room_counts[i]);
@@ -2330,7 +2330,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 	file_putf(fo, "%d\n\n", gs->nsuccess);
 
 	file_put(fo, "Level Builder Success Count, Probability, and Failure Rate Per Successful Level::\n");
-	for (i = 0; i < z_info->profile_max; ++i) {
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		file_putf(fo, "\"%s\"\t%lu\t%.6f\t%.6f\n",
 			get_level_profile_name_from_index(i),
 			(unsigned long) gs->level_counts[0][i],
@@ -2340,7 +2340,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 	file_put(fo, "\n");
 
 	file_put(fo, "Average and Std. Deviation of Room Counts by Level Type::\n");
-	for (i = 0; i < z_info->profile_max; ++i) {
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		file_putf(fo, "\"%s\"\t%.4f\t%.4f\n",
 			get_level_profile_name_from_index(i),
 			(gs->level_counts[0][i] > 0) ?
@@ -2351,7 +2351,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 	}
 	file_put(fo, "\n");
 
-	for (i = 0; i < z_info->profile_max; ++i) {
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		int j;
 		const char *name;
 
@@ -2570,7 +2570,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 	}
 
 	file_put(fo, "Counts of Levels with Invalid Starting Locations::\n");
-	for (i = 0; i < z_info->profile_max; ++i) {
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		file_putf(fo, "\"%s\"\t%lu\n",
 			get_level_profile_name_from_index(i),
 			(unsigned long) gs->badst_counts[i]);
@@ -2578,7 +2578,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 	file_put(fo, "\n");
 
 	file_put(fo, "Counts of Levels with Disconnected Non-vault Areas::\n");
-	for (i = 0; i < z_info->profile_max; ++i) {
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		file_putf(fo, "\"%s\"\t%lu\n",
 			get_level_profile_name_from_index(i),
 			(unsigned long) gs->disarea_counts[i]);
@@ -2586,7 +2586,7 @@ static void dump_generation_stats(ang_file *fo, const struct cgen_stats *gs)
 	file_put(fo, "\n");
 
 	file_put(fo, "Counts of Levels with Player Disconnected from Down Stairs::\n");
-	for (i = 0; i < z_info->profile_max; ++i) {
+	for (i = 0; i < z_info->dungeon_max; ++i) {
 		file_putf(fo, "\"%s\"\t%lu\n",
 			get_level_profile_name_from_index(i),
 			(unsigned long) gs->disdstair_counts[i]);

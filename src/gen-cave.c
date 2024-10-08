@@ -1314,3 +1314,36 @@ struct chunk *gates_gen(struct player *p)
 	return c;
 }
 
+/* ------------------ LANDMARK ---------------- */
+
+/**
+ * Load the appropriate bit of a landmark from the text file
+ */
+bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
+					int y_coord, int x_coord)
+{
+	/* Where in the arena the chunk is going */
+	struct loc target = loc(x_coord * CHUNK_SIDE, y_coord * CHUNK_SIDE);
+
+	/* Set all the chunk reading data */
+	struct landmark *landmark = &landmark_info[index];
+	struct loc top_left = loc((map_x - landmark->map_x) * CHUNK_SIDE,
+							  (map_y - landmark->map_y) * CHUNK_SIDE);
+	struct loc bottom_right = loc_sum(top_left, loc(CHUNK_SIDE, CHUNK_SIDE));
+	int y_total = landmark->height * CHUNK_SIDE;
+	int x_total = landmark->width * CHUNK_SIDE;
+
+	/* Check bounds */
+	if ((top_left.y < 0) || (top_left.y > y_total) ||
+		(top_left.x < 0) || (top_left.x > x_total)) {
+		/* Oops.  We're /not/ on a landmark */
+		return false;
+	}
+
+	/* Place terrain features */
+	//terrain get_terrain(c, top_left, bottom_right, target, y_total, x_total,
+	//			0, false, NULL, true, landmark->text, true);
+
+	/* Success. */
+	return true;
+}

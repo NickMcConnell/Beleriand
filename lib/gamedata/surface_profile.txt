@@ -1,0 +1,181 @@
+# file: surface_profile.txt
+
+# Contains information about how each type of surface terrain is generated.
+
+# name: The profile name.  This needs to match the corresponding entry in 
+# list-surface-profiles.h so the correct level-building function can be called
+
+
+## Plain
+name:plain
+code:.
+feat:grass
+area:pond
+frequency:45
+attempts:1
+feat:shallow water
+size:1+d2
+formation:basic
+feat:lowland trees
+feat:highland trees
+feat:pile of passable rubble
+feat:granite wall
+feat:quartz vein
+proportion:24
+size:4+d5
+
+## Forest
+name:forest
+code:+
+feat:lowland trees
+feat:highland trees
+area:clearing
+frequency:240
+attempts:2
+feat:grass
+size:1+d5
+area:pond
+frequency:90
+attempts:1
+feat:shallow water
+size:1+d2
+formation:basic
+feat:grass
+feat:grass
+feat:pile of passable rubble
+feat:granite wall
+feat:quartz vein
+proportion:48
+size:4+d5
+
+## Lake
+name:lake
+code:-
+feat:shallow water
+
+## Ocean
+name:ocean
+code:~
+feat:deep water
+
+## Moor
+name:moor
+code:,
+feat:grass
+formation:basic
+feat:pile of passable rubble
+feat:granite wall
+feat:quartz vein
+feat:sand
+proportion:20
+size:4+d5
+
+## Mountain
+name:mountain
+code:^
+feat:mountain
+area:plateau
+frequency:240
+attempts:2
+feat:grass
+size:1+d5
+area:pond
+frequency:90
+feat:shallow water
+size:1+d2
+area:snow
+frequency:90
+feat:snow
+size:1+d2
+formation:basic
+feat:pile of passable rubble
+feat:road
+feat:grass
+feat:sand
+feat:highland trees
+feat:highland trees
+proportion:15
+size:4+d10
+
+## Swamp
+name:swamp
+code:_
+feat:grass
+feat:shallow water
+formation:basic
+feat:pile of passable rubble
+feat:granite wall
+feat:quartz vein
+feat:sand
+proportion:50
+size:4+d5
+formation:clump
+feat:reeds
+proportion:10
+size:4+d5
+
+## Dark forest
+name:dark forest
+code:|
+feat:lowland trees
+feat:highland trees
+area:clearing
+frequency:240
+attempts:1
+feat:grass
+size:1+d5
+area:pond
+frequency:90
+feat:shallow water
+size:1+d2
+formation:basic
+feat:grass
+feat:grass
+feat:pile of passable rubble
+feat:granite wall
+feat:quartz vein
+proportion:48
+size:4+d5
+
+## Impassable mountain
+name:impassable mountain
+code:X
+feat:mountain
+
+## Desert
+name:desert
+code:/
+feat:sand dune
+feat:sand
+feat:pile of passable rubble
+area:clearing
+frequency:240
+attempts:2
+feat:grass
+size:1+d5
+formation:basic
+feat:grass
+feat:grass
+feat:pile of passable rubble
+feat:granite wall
+feat:quartz vein
+proportion:16
+size:4+d5
+
+## Snow
+name:snow
+code:*
+feat:snow
+area:ice
+frequency:240
+attempts:2
+feat:ice
+size:1+d4
+formation:basic
+proportion:48
+size:4+d5
+
+## Town
+name:town
+code:=
+feat:road

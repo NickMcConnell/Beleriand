@@ -125,6 +125,7 @@ ANGFILES0 = \
 	gen-cave.o \
 	gen-chunk.o \
 	gen-room.o \
+	gen-surface.o \
 	gen-util.o \
 	grafmode.o \
 	guid.o \

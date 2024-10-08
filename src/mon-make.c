@@ -723,6 +723,22 @@ static void new_wandering_destination(struct chunk *c, struct monster *mon)
 }
 
 /**
+ * Set all temporarily placed monsters to the current playing arena
+ */
+void set_monster_place_current(void)
+{
+	//mon_list int i;
+
+	//for (i = 1; i < mon_max; i++) {
+	//	struct monster *mon = monster(i);
+	//	if (!mon) continue;
+	//	if (mon->place == CHUNK_TEMP) {
+	//		mon->place = CHUNK_CUR;
+	//	}
+	//}
+}
+
+/**
  * ------------------------------------------------------------------------
  * Placement of a single monster
  * These are the functions that actually put the monster into the world
