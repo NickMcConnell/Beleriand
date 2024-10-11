@@ -55,9 +55,9 @@ struct angband_constants
 	uint16_t property_max;	/**< Maximum number of object properties */
 	uint16_t ordinary_kind_max;	/**< Maximum number of ordinary object kinds */
 	uint16_t obj_alloc_max;	/**< Maximum number of object allocations */
-    u16b region_max;	/**< Maximum number of world regions */
-    u16b landmark_max;	/**< Maximum number of landmarks */
-    u16b river_max;	/**< Maximum number of rivers */
+    uint16_t region_max;	/**< Maximum number of world regions */
+    uint16_t landmark_max;	/**< Maximum number of landmarks */
+    uint16_t river_max;	/**< Maximum number of rivers */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	uint16_t level_monster_max;	/**< Maximum number of monsters on a given level */

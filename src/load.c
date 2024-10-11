@@ -1577,11 +1577,11 @@ int rd_locations(void)
 	rd_u32b(&gen_loc_cnt);
 
 	for (i = 0; i < gen_loc_cnt; i++) {
-		byte tmp8u;
-		u16b tmp16u;
+		uint8_t tmp8u;
+		uint16_t tmp16u;
 		uint32_t tmp32u;
 		struct gen_loc *location = NULL;
-		u16b num_changes = 0, num_joins = 0;
+		uint16_t num_changes = 0, num_joins = 0;
 
 		/* Increase the array size if necessary */
 		if (((i % GEN_LOC_INCR) == 0) && (i > 0)) {
