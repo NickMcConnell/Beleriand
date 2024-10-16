@@ -38,5 +38,6 @@ bool monster_breathes(const struct monster *mon);
 bool monster_is_in_view(const struct monster *mon);
 bool monster_is_visible(const struct monster *mon);
 bool monster_is_listened(const struct monster *mon);
+bool monster_is_stored(const struct monster *mon);
 
 #endif /* !MON_PREDICATE_H */

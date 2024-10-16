@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "grafmode.h"
 #include "init.h"
+#include "mon-make.h"
 #include "mon-move.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
@@ -49,7 +50,7 @@ static uint8_t mini_screenshot_attr[7][7];
 static void hallucinatory_monster(int midx, int *a, wchar_t *c)
 {
 	/* Get the image monster */
-	struct monster_race *race = cave_monster(cave, midx)->image_race;
+	struct monster_race *race = monster(midx)->image_race;
 
 	/* Skip non-entries */
 	if (!race->name) return;
@@ -245,7 +246,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 	/* Handle monsters, the player and trap borders */
 	if (g->m_idx > 0) {
-		struct monster *mon = cave_monster(cave, g->m_idx);
+		struct monster *mon = monster(g->m_idx);
 
 		if (g->hallucinate) {
 			if (g->m_idx < z_info->r_max) {

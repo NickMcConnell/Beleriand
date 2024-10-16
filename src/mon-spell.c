@@ -282,8 +282,7 @@ static bool spell_check_for_save(const struct monster_spell *spell)
 			save = player_inc_check(player, effect->subtype, false);
 		} else {
 			/* Direct call to player_saving_throw() */
-			struct monster *mon = cave->mon_current > 0 ?
-				cave_monster(cave, cave->mon_current) : NULL;
+			struct monster *mon = mon_current > 0 ?	monster(mon_current) : NULL;
 			save = player_saving_throw(player, mon, 0);
 		}
 		effect = effect->next;

@@ -24,6 +24,7 @@
 #include "effects.h"
 #include "init.h"
 #include "mon-calcs.h"
+#include "mon-make.h"
 #include "mon-util.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
@@ -856,8 +857,7 @@ bool player_saving_throw(struct player *p, struct monster *mon, int resistance)
 bool player_inc_check(struct player *p, int idx, bool lore)
 {
 	struct timed_effect_data *effect = &timed_effects[idx];
-	struct monster *mon = cave->mon_current > 0 ?
-		cave_monster(cave, cave->mon_current) : NULL;
+	struct monster *mon = mon_current > 0 ?	monster(mon_current) : NULL;
 	int resistance;
 
 	/* Special case for rage */

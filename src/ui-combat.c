@@ -20,6 +20,7 @@
 #include "combat.h"
 #include "game-event.h"
 #include "monster.h"
+#include "mon-make.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player.h"
@@ -91,7 +92,7 @@ void update_combat_rolls_attack(game_event_type type, game_event_data *data,
 	switch (attacker.what) {
 		case SRC_PLAYER: race1 = &r_info[0]; break;
 		case SRC_MONSTER: {
-			mon = cave_monster(cave, attacker.which.monster);
+			mon = monster(attacker.which.monster);
 			if (player->timed[TMD_IMAGE]) {
 				race1 = mon->image_race;
 			} else {
@@ -106,7 +107,7 @@ void update_combat_rolls_attack(game_event_type type, game_event_data *data,
 	switch (defender.what) {
 		case SRC_PLAYER: race2 = &r_info[0]; break;
 		case SRC_MONSTER: {
-			mon = cave_monster(cave, defender.which.monster);
+			mon = monster(defender.which.monster);
 			if (player->timed[TMD_IMAGE]) {
 				race2 = mon->image_race;
 			} else {

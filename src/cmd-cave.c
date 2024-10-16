@@ -30,6 +30,7 @@
 #include "mon-calcs.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-move.h"
 #include "mon-predicate.h"
 #include "mon-spell.h"
@@ -58,49 +59,10 @@
 #include "tutorial.h"
 
 /**
- * Determines whether a staircase is 'trapped' like a false floor trap.
- * This means you fall a level below where you expected to end up (if you were
- * going upwards), take some minor damage, and have no stairs back.
- *
- * It gets more likely the more stairs you have recently taken.
- * It is designed to stop you stair-scumming.
- */
-static bool trapped_stairs(void)
-{
-	int chance;
-	
-	chance = player->staircasiness / 100;
-	chance = chance * chance * chance;	
-	chance = chance / 10000;
-	
-	if (percent_chance(chance))	{
-		msg("The stairs crumble beneath you!");
-		event_signal(EVENT_MESSAGE_FLUSH);
-		msg("You fall through...");
-		event_signal(EVENT_MESSAGE_FLUSH);
-		msg("...and land somewhere deeper in the Iron Hells.");
-		event_signal(EVENT_MESSAGE_FLUSH);
-		history_add(player, "Fell through a crumbling stair",
-					HIST_TRAPPED_STAIRS);
-
-		/* Take some damage */
-		player_falling_damage(player, false);
-
-		/* No stairs back */
-		player->upkeep->create_stair = FEAT_NONE;
-
-		return true;
-	}
-
-	return false;
-}
-
-/**
  * Go up one level
  */
 static void do_cmd_go_up_aux(void)
 {
-	int new_depth, min;
 	int change = square_isshaft(cave, player->grid) ? -2 : -1;
 
 	/* Verify stairs */
@@ -122,9 +84,6 @@ static void do_cmd_go_up_aux(void)
 		return;
 	}
 	
-	/* Calculate the depth to aim for */
-	new_depth = dungeon_get_next_level(player, player->depth, change);
-	
 	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
@@ -144,58 +103,29 @@ static void do_cmd_go_up_aux(void)
 	/* Player may be dead */
 	if (player->chp < 0) return;
 
-	/* Calculate the new depth to arrive at */
-	min = player_min_depth(player);
-
 	/* Create a way back */
 	player->upkeep->create_stair = (change == -2) ? FEAT_MORE_SHAFT : FEAT_MORE;
 	
-	/* Deal with most cases where you can't find your way */
-	if ((new_depth < min) && (player->max_depth != z_info->dun_depth)) {
-		msgt(MSG_STAIRS_UP, "You enter a maze of up staircases, but cannot find your way.");
+	/* Deal with cases where you can find your way */
+	msgt(MSG_STAIRS_UP, "You enter a maze of up staircases.");
 
-		/* Deal with trapped stairs when trying and failing to go upwards */
-		if (!trapped_stairs()) {
-			if (player->depth == min) {
-				msgt(MSG_STAIRS_UP, "You emerge near where you began.");
-			} else {
-				msgt(MSG_STAIRS_UP, "You emerge even deeper in the dungeon.");
-			}
+	/* Escaping */
+	if (silmarils_possessed(player) > 0) {
+		msgt(MSG_STAIRS_UP, "The divine light reveals the way.");
+	}
 
-			/* Change the way back */
-			if (player->upkeep->create_stair == FEAT_MORE) {
-				player->upkeep->create_stair = FEAT_LESS;
-			} else {
-				player->upkeep->create_stair = FEAT_LESS_SHAFT;
-			}
+	/* Flee Morgoth's throne room */
+	if (player->depth == z_info->dun_depth) {
+		if (!player->morgoth_slain) {
+			msg("As you climb the stair, a great cry of rage and anguish comes from below.");
+			msg("Make quick your escape: it shall be hard-won.");
 		}
 
-		new_depth = min;
-	} else {
-		/* Deal with cases where you can find your way */
-		msgt(MSG_STAIRS_UP, "You enter a maze of up staircases.");
+		/* Set the 'on the run' flag */
+		player->on_the_run = true;
 
-		/* Escaping */
-		if (silmarils_possessed(player) > 0) {
-			msgt(MSG_STAIRS_UP, "The divine light reveals the way.");
-		}
-
-		/* Flee Morgoth's throne room */
-		if (player->depth == z_info->dun_depth) {
-			if (!player->morgoth_slain) {
-				msg("As you climb the stair, a great cry of rage and anguish comes from below.");
-				msg("Make quick your escape: it shall be hard-won.");
-			}
-
-			/* Set the 'on the run' flag */
-			player->on_the_run = true;
-
-			/* Remove the 'truce' flag if it hasn't been done already */
-			player->truce = false;
-		} else if (trapped_stairs()) {
-			/* Deal with trapped stairs when going upwards */
-			new_depth++;
-		}
+		/* Remove the 'truce' flag if it hasn't been done already */
+		player->truce = false;
 	}
 
 	/* Another staircase has been used... */
@@ -207,7 +137,7 @@ static void do_cmd_go_up_aux(void)
 	}
 	
 	/* Change level */
-	dungeon_change_level(player, new_depth);
+	chunk_change(change, 0, 0);
 }
 
 
@@ -224,7 +154,7 @@ void do_cmd_go_up(struct command *cmd)
  */
 static void do_cmd_go_down_aux(void)
 {
-	int new_depth, min;
+	int new_depth;
 	int change = square_isshaft(cave, player->grid) ? 2 : 1;
 
 	/* Verify stairs */
@@ -240,19 +170,9 @@ static void do_cmd_go_down_aux(void)
 		return;
 	}
 
-	/* Do not descend from the Gates */
-	if (player->depth == 0) {
-		msg("You have made it to the very gates of Angband and can once more taste the freshness on the air.");
-		msg("You will not re-enter that fell pit.");
-		return;
-	}
-
 	/* Calculate the depth to aim for */
 	new_depth = dungeon_get_next_level(player, player->depth, change);
 	
-	/* Calculate the new depth to arrive at */
-	min = player_min_depth(player);
-
 	/* Create a way back */
 	player->upkeep->create_stair = (change == 2) ? FEAT_LESS_SHAFT : FEAT_LESS;
 	
@@ -288,9 +208,7 @@ static void do_cmd_go_down_aux(void)
 		msgt(MSG_STAIRS_DOWN, "You emerge near where you began.");
 		player->upkeep->create_stair = FEAT_MORE;
 		new_depth = z_info->dun_depth - 1;
-	} else if (!trapped_stairs() && (new_depth < min)) {
-		msgt(MSG_STAIRS_DOWN, "You emerge much deeper in the dungeon.");
-		new_depth = min;
+		change = new_depth - player->depth;
 	}
 
 	/* Another staircase has been used... */
@@ -302,7 +220,7 @@ static void do_cmd_go_down_aux(void)
 	}
 	
 	/* Change level */
-	dungeon_change_level(player, new_depth);
+	chunk_change(change, 0, 0);
 }
 
 
@@ -1649,7 +1567,7 @@ void move_player(int dir, bool disarm)
 	struct loc grid = loc_sum(player->grid, ddgrid[dir]);
 
 	int m_idx = square(cave, grid)->mon;
-	struct monster *mon = cave_monster(cave, m_idx);
+	struct monster *mon = monster(m_idx);
 	bool trap = square_isdisarmabletrap(cave, grid);
 	bool door = square_iscloseddoor(cave, grid) &&
 		!square_issecretdoor(cave, grid);
@@ -1881,7 +1799,7 @@ void do_cmd_hold(struct command *cmd)
 static bool do_cmd_walk_test(struct player *p, struct loc grid)
 {
 	int m_idx = square(cave, grid)->mon;
-	struct monster *mon = cave_monster(cave, m_idx);
+	struct monster *mon = monster(m_idx);
 
 	/* If we don't know the grid, allow attempts to walk into it */
 	if (!square_isknown(cave, grid))

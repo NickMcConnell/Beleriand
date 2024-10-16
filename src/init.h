@@ -59,10 +59,8 @@ struct angband_constants
     uint16_t landmark_max;	/**< Maximum number of landmarks */
     uint16_t river_max;	/**< Maximum number of rivers */
 
-	/* Maxima of things on a given level, read from constants.txt */
-	uint16_t level_monster_max;	/**< Maximum number of monsters on a given level */
-
 	/* Monster generation constants, read from constants.txt */
+	uint16_t monster_max;	/**< Maximum number of monsters */
 	uint16_t alloc_monster_chance;	/**< 1/per-turn-chance of generation */
 	uint16_t monster_group_max;	/**< Maximum size of a group */
 
@@ -79,9 +77,9 @@ struct angband_constants
 
 	/* Dungeon generation constants, read from constants.txt */
 	uint16_t level_room_max;	/**< Maximum number of rooms on a level */
-	uint16_t level_room_min;	/**< Minimum number of rooms on a level */
-	uint16_t block_hgt;			/**< Height of each dungeon block */
-	uint16_t block_wid;			/**< Width of each dungeon block */
+	uint16_t level_door_max;/**< Maximum number of potential doors on a level */
+	uint16_t wall_pierce_max;/**< Maximum number of potential wall piercings */
+	uint16_t tunn_grid_max;		/**< Maximum number of tunnel grids */
 
 	/* World shape constants, read from constants.txt */
 	uint16_t dun_depth;	/* Maximum dungeon level */

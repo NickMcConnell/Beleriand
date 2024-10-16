@@ -6,7 +6,7 @@
 #include "init.h"
 
 static struct chunk *create_empty_cave(int height, int width) {
-	struct chunk *c = cave_new(height, width);
+	struct chunk *c = chunk_new(height, width);
 	struct loc grid;
 
 	grid.y = 0;

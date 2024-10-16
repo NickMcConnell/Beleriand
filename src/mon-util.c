@@ -20,6 +20,7 @@
 #include "cmd-core.h"
 #include "effects.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-attack.h"
 #include "mon-calcs.h"
@@ -245,10 +246,10 @@ static void monster_fall_in_chasm(struct loc grid)
             monster_death(mon, player, true, NULL, false);
 
             /* Delete the monster */
-            delete_monster(cave, grid);
+            delete_monster(grid);
         } else {
 			/* Otherwise the monster survives! (mainly relevant for uniques) */
-			delete_monster(cave, grid);
+			delete_monster(grid);
         }
     }
 }
@@ -311,6 +312,7 @@ void monster_opportunist_or_zone(struct player *p, struct loc grid_to)
 void monster_swap(struct loc grid1, struct loc grid2)
 {
 	struct monster *mon;
+	int y_offset, x_offset;
 
 	/* Monsters */
 	int m1 = square(cave, grid1)->mon;
@@ -326,7 +328,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	if (m1 > 0) {
 		/* Monster */
 		m1_is_monster = true;
-		mon = cave_monster(cave, m1);
+		mon = monster(m1);
 
 		/* Handle Opportunist and Zone of Control */
 		player_opportunist_or_zone(player, grid1, grid2, false);
@@ -372,7 +374,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	/* Monster 2 */
 	if (m2 > 0) {
 		/* Monster */
-		mon = cave_monster(cave, m2);
+		mon = monster(m2);
 
 		/* Makes noise when moving */
 		if (mon->noise == 0) {
@@ -424,6 +426,57 @@ void monster_swap(struct loc grid1, struct loc grid2)
     if ((m1 < 0) || (m2 < 0)) {
         event_signal(EVENT_SEEFLOOR);
     }
+
+	/* Deal with change of chunk */
+	y_offset = grid2.y / CHUNK_SIDE - grid1.y / CHUNK_SIDE;
+	x_offset = grid2.x / CHUNK_SIDE - grid1.x / CHUNK_SIDE;
+
+	/* Both will have changed chunk, or neither will */
+	if ((y_offset != 0) || (x_offset != 0)) {
+		struct monster *mon1 = square_monster(cave, grid2);
+		struct monster *mon2 = square_monster(cave, grid1);
+		int adj1 = chunk_offset_to_adjacent(0, y_offset, x_offset);
+		int adj2 = chunk_offset_to_adjacent(0, -y_offset, -x_offset);
+
+		/* m1 is the player, or m2 is, or both are monsters */
+		if (m1 < 0) {
+			/* Move monster */
+			if (mon2) mon2->place = player->place;
+
+			/* On the surface, re-align */
+			if (player->depth == 0) {
+				if ((y_offset != 0) || (x_offset != 0)) {
+					chunk_change(0, y_offset, x_offset);
+				}
+			} else {
+				/* In the dungeon, change place */
+				if (adj1 != DIR_NONE) {
+					player->last_place = player->place;
+					player->place = chunk_list[player->place].adjacent[adj1];
+				}
+			}
+		} else if (m2 < 0) {
+			/* Move monster */
+			if (mon1) mon1->place = player->place;
+
+			/* On the surface, re-align */
+			if (player->depth == 0) {
+				if ((y_offset != 0) || (x_offset != 0)) {
+					chunk_change(0, -y_offset, -x_offset);
+				}
+			} else {
+				/* In the dungeon, change place */
+				if (adj2 != DIR_NONE) {
+					player->last_place = player->place;
+					player->place = chunk_list[player->place].adjacent[adj2];
+				}
+			}
+		} else {
+			/* Swap places */
+			if (mon1) mon1->place = chunk_list[player->place].adjacent[adj1];
+			if (mon2) mon2->place = chunk_list[player->place].adjacent[adj2];
+		}
+	}
 }
 
 /**
@@ -510,12 +563,12 @@ void monsters_hear(bool player_centered, bool main_roll, int difficulty)
 	}
 
 	/* Process the monsters (backwards) */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+	for (i = mon_max - 1; i >= 1; i--) {
 		/* Access the monster */
-		struct monster *mon = cave_monster(cave, i);
+		struct monster *mon = monster(i);
 
-		/* Ignore dead monsters */
-		if (!mon->race) continue;
+		/* Ignore dead and stored monsters */
+		if (!mon->race || monster_is_stored(mon)) continue;
 
 		/* Ignore if character is within detection range
 		 * (unlimited for most monsters, 2 for shortsighted ones) */		
@@ -994,7 +1047,7 @@ void monster_death(struct monster *mon, struct player *p, bool by_player,
 	p->upkeep->redraw |= PR_MONLIST;
 
 	/* Delete the monster */
-	delete_monster_idx(cave, mon->midx);
+	delete_monster_idx(mon->midx);
 }
 
 /**
@@ -1075,8 +1128,8 @@ void scare_onlooking_friends(const struct monster *mon, int amount)
 	int i;
 
 	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon1 = cave_monster(cave, i);;
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon1 = monster(i);;
 		struct monster_race *race = mon1->race;
 
 		/* Skip dead monsters */
@@ -1122,6 +1175,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 
 	/* Forget location */
 	obj->grid = loc(0, 0);
+	obj->floor = false;
 
 	/* Link the object to the monster */
 	obj->held_m_idx = mon->midx;

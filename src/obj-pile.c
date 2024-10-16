@@ -331,6 +331,7 @@ void object_delete(struct chunk *c, struct chunk *p_c,
 	if (c && p_c && obj->oidx && (obj == c->objects[obj->oidx]) &&
 		p_c->objects[obj->oidx]) {
 		obj->grid = loc(0, 0);
+		obj->floor = false;
 		obj->prev = NULL;
 		obj->next = NULL;
 		obj->held_m_idx = 0;
@@ -904,6 +905,7 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 
 	/* Location */
 	drop->grid = grid;
+	drop->floor = true;
 
 	/* Forget monster */
 	drop->held_m_idx = 0;
@@ -921,6 +923,7 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 		drop->known->oidx = drop->oidx;
 		drop->known->held_m_idx = 0;
 		drop->known->grid = loc(0, 0);
+		drop->known->floor = false;
 		player->cave->objects[drop->oidx] = drop->known;
 	}
 
@@ -953,7 +956,7 @@ static void floor_carry_fail(struct chunk *c, struct object *drop, bool broke)
 			VERB_AGREEMENT(drop->number, "disappears", "disappear");
 		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE, player);
 		msg("The %s %s.", o_name, verb);
-		if (!loc_is_zero(known->grid))
+		if (known->floor)
 			square_excise_object(player->cave, known->grid, known);
 		delist_object(player->cave, known);
 		object_delete(player->cave, NULL, &known);
@@ -1130,11 +1133,13 @@ void push_object(struct loc grid)
 		object_copy(newobj, obj);
 		newobj->oidx = 0;
 		newobj->grid = loc(0, 0);
+		newobj->floor = false;
 		if (newobj->known) {
 			newobj->known = object_new();
 			object_copy(newobj->known, obj->known);
 			newobj->known->oidx = 0;
 			newobj->known->grid = loc(0, 0);
+			newobj->known->floor = false;
 		}
 		q_push_ptr(queue, newobj);
 

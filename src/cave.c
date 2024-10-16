@@ -449,7 +449,7 @@ struct chunk *chunk_new(int height, int width)
 	c->objects = mem_zalloc(OBJECT_LIST_SIZE * sizeof(struct object*));
 	c->obj_max = OBJECT_LIST_SIZE - 1;
 
-
+	c->turn = turn;
 	return c;
 }
 
@@ -490,85 +490,6 @@ void chunk_wipe(struct chunk *c)
 	mem_free(c->objects);
 	mem_free(c);
 }
-
-/**
- * Allocate a new chunk of the world
- */
-struct chunk *cave_new(int height, int width) {
-	int y, x;
-
-	struct chunk *c = mem_zalloc(sizeof *c);
-	c->height = height;
-	c->width = width;
-	c->feat_count = mem_zalloc((FEAT_MAX + 1) * sizeof(int));
-
-	c->squares = mem_zalloc(c->height * sizeof(struct square*));
-	for (y = 0; y < c->height; y++) {
-		c->squares[y] = mem_zalloc(c->width * sizeof(struct square));
-		for (x = 0; x < c->width; x++) {
-			c->squares[y][x].info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
-		}
-	}
-
-	flow_new(c, &c->player_noise);
-	flow_new(c, &c->monster_noise);
-	flow_new(c, &c->scent);
-
-	c->objects = mem_zalloc(OBJECT_LIST_SIZE * sizeof(struct object*));
-	c->obj_max = OBJECT_LIST_SIZE - 1;
-
-	c->monsters = mem_zalloc(z_info->level_monster_max *sizeof(struct monster));
-	c->mon_max = 1;
-	c->mon_current = -1;
-
-	c->monster_groups = mem_zalloc(z_info->level_monster_max *
-								   sizeof(struct monster_group*));
-
-	c->turn = turn;
-	return c;
-}
-
-/**
- * Free a chunk
- */
-void cave_free(struct chunk *c) {
-	struct chunk *p_c = (c == cave && player) ? player->cave : NULL;
-	int y, x, i;
-
-	/* Look for orphaned objects and delete them. */
-	for (i = 1; i < c->obj_max; i++) {
-		if (c->objects[i] && loc_is_zero(c->objects[i]->grid)) {
-			object_delete(c, p_c, &c->objects[i]);
-		}
-	}
-
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			mem_free(c->squares[y][x].info);
-			if (c->squares[y][x].trap)
-				square_free_trap(c, loc(x, y));
-			if (c->squares[y][x].obj)
-				object_pile_free(c, p_c, c->squares[y][x].obj);
-		}
-		mem_free(c->squares[y]);
-	}
-	mem_free(c->squares);
-
-	flow_free(c, &c->player_noise);
-	flow_free(c, &c->monster_noise);
-	flow_free(c, &c->scent);
-
-	mem_free(c->feat_count);
-	mem_free(c->objects);
-	mem_free(c->monsters);
-	mem_free(c->monster_groups);
-	if (c->name)
-		string_free(c->name);
-	if (c->vault_name)
-		string_free(c->vault_name);
-	mem_free(c);
-}
-
 
 /**
  * Enter an object in the list of objects for the current level/chunk.  This
@@ -649,7 +570,7 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 			struct object *known_obj = c_k->objects[i];
 			if (obj) {
 				assert(obj->oidx == i);
-				if (!loc_is_zero(obj->grid))
+				if (obj->floor)
 					assert(pile_contains(square_object(c, obj->grid), obj));
 			}
 			if (known_obj) {
@@ -657,7 +578,7 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 				if (player->upkeep->playing) {
 					assert(known_obj == obj->known);
 				}
-				if (!loc_is_zero(known_obj->grid))
+				if (known_obj->floor)
 					assert (pile_contains(square_object(c_k, known_obj->grid),
 										  known_obj));
 				assert (known_obj->oidx == i);
@@ -668,7 +589,7 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 			struct object *obj = c->objects[i];
 			if (obj) {
 				assert(obj->oidx == i);
-				if (!loc_is_zero(obj->grid))
+				if (obj->floor)
 					assert(pile_contains(square_object(c, obj->grid), obj));
 			}
 		}
@@ -749,28 +670,6 @@ int scatter_ext(struct chunk *c, struct loc *places, int n, struct loc grid,
 
 	mem_free(feas);
 	return result;
-}
-
-/**
- * Get a monster on the current level by its index.
- */
-struct monster *cave_monster(struct chunk *c, int idx) {
-	if (idx <= 0) return NULL;
-	return &c->monsters[idx];
-}
-
-/**
- * The maximum number of monsters allowed in the level.
- */
-int cave_monster_max(struct chunk *c) {
-	return c->mon_max;
-}
-
-/**
- * The current number of monsters present on the level.
- */
-int cave_monster_count(struct chunk *c) {
-	return c->mon_cnt;
 }
 
 /**

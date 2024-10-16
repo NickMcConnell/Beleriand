@@ -113,87 +113,130 @@ void gen_loc_list_cleanup(void)
 }
 
 /**
- * Find a given generation location in the list, or failing that the one
- * after it
+ * Compare two generation locations for their place in gen_loc_list, which is
+ * ordered by x position low to high, then y position low to high, then
+ * z position low to high.
+ *
+ * Return -1 if gen_loc1 is before gen_loc2, 1 if gen_loc2 is before gen_loc1,
+ * and 0 if they are equal.
  */
-bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper)
+static int gen_loc_cmp(struct gen_loc gen_loc1, struct gen_loc gen_loc2)
 {
-	int idx = gen_loc_cnt / 2;
+	/* Split by x position */
+	if (gen_loc1.x_pos < gen_loc2.x_pos) {
+		return -1;
+	} else if (gen_loc1.x_pos > gen_loc2.x_pos) {
+		return 1;
+	} else {
+		/* x positions equal, split by y positions */
+		if (gen_loc1.y_pos < gen_loc2.y_pos) {
+			return -1;
+		} else if (gen_loc1.y_pos > gen_loc2.y_pos) {
+			return 1;
+		} else {
+			/* y positions equal, split by z positions */
+			if (gen_loc1.z_pos < gen_loc2.z_pos) {
+				return -1;
+			} else if (gen_loc1.z_pos > gen_loc2.z_pos) {
+				return 1;
+			}
+		}
+	}
 
-	/* Special case for before the array is populated */
-	if (gen_loc_cnt <= 1) {
-		*upper = *lower = 0;
+	/* Must be equal */
+	return 0;
+}
+
+/**
+ * Find a given generation location in the list, or the locations either side
+ * of where it should go.
+ *
+ * If the location is in the list return true, and store its position in both
+ * below and above.  If not, store the last location earlier than it in below,
+ * and the first location later than it in above.
+ */
+bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *below, int *above)
+{
+	struct gen_loc gen_loc = { 0, x_pos, y_pos, z_pos, 0, NULL, NULL };
+	int idx;
+
+	/* Exhaust for small values to avoid edge effects */
+	if (gen_loc_cnt < 16) {
+		size_t i;
+		for (i = 0; i < gen_loc_cnt; i++) {
+			/* gen_loc is still larger, keep going */
+			if (gen_loc_cmp(gen_loc_list[i], gen_loc) == -1) continue;
+
+			/* Found it */
+			if (gen_loc_cmp(gen_loc_list[i], gen_loc) == 0) {
+				*above = *below = i;
+				return true;
+			}
+
+			/* Gone past, so it's between this one and the last one (if any) */
+			if (gen_loc_cmp(gen_loc_list[i], gen_loc) == 1) {
+				if (!i) {
+					/* Needs to go before the first element */
+					*above = *below = 0;
+					return false;
+				}
+				*above = i;
+				*below = i - 1;
+				return false;
+			}
+		}
+
+		/* Failed to find it or anything later, so it needs to go last */
+		*above = *below= gen_loc_cnt;
 		return false;
 	}
 
-	*upper = MAX(1, gen_loc_cnt - 1);
-	*lower = 0;
+	/* For larger values, do a bisection search on x, then y, then z */
+	*above = MAX(1, gen_loc_cnt - 1);
+	*below = 0;
 
-	while ((gen_loc_list[idx].x_pos != x_pos) ||
-		   (gen_loc_list[idx].y_pos != y_pos) ||
-		   (gen_loc_list[idx].z_pos != z_pos)) {
-		if (*lower + 1 == *upper)
+	idx = gen_loc_cnt / 2;
+	while (gen_loc_cmp(gen_loc_list[idx], gen_loc) != 0) {
+		if (*below + 1 == *above)
 			break;
 
-		if (gen_loc_list[idx].x_pos > x_pos) {
-			*upper = idx;
-			idx = (*upper + *lower) / 2;
+		if (gen_loc_cmp(gen_loc_list[idx], gen_loc) == 1) {
+			*above = idx;
+			idx = (*above + *below) / 2;
 			continue;
-		} else if (gen_loc_list[idx].x_pos < x_pos) {
-			*lower = idx;
-			idx = (*upper + *lower) / 2;
-			continue;
-		} else if (gen_loc_list[idx].y_pos > y_pos) {
-			*upper = idx;
-			idx = (*upper + *lower) / 2;
-			continue;
-		} else if (gen_loc_list[idx].y_pos < y_pos) {
-			*lower = idx;
-			idx = (*upper + *lower) / 2;
-			continue;
-		} else if (gen_loc_list[idx].z_pos > z_pos) {
-			*upper = idx;
-			idx = (*upper + *lower) / 2;
-			continue;
-		} else if (gen_loc_list[idx].z_pos < z_pos) {
-			*lower = idx;
-			idx = (*upper + *lower) / 2;
+		} else if (gen_loc_cmp(gen_loc_list[idx], gen_loc) == -1) {
+			*below = idx;
+			idx = (*above + *below) / 2;
 			continue;
 		}
 	}
 
 	/* Found without having to break */
-	if (*lower + 1 != *upper) {
-		*lower = idx;
-		*upper = idx;
+	if (*below + 1 != *above) {
+		*below = idx;
+		*above = idx;
 		return true;
 	}
 
-	/* Check lower */
-	if ((gen_loc_list[*lower].x_pos == x_pos) &&
-		(gen_loc_list[*lower].y_pos == y_pos) &&
-		(gen_loc_list[*lower].z_pos == z_pos)) {
-		*upper = *lower;
+	/* Check below */
+	if (gen_loc_cmp(gen_loc_list[*below], gen_loc) == 0) {
+		*above = *below;
 		return true;
 	}
 
 	/* Needs to go after the last element */
-	if ((gen_loc_list[*upper].x_pos <= x_pos) &&
-		(gen_loc_list[*upper].y_pos <= y_pos) &&
-		(gen_loc_list[*upper].z_pos <= z_pos)) {
-		*upper = gen_loc_cnt;
+	if (gen_loc_cmp(gen_loc_list[*above], gen_loc) == -1) {
+		*above = gen_loc_cnt;
 		return false;
 	}
 
 	/* Needs to go before the first element */
-	if ((gen_loc_list[*lower].x_pos >= x_pos) &&
-		(gen_loc_list[*lower].y_pos >= y_pos) &&
-		(gen_loc_list[*lower].z_pos >= z_pos)) {
-		*upper = 0;
+	if (gen_loc_cmp(gen_loc_list[*below], gen_loc) == 1) {
+		*above = 0;
 		return false;
 	}
 
-	/* Needs to go between upper and lower */
+	/* Needs to go between above and below */
 	return false;
 
 }
@@ -236,42 +279,16 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
 	gen_loc_list[idx].join = NULL;
 }
 
-/**
- * Find a level by its name
- */
-struct level *level_by_name(const char *name)
-{
-	struct level *lev = world;
-	while (lev) {
-		if (streq(lev->name, name)) {
-			break;
-		}
-		lev = lev->next;
-	}
-	return lev;
-}
-
-/**
- * Find a level by its depth
- */
-struct level *level_by_depth(int depth)
-{
-	struct level *lev = world;
-	while (lev) {
-		if (lev->depth == depth) {
-			break;
-		}
-		lev = lev->next;
-	}
-	return lev;
-}
-
 struct square_mile *square_mile(wchar_t letter, int number, int y, int x)
 {
 	int letter_trans = letter > L'I' ? letter - L'B' : letter - L'A';
 	return &square_miles[49 * letter_trans + y][49 * (number - 1) + x];
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Functions for handling turn-based events
+ * ------------------------------------------------------------------------ */
 /**
  * Say whether it's daytime or not
  */
@@ -281,6 +298,31 @@ bool is_daytime(void)
 		return true;
 
 	return false;
+}
+
+/**
+ * Say whether we're out where the sun shines
+ */
+bool outside(void)
+{
+	//B need to deal with dark forest, etc
+	return chunk_list[player->place].z_pos == 0;
+}
+
+/**
+ * Say whether it's daylight or not
+ */
+bool is_daylight(void)
+{
+	return is_daytime() && outside();
+}
+
+/**
+ * Say whether it's night or not
+ */
+bool is_night(void)
+{
+	return !is_daytime() && outside();
 }
 
 /**
@@ -687,18 +729,19 @@ int get_scent(struct chunk *c, struct loc grid)
 void process_world(struct chunk *c)
 {
 	/* Compact the monster list if we're approaching the limit */
-	if (cave_monster_count(c) + 32 > z_info->level_monster_max)
-		compact_monsters(c, 64);
+	if (mon_cnt + 32 > z_info->monster_max)
+		compact_monsters(64);
 
 	/* Too many holes in the monster list - compress */
-	if (cave_monster_count(c) + 32 < cave_monster_max(c))
-		compact_monsters(c, 0);
+	if (mon_cnt + 32 < mon_max)
+		compact_monsters(0);
 
 	/*** Check the Time ***/
 
 	/* Play an ambient sound at regular intervals. */
-	if (!(turn % ((10L * z_info->day_length) / 4)))
+	if (!(turn % ((10L * z_info->day_length) / 4))) {
 		play_ambient_sound();
+	}
 
 	/* Handle  the "surface" */
 	if (!player->depth) {
@@ -712,8 +755,9 @@ void process_world(struct chunk *c)
 	if (silmarils_possessed(player) >= 2) {
 		/* Vastly more wandering monsters during the endgame when you have
 		 * 2 or 3 Silmarils */
-		int percent = (c->height * c->width)
-			/ (z_info->block_hgt * z_info->block_wid);
+		int percent = 15; //Very rough - NRM
+		//int percent = (c->height * c->width)
+		//	/ (z_info->block_hgt * z_info->block_wid);
 		if (percent_chance(percent)) {
 			(void)pick_and_place_monster_on_stairs(c, player, true, c->depth,
 												   false);
@@ -831,18 +875,18 @@ static void process_player_cleanup(void)
 				player->upkeep->redraw |= (PR_MAP);
 
 			/* Shimmer multi-hued monsters */
-			for (i = 1; i < cave_monster_max(cave); i++) {
-				struct monster *mon = cave_monster(cave, i);
-				if (!mon->race)
+			for (i = 1; i < mon_max; i++) {
+				struct monster *mon = monster(i);
+				if (!mon->race || monster_is_stored(mon))
 					continue;
-				if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
-					continue;
-				square_light_spot(cave, mon->grid);
+				if (rf_has(mon->race->flags, RF_ATTR_MULTI)) {
+					square_light_spot(cave, mon->grid);
+				}
 			}
 
 			/* Show marked monsters */
-			for (i = 1; i < cave_monster_max(cave); i++) {
-				struct monster *mon = cave_monster(cave, i);
+			for (i = 1; i < mon_max; i++) {
+				struct monster *mon = monster(i);
 				if (mflag_has(mon->mflag, MFLAG_MARK)) {
 					if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
 						mflag_off(mon->mflag, MFLAG_MARK);
@@ -854,8 +898,8 @@ static void process_player_cleanup(void)
 	}
 
 	/* Clear SHOW flag and player drop status */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 		mflag_off(mon->mflag, MFLAG_SHOW);
 	}
 	player->upkeep->dropping = false;

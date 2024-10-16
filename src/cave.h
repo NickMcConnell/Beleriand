@@ -43,6 +43,7 @@ extern const uint8_t side_dirs[20][8];
 
 enum {
 	DIR_UNKNOWN = 0,
+	DIR_UP = 0,
 	DIR_NW = 7,
 	DIR_N = 8,
 	DIR_NE = 9,
@@ -53,9 +54,8 @@ enum {
 	DIR_SW = 1,
 	DIR_S = 2,
 	DIR_SE = 3,
-	DIR_UP = 10,
-	DIR_DOWN = 11,
-	DIR_MAX = 12
+	DIR_DOWN = 10,
+	DIR_MAX = 11
 };
 
 /**
@@ -201,13 +201,6 @@ struct chunk {
 
 	struct object **objects;
 	uint16_t obj_max;
-
-	struct monster *monsters;
-	uint16_t mon_max;
-	uint16_t mon_cnt;
-	int mon_current;
-
-	struct monster_group **monster_groups;
 
 	char *vault_name;
 };
@@ -395,10 +388,14 @@ bool square_holds_object(struct chunk *c, struct loc grid, struct object *obj);
 void square_excise_object(struct chunk *c, struct loc grid, struct object *obj);
 void square_excise_pile(struct chunk *c, struct loc grid);
 void square_excise_all_imagined(struct chunk *p_c, struct chunk *c,
-		struct loc grid);
-void square_delete_object(struct chunk *c, struct loc grid, struct object *obj, bool do_note, bool do_light);
+								struct loc grid);
+void square_delete_object(struct chunk *c, struct loc grid, struct object *obj,
+						  bool do_note, bool do_light);
+void forget_remembered_objects(struct chunk *c, struct chunk *knownc,
+							   struct loc grid);
 void square_know_pile(struct chunk *c, struct loc grid);
 int square_num_doors_adjacent(struct chunk *c, struct loc grid);
+int square_num_walls_adjacent(struct chunk *c, struct loc grid);
 int square_num_walls_diagonal(struct chunk *c, struct loc grid);
 
 
@@ -452,8 +449,6 @@ void flow_new(struct chunk *c, struct flow *flow);
 void flow_free(struct chunk *c, struct flow *flow);
 struct chunk *chunk_new(int height, int width);
 void chunk_wipe(struct chunk *c);
-struct chunk *cave_new(int height, int width);
-void cave_free(struct chunk *c);
 void list_object(struct chunk *c, struct object *obj);
 void delist_object(struct chunk *c, struct object *obj);
 void object_lists_check_integrity(struct chunk *c, struct chunk *c_k);
@@ -461,10 +456,6 @@ void scatter(struct chunk *c, struct loc *place, struct loc grid, int d,
 			 bool need_los);
 int scatter_ext(struct chunk *c, struct loc *places, int n, struct loc grid,
 		int d, bool need_los, bool (*pred)(struct chunk *, struct loc));
-
-struct monster *cave_monster(struct chunk *c, int idx);
-int cave_monster_max(struct chunk *c);
-int cave_monster_count(struct chunk *c);
 
 int count_feats(struct loc *grid,
 				bool (*test)(struct chunk *c, struct loc grid), bool under);

@@ -254,7 +254,7 @@ struct chunk_ref {
 	uint16_t place;			/**< Index of this chunk */
 	int32_t turn;			/**< Turn this chunk was created */
 	uint16_t region;		/**< Region the chunk is from */
-	uint16_t z_pos;			/**< Depth of the chunk below ground */
+	int16_t z_pos;			/**< Depth of the chunk below ground */
 	uint16_t y_pos;			/**< y position of the chunk */
 	uint16_t x_pos;			/**< x position of the chunk */
 	struct chunk *chunk;	/**< The actual chunk */
@@ -312,12 +312,13 @@ extern struct gen_loc *gen_loc_list;
 
 void gen_loc_list_init(void);
 void gen_loc_list_cleanup(void);
-bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *lower, int *upper);
+bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *below, int *above);
 void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx);
-struct level *level_by_name(const char *name);
-struct level *level_by_depth(int depth);
 struct square_mile *square_mile(wchar_t letter, int number, int y, int x);
 bool is_daytime(void);
+bool outside(void);
+bool is_daylight(void);
+bool is_night(void);
 int turn_energy(int speed);
 int regen_amount(int turn_number, int max, int period);
 int health_level(int current, int max);

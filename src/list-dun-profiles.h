@@ -3,6 +3,5 @@
  * \brief matches dungeon profile names to their building functions
  */
 
-DUN("cave", cave)
+DUN("standard", standard)
 DUN("throne", throne)
-DUN("gates", gates)

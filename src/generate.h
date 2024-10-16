@@ -114,23 +114,69 @@ struct dun_data {
     int cent_n;
     struct loc *cent;
 
-    /*!< Array (cent_n elements) of corners of rooms */
-    struct rectangle *corner;
+    /*!< Array (cent_n elements) for counts of marked entrance points */
+    int *ent_n;
 
-    /*!< Array (cent_n elements) of what dungeon piece each room is in */
-    int *piece;
+    /*!< Array of arrays (cent_n by ent_n[i]) for locations of marked entrance points */
+    struct loc **ent;
 
-	/*!< Array of connections between rooms */
-	bool **connection;
+    /*!< Lookup for room number of a room entrance by (y,x) for the entrance */
+    int **ent2room;
 
-    /*!< Arrays of tunnel grids, marked for the rooms they connect */
-    int **tunn1;
-    int **tunn2;
+    /*!< Array of possible door locations */
+    int door_n;
+    struct loc *door;
+
+    /*!< Array of wall piercing locations */
+    int wall_n;
+    struct loc *wall;
+
+    /*!< Array of tunnel grids */
+    int tunn_n;
+    struct loc *tunn;
+
+    /*!< Number of grids in each block (vertically) */
+    int block_hgt;
+
+    /*!< Number of grids in each block (horizontally) */
+    int block_wid;
+
+    /*!< Number of blocks along each axis */
+    int row_blocks;
+    int col_blocks;
+
+    /*!< Array of which blocks are used */
+    bool **room_map;
+
+    /*!< Info for connecting to persistent levels */
+    struct connector *join;
+
+    /*!< Info for avoiding conflicts with persistent levels two away */
+    struct connector *one_off_above;
+    struct connector *one_off_below;
+
+    /*!< The connection information to use for the next staircase room */
+    struct connector *curr_join;
+
+    /*!< The number of staircase rooms */
+    int nstair_room;
+
+    /*!< Whether or not  persistent levels are being used */
+    bool persist;
 
     /*!< Whether or not this is a quest level */
     bool quest;
 };
 
+
+struct tunnel_profile {
+    const char *name;
+    int rnd; /*!< % chance of choosing random direction */
+    int chg; /*!< % chance of changing direction */
+    int con; /*!< % chance of extra tunneling */
+    int pen; /*!< % chance of placing doors at room entrances */
+    int jct; /*!< % chance of doors at tunnel junctions */
+};
 
 struct streamer_profile {
     const char *name;
@@ -150,12 +196,14 @@ struct cave_profile {
 
     const char *name;
     cave_builder builder;	/*!< Function used to build the level */
-    int block_height;		/*!< Default height of dungeon blocks */
-    int block_width;		/*!< Default width of dungeon blocks */
+    int block_size;			/*!< Default height and width of dungeon blocks */
     int dun_rooms;			/*!< Maximum number of rooms */
+    int dun_unusual;		/*!< Level/chance of unusual room */
+    int max_rarity;			/*!< Max number of room generation rarity levels */
+    int n_room_profiles;	/*!< Number of room profiles */
+    struct tunnel_profile tun;		/*!< Used to build tunnels */
     struct streamer_profile str;	/*!< Used to build mineral streamers*/
     struct room_profile *room_profiles;	/*!< Used to build rooms */
-    int n_room_profiles;	/*!< Number of room profiles */
     int alloc;				/*!< Allocation weight for this profile */
 };
 
@@ -176,9 +224,10 @@ struct room_profile {
 
     const char *name;
     room_builder builder;	/*!< Function used to build fixed size rooms */
-    int hardness;			/*!< Rough level this room can start to appear */
-    int level;				/*!< Level on which this room is forced */
-    int random;				/*!< Extra chance for this room to appear */
+    int height, width;		/*!< Space required in grids */
+    int level;				/*!< Minimum dungeon level */
+    int rarity;				/*!< How unusual this room is */
+    int cutoff;				/*!< Upper limit of 1-100 roll for room gen */
 };
 
 
@@ -217,7 +266,7 @@ struct vault {
  * the chunk_list
  */
 #define CHUNK_SIDE 44
-#define ARENA_CHUNKS 5
+#define ARENA_CHUNKS 3
 #define ARENA_SIDE (CHUNK_SIDE * ARENA_CHUNKS)
 #define CPM 20
 #define MAX_CHUNKS 256
@@ -237,9 +286,8 @@ int get_level_profile_index_from_name(const char *name);
 const char *get_level_profile_name_from_index(int i);
 
 /* gen-cave.c */
-struct chunk *cave_gen(struct player *p);
+struct chunk *standard_gen(struct player *p);
 struct chunk *throne_gen(struct player *p);
-struct chunk *gates_gen(struct player *p);
 bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
 					int y_coord, int x_coord);
 
@@ -286,11 +334,14 @@ void set_marked_granite(struct chunk *c, struct loc grid, int flag);
 extern bool generate_starburst_room(struct chunk *c, struct point_set *set,
 									int y1, int x1, int y2, int x2,
 									bool light, int feat, bool special_ok);
-bool build_vault(struct chunk *c, struct loc centre, struct vault *v,
-				 bool flip);
-
+bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
+				 struct vault *v);
+bool build_staircase(struct chunk *c, struct loc centre);
 bool build_simple(struct chunk *c, struct loc centre);
+bool build_circular(struct chunk *c, struct loc centre);
+bool build_overlap(struct chunk *c, struct loc centre);
 bool build_crossed(struct chunk *c, struct loc centre);
+bool build_room_of_chambers(struct chunk *c, struct loc centre);
 bool build_interesting(struct chunk *c, struct loc centre);
 bool build_lesser_vault(struct chunk *c, struct loc centre);
 bool build_greater_vault(struct chunk *c, struct loc centre);
@@ -314,6 +365,9 @@ bool find_empty_range(struct chunk *c, struct loc *grid, struct loc top_left,
 					  struct loc bottom_right);
 bool find_nearby_grid(struct chunk *c, struct loc *grid, struct loc centre,
 					  int yd, int xd);
+void correct_dir(struct loc *offset, struct loc grid1, struct loc grid2);
+void adjust_dir(struct loc *offset, struct loc grid1, struct loc grid2);
+void rand_dir(struct loc *offset);
 bool new_player_spot(struct chunk *c, struct player *p);
 int trap_placement_chance(struct chunk *c, struct loc grid);
 void place_traps(struct chunk *c);
@@ -325,13 +379,18 @@ void place_secret_door(struct chunk *c, struct loc grid);
 void place_closed_door(struct chunk *c, struct loc grid);
 void place_random_door(struct chunk *c, struct loc grid);
 void place_forge(struct chunk *c, struct loc grid);
-void alloc_stairs(struct chunk *c, int feat, int num);
+void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
+				  const struct connector *avoid_list);
 int alloc_object(struct chunk *c, int set, int typ, int num, int depth,
 	uint8_t origin);
 struct room_profile lookup_room_profile(const char *name);
 void uncreate_artifacts(struct chunk *c);
 void uncreate_greater_vaults(struct chunk *c, struct player *p);
 void chunk_validate_objects(struct chunk *c);
+void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
+				 struct loc place, int height, int width, int rotate,
+				 bool reflect, bitflag *flags, bool floor, const char *data,
+				 bool landmark);
 void dump_level_simple(const char *basefilename, const char *title,
 	struct chunk *c);
 void dump_level(ang_file *fo, const char *title, struct chunk *c, int **dist);

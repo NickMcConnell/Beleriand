@@ -56,6 +56,7 @@ weight:159:10
 player-flags:BLADE_PROFICIENCY
 equip:food:Fragment of Lembas:3:3
 equip:light:Wooden Torch:3:4
+equip:sword:Curved Sword:1:1
 desc:The Noldor are known as the 'Deep-elves', for they are the
 desc: most learned and inventive of the elven kindreds. They saw
 desc: the light of the Two Trees in Valinor and gained much in

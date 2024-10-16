@@ -22,6 +22,7 @@
 #include "game-input.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-make.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "player-calcs.h"
@@ -416,7 +417,7 @@ struct loc origin_get_loc(struct source origin)
 {
 	switch (origin.what) {
 		case SRC_MONSTER: {
-			struct monster *who = cave_monster(cave, origin.which.monster);
+			struct monster *who = monster(origin.which.monster);
 			return who ? who->grid : loc(-1, -1);
 		}
 

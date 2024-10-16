@@ -39,7 +39,7 @@ int teardown_tests(void *state) {
 }
 
 static struct chunk *create_empty_cave(int height, int width) {
-	struct chunk *c = cave_new(height, width);
+	struct chunk *c = chunk_new(height, width);
 	struct loc grid;
 
 	grid.y = 0;
@@ -65,7 +65,7 @@ static struct chunk *create_empty_cave(int height, int width) {
 static void setup_player_cave(struct chunk *c, struct player *p) {
 	int i;
 
-	p->cave = cave_new(c->height, c->width);
+	p->cave = chunk_new(c->height, c->width);
 	p->cave->objects = mem_realloc(p->cave->objects, (c->obj_max + 1) *
 		sizeof(struct object*));
 	p->cave->obj_max = c->obj_max;

@@ -6,8 +6,23 @@
 # name: The profile name.  This needs to match the corresponding entry in 
 # list-dun-profiles.h so the correct level-building function can be called
 
-# rooms: rooms
-# The number of rooms to aim for.
+# params: block_size : rooms : unusual : rarity
+# The dungeon is divided into non-overlapping square blocks of block_size by
+# block_size grids.  When rooms are placed, each is assigned a rectangular
+# chunk of blocks, and those assignments won't leave a block assigned to more
+# than one room (the staircase rooms for persistent levels are an exception
+# to that rule).  So, block_size affects how densely the rooms can be packed
+# and the maximum number of rooms possible.  rooms is the number of rooms to
+# aim for.  unusual is a measure of how likely high rarity roooms are to
+# appear - higher values make the rare rooms rarer.  rarity is the maximum
+# rarity room allowed with this cave profile.
+
+# tunnel: rnd : chg : con : pen : jct
+# These are percentage chances - rnd of choosing a random tunnel direction
+# (as opposed to heading in the desired direction), chg the chance of changing
+# direction, at any tunnel grid, con the chance of just terminating a tunnel,
+# pen the chance of putting a door in a room entrance, jct the chance of a
+# door at a tunnel junction.
 
 # streamer: den : rng : qua
 # Streamers are drawn as a random walk which stops at the dungeon edge.
@@ -15,36 +30,54 @@
 # far from the walk those grids can be; qua is the numbers of quartz streamers
 # per level.
 
-# room: name : hardness : level : random
+# room: name : height : width : level : rarity : cutoff
 # name is the room name, which must match the name in list-rooms.h so the 
 # correct room-building function can be called.
-# hardness is a rough measure of the depth that rooms appear.
-# level is the depth at which this room is forced to appear.
-# random (if not zero) gives the room a chance to appear if no earlier one has.
+# height and width are the maximum dimensions of the room, and define how much
+# space is allocated for that room.
+# level is the minimum depth at which this room can appear.
+# rarity is the room's rarity - normally 0, 1 or 2 (see comments about profile
+# rarity above).  Some rooms are chosen by a different means; in this case
+# rarity is usually 0.
+# cutoff is used to pick between rooms once a rarity is chosen:  a random value
+# from 0 to 99 is selected and a room may appear if its cutoff is greater than
+# that value.  Non-zero cutoffs normally appear in ascending order within the
+# rooms of the same rarity for a given profile.  A room with a smaller cutoff
+# appearing after one with a larger cutoff will only be selected if an attempt
+# to place the earlier room fails.  One way that can happen is because of the
+# depth restrictions set in this file.  For greater vaults and huge rooms,
+# there are also restrictions in the code that make their generation fail
+# frequently.
 
-## Sil
-name:cave
-rooms:50
+## Standard
+name:standard
+params:1:50:300:2
+tunnel:10:30:15:25:50
 streamer:5:2:4
 alloc:100
 
-# Rooms
-room:simple room:5:1:2
-room:crossed room:8:0:0
-room:Interesting room:13:0:2
-room:Lesser vault:18:0:0
-room:Greater vault:0:0:0
+# Really big rooms only have rarity 0 but they have other checks
+room:Greater vault:44:66:35:0:0:100
+
+# Very rare rooms (rarity = 2)
+room:Lesser vault:22:33:20:2:100
+
+# Unusual rooms (rarity = 1)
+room:Interesting room:44:55:0:1:10
+room:crossed room:11:33:3:1:50
+room:circular room:22:22:1:1:60
+room:overlap room:11:33:1:1:100
+
+# Normal rooms (rarity = 0)
+room:simple room:11:33:1:0:100
+
+# Staircase rooms - rarity 99 to prevent random occurrence
+# these rooms are specially generated to join persistent levels
+room:staircase room:3:3:1:99:0
 
 ## Throne room
 name:throne
-#params:11:33:0
 alloc:-1
 
-room:Throne room:0:0:0
+room:Throne room:0:0:0:0:0
 
-## Gates of Angband
-name:gates
-#params:11:33:0
-alloc:-1
-
-room:Gates of Angband:0:0:0

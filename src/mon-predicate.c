@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "game-world.h"
 #include "mon-group.h"
 #include "mon-spell.h"
 #include "mon-util.h"
@@ -125,4 +126,12 @@ bool monster_is_visible(const struct monster *mon)
 bool monster_is_listened(const struct monster *mon)
 {
 	return mflag_has(mon->mflag, MFLAG_LISTENED);
+}
+
+/**
+ * Monster is not in the current playing arena
+ */
+bool monster_is_stored(const struct monster *mon)
+{
+	return chunk_list[mon->place].chunk != NULL ;
 }

@@ -239,8 +239,8 @@ static void kill_all_monsters(int level)
 {
 	int i;
 
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = mon_max - 1; i >= 1; i--) {
+		struct monster *mon = monster(i);
 		struct monster_race *race = mon->race;
 
 		/* Skip the ones that are already dead. */
@@ -1426,13 +1426,13 @@ static void progress_bar(uint32_t run, time_t start) {
 static void stats_cleanup_angband_run(void)
 {
 	if (character_dungeon) {
-		wipe_mon_list(cave, player);
+		wipe_mon_list();
 		if (player->cave) {
-			cave_free(player->cave);
+			chunk_wipe(player->cave);
 			player->cave = NULL;
 		}
 		if (cave) {
-			cave_free(cave);
+			chunk_wipe(cave);
 			cave = NULL;
 		}
 		character_dungeon = false;

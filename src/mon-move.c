@@ -208,8 +208,7 @@ int monster_entry_chance(struct chunk *c, struct monster *mon, struct loc grid,
 			!rf_has(mon1->race->flags, RF_HIDDEN_MOVE)) {
 			/* It is easy to push past unwary or sleeping monsters */
 			if ((mon1->alertness < ALERTNESS_ALERT) &&
-				(monster_group_leader(c, mon) !=
-				 monster_group_leader(c, mon1))) {
+				(monster_group_leader(mon) != monster_group_leader(mon1))) {
 				move_chance = 80;
 			} else if ((mon1->stance == STANCE_FLEEING) &&
 					   (mon->stance != STANCE_FLEEING)) {
@@ -492,8 +491,7 @@ static bool monster_check_active(struct monster *mon)
 static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 {
 	struct loc grid1 = mon->grid, grid;
-	struct monster_group *group = monster_group_by_index(cave,
-														 mon->group_info.index);
+	struct monster_group *group = monster_group_by_index(mon->group_info.index);
 	struct monster_race *race = mon->race;
 	bool random_move = false;
 	bool no_move = false;
@@ -516,7 +514,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 		}
 	} else {
 		/* Deal with some special cases for monsters that have a destination */
-		int group_size = monster_group_size(cave, mon);
+		int group_size = monster_group_size(mon);
 		struct mon_group_list_entry *list_entry = group->member_list;
 		int group_furthest = 0;
 		int group_sleepers = 0;
@@ -529,7 +527,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 
 		/* Check out monsters in the same group */
 		while (list_entry) {
-			struct monster *mon1 = cave_monster(cave, list_entry->midx);
+			struct monster *mon1 = monster(list_entry->midx);
 			if (mon1->alertness < ALERTNESS_UNWARY) {
 				group_sleepers++;
 				if (group_sleepers == 1) {
@@ -571,7 +569,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 
 		/* If the destination is too far away, pick a new one */
 		if (dist > z_info->wander_range) {
-			monster_group_new_wandering_flow(cave, mon, loc(0, 0));
+			monster_group_new_wandering_flow(mon, loc(0, 0));
 		}
 
 		/* If the group is at the destination and not pausing, then start */
@@ -584,7 +582,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 		} else if (group->wandering_pause == 1) {
 			/* If the group has finished pausing at an old destination,
 			 * choose a new destination */
-			monster_group_new_wandering_flow(cave, mon, loc(0, 0));
+			monster_group_new_wandering_flow(mon, loc(0, 0));
 			group->wandering_pause--;
 		}
 
@@ -592,7 +590,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 		if (dist >= mon->wandering_dist) {
 			/* Possibly pick a new destination */
 			if (one_in_(20 * group_size)) {
-				monster_group_new_wandering_flow(cave, mon, loc(0, 0));
+				monster_group_new_wandering_flow(mon, loc(0, 0));
 			}
 		}
 
@@ -605,7 +603,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 		if ((mon->alertness < ALERTNESS_ALERT) && (group_sleepers > 0)) {
 			/* Only set the new flow if needed */
 			if (!loc_eq(group->flow.centre, sleeper_grid)) {
-				monster_group_new_wandering_flow(cave, mon, sleeper_grid);
+				monster_group_new_wandering_flow(mon, sleeper_grid);
 			}
 			if (one_in_(2)) random_move = true;
 		}
@@ -659,7 +657,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 			/* Stop pausing to allow others to use the stairs */
 			group->wandering_pause = 0;
 			
-			delete_monster(cave, mon->grid);
+			delete_monster(mon->grid);
 			return false;
 		}
 
@@ -2889,9 +2887,9 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
 			bool alerted_others = false;
 
 			/* Scan all other monsters */
-			for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+			for (i = mon_max - 1; i >= 1; i--) {
 				/* Access the monster */
-				mon1 = cave_monster(cave, i);
+				mon1 = monster(i);
 
 				/* Ignore dead monsters */
 				if (!mon1->race) continue;
@@ -2981,8 +2979,7 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
  */
 static void monster_turn_wander(struct monster *mon)
 {
-	struct monster_group *group = monster_group_by_index(cave,
-														 mon->group_info.index);
+	struct monster_group *group = monster_group_by_index(mon->group_info.index);
 	struct loc tgrid;
 	bool fear = false;
 	bool bash = false;
@@ -3022,9 +3019,9 @@ static bool monster_has_sleeping_kin(struct monster *mon)
 	bool has_kin = false;
 
 	/* Scan all other monsters */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+	for (i = mon_max - 1; i >= 1; i--) {
 		/* Access the monster */
-		struct monster *mon1 = cave_monster(cave, i);
+		struct monster *mon1 = monster(i);
 
 		/* Ignore dead monsters */
 		if (!mon1->race) continue;
@@ -3054,9 +3051,9 @@ void tell_allies(struct monster *mon, int flag)
 	bool warned = false;
 
 	/* Scan all other monsters */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+	for (i = mon_max - 1; i >= 1; i--) {
 		/* Access the monster */
-		struct monster *mon1 = cave_monster(cave, i);
+		struct monster *mon1 = monster(i);
 		int dist;
 
 		/* Ignore dead monsters */
@@ -3185,7 +3182,7 @@ static bool monster_turn_multiply(struct monster *mon)
 	if (!rf_has(mon->race->flags, RF_MULTIPLY)) return false;
 
 	/* Too many monsters on the level already */
-	if (cave_monster_count(cave) > z_info->level_monster_max - 50) return false;
+	if (mon_cnt > z_info->monster_max - 50) return false;
 
 	/* Count the adjacent monsters */
 	for (y = mon->grid.y - 1; y <= mon->grid.y + 1; y++) {
@@ -3479,7 +3476,7 @@ static void monster_turn(struct monster *mon)
 			player_opportunist_or_zone(player, tgrid, player->grid, true);
 
 			/* Removes the monster if it is still alive */
-			delete_monster(cave, tgrid);
+			delete_monster(tgrid);
 			return;
 		}
 
@@ -3559,8 +3556,8 @@ static void process_monster_recover(struct monster *mon)
 	if (mflag_has(mon->mflag, MFLAG_SUMMONED)) {
         int still_singing = false;
 
-        for (i = 1; i < cave_monster_max(cave); i++) {
-            struct monster *mon1 = cave_monster(cave, i);
+        for (i = 1; i < mon_max; i++) {
+            struct monster *mon1 = monster(i);
 
             /* Skip dead monsters */
             if (!mon1->race) continue;
@@ -3574,7 +3571,7 @@ static void process_monster_recover(struct monster *mon)
 
         if (!still_singing && one_in_(2)) {
             /* Remove the monster */
-            delete_monster(cave, mon->grid);
+            delete_monster( mon->grid);
 			return;
         }
     }
@@ -3649,7 +3646,7 @@ void process_monsters(int minimum_energy)
 		regen = true;
 
 	/* Process the monsters (backwards) */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+	for (i = mon_max - 1; i >= 1; i--) {
 		struct monster *mon;
 		bool moving;
 
@@ -3657,12 +3654,11 @@ void process_monsters(int minimum_energy)
 		if (player->is_dead || player->upkeep->generate_level) break;
 
 		/* Get a 'live' monster */
-		mon = cave_monster(cave, i);
-		if (!mon->race) continue;
+		mon = monster(i);
+		if (!mon->race || monster_is_stored(mon)) continue;
 
 		/* Ignore monsters that have already been handled */
-		if (mflag_has(mon->mflag, MFLAG_HANDLED))
-			continue;
+		if (mflag_has(mon->mflag, MFLAG_HANDLED)) continue;
 
 		/* Not enough energy to move yet */
 		if (mon->energy < minimum_energy) continue;
@@ -3702,13 +3698,13 @@ void process_monsters(int minimum_energy)
 		}
 
 		/* Set this monster to be the current actor */
-		cave->mon_current = i;
+		mon_current = i;
 
 		/* The monster takes its turn */
 		monster_turn(mon);
 
 		/* Monster is no longer current */
-		cave->mon_current = -1;
+		mon_current = -1;
 	}
 
 	/* Update monster visibility after this */
@@ -3727,11 +3723,44 @@ void reset_monsters(void)
 	struct monster *mon;
 
 	/* Process the monsters (backwards) */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+	for (i = mon_max - 1; i >= 1; i--) {
 		/* Access the monster */
-		mon = cave_monster(cave, i);
+		mon = monster(i);
 
 		/* Monster is ready to go again */
 		mflag_off(mon->mflag, MFLAG_HANDLED);
+	}
+}
+
+/**
+ * Allow monsters on a frozen persistent level to recover
+ */
+void restore_monsters(int place, int num_turns)
+{
+	int i;
+	struct monster *mon;
+
+	/* Process the monsters (backwards) */
+	for (i = mon_max - 1; i >= 1; i--) {
+		int status, status_red;
+
+		/* Access the monster */
+		mon = monster(i);
+
+		/* Check the place */
+		if (mon->place != place) continue;
+
+		/* Regenerate */
+		regen_monster(mon, num_turns / 100);
+
+		/* Handle timed effects */
+		status_red = num_turns * turn_energy(mon->mspeed) / z_info->move_energy;
+		if (status_red > 0) {
+			for (status = 0; status < MON_TMD_MAX; status++) {
+				if (mon->m_timed[status]) {
+					mon_dec_timed(mon, status, status_red, 0);
+				}
+			}
+		}
 	}
 }

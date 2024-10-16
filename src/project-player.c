@@ -24,6 +24,7 @@
 #include "mon-desc.h"
 #include "mon-predicate.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
@@ -369,7 +370,7 @@ bool project_p(struct source origin, struct loc grid, int dd, int ds, int typ)
 		}
 
 		case SRC_MONSTER: {
-			struct monster *mon = cave_monster(cave, origin.which.monster);
+			struct monster *mon = monster(origin.which.monster);
 			context.mon = mon;
 
 			/* Check it is visible */

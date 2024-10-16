@@ -20,18 +20,18 @@
 #include "game-world.h"
 #include "mon-desc.h"
 #include "mon-list.h"
+#include "mon-make.h"
 #include "mon-move.h"
 #include "mon-predicate.h"
 #include "project.h"
 
 /**
- * Allocate a new monster list based on the size of the current cave's monster
- * array.
+ * Allocate a new monster list based on the size of the monster array.
  */
 monster_list_t *monster_list_new(void)
 {
 	monster_list_t *list = mem_zalloc(sizeof(monster_list_t));
-	size_t size = cave_monster_max(cave);
+	size_t size = mon_max;
 
 	if (list == NULL)
 		return NULL;
@@ -107,7 +107,7 @@ static bool monster_list_can_update(const monster_list_t *list)
 	if (list == NULL || list->entries == NULL)
 		return false;
 
-	return (int)list->entries_size >= cave_monster_max(cave);
+	return (int)list->entries_size >= mon_max;
 }
 
 /**
@@ -119,10 +119,10 @@ void monster_list_reset(monster_list_t *list)
 	if (list == NULL || list->entries == NULL)
 		return;
 
-	if ((int)list->entries_size < cave_monster_max(cave)) {
+	if ((int)list->entries_size < mon_max) {
 		list->entries = mem_realloc(list->entries, sizeof(list->entries[0])
-									* cave_monster_max(cave));
-		list->entries_size = cave_monster_max(cave);
+									* mon_max);
+		list->entries_size = mon_max;
 	}
 
 	memset(list->entries, 0, list->entries_size * sizeof(monster_list_entry_t));
@@ -146,15 +146,15 @@ void monster_list_collect(monster_list_t *list)
 	if (!monster_list_can_update(list))
 		return;
 
-	/* Use cave_monster_max() here in case the monster list isn't compacted. */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	/* Use mon_max here in case the monster list isn't compacted. */
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 		monster_list_entry_t *entry = NULL;
 		int j, field;
 		bool los = false;
 
-		/* Only consider visible, known monsters */
-		if (!monster_is_visible(mon))
+		/* Only consider visible, known monsters in the playing arena */
+		if (!monster_is_visible(mon) || monster_is_stored(mon))
 			continue;
 
 		/* Find or add a list entry. */

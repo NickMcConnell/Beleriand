@@ -89,7 +89,7 @@ struct chunk *t_build_arena(int height, int width) {
 		height = z_info->dungeon_hgt;
 	if (!width)
 		width = z_info->dungeon_wid;
-	struct chunk *c = cave_new(height, width);
+	struct chunk *c = chunk_new(height, width);
 
 	for (int y = 0; y < height; y++)
 		for (int x = 0; x < width; x++)

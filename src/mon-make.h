@@ -21,17 +21,24 @@
 
 #include "monster.h"
 
-void delete_monster_idx(struct chunk *c, int m_idx);
-void delete_monster(struct chunk *c, struct loc grid);
+extern struct monster *monsters;
+extern struct monster_group **monster_groups;
+extern uint16_t mon_max;
+extern uint16_t mon_cnt;
+extern int mon_current;
+
+void monsters_init(void);
+void monsters_free(void);
+struct monster *monster(int idx);
+void delete_monster_idx(int m_idx);
+void delete_monster(struct loc grid);
 void monster_index_move(int i1, int i2);
-void compact_monsters(struct chunk *c, int num_to_compact);
-void wipe_mon_list(struct chunk *c, struct player *p);
-int16_t mon_pop(struct chunk *c);
+void compact_monsters(int num_to_compact);
+void delete_temp_monsters(void);
+void wipe_mon_list(void);
 void get_mon_num_prep(bool (*get_mon_num_hook)(struct monster_race *race));
 struct monster_race *get_mon_num(int level, bool special, bool allow_non_smart,
 								 bool vault);
-void mon_create_mimicked_object(struct chunk *c, struct monster *mon,
-								int index);
 void set_monster_place_current(void);
 int16_t place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	uint8_t origin);

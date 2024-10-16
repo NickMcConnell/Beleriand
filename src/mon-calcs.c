@@ -27,6 +27,7 @@
 #include "mon-desc.h"
 #include "mon-group.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-move.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -70,11 +71,14 @@ static int morale_from_friends(struct monster *mon)
 	int morale_penalty = 0;
 
 	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon1 = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon1 = monster(i);
 
 		/* Skip dead monsters */
 		if (!mon1->race) continue;
+
+		/* Skip stored monsters */
+		if (monster_is_stored(mon1)) continue;
 
 		/* Skip self! */
 		if (mon == mon1) continue;
@@ -463,7 +467,7 @@ void set_alertness(struct monster *mon, int alertness)
 
 				/* Give the monster a new place to wander towards */
 				if (!rf_has(mon->race->flags, RF_TERRITORIAL)) {
-					monster_group_new_wandering_flow(cave, mon, player->grid);
+					monster_group_new_wandering_flow(mon, player->grid);
 				}
 			}
 		}
@@ -850,11 +854,11 @@ void update_monsters(bool full)
 	int i;
 
 	/* Update each (live) monster */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
 		/* Update the monster if alive */
-		if (mon->race)
+		if (mon->race && !monster_is_stored(mon))
 			update_mon(mon, cave, full);
 	}
 }

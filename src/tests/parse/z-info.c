@@ -21,10 +21,8 @@ int teardown_tests(void *state) {
 
 static int test_negative(void *state) {
 	struct parser *p = (struct parser*) state;
-	errr r = parser_parse(p, "level-max:monsters:-1");
+	errr r = parser_parse(p, "mon-gen:change:-1");
 
-	eq(r, PARSE_ERROR_INVALID_VALUE);
-	r = parser_parse(p, "mon-gen:change:-1");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	r = parser_parse(p, "mon-play:mult-rate:-1");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
@@ -93,8 +91,7 @@ static int test_baddirective(void *state) {
 		ok; \
 	}
 
-TEST_CONSTANT(level_monster_max, "monsters", "level-max")
-
+TEST_CONSTANT(monster_max, "monster-max", "mon-gen")
 TEST_CONSTANT(alloc_monster_chance, "chance", "mon-gen")
 TEST_CONSTANT(monster_group_max, "group-max", "mon-gen")
 

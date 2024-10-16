@@ -330,7 +330,7 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 {
 	int stat = context->subtype;
 	int flag = sustain_flag(stat);
-	struct monster *mon = cave_monster(cave, cave->mon_current);
+	struct monster *mon = monster(mon_current);
 
 	/* Bounds check */
 	if (flag < 0) return false;
@@ -555,14 +555,15 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 static bool detect_monsters(monster_predicate pred)
 {
 	int i;
-	bool monsters = false;
+	bool detected = false;
 
 	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
-		/* Skip dead monsters */
+		/* Skip dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Detect all appropriate, obvious monsters */
 		if (!pred || pred(mon)) {
@@ -585,11 +586,11 @@ static bool detect_monsters(monster_predicate pred)
 			update_mon(mon, cave, false);
 
 			/* Detect */
-			monsters = true;
+			detected = true;
 		}
 	}
 
-	return monsters;
+	return detected;
 }
 
 /**
@@ -606,6 +607,12 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 			struct loc grid = loc(x, y);
 			struct object *obj = square_object(cave, grid);
 			if (!obj) continue;
+
+			if (!obj) {
+				/* If empty, remove any remembered objects. */
+				forget_remembered_objects(cave, player->cave, grid);
+				continue;
+			}
 
 			/* Notice an object is detected */
 			if (!ignore_item_ok(player, obj)) {
@@ -634,13 +641,13 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
  */
 bool effect_handler_DETECT_MONSTERS(effect_handler_context_t *context)
 {
-	bool monsters = detect_monsters(NULL);
+	bool detected = detect_monsters(NULL);
 
-	if (monsters) {
+	if (detected) {
 		msg("You sense the presence of your enemies!");
 		context->ident = true;
 	}
-	return monsters;
+	return detected;
 }
 
 /**
@@ -650,7 +657,7 @@ bool effect_handler_REVEAL_MONSTER(effect_handler_context_t *context)
 {
 	assert(context->origin.what == SRC_MONSTER);
 
-	struct monster *mon = cave_monster(cave, context->origin.which.monster);
+	struct monster *mon = monster(context->origin.which.monster);
 	char m_name[80];
 	struct monster_lore *lore = get_lore(mon->race);
 
@@ -937,13 +944,14 @@ bool effect_handler_SONG_OF_ELBERETH(effect_handler_context_t *context)
 	int i;
 	int score = song_bonus(player, player->state.skill_use[SKILL_SONG],
 						   lookup_song("Elbereth"));
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = mon_max - 1; i >= 1; i--) {
+		struct monster *mon = monster(i);
 		int resistance;
 		int result;
 
-		/* Ignore dead monsters */
+		/* Ignore dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Only intelligent monsters are affected */
 		if (!rf_has(mon->race->flags, RF_SMART)) continue;
@@ -974,13 +982,14 @@ bool effect_handler_SONG_OF_LORIEN(effect_handler_context_t *context)
 	int i;
 	int score = song_bonus(player, player->state.skill_use[SKILL_SONG],
 						   lookup_song("Lorien"));
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = mon_max - 1; i >= 1; i--) {
+		struct monster *mon = monster(i);
 		int resistance;
 		int result;
 
-		/* Ignore dead monsters */
+		/* Ignore dead and stored monsters */
 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Deal with sleep resistance */
 		if (rf_has(mon->race->flags, RF_NO_SLEEP)) {
@@ -1120,7 +1129,7 @@ bool effect_handler_SONG_OF_FREEDOM(effect_handler_context_t *context)
  */
 bool effect_handler_SONG_OF_BINDING(effect_handler_context_t *context)
 {
-	struct monster *mon = cave_monster(cave, context->origin.which.monster);
+	struct monster *mon = monster(context->origin.which.monster);
 	int song_skill = monster_sing(mon, lookup_song("Binding"));
 	struct loc grid;
 	int dist, result, resistance;
@@ -1173,7 +1182,7 @@ bool effect_handler_SONG_OF_BINDING(effect_handler_context_t *context)
  */
 bool effect_handler_SONG_OF_PIERCING(effect_handler_context_t *context)
 {
-	struct monster *mon = cave_monster(cave, context->origin.which.monster);
+	struct monster *mon = monster(context->origin.which.monster);
 	int song_skill = monster_sing(mon, lookup_song("Piercing"));
 	int dist = flow_dist(cave->player_noise, mon->grid);
 	int result, resistance;
@@ -1205,7 +1214,7 @@ bool effect_handler_SONG_OF_PIERCING(effect_handler_context_t *context)
  */
 bool effect_handler_SONG_OF_OATHS(effect_handler_context_t *context)
 {
-	struct monster *mon = cave_monster(cave, context->origin.which.monster);
+	struct monster *mon = monster(context->origin.which.monster);
 	int song_skill = monster_sing(mon, lookup_song("Oaths"));
 	int result, resistance = 15;
 
@@ -1260,12 +1269,13 @@ bool effect_handler_SONG_OF_OATHS(effect_handler_context_t *context)
 bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
 {
 	int i;
-	for (i = 1; i < cave_monster_max(cave); i++) {
+	for (i = 1; i < mon_max; i++) {
 		/* Check the i'th monster */
-		struct monster *mon = cave_monster(cave, i);
+		struct monster *mon = monster(i);
 		struct monster_race *race = mon ? mon->race : NULL;
 
 		if (!race) continue;
+		if (monster_is_stored(mon)) continue;
 		
 		if ((mon->alertness >= ALERTNESS_ALERT) &&
 			(flow_dist(cave->player_noise, mon->grid) <= 10)) {
@@ -1299,7 +1309,7 @@ bool effect_handler_NOISE(effect_handler_context_t *context)
 	int amount = effect_calculate_value(context);
 	bool player_centred = context->subtype ? true : false;
 	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *mon = monster(context->origin.which.monster);
 		cave->monster_noise.centre = mon->grid;
 		update_flow(cave, &cave->monster_noise, NULL);
 

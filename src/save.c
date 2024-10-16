@@ -846,6 +846,7 @@ static void wr_objects_aux(struct chunk *c)
 	for (i = 1; i < c->obj_max; i++) {
 		struct object *obj = c->objects[i];
 		if (!obj) continue;
+		if (obj->floor) continue;
 		if (square_in_bounds_fully(c, obj->grid)) continue;
 		if (obj->held_m_idx) continue;
 		if (obj->known && !(obj->known->notice & OBJ_NOTICE_IMAGINED)) continue;
@@ -857,27 +858,6 @@ static void wr_objects_aux(struct chunk *c)
 	dummy = mem_zalloc(sizeof(*dummy));
 	wr_item(dummy);
 	mem_free(dummy);
-}
-
-/**
- * Write the monster list
- */
-static void wr_monsters_aux(struct chunk *c)//TODO check flow info is covered
-{
-	int i;
-
-	if (player->is_dead)
-		return;
-
-	/* Total monsters */
-	wr_u16b(cave_monster_max(c));
-
-	/* Dump the monsters */
-	for (i = 1; i < cave_monster_max(c); i++) {
-		const struct monster *mon = cave_monster(c, i);
-
-		wr_monster(mon);
-	}
 }
 
 static void wr_traps_aux(struct chunk *c)
@@ -923,7 +903,7 @@ void wr_dungeon(void)
 	wr_dungeon_aux(player->cave);
 
 	/* Compact the monsters */
-	compact_monsters(cave, 0);
+	compact_monsters(0);
 }
 
 
@@ -931,12 +911,6 @@ void wr_objects(void)
 {
 	wr_objects_aux(cave);
 	wr_objects_aux(player->cave);
-}
-
-void wr_monsters(void)
-{
-	wr_monsters_aux(cave);
-	wr_monsters_aux(player->cave);
 }
 
 void wr_traps(void)
@@ -967,7 +941,7 @@ void wr_chunks(void)
 
 		wr_s32b(ref->turn);
 		wr_u16b(ref->region);
-		wr_u16b(ref->z_pos);
+		wr_s16b(ref->z_pos);
 		wr_u16b(ref->y_pos);
 		wr_u16b(ref->x_pos);
 		wr_u32b(ref->gen_loc_idx);
@@ -1004,6 +978,22 @@ void wr_chunks(void)
 		for (i = 0; i < FEAT_MAX + 1; i++) {
 			wr_u16b(c->feat_count[i]);
 		}
+	}
+}
+
+void wr_monsters(void)
+{
+	int i;
+
+	if (player->is_dead)
+		return;
+
+	/* Total monsters */
+	wr_u16b(mon_max);
+
+	/* Dump the monsters */
+	for (i = 1; i < mon_max; i++) {
+		wr_monster(monster(i));
 	}
 }
 

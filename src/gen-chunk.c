@@ -549,8 +549,7 @@ void chunk_read(int idx, int y_coord, int x_coord)
 	struct chunk *p_chunk = chunk_list[idx].p_chunk;
 
 	/* Restore the monsters */
-	//m_list restore_monsters(idx, turn - chunk_list[idx].turn);
-	//restore_monsters();
+	restore_monsters(idx, turn - chunk_list[idx].turn);
 
 	/* Copy everything across */
 	chunk_copy_grid(player, chunk, cave, CHUNK_SIDE, CHUNK_SIDE,
@@ -620,7 +619,7 @@ void chunk_validate_objects(struct chunk *c) {
 			}
 			if (square(c, grid)->mon > 0) {
 				struct monster *mon = square_monster(c, grid);
-				if (mon->held_obj) {
+				if (mon && mon->held_obj) {
 					for (obj = mon->held_obj; obj; obj = obj->next) {
 						assert(obj->tval != 0);
 						//assert(c->objects[obj->oidx] == obj);

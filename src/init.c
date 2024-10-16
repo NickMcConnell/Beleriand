@@ -347,26 +347,6 @@ void create_needed_dirs(void)
  * Initialize game constants
  * ------------------------------------------------------------------------ */
 
-static enum parser_error parse_constants_level_max(struct parser *p) {
-	struct angband_constants *z;
-	const char *label;
-	int value;
-
-	z = parser_priv(p);
-	label = parser_getsym(p, "label");
-	value = parser_getint(p, "value");
-
-	if (value < 0)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	if (streq(label, "monsters"))
-		z->level_monster_max = value;
-	else
-		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
-
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_constants_mon_gen(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
@@ -379,7 +359,9 @@ static enum parser_error parse_constants_mon_gen(struct parser *p) {
 	if (value < 0)
 		return PARSE_ERROR_INVALID_VALUE;
 
-	if (streq(label, "chance"))
+	if (streq(label, "monster-max"))
+		z->monster_max = value;
+	else if (streq(label, "chance"))
 		z->alloc_monster_chance = value;
 	else if (streq(label, "group-max"))
 		z->monster_group_max = value;
@@ -448,12 +430,12 @@ static enum parser_error parse_constants_dun_gen(struct parser *p) {
 
 	if (streq(label, "room-max"))
 		z->level_room_max = value;
-	else if (streq(label, "room-min"))
-		z->level_room_min = value;
-	else if (streq(label, "block-hgt"))
-		z->block_hgt = value;
-	else if (streq(label, "block-wid"))
-		z->block_wid = value;
+	else if (streq(label, "door-max"))
+		z->level_door_max = value;
+	else if (streq(label, "wall-max"))
+		z->wall_pierce_max = value;
+	else if (streq(label, "tunn-max"))
+		z->tunn_grid_max = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -583,7 +565,6 @@ static struct parser *init_parse_constants(void) {
 	struct parser *p = parser_new();
 
 	parser_setpriv(p, z);
-	parser_reg(p, "level-max sym label int value", parse_constants_level_max);
 	parser_reg(p, "mon-gen sym label int value", parse_constants_mon_gen);
 	parser_reg(p, "mon-play sym label int value", parse_constants_mon_play);
 	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
@@ -2899,6 +2880,9 @@ bool init_angband(void)
 	gen_loc_list_init();
 	chunk_list_init();
 
+	/* Monsters */
+	monsters_init();
+
 	/* List display codes */
 	monster_list_init();
 	object_list_init();
@@ -2917,20 +2901,6 @@ void cleanup_angband(void)
 {
 	size_t i;
 
-	/* Free the locations list */
-	for (i = 0; i < gen_loc_cnt; i++) {
-		if (gen_loc_list[i].change) {
-			struct terrain_change *change = gen_loc_list[i].change;
-			while (change) {
-				change = change->next;
-				mem_free(change);
-			}
-		}
-		//cave_connectors_free(gen_loc_list[i].join);
-	}
-	mem_free(gen_loc_list);
-	gen_loc_list = NULL;
-
 	for (i = 0; modules[i]; i++)
 		if (modules[i]->cleanup)
 			modules[i]->cleanup();
@@ -2940,7 +2910,7 @@ void cleanup_angband(void)
 	/* Free the main cave */
 	if (cave) {
 		forget_fire(cave);
-		cave_free(cave);
+		chunk_wipe(cave);
 		cave = NULL;
 	}
 

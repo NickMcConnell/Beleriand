@@ -89,7 +89,7 @@ char *monster_blow_method_action(struct blow_method *method, int midx)
 
 	/* Get the target monster, if any */
 	if (midx > 0) {
-		t_mon = cave_monster(cave, midx);
+		t_mon = monster(midx);
 	}
 
 	/* Pick a message */
