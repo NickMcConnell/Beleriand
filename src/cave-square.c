@@ -21,6 +21,7 @@
 #include "game-world.h"
 #include "init.h"
 #include "monster.h"
+#include "mon-make.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-util.h"
@@ -1045,7 +1046,7 @@ struct monster *square_monster(struct chunk *c, struct loc grid)
 {
 	if (!square_in_bounds(c, grid)) return NULL;
 	if (square(c, grid)->mon > 0) {
-		struct monster *mon = cave_monster(c, square(c, grid)->mon);
+		struct monster *mon = monster(square(c, grid)->mon);
 		return mon && mon->race ? mon : NULL;
 	}
 
@@ -1164,8 +1165,8 @@ void square_delete_object(struct chunk *c, struct loc grid, struct object *obj,
  * Helper for square_know_pile():  remove known
  * location for the requested items that are not on this grid.
  */
-static void forget_remembered_objects(struct chunk *c, struct chunk *knownc,
-		struct loc grid)
+void forget_remembered_objects(struct chunk *c, struct chunk *knownc,
+							   struct loc grid)
 {
 	struct object *obj = square_object(knownc, grid);
 
@@ -1177,6 +1178,7 @@ static void forget_remembered_objects(struct chunk *c, struct chunk *knownc,
 		if (!square_holds_object(c, grid, original)) {
 			square_excise_object(knownc, grid, obj);
 			obj->grid = loc(0, 0);
+			obj->floor = false;
 
 			/* Delete objects which no longer exist anywhere */
 			if (obj->notice & OBJ_NOTICE_IMAGINED) {
@@ -1234,6 +1236,26 @@ int square_num_doors_adjacent(struct chunk *c, struct loc grid)
 }
 
 /**
+ * Return how many cardinal directions around (x, y) contain walls.
+ * \param c current chunk
+ * \param y co-ordinates
+ * \param x co-ordinates
+ * \return the number of walls
+ */
+int square_num_walls_adjacent(struct chunk *c, struct loc grid)
+{
+    int k = 0;
+    assert(square_in_bounds(c, grid));
+
+    if (feat_is_wall(square(c, next_grid(grid, DIR_S))->feat)) k++;
+	if (feat_is_wall(square(c, next_grid(grid, DIR_N))->feat)) k++;
+    if (feat_is_wall(square(c, next_grid(grid, DIR_E))->feat)) k++;
+    if (feat_is_wall(square(c, next_grid(grid, DIR_W))->feat)) k++;
+
+    return k;
+}
+
+/**
  * Return how many diagonal directions around (x, y) contain walls.
  * \param c current chunk
  * \param grid is the location in c to examine
@@ -1265,6 +1287,11 @@ void square_set_feat(struct chunk *c, struct loc grid, int feat)
 
 	assert(square_in_bounds(c, grid));
 	current_feat = square(c, grid)->feat;
+
+ 	/* Floor and road have only cosmetic differences; use road when outside */
+	if (outside() && (feat == FEAT_FLOOR)) {
+		feat = FEAT_ROAD;
+	}
 
 	/* Track changes */
 	if (current_feat) c->feat_count[current_feat]--;

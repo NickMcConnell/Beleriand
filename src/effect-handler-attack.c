@@ -44,15 +44,15 @@ static void get_target(struct source origin, int dir, struct loc *grid,
 {
 	switch (origin.what) {
 		case SRC_MONSTER: {
-			struct monster *monster = cave_monster(cave, origin.which.monster);
+			struct monster *mon = monster(origin.which.monster);
 
-			if (!monster) break;
+			if (!mon) break;
 
 			*flags |= (PROJECT_PLAY);
 
-			if (monster->target.midx > 0) {
-				struct monster *mon = cave_monster(cave, monster->target.midx);
-				*grid = mon->grid;
+			if (mon->target.midx > 0) {
+				struct monster *mon1 = monster(mon->target.midx);
+				*grid = mon1->grid;
 			} else {
 				*grid = player->grid;
 			}
@@ -164,8 +164,7 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 
 	switch (context->origin.what) {
 		case SRC_MONSTER: {
-			struct monster *mon = cave_monster(cave,
-											   context->origin.which.monster);
+			struct monster *mon = monster(context->origin.which.monster);
 
 			monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
 			break;
@@ -273,14 +272,15 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
 
 	/* Affect all (nearby) monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
-		/* Paranoia -- Skip dead monsters */
-		if (!mon->race) continue;
+		/* Paranoia -- Skip dead and stored monsters */
+ 		if (!mon->race) continue;
+		if (monster_is_stored(mon)) continue;
 
 		/* Don't affect the caster */
-		if (mon->midx == cave->mon_current) continue;
+		if (mon->midx == mon_current) continue;
 
 		/* Require line of sight */
 		if (!los(cave, origin, mon->grid)) continue;
@@ -452,7 +452,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	/* If it's a monster creating the earthquake, get it */
 	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *mon = monster(context->origin.which.monster);
 
 		/* Set visibility */
 		vis = monster_is_visible(mon);

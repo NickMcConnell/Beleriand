@@ -28,6 +28,7 @@
 #include "init.h"
 #include "mon-init.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
@@ -1358,11 +1359,11 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr,
 		recall_prompt, 0, 0};
 
-	int *monsters;
+	int *mons;
 	int m_count = count_known_monsters(), i, ind;
 
 	default_join = mem_zalloc(m_count * sizeof(join_t));
-	monsters = mem_zalloc(m_count * sizeof(int));
+	mons = mem_zalloc(m_count * sizeof(int));
 
 	ind = 0;
 	for (i = 0; i < z_info->r_max; ++i) {
@@ -1384,7 +1385,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 						++k) {
 					if (race->base == monster_group[j].inc_bases[k]) {
 						assert(ind < m_count);
-						monsters[ind] = ind;
+						mons[ind] = ind;
 						default_join[ind].oid = i;
 						default_join[ind].gid = j;
 						++ind;
@@ -1398,7 +1399,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 				if (rf_is_inter(race->flags,
 						monster_group[j].inc_flags)) {
 					assert(ind < m_count);
-					monsters[ind] = ind;
+					mons[ind] = ind;
 					default_join[ind].oid = i;
 					default_join[ind].gid = j;
 					++ind;
@@ -1408,7 +1409,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 							++k) {
 						if (race->d_char == monster_group[j].inc_glyphs[k]) {
 							assert(ind < m_count);
-							monsters[ind] = ind;
+							mons[ind] = ind;
 							default_join[ind].oid = i;
 							default_join[ind].gid = j;
 							++ind;
@@ -1422,17 +1423,17 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 		if (!classified) {
 			assert(ind < m_count);
-			monsters[ind] = ind;
+			mons[ind] = ind;
 			default_join[ind].oid = i;
 			default_join[ind].gid = n_monster_group - 1;
 			++ind;
 		}
 	}
 
-	display_knowledge("monsters", monsters, m_count, r_funcs, m_funcs,
+	display_knowledge("monsters", mons, m_count, r_funcs, m_funcs,
 			"                   Sym  Kills");
 	mem_free(default_join);
-	mem_free(monsters);
+	mem_free(mons);
 }
 
 /**
@@ -1526,8 +1527,8 @@ static struct object *find_artifact(struct artifact *artifact)
 	}
 
 	/* Monster objects */
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = mon_max - 1; i >= 1; i--) {
+		struct monster *mon = monster(i);
 		obj = mon ? mon->held_obj : NULL;
 
 		while (obj) {

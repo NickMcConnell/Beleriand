@@ -665,7 +665,7 @@ void project_m(struct source origin, int r, struct loc grid, int dd, int ds,
 	if (origin.what == SRC_MONSTER && origin.which.monster == m_idx) return;
 
 	/* Obtain monster info */
-	mon = cave_monster(cave, m_idx);
+	mon = monster(m_idx);
 	lore = get_lore(mon->race);
 	context.mon = mon;
 	context.lore = lore;

@@ -770,7 +770,9 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 		/* Remove cave object details */
 		obj->held_m_idx = 0;
 		obj->grid = loc(0, 0);
+		obj->floor = false;
 		obj->known->grid = loc(0, 0);
+		obj->known->floor = false;
 
 		/* Update the inventory */
 		p->upkeep->total_weight += (obj->number * obj->weight);

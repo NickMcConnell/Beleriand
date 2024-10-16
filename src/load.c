@@ -242,13 +242,14 @@ static struct object *rd_item(void)
 /**
  * Read a monster
  */
-static bool rd_monster(struct chunk *c, struct monster *mon)
+static bool rd_monster(struct monster *mon)
 {
 	uint8_t tmp8u;
 	uint16_t tmp16u;
 	int16_t tmp16s;
 	char race_name[80];
 	size_t j;
+	struct chunk *c = NULL;
 
 	/* Read the monster race */
 	rd_u16b(&tmp16u);
@@ -273,7 +274,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	mon->grid.x = tmp8u;
 	rd_s16b(&tmp16s);
 	mon->place = tmp16s;
-	//c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
+	c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
 	rd_s16b(&mon->hp);
 	rd_s16b(&mon->maxhp);
 	rd_byte(&mon->mana);
@@ -1184,7 +1185,7 @@ static int rd_dungeon_aux(struct chunk **c)
 	rd_u16b(&width);
 
 	/* We need a cave struct */
-	c1 = cave_new(height, width);
+	c1 = chunk_new(height, width);
 	c1->name = string_make(name);
 
 	rd_byte(&tmp8u);
@@ -1275,54 +1276,6 @@ static int rd_objects_aux(struct chunk *c)
 		assert(obj->oidx);
 		assert(c->objects[obj->oidx] == NULL);
 		c->objects[obj->oidx] = obj;
-	}
-
-	return 0;
-}
-
-/**
- * Read monsters
- */
-static int rd_monsters_aux(struct chunk *c)
-{
-	int i;
-	uint16_t limit;
-
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
-
-	/* Read the monster count */
-	rd_u16b(&limit);
-	if (limit > z_info->level_monster_max) {
-		note(format("Too many (%d) monster entries!", limit));
-		return (-1);
-	}
-
-	/* Read the monsters */
-	for (i = 1; i < limit; i++) {
-		struct monster *mon;
-		struct monster monster_body;
-
-		/* Get local monster */
-		mon = &monster_body;
-		memset(mon, 0, sizeof(*mon));
-
-		/* Read the monster */
-		if (!rd_monster(c, mon)) {
-			note(format("Cannot read monster %d", i));
-			return (-1);
-		}
-
-		/* Place monster in dungeon */
-		if (place_monster(c, mon->grid, mon, mon->origin) != i) {
-			note(format("Cannot place monster %d", i));
-			return (-1);
-		}
-
-		/* Initialize flow */
-		mon = cave_monster(c, mon->midx);
-		flow_new(c, &mon->flow);
 	}
 
 	return 0;
@@ -1427,15 +1380,44 @@ int rd_objects(void)
 int rd_monsters(void)
 {
 	int i;
+	uint16_t limit;
 
 	/* Only if the player's alive */
 	if (player->is_dead)
 		return 0;
 
-	if (rd_monsters_aux(cave))
-		return -1;
-	if (rd_monsters_aux(player->cave))
-		return -1;
+	/* Read the monster count */
+	rd_u16b(&limit);
+	if (limit > z_info->monster_max) {
+		note(format("Too many (%d) monster entries!", limit));
+		return (-1);
+	}
+
+	/* Read the monsters */
+	for (i = 1; i < limit; i++) {
+		struct monster *mon;
+		struct monster monster_body;
+		struct chunk *c;
+
+		/* Get local monster */
+		mon = &monster_body;
+		memset(mon, 0, sizeof(*mon));
+
+		/* Read the monster */
+		if (!rd_monster(mon)) {
+			note(format("Cannot read monster %d", i));
+			return (-1);
+		}
+
+		/* Set the chunk */
+		c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
+
+		/* Place monster in dungeon */
+		if (place_monster(c, mon->grid, mon, 0) != i) {
+			note(format("Cannot place monster %d", i));
+			return (-1);
+		}
+	}
 
 #if OBJ_RECOVER
 	player->cave->objects = mem_zalloc((cave->obj_max + 1) * sizeof(struct object*));
@@ -1491,7 +1473,7 @@ int rd_chunks(void)
 		ref->place = j;
 		rd_s32b(&ref->turn);
 		rd_u16b(&ref->region);
-		rd_u16b(&ref->z_pos);
+		rd_s16b(&ref->z_pos);
 		rd_u16b(&ref->y_pos);
 		rd_u16b(&ref->x_pos);
 		rd_u32b(&ref->gen_loc_idx);

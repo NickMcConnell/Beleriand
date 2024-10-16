@@ -21,6 +21,7 @@
 #include "combat.h"
 #include "mon-calcs.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-move.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -126,21 +127,21 @@ int skill_check(struct source attacker, int skill, int difficulty,
 
 	/* Bonuses against your enemy of choice */
 	if ((attacker.what == SRC_PLAYER) && (defender.what == SRC_MONSTER)) {
-		struct monster *mon = cave_monster(cave, defender.which.monster);
+		struct monster *mon = monster(defender.which.monster);
 		skill += player_bane_bonus(player, mon);
 	}
 	if ((defender.what == SRC_PLAYER) && (attacker.what == SRC_MONSTER)) {
-		struct monster *mon = cave_monster(cave, attacker.which.monster);
+		struct monster *mon = monster(attacker.which.monster);
 		difficulty += player_bane_bonus(player, mon);
     }
 
     /* Elf-bane bonus against you */
 	if ((attacker.what == SRC_PLAYER) && (defender.what == SRC_MONSTER)) {
-		struct monster *mon = cave_monster(cave, defender.which.monster);
+		struct monster *mon = monster(defender.which.monster);
 		difficulty += monster_elf_bane_bonus(mon, player);
 	}
 	if ((defender.what == SRC_PLAYER) && (attacker.what == SRC_MONSTER)) {
-		struct monster *mon = cave_monster(cave, attacker.which.monster);
+		struct monster *mon = monster(attacker.which.monster);
 		skill += monster_elf_bane_bonus(mon, player);
     }
 
@@ -194,7 +195,7 @@ int hit_roll(int att, int evn, struct source attacker, struct source defender,
 		if ((defender.what == SRC_NONE) || (defender.what == SRC_TRAP)) {
 			non_player_visible = true;
 		} else {
-			struct monster *mon = cave_monster(cave, defender.which.monster);
+			struct monster *mon = monster(defender.which.monster);
 			assert(mon);
 			non_player_visible = monster_is_visible(mon);
 		}
@@ -202,7 +203,7 @@ int hit_roll(int att, int evn, struct source attacker, struct source defender,
 		if ((attacker.what == SRC_NONE) || (attacker.what == SRC_TRAP)) {
 			non_player_visible = true;
 		} else {
-			struct monster *mon = cave_monster(cave, attacker.which.monster);
+			struct monster *mon = monster(attacker.which.monster);
 			assert(mon);
 			non_player_visible = monster_is_visible(mon);
 		}

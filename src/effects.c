@@ -21,6 +21,7 @@
 #include "effect-handler.h"
 #include "game-input.h"
 #include "init.h"
+#include "mon-make.h"
 #include "mon-summon.h"
 #include "obj-gear.h"
 #include "player-abilities.h"
@@ -249,8 +250,8 @@ static int32_t effect_value_base_spell_power(void)
 	if (ref_race)
 	   power = ref_race->spell_power;
 	/* Otherwise the current monster if there is one */
-	else if (cave->mon_current > 0)
-		power = cave_monster(cave, cave->mon_current)->race->spell_power;
+	else if (mon_current > 0)
+		power = monster(mon_current)->race->spell_power;
 
 	return power;
 }

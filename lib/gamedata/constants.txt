@@ -4,15 +4,11 @@
 # This file is used to initialize game constants for Sil.
 
 #---------------------------------------------------------------------
-# Level Maxima
-#---------------------------------------------------------------------
-
-# Maximum number of monsters on the level
-level-max:monsters:300
-
-#---------------------------------------------------------------------
 # Monster Generation
 #---------------------------------------------------------------------
+
+# Maximum number of monsters
+mon-gen:monster-max:8192
 
 # 1/per-turn-chance of new monster generation
 mon-gen:chance:160
@@ -57,16 +53,16 @@ mon-play:wander-range:50
 #---------------------------------------------------------------------
 
 # Number of possible room centres (and hence rooms) on a normal level
-dun-gen:room-max:50
+dun-gen:room-max:100
 
-# Number of possible room centres (and hence rooms) on a normal level
-dun-gen:room-min:2
+# Number of possible door locations
+dun-gen:door-max:200
 
-# Dungeon block height
-dun-gen:block-hgt:11
+# Number of possible places to pierce room walls with tunnels
+dun-gen:wall-max:500
 
-# Dungeon block width
-dun-gen:block-wid:33
+# Number of tunnel grids
+dun-gen:tunn-max:900
 
 #---------------------------------------------------------------------
 # Game World
@@ -82,10 +78,10 @@ world:max-depth:128
 world:day-length:10000
 
 # Max number of grids in each dungeon level (vertically)
-world:dungeon-hgt:55
+world:dungeon-hgt:132
 
 # Max number of grids in each dungeon level (horizontally)
-world:dungeon-wid:165
+world:dungeon-wid:132
 
 # Energy needed by player or monsters to move
 world:move-energy:100

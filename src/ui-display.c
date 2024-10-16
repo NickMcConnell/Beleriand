@@ -28,6 +28,7 @@
 #include "hint.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-move.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
@@ -1180,9 +1181,9 @@ static void do_animation(void)
 {
 	int i;
 
-	for (i = 1; i < cave_monster_max(cave); i++) {
+	for (i = 1; i < mon_max; i++) {
 		uint8_t attr;
-		struct monster *mon = cave_monster(cave, i);
+		struct monster *mon = monster(i);
 
 		if (!mon || !mon->race || !monster_is_visible(mon))
 			continue;

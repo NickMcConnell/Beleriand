@@ -24,6 +24,7 @@
 #include "init.h"
 #include "mon-calcs.h"
 #include "mon-desc.h"
+#include "mon-make.h"
 #include "mon-move.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -121,8 +122,8 @@ void shatter_weapon(struct player *p, int silnum)
 	object_delete(cave, p->cave, &destroyed);
 
 	/* Process monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 
 		/* If Morgoth, then anger him */
 		if (rf_has(mon->race->flags, RF_QUESTOR)) {
@@ -145,9 +146,9 @@ void break_truce(struct player *p, bool obvious)
 	
 	if (p->truce) {
 		/* Scan all other monsters */
-		for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+		for (i = mon_max - 1; i >= 1; i--) {
 			/* Access the monster */
-			mon = cave_monster(cave, i);
+			mon = monster(i);
 			
 			/* Ignore dead monsters */
 			if (!mon->race) continue;
@@ -179,9 +180,9 @@ void break_truce(struct player *p, bool obvious)
 			}
 			
 			/* Scan all other monsters */
-			for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+			for (i = mon_max - 1; i >= 1; i--) {
 				/* Access the monster */
-				mon = cave_monster(cave, i);
+				mon = monster(i);
 				
 				/* Ignore dead monsters */
 				if (!mon->race) continue;
@@ -225,8 +226,8 @@ void wake_all_monsters(struct player *p)
 	int i;
 
 	/* Aggravate everyone */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+	for (i = 1; i < mon_max; i++) {
+		struct monster *mon = monster(i);
 		/* Paranoia -- Skip dead monsters */
 		if (!mon->race) continue;
 

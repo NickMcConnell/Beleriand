@@ -22,6 +22,7 @@
 #include "game-input.h"
 #include "init.h"
 #include "mon-desc.h"
+#include "mon-make.h"
 #include "mon-move.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -56,7 +57,7 @@ static struct target old_target;
  */
 void look_mon_desc(char *buf, size_t max, int m_idx)
 {
-	struct monster *mon = cave_monster(cave, m_idx);
+	struct monster *mon = monster(m_idx);
 
 	if (!mon) return;
 
@@ -125,7 +126,7 @@ bool target_okay(int range)
 
 	/* Check "monster" targets */
 	if (target.midx > 0) {
-		struct monster *mon = cave_monster(cave, target.midx);
+		struct monster *mon = monster(target.midx);
 		if (target_able(mon)) {
 			/* Get the monster location */
 			target.grid = mon->grid;
@@ -230,7 +231,7 @@ void target_release(void)
 
 	/* If the old target is a now-dead monster, cancel it */
 	if (old_target.midx != 0) {
-		struct monster *mon = cave_monster(cave, old_target.midx);
+		struct monster *mon = monster(old_target.midx);
 		if (!mon || !mon->race || !monster_is_in_view(mon)) {
 			target.grid.y = 0;
 			target.grid.x = 0;
@@ -408,7 +409,7 @@ void target_get(struct loc *grid)
  */
 struct monster *target_get_monster(void)
 {
-	return cave_monster(cave, target.midx);
+	return monster(target.midx);
 }
 
 
@@ -422,7 +423,7 @@ bool target_sighted(void)
 			 /* either the target is a grid and is visible, or it is a monster
 			  * that is visible */
 		((!target.midx && square_isseen(cave, target.grid)) ||
-		 (target.midx && monster_is_visible(cave_monster(cave, target.midx))));
+		 (target.midx && monster_is_visible(monster(target.midx))));
 }
 
 

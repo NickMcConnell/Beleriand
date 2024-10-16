@@ -383,7 +383,7 @@ void player_cleanup_members(struct player *p)
 	release_ability_list(p->abilities);
 	release_ability_list(p->item_abilities);
 	if (p->cave) {
-		cave_free(p->cave);
+		chunk_wipe(p->cave);
 		p->cave = NULL;
 	}
 }

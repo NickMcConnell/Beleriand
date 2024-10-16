@@ -30,17 +30,17 @@
 /**
  * Allocate a new monster group
  */
-static struct monster_group *monster_group_new(struct chunk *c)
+static struct monster_group *monster_group_new(void)
 {
 	struct monster_group *group = mem_zalloc(sizeof(struct monster_group));
-	flow_new(c, &group->flow);
+	flow_new(cave, &group->flow);
 	return group;
 }
 
 /**
  * Free a monster group
  */
-void monster_group_free(struct chunk *c, struct monster_group *group)
+void monster_group_free(struct monster_group *group)
 {
 	/* Free the member list */
 	while (group->member_list) {
@@ -49,7 +49,7 @@ void monster_group_free(struct chunk *c, struct monster_group *group)
 		group->member_list = next;
 	}
 
-	flow_free(c, &group->flow);
+	flow_free(cave, &group->flow);
 	mem_free(group);
 }
 
@@ -58,14 +58,14 @@ void monster_group_free(struct chunk *c, struct monster_group *group)
  *
  * In Sil, we just grab the next monster in the list
  */
-void monster_group_remove_leader(struct chunk *c, struct monster *leader,
+void monster_group_remove_leader(struct monster *leader,
 								 struct monster_group *group)
 {
 	struct mon_group_list_entry *list_entry = group->member_list;
 
 	/* Look for another leader */
 	while (list_entry) {
-		struct monster *mon = cave_monster(c, list_entry->midx);
+		struct monster *mon = monster(list_entry->midx);
 
 		if (!mon) {
 			list_entry = list_entry->next;
@@ -78,30 +78,30 @@ void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 		}
 	}
 
-	monster_groups_verify(c);
+	monster_groups_verify();
 }
 
 /**
  * Remove a monster from a monster group, deleting the group if it's empty.
  * Deal with removal of the leader.
  */
-void monster_remove_from_group(struct chunk *c, struct monster *mon)
+void monster_remove_from_group(struct monster *mon)
 {
-	struct monster_group *group = c->monster_groups[mon->group_info.index];
+	struct monster_group *group = monster_groups[mon->group_info.index];
 	struct mon_group_list_entry *list_entry = group->member_list;
 
 	/* Check if the first entry is the one we want */
 	if (list_entry->midx == mon->midx) {
 		if (!list_entry->next) {
 			/* If it's the only monster, remove the group */
-			monster_group_free(c, group);
-			c->monster_groups[mon->group_info.index] = NULL;
+			monster_group_free(group);
+			monster_groups[mon->group_info.index] = NULL;
 		} else {
 			/* Otherwise remove the first entry */
 			group->member_list = list_entry->next;
 			mem_free(list_entry);
 			if (group->leader == mon->midx) {
-				monster_group_remove_leader(c, mon, group);
+				monster_group_remove_leader(mon, group);
 			}
 		}
 		return;
@@ -120,25 +120,25 @@ void monster_remove_from_group(struct chunk *c, struct monster *mon)
 			list_entry->next = list_entry->next->next;
 			mem_free(remove);
 			if (group->leader == mon->midx) {
-				monster_group_remove_leader(c, mon, group);
+				monster_group_remove_leader(mon, group);
 			}
 			break;
 		}
 		list_entry = list_entry->next;
 	}
 	group->size--;
-	monster_groups_verify(c);
+	monster_groups_verify();
 }
 
 /**
  * Get the next available monster group index
  */
-int monster_group_index_new(struct chunk *c)
+int monster_group_index_new(void)
 {
 	int index;
 
-	for (index = 1; index < z_info->level_monster_max; index++) {
-		if (!(c->monster_groups[index])) return index;
+	for (index = 1; index < z_info->monster_max; index++) {
+		if (!(monster_groups[index])) return index;
 	}
 
 	/* Fail, very unlikely */
@@ -148,8 +148,7 @@ int monster_group_index_new(struct chunk *c)
 /**
  * Add a monster to an existing monster group
  */
-void monster_add_to_group(struct chunk *c, struct monster *mon,
-						  struct monster_group *group)
+void monster_add_to_group(struct monster *mon, struct monster_group *group)
 {
 	struct mon_group_list_entry *list_entry;
 
@@ -169,15 +168,15 @@ void monster_add_to_group(struct chunk *c, struct monster *mon,
 /**
  * Make a monster group for a single monster
  */
-static void monster_group_start(struct chunk *c, struct monster *mon)
+static void monster_group_start(struct monster *mon)
 {
 	/* Get a group and a group index */
-	struct monster_group *group = monster_group_new(c);
-	int index = monster_group_index_new(c);
+	struct monster_group *group = monster_group_new();
+	int index = monster_group_index_new();
 	assert(index);
 
 	/* Put the group in the group list */
-	c->monster_groups[index] = group;
+	monster_groups[index] = group;
 
 	/* Fill out the group */
 	group->index = index;
@@ -194,18 +193,18 @@ static void monster_group_start(struct chunk *c, struct monster *mon)
 /**
  * Assign a monster to a monster group
  */
-void monster_group_assign(struct chunk *c, struct monster *mon,
-						  struct monster_group_info info, bool loading)
+void monster_group_assign(struct monster *mon, struct monster_group_info info,
+						  bool loading)
 {
 	int index = info.index;
-	struct monster_group *group = monster_group_by_index(c, index);
+	struct monster_group *group = monster_group_by_index(index);
 
 	if (!loading) {
 		/* For newly created monsters, use the group start and add functions */
 		if (group) {
-			monster_add_to_group(c, mon, group);
+			monster_add_to_group(mon, group);
 		} else {
-			monster_group_start(c, mon);
+			monster_group_start(mon);
 		}
 	} else {
 		/* For loading from a savefile, build by hand */
@@ -219,11 +218,11 @@ void monster_group_assign(struct chunk *c, struct monster *mon,
 		}
 
 		/* Fill out the group, creating if necessary */
-		group = monster_group_by_index(c, index);
+		group = monster_group_by_index(index);
 		if (!group) {
-			group = monster_group_new(c);
+			group = monster_group_new();
 			group->index = index;
-			c->monster_groups[index] = group;
+			monster_groups[index] = group;
 		}
 		if (info.role == MON_GROUP_LEADER) {
 			group->leader = mon->midx;
@@ -238,28 +237,20 @@ void monster_group_assign(struct chunk *c, struct monster *mon,
 }
 
 /**
- * Get the index of a monster group
- */
-int monster_group_index(struct monster_group *group)
-{
-	return group->index;
-}
-
-/**
  * Get a monster group from its index
  */
-struct monster_group *monster_group_by_index(struct chunk *c, int index)
+struct monster_group *monster_group_by_index(int index)
 {
-	return index ? c->monster_groups[index] : NULL;
+	return index ? monster_groups[index] : NULL;
 }
 
 /**
  * Change the group record of the index of a monster
  */
-bool monster_group_change_index(struct chunk *c, int new, int old)
+bool monster_group_change_index(int new, int old)
 {
-	int index = cave_monster(c, old)->group_info.index;
-	struct monster_group *group = monster_group_by_index(c, index);
+	int index = monster(old)->group_info.index;
+	struct monster_group *group = monster_group_by_index(index);
 	struct mon_group_list_entry *entry = group->member_list;
 
 	if (group->leader == old) {
@@ -279,10 +270,10 @@ bool monster_group_change_index(struct chunk *c, int new, int old)
 /**
  * Get the size of a monster's group
  */
-int monster_group_size(struct chunk *c, const struct monster *mon)
+int monster_group_size(const struct monster *mon)
 {
 	int index = mon->group_info.index;
-	struct monster_group *group = c->monster_groups[index];
+	struct monster_group *group = monster_groups[index];
 	return group->size;
 }
 
@@ -297,23 +288,21 @@ int monster_group_leader_idx(struct monster_group *group)
 /**
  * Get the leader of a monster's group
  */
-struct monster *monster_group_leader(struct chunk *c, struct monster *mon)
+struct monster *monster_group_leader(struct monster *mon)
 {
 	int index = mon->group_info.index;
-	struct monster_group *group = c->monster_groups[index];
-	return cave_monster(c, group->leader);
+	struct monster_group *group = monster_groups[index];
+	return monster(group->leader);
 }
 
 /**
  * Set the centre of a new flow for a monster group, and update the flow
  */
-void monster_group_new_wandering_flow(struct chunk *c, struct monster *mon,
-									  struct loc tgrid)
+void monster_group_new_wandering_flow(struct monster *mon, struct loc tgrid)
 {	
 	int i;
-	struct monster_group *group = monster_group_by_index(c,
-														 mon->group_info.index);
-	struct monster *leader = cave_monster(c, group->leader);
+	struct monster_group *group = monster_group_by_index(mon->group_info.index);
+	struct monster *leader = monster(group->leader);
 	struct monster_race *race = !!leader ? leader->race : NULL;
 	struct loc grid;
 
@@ -327,35 +316,35 @@ void monster_group_new_wandering_flow(struct chunk *c, struct monster *mon,
 		 * fact that speed hasn't been determined yet on creation */
 		if (mon->mspeed == 0) {
 			group->flow.centre = leader->grid;
-			update_flow(c, &group->flow, leader);
+			update_flow(cave, &group->flow, leader);
 		}
-	} else if (square_in_bounds_fully(c, tgrid)) {
+	} else if (square_in_bounds_fully(cave, tgrid)) {
 		/* If a location was requested, use that */
 		group->flow.centre = tgrid;
-		update_flow(c, &group->flow, leader);
+		update_flow(cave, &group->flow, leader);
 	} else {
 		/* Otherwise choose a location */
 		if (rf_has(race->flags, RF_SMART) &&
 			!rf_has(race->flags, RF_TERRITORIAL) &&
 			(player->depth != z_info->dun_depth) && one_in_(5) &&
-			cave_find(c, &grid, square_isstairs) &&
-			!square_isplayer(c, grid) && !square_isvault(c, grid)) {
+			cave_find(cave, &grid, square_isstairs) &&
+			!square_isplayer(cave, grid) && !square_isvault(cave, grid)) {
 			/* Sometimes intelligent monsters want to pick a staircase and leave
 			 * the level */
 			group->flow.centre = grid;
-			update_flow(c, &group->flow, leader);
+			update_flow(cave, &group->flow, leader);
 		} else {
 			/* Otherwise pick a random location (on a floor, in a room, and not
 			 * in a vault) */
 			for (i = 0; i < 100; i++) {
-				grid.y = randint0(c->height);
-				grid.x = randint0(c->width);
-				if (square_in_bounds_fully(c, grid) &&
-					square_isfloor(c, grid) && 
-					square_isroom(c, grid) &&
-					!square_isvault(c, grid)) {
+				grid.y = randint0(cave->height);
+				grid.x = randint0(cave->width);
+				if (square_in_bounds_fully(cave, grid) &&
+					square_isfloor(cave, grid) && 
+					square_isroom(cave, grid) &&
+					!square_isvault(cave, grid)) {
 					group->flow.centre = grid;
-					update_flow(c, &group->flow, leader);
+					update_flow(cave, &group->flow, leader);
 					break;
 				}
 			}
@@ -369,17 +358,17 @@ void monster_group_new_wandering_flow(struct chunk *c, struct monster *mon,
 /**
  * Verify the integrity of all the monster groups
  */
-void monster_groups_verify(struct chunk *c)
+void monster_groups_verify()
 {
 	int i;
 
-	for (i = 0; i < z_info->level_monster_max; i++) {
-		if (c->monster_groups[i]) {
-			struct monster_group *group = c->monster_groups[i];
+	for (i = 0; i < z_info->monster_max; i++) {
+		if (monster_groups[i]) {
+			struct monster_group *group = monster_groups[i];
 			struct mon_group_list_entry *entry = group->member_list;
 			bool leader_found = false;
 			while (entry) {
-				struct monster *mon = cave_monster(c, entry->midx);
+				struct monster *mon = monster(entry->midx);
 				struct monster_group_info info = mon->group_info;
 				if (info.index != i) {
 					quit_fmt("Bad group index: group: %d, monster: %d", i,

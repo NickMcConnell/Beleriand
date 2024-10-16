@@ -278,6 +278,72 @@ bool find_nearby_grid(struct chunk *c, struct loc *grid, struct loc centre,
 
 
 /**
+ * Given two points, pick a valid cardinal direction from one to the other.
+ * \param offset found offset direction from grid 1 to grid2
+ * \param grid1 starting grid
+ * \param grid2 target grid
+ */
+void correct_dir(struct loc *offset, struct loc grid1, struct loc grid2)
+{
+	/* Extract horizontal and vertical directions */
+	offset->x = CMP(grid2.x, grid1.x);
+	offset->y = CMP(grid2.y, grid1.y);
+
+	/* If we only have one direction to go, then we're done */
+	if (!offset->x || !offset->y) return;
+
+	/* If we need to go diagonally, then choose a random direction */
+	if (randint0(100) < 50)
+		offset->y = 0;
+	else
+		offset->x = 0;
+}
+
+
+/**
+ * Go in a semi-random direction from current location to target location.  
+ * Do not actually head away from the target grid.  Always make a turn.
+ */
+void adjust_dir(struct loc *offset, struct loc grid1, struct loc grid2)
+{
+	/* Always turn 90 degrees. */
+	if ((*offset).y == 0) {
+		(*offset).x = 0;
+
+		/* On the y-axis of target - freely choose a side to turn to. */
+		if (grid1.y == grid2.y) {
+			(*offset).y = ((one_in_(2) == 0) ? -1 : 1);
+		} else {
+			/* Never turn away from target. */
+			(*offset).y = ((grid1.y < grid2.y) ? 1 : -1);
+		}
+	} else {
+		(*offset).y = 0;
+
+		/* On the x-axis of target - freely choose a side to turn to. */
+		if (grid1.x == grid2.x) {
+			(*offset).x = ((one_in_(2) == 0) ? -1 : 1);
+		} else {
+			/* Never turn away from target. */
+			(*offset).x = ((grid1.x < grid2.x) ? 1 : -1);
+		}
+	}
+}
+
+
+/**
+ * Pick a random cardinal direction.
+ * \param offset direction offset
+ */
+void rand_dir(struct loc *offset)
+{
+	/* Pick a random direction and extract the dy/dx components */
+	int i = randint0(4);
+	*offset = ddgrid_ddd[i];
+}
+
+
+/**
  * Place rubble at a given location, provided we are deep enough.
  * \param c current chunk
  * \param grid location
@@ -544,31 +610,121 @@ void place_forge(struct chunk *c, struct loc grid)
  * \param c the current chunk
  * \param feat the stair terrain type
  * \param num number of staircases to place
+ * \param minsep If greater than zero, the stairs must be more than minsep
+ * grids in x or y from other staircases.  sepany controls which types of
+ * staircases are considered when enforcing the separation constraint.
+ * \param sepany If true, the minimum separation contraint applies to any
+ * type of staircase.  Otherwise, the minimum separation contraint only applies
+ * to staircases of the same type.
+ * \param avoid_list If not NULL and minsep is greater than zero, also avoid
+ * the locations in avoid_list which have staircases of the opposite type.
  */
-void alloc_stairs(struct chunk *c, int feat, int num)
+void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
+		const struct connector *avoid_list)
 {
-	int i = 0;
+	int i, navalloc, nav, walls;
+	struct loc *av;
+	int *state;
 
-	/* Smaller levels don't need that many stairs, but there are a minimum of
-	 * 4 rooms*/
-	if (dun->cent_n == 4) {
-		num = 1;
-	} else if (num > (dun->cent_n / 2)) {
-		num = dun->cent_n / 2;
+	nav = 0;
+	if (minsep > 0) {
+		/*
+		 * Get the locations of the stairs already there that'll have
+		 * to be avoided.
+		 */
+		square_predicate tester = (sepany) ? square_isstairs :
+			((feat == FEAT_MORE) ?
+			square_isdownstairs : square_isupstairs);
+		struct loc grid;
+		const struct connector *avc;
+
+		navalloc = 8;
+		av = mem_alloc(navalloc * sizeof(*av));
+		for (grid.y = 0; grid.y < c->height; ++grid.y) {
+			for (grid.x = 0; grid.x < c->width; ++grid.x) {
+				if ((*tester)(c, grid)) {
+					assert(nav >= 0 && nav <= navalloc);
+					if (nav == navalloc) {
+						navalloc += navalloc;
+						av = mem_realloc(av, navalloc *
+							sizeof(*av));
+					}
+					av[nav++] = grid;
+				}
+			}
+		}
+
+		/* Also add the locations that were passed in. */
+		for (avc = avoid_list; avc; avc = avc->next) {
+			if (avc->feat != feat) {
+				assert(nav >= 0 && nav <= navalloc);
+				if (nav == navalloc) {
+					navalloc += navalloc;
+					av = mem_realloc(av, navalloc *
+						sizeof(*av));
+				}
+				av[nav++] = avc->grid;
+			}
+		}
+	} else {
+		navalloc = 0;
+		av = NULL;
 	}
 
 	/* Place "num" stairs */
-	while (i < num) {
+	state = cave_find_init(loc(1, 1), loc(c->width - 2, c->height - 2));
+	i = 0;
+	walls = 3;
+	while (i < num && walls >= 0) {
 		struct loc grid;
 		bool first = (i == 0);
 
-		/* Find a suitable grid */
-		cave_find(c, &grid, square_suits_stairs);
-		place_stairs(c, grid, first, feat);
-		assert(square_isstairs(c, grid) || (!first && square_isshaft(c, grid)));
-		++i;
+		/* Try to find; then decrease "walls" */
+		while (i < num && cave_find_get_grid(&grid, state)) {
+			if (!square_isempty(c, grid)
+					|| square_num_walls_adjacent(c, grid) != walls) {
+				continue;
+			}
+			if (minsep > 0) {
+				int k;
+
+				/* Check against the stairs to be avoided. */
+				for (k = 0; k < nav; ++k) {
+					if (ABS(grid.y - av[k].y) <= minsep
+							&& ABS(grid.x
+							- av[k].x) <= minsep) {
+						break;
+					}
+				}
+				if (k < nav) {
+					continue;
+				}
+				/* Add this to the avoidance list. */
+				assert(nav >= 0 && nav <= navalloc);
+				if (nav == navalloc) {
+					navalloc += navalloc;
+					av = mem_realloc(av, navalloc *
+						sizeof(*av));
+				}
+				av[nav++] = grid;
+			}
+
+			place_stairs(c, grid, first, feat);
+			assert(square_isstairs(c, grid));
+			++i;
+		}
+
+		/* Require fewer walls */
+		if (i < num) {
+			--walls;
+			cave_find_reset(state);
+		}
 	}
+
+	mem_free(state);
+	mem_free(av);
 }
+
 
 /**
  * Are there any stairs within line of sight?
@@ -635,25 +791,25 @@ static bool find_start(struct chunk *c, struct loc *grid)
  */
 bool new_player_spot(struct chunk *c, struct player *p)
 {
-	struct loc grid;
+	//struct loc grid;
 
-	/* Try to find a good place to put the player */
-	if (!find_start(c, &grid)) {
-		msg("Failed to place player; please report.  Restarting generation.");
-		dump_level_simple(NULL, "Player Placement Failure", c);
-		return false;
-	}
+	///* Try to find a good place to put the player */
+	//if (!find_start(c, &grid)) {
+	//	msg("Failed to place player; please report.  Restarting generation.");
+	//	dump_level_simple(NULL, "Player Placement Failure", c);
+	//	return false;
+	//}
 
-	/* Destroy area if falling due to blasting through the floor */
-    if (p->upkeep->create_stair == FEAT_RUBBLE) {
-		effect_simple(EF_EARTHQUAKE, source_grid(grid), "0", 0, 5, 0, NULL);
-	}
+	///* Destroy area if falling due to blasting through the floor */
+    //if (p->upkeep->create_stair == FEAT_RUBBLE) {
+	//	effect_simple(EF_EARTHQUAKE, source_grid(grid), "0", 0, 5, 0, NULL);
+	//}
 
-	if (p->upkeep->create_stair && square_changeable(c, grid)) {
-		object_pile_free(c, NULL, square_object(c, grid));
-		square_set_feat(c, grid, p->upkeep->create_stair);
-	}
-	player_place(c, p, grid);
+	//if (p->upkeep->create_stair && square_changeable(c, grid)) {
+	//	object_pile_free(c, NULL, square_object(c, grid));
+	//	square_set_feat(c, grid, p->upkeep->create_stair);
+	//}
+	player_place(c, p, p->grid);
 	return true;
 }
 
@@ -828,6 +984,177 @@ void uncreate_greater_vaults(struct chunk *c, struct player *p)
 }
 
 	
+/**
+ * Read terrain from a text file.  Allow for picking a smaller rectangle out of
+ * a large rectangle.
+ *
+ * Used for vaults and landmarks.  Note that some vault codes are repurposed
+ * here to allow more terrain for landmarks
+ */
+void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
+				 struct loc place, int height, int width, int rotate,
+				 bool reflect, bitflag *flags, bool floor, const char *data,
+				 bool landmark)
+{
+	int x, y;
+	const char *t;
+
+	/* Place dungeon features and objects */
+	for (t = data, y = 0; y < height && *t; y++) {
+		for (x = 0; x < width && *t; x++, t++) {
+			struct loc grid = loc(x - top_left.x, y - top_left.y);
+			bool icky = !landmark;
+
+			symmetry_transform(&grid, place.y, place.x, height, width, rotate,
+							   reflect);
+
+			/* Skip non-grids */
+			if (*t == ' ') continue;
+
+			/* Restrict to from start to stop */
+			if ((y < top_left.y) ||	(y >= bottom_right.y) ||
+				(x < top_left.x) ||	(x >= bottom_right.x)) {
+				continue;
+			}
+
+			/* Lay floor or grass */
+			if (floor) {
+				square_set_feat(c, grid, FEAT_FLOOR);
+			} else {
+				square_set_feat(c, grid, FEAT_GRASS);
+			}
+
+			/* Debugging assertion */
+			//assert(square_isempty(c, grid));
+
+			/* Analyze the grid */
+			switch (*t) {
+				/* Outer outside granite wall */
+			case '$': {
+				/* In this case, the square isn't really part
+				 * of the vault, but rather is part of the
+				 * "door step" to the vault. We don't mark it
+				 * icky so that the tunneling code knows it's
+				 * allowed to remove this wall. */
+				set_marked_granite(c, grid, SQUARE_WALL_OUTER);
+				icky = false;
+				break;
+			}
+				/* Inner or non-tunnelable outside granite wall */
+			case '#': set_marked_granite(c, grid, SQUARE_WALL_INNER); break;
+				/* Quartz vein */
+			case '%': square_set_feat(c, grid, FEAT_QUARTZ); break;
+				/* Glyph of warding */
+			case ';': square_add_glyph(c, grid, GLYPH_WARDING); break;
+				/* Visible door */
+			case '+': place_closed_door(c, grid); break;
+				/* Secret door */
+			case 's': place_secret_door(c, grid); break;
+				/* Trap */
+			case '^': if (one_in_(2)) square_add_trap(c, grid); break;
+				/* Forge */
+			case '0': place_forge(c, grid); break;
+				/* Chasm */
+			case '7': square_set_feat(c, grid, FEAT_CHASM); break;
+				/* Permanent wall */
+			case '@': square_set_feat(c, grid, FEAT_PERM); break;
+				/* Rubble */
+			case ':': {
+				square_set_feat(c, grid, one_in_(2) ? FEAT_PASS_RUBBLE :
+								FEAT_RUBBLE);
+				break;
+			}
+				/* Stairs */
+			case '<': {
+				place_stairs(c, grid, false, FEAT_LESS);
+				break;
+			}
+			case '>': {
+				place_stairs(c, grid, false, FEAT_MORE);
+				break;
+			}
+				/* Water */
+			case '/': square_set_feat(c, grid, FEAT_S_WATER); break;
+				/* Trees */
+				//case ';': {
+				//if (one_in_(2))
+				//	square_set_feat(c, grid, FEAT_TREE);
+				//else
+				//	square_set_feat(c, grid, FEAT_TREE2);
+				//break;
+				//}
+				/* Dune */
+			case '(': square_set_feat(c, grid, FEAT_DUNE); break;
+			}
+
+			/* Part of a vault */
+			if (icky) sqinfo_on(square(c, grid)->info, SQUARE_VAULT);
+
+			/* Analyze again for landmark-specific terrain */
+			if (landmark) {
+				switch (*t) {
+					/* Grass */
+					case '1':
+					{
+						square_set_feat(c, grid, FEAT_GRASS);
+						break;
+					}
+					/* Road */
+					case '2':
+					{
+						square_set_feat(c, grid, FEAT_ROAD);
+						break;
+					}
+					/* Void */
+					case '3':
+					{
+						square_set_feat(c, grid, FEAT_CHASM);
+						break;
+					}
+					/* Pit */
+					case '4':
+					{
+						square_set_feat(c, grid, FEAT_PIT);
+						break;
+					}
+					/* Reed */
+					case '5':
+					{
+						square_set_feat(c, grid, FEAT_REED);
+						break;
+					}
+					/* Mountain */
+					case '6':
+					{
+						square_set_feat(c, grid, FEAT_MTN);
+						break;
+					}
+					/* Snow */
+					case '7':
+					{
+						square_set_feat(c, grid, FEAT_SNOW);
+						break;
+					}
+					/* Battlement */
+					case '8':
+					{
+						square_set_feat(c, grid, FEAT_BTLMNT);
+						break;
+					}
+					/* Ice */
+					case '9':
+					{
+						square_set_feat(c, grid, FEAT_ICE);
+						break;
+					}
+				}
+			} else {
+				sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
+			}
+		}
+	}
+}
+
 
 /**
  * Dump the given level for post-mortem analysis; handle all I/O.

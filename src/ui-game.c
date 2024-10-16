@@ -1171,7 +1171,7 @@ void close_game(bool prompt_failed_save)
 	}
 
 	/* Wipe the monster list */
-	wipe_mon_list(cave, player);
+	wipe_mon_list();
 
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;

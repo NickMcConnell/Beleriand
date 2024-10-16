@@ -53,6 +53,6 @@ void tell_allies(struct monster *mon, int flag);
 bool multiply_monster(const struct monster *mon);
 void process_monsters(int minimum_energy);
 void reset_monsters(void);
-void restore_monsters(void);
+void restore_monsters(int place, int num_turns);
 
 #endif /* !MONSTER_MOVE_H */

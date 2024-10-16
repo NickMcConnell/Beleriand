@@ -206,14 +206,27 @@ typedef union
 
 	struct
 	{
-		tunnel_type t;
-		tunnel_direction_type dir;
 		/*
-		 * tunnel's length vertically and horizontally; the two legs
-		 * of a bent tunnel share a grid which is counted with
-		 * whichever leg was dug first
+		 * "nstep" is the total number of tunneling steps made,
+		 * "npierce" is the total number of wall piercings for rooms,
+		 * and "ndug" is the number of tiles excavated (excluding wall
+		 * piercings).
 		 */
-		int vlength, hlength;
+		int nstep, npierce, ndug;
+		/*
+		 * "dstart" is the city block distance, in grids, (i.e.
+		 * ABS(start.x - end.x) + ABS(start.y - end.y)) between the
+		 * startng point and the goal for the tunnel.  "dend" is the
+		 * city block distance between the final point in the tunnel
+		 * and the goal:  "dend" equal to zero indicates that the
+		 * tunnel reached its goal.
+		 */
+		int dstart, dend;
+		/*
+		 * "early" is true if the tunnel was terminated by the random
+		 * early termination criteria.
+		 */
+		bool early;
 	} tunnel;
 
 	struct
@@ -309,8 +322,8 @@ void event_signal_hit(game_event_type type,
 					  bool fatal,
 					  struct loc grid);					  
 void event_signal_size(game_event_type type, int h, int w);
-void event_signal_tunnel(game_event_type type, tunnel_type t,
-	tunnel_direction_type dir, int vlength, int hlength);
+void event_signal_tunnel(game_event_type type, int nstep, int npierce, int ndug,
+	int dstart, int dend, bool early);
 void event_signal_combat_attack(game_event_type type, struct source attacker,
 								struct source defender, bool vis, int att,
 								int att_roll, int evn, int evn_roll,

@@ -36,26 +36,20 @@ struct monster_group {
 	struct mon_group_list_entry *member_list;
 };
 
-void monster_group_free(struct chunk *c, struct monster_group *group);
-void monster_group_remove_leader(struct chunk *c, struct monster *leader,
+void monster_group_free(struct monster_group *group);
+void monster_group_remove_leader(struct monster *leader,
 								 struct monster_group *group);
-void monster_remove_from_group(struct chunk *c, struct monster *mon);
-int monster_group_index_new(struct chunk *c);
-void monster_add_to_group(struct chunk *c, struct monster *mon,
-						  struct monster_group *group);
-void monster_group_assign(struct chunk *c, struct monster *mon,
-						  struct monster_group_info info, bool loading);
-int monster_group_index(struct monster_group *group);
-struct monster_group *monster_group_by_index(struct chunk *c, int index);
-bool monster_group_change_index(struct chunk *c, int new, int old);
-void monster_group_rouse(struct chunk *c, struct monster *mon);
-int monster_group_size(struct chunk *c, const struct monster *mon);
-struct monster *group_monster_tracking(struct chunk *c,
-									   const struct monster *mon);
+void monster_remove_from_group(struct monster *mon);
+int monster_group_index_new(void);
+void monster_add_to_group(struct monster *mon, struct monster_group *group);
+void monster_group_assign(struct monster *mon, struct monster_group_info info,
+						  bool loading);
+struct monster_group *monster_group_by_index(int index);
+bool monster_group_change_index(int new, int old);
+int monster_group_size(const struct monster *mon);
 int monster_group_leader_idx(struct monster_group *group);
-struct monster *monster_group_leader(struct chunk *c, struct monster *mon);
-void monster_group_new_wandering_flow(struct chunk *c, struct monster *mon,
-									  struct loc tgrid);
-void monster_groups_verify(struct chunk *c);
+struct monster *monster_group_leader(struct monster *mon);
+void monster_group_new_wandering_flow(struct monster *mon, struct loc tgrid);
+void monster_groups_verify(void);
 
 #endif /* !MON_GROUP_H */

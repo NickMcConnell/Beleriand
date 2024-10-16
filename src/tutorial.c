@@ -863,9 +863,9 @@ void tutorial_prepare_section(const char *name, struct player *p)
 		/* Mimic cave_clear() in generate.c. */
 		p->smithing_leftover = 0;
 		p->upkeep->knocked_back = false;
-		wipe_mon_list(cave, p);
+		wipe_mon_list();
 		forget_fire(cave);
-		cave_free(cave);
+		chunk_wipe(cave);
 	}
 
 	/* Generate the tutorial section. */
@@ -923,7 +923,7 @@ void tutorial_prepare_section(const char *name, struct player *p)
 		section->v.section.death_note_name;
 
 	/* Set up the authoritative version of the cave. */
-	cave = cave_new(section->v.section.rows + 2,
+	cave = chunk_new(section->v.section.rows + 2,
 		section->v.section.columns + 2);
 	cave->depth = p->depth;
 	cave->turn = turn;

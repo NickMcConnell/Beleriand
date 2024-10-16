@@ -26,6 +26,7 @@
 #include "game-world.h"
 #include "init.h"
 #include "mon-calcs.h"
+#include "mon-make.h"
 #include "mon-msg.h"
 #include "mon-util.h"
 #include "obj-gear.h"
@@ -576,10 +577,10 @@ bool weapon_glows(struct object *obj, int near)
 	update_flow(cave, &cave->monster_noise, NULL);
 
 	/* Add up the total of creatures vulnerable to the weapon's slays */
-	for (i = 1; i < cave_monster_max(cave); i++) {
+	for (i = 1; i < mon_max; i++) {
 		bool target = false;
 		int j, multiplier = 1;
-		struct monster *mon = cave_monster(cave, i);
+		struct monster *mon = monster(i);
 		struct monster_race *race = mon->race;
 
 		/* Paranoia -- Skip dead monsters */

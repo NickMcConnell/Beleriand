@@ -636,7 +636,7 @@ static struct angband_constants TEST_DATA test_z_info = {
 	.s_max    = 2,
 	.pit_max  = 2,
 	.act_max  = 2,
-	.level_monster_max = 2,
+	.monster_max = 2,
 };
 
 static char light_slot_name[16] = "light";
@@ -799,11 +799,6 @@ static struct chunk TEST_DATA test_cave = {
 	.feat_count = NULL,
 
 	.squares = NULL,
-
-	.monsters = NULL,
-	.mon_max = 1,
-	.mon_cnt = 0,
-	.mon_current = -1,
 };
 
 static char proj_element[16] = "element";

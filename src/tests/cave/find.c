@@ -13,7 +13,7 @@ int setup_tests(void **state) {
 
 	Rand_init();
 	z_info = &test_z_info;
-	c = cave_new(11, 9);
+	c = chunk_new(11, 9);
 	*state = c;
 	return 0;
 }

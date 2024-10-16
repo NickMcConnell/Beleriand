@@ -335,6 +335,226 @@ static struct file_parser surface_parser = {
  * ------------------------------------------------------------------------
  * Parsing functions for dungeon_profile.txt
  * ------------------------------------------------------------------------ */
+static enum parser_error parse_dungeon_name(struct parser *p) {
+	struct cave_profile *h = parser_priv(p);
+	struct cave_profile *c = mem_zalloc(sizeof *c);
+	size_t i;
+
+	c->name = string_make(parser_getstr(p, "name"));
+	for (i = 0; i < N_ELEMENTS(cave_builders); i++)
+		if (streq(c->name, cave_builders[i].name))
+			break;
+
+	if (i == N_ELEMENTS(cave_builders))
+		return PARSE_ERROR_NO_BUILDER_FOUND;
+	c->builder = cave_builders[i].builder;
+	c->next = h;
+	parser_setpriv(p, c);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_params(struct parser *p) {
+	struct cave_profile *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->block_size = parser_getint(p, "block");
+	c->dun_rooms = parser_getint(p, "rooms");
+	c->dun_unusual = parser_getint(p, "unusual");
+	c->max_rarity = parser_getint(p, "rarity");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_tunnel(struct parser *p) {
+	struct cave_profile *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->tun.rnd = parser_getint(p, "rnd");
+	c->tun.chg = parser_getint(p, "chg");
+	c->tun.con = parser_getint(p, "con");
+	c->tun.pen = parser_getint(p, "pen");
+	c->tun.jct = parser_getint(p, "jct");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_streamer(struct parser *p) {
+	struct cave_profile *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->str.den = parser_getint(p, "den");
+	c->str.rng = parser_getint(p, "rng");
+	c->str.qua = parser_getint(p, "qua");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_room(struct parser *p) {
+	struct cave_profile *c = parser_priv(p);
+	struct room_profile *r = c->room_profiles;
+	size_t i;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the last valid room profile, then allocate a new one */
+	if (!r) {
+		c->room_profiles = mem_zalloc(sizeof(struct room_profile));
+		r = c->room_profiles;
+	} else {
+		while (r->next)
+			r = r->next;
+		r->next = mem_zalloc(sizeof(struct room_profile));
+		r = r->next;
+	}
+
+	/* Now read the data */
+	r->name = string_make(parser_getsym(p, "name"));
+	for (i = 0; i < N_ELEMENTS(room_builders); i++)
+		if (streq(r->name, room_builders[i].name))
+			break;
+
+	if (i == N_ELEMENTS(room_builders))
+		return PARSE_ERROR_NO_ROOM_FOUND;
+	r->builder = room_builders[i].builder;
+	r->height = parser_getint(p, "height");
+	r->width = parser_getint(p, "width");
+	r->level = parser_getint(p, "level");
+	r->rarity = parser_getint(p, "rarity");
+	r->cutoff = parser_getint(p, "cutoff");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_alloc(struct parser *p) {
+	struct cave_profile *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->alloc = parser_getint(p, "alloc");
+	return PARSE_ERROR_NONE;
+}
+
+static struct parser *init_parse_dungeon(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_dungeon_name);
+	parser_reg(p, "params int block int rooms int unusual int rarity", parse_dungeon_params);
+	parser_reg(p, "tunnel int rnd int chg int con int pen int jct", parse_dungeon_tunnel);
+	parser_reg(p, "streamer int den int rng int qua", parse_dungeon_streamer);
+	parser_reg(p, "room sym name int height int width int level int rarity int cutoff", parse_dungeon_room);
+	parser_reg(p, "alloc int alloc", parse_dungeon_alloc);
+	return p;
+}
+
+static errr run_parse_dungeon(struct parser *p) {
+	return parse_file_quit_not_found(p, "dungeon_profile");
+}
+
+static errr finish_parse_dungeon(struct parser *p) {
+	struct cave_profile *n, *c = parser_priv(p);
+	int i, num;
+
+	z_info->dungeon_max = 0;
+	/* Count the list */
+	while (c) {
+		struct room_profile *r = c->room_profiles;
+		c->n_room_profiles = 0;
+
+		z_info->dungeon_max++;
+		while (r) {
+			c->n_room_profiles++;
+			r = r->next;
+		}
+		c = c->next;
+	}
+
+	/* Allocate the array and copy the records to it */
+	cave_profiles = mem_zalloc(z_info->dungeon_max * sizeof(*c));
+	num = z_info->dungeon_max - 1;
+	for (c = parser_priv(p); c; c = n) {
+		struct room_profile *r_new = NULL;
+
+		/* Main record */
+		memcpy(&cave_profiles[num], c, sizeof(*c));
+		n = c->next;
+		if (num < z_info->dungeon_max - 1)
+			cave_profiles[num].next = &cave_profiles[num + 1];
+		else
+			cave_profiles[num].next = NULL;
+
+		/* Count the room profiles */
+		if (c->room_profiles) {
+			struct room_profile *r = c->room_profiles;
+			c->n_room_profiles = 0;
+
+			while (r) {
+				c->n_room_profiles++;
+				r = r->next;
+			}
+		}
+
+		/* Now allocate the room profile array */
+		if (c->room_profiles) {
+			struct room_profile *r_temp, *r_old = c->room_profiles;
+
+			/* Allocate space and copy */
+			r_new = mem_zalloc(c->n_room_profiles * sizeof(*r_new));
+			for (i = 0; i < c->n_room_profiles; i++) {
+				memcpy(&r_new[i], r_old, sizeof(*r_old));
+				r_old = r_old->next;
+				if (!r_old) break;
+			}
+
+			/* Make next point correctly */
+			for (i = 0; i < c->n_room_profiles; i++)
+				if (r_new[i].next)
+					r_new[i].next = &r_new[i + 1];
+
+			/* Tidy up */
+			r_old = c->room_profiles;
+			r_temp = r_old;
+			while (r_temp) {
+				r_temp = r_old->next;
+				mem_free(r_old);
+				r_old = r_temp;
+			}
+		}
+		cave_profiles[num].room_profiles = r_new;
+		cave_profiles[num].n_room_profiles = c->n_room_profiles;
+
+		mem_free(c);
+		num--;
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_dungeon(void)
+{
+	int i, j;
+	for (i = 0; i < z_info->dungeon_max; i++) {
+		for (j = 0; j < cave_profiles[i].n_room_profiles; j++)
+			string_free((char *) cave_profiles[i].room_profiles[j].name);
+		mem_free(cave_profiles[i].room_profiles);
+		string_free((char *) cave_profiles[i].name);
+	}
+	mem_free(cave_profiles);
+}
+
+static struct file_parser dungeon_parser = {
+	"dungeon_profile",
+	init_parse_dungeon,
+	run_parse_dungeon,
+	finish_parse_dungeon,
+	cleanup_dungeon
+};
+
+#if 0
+/**
+ * ------------------------------------------------------------------------
+ * Parsing functions for dungeon_profile.txt
+ * ------------------------------------------------------------------------ */
 static enum parser_error parse_profile_name(struct parser *p) {
 	struct cave_profile *h = parser_priv(p);
 	struct cave_profile *c = mem_zalloc(sizeof *c);
@@ -521,11 +741,12 @@ static struct file_parser dungeon_parser = {
 	finish_parse_profile,
 	cleanup_profile
 };
-
+#endif
 
 /**
+ * ------------------------------------------------------------------------
  * Parsing functions for vault.txt
- */
+ * ------------------------------------------------------------------------ */
 static enum parser_error parse_vault_name(struct parser *p) {
 	struct vault *h = parser_priv(p);
 	struct vault *v = mem_zalloc(sizeof *v);
@@ -829,51 +1050,120 @@ static const struct cave_profile *choose_profile(struct player *p)
 }
 
 /**
- * Clear the dungeon, ready for generation to begin.
+ * ------------------------------------------------------------------------
+ * Helper routines for generation
+ * ------------------------------------------------------------------------ */
+/**
+ * Get information for constructing stairs in the correct places
  */
-static void cave_clear(struct chunk *c, struct player *p)
+static void get_join_info(struct player *p, struct dun_data *dd)
 {
-	/* Reset smithing leftover (as there is no access to the old forge) */
-	p->smithing_leftover = 0;
+	int y, x;
+	int y_coord = p->grid.y / CHUNK_SIDE;
+	int x_coord = p->grid.x / CHUNK_SIDE;
 
-    /* Reset the forced skipping of next turn (a bit rough to miss
-	 * first turn if you fell down) */
-    p->upkeep->knocked_back = false;
+	/* Search across all the chunks on the level */
+	for (y = 0; y < ARENA_CHUNKS; y++) {
+		for (x = 0; x < ARENA_CHUNKS; x++) {
+			struct chunk_ref ref = { 0 };
+			int y0 = y - y_coord;
+			int x0 = x - x_coord;
+			int lower, upper;
+			bool exists;
+			struct gen_loc *location;
+			struct connector *join;
 
-	/* Forget knowledge of old level */
-	if (p->cave && (c == cave)) {
-		int x, y;
+			/* Get the location data */
+			ref.z_pos = p->depth;
+			ref.y_pos = chunk_list[p->last_place].y_pos + y0;
+			ref.x_pos = chunk_list[p->last_place].x_pos + x0;
+			ref.region = find_region(ref.y_pos, ref.x_pos);
 
-		/* Deal with artifacts */
-		for (y = 0; y < c->height; y++) {
-			for (x = 0; x < c->width; x++) {
-				struct object *obj = square_object(c, loc(x, y));
-				while (obj) {
-					if (obj->artifact && object_is_known_artifact(obj)) {
-						history_lose_artifact(p, obj->artifact);
-						mark_artifact_created(obj->artifact, true);
+			/* See if the location up has been generated before */
+			exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1, &lower,
+								  &upper);
+
+			/* Get the joins from the location up */
+			if (exists) {
+				location = &gen_loc_list[lower];
+				join = location->join;
+				while (join) {
+					if (join->feat == FEAT_MORE) {
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_LESS;
+						new->next = dd->join;
+						dd->join = new;
 					}
+					join = join->next;
+				}
+			} else {
+				/*
+				 * When there isn't a location above but there is one two levels
+				 * up, remember where the down staircases are so up staircases
+				 * on this level won't conflict with them if the level above is
+				 * ever generated.
+				 */
+				exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 2,
+									  &lower, &upper);
+				if (exists) {
+					location = &gen_loc_list[lower];
+					for (join = location->join; join; join = join->next) {
+						if (join->feat == FEAT_MORE) {
+							struct connector *nc = mem_zalloc(sizeof(*nc));
+							struct loc offset = loc(x * CHUNK_SIDE,
+													y * CHUNK_SIDE);
+							nc->grid = loc_sum(join->grid, offset);
+							nc->feat = FEAT_MORE;
+							nc->next = dd->one_off_above;
+							dd->one_off_above = nc;
+						}
+					}
+				}
+			}
+			
+			/* See if the location down has been generated before */
+			exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos + 1, &lower,
+								  &upper);
 
-					obj = obj->next;
+			/* Get the joins from the location down */
+			if (exists) {
+				location = &gen_loc_list[lower];
+				join = location->join;
+				while (join) {
+					if (join->feat == FEAT_LESS) {
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_MORE;
+						new->next = dd->join;
+						dd->join = new;
+					}
+					join = join->next;
+				}
+			} else {
+				/* Same logic as above for looking one past the next level */
+				exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos + 2,
+									  &lower, &upper);
+				if (exists) {
+					location = &gen_loc_list[lower];
+					for (join = location->join; join; join = join->next) {
+						if (join->feat == FEAT_LESS) {
+							struct connector *nc = mem_zalloc(sizeof(*nc));
+							struct loc offset = loc(x * CHUNK_SIDE,
+													y * CHUNK_SIDE);
+							nc->grid = loc_sum(join->grid, offset);
+							nc->feat = FEAT_LESS;
+							nc->next = dd->one_off_above;
+							dd->one_off_above = nc;
+						}
+					}
 				}
 			}
 		}
-
-		/* Free the known cave */
-		cave_free(p->cave);
-		p->cave = NULL;
 	}
-
-	/* Clear the monsters */
-	wipe_mon_list(c, p);
-
-	/* Forget the fire information */
-	forget_fire(c);
-
-	/* Free the chunk */
-	cave_free(c);
 }
-
 
 /**
  * Release the dynamically allocated resources in a dun_data structure.
@@ -882,37 +1172,41 @@ static void cleanup_dun_data(struct dun_data *dd)
 {
 	int i;
 
+	if (!dd) return;
+
 	mem_free(dd->cent);
-	mem_free(dd->corner);
-	mem_free(dd->piece);
+	mem_free(dd->ent_n);
 	for (i = 0; i < z_info->level_room_max; ++i) {
-		mem_free(dd->connection[i]);
+		mem_free(dd->ent[i]);
 	}
-	mem_free(dd->connection);
-	for (i = 0; i < z_info->dungeon_hgt; ++i) {
-		mem_free(dd->tunn1[i]);
-		mem_free(dd->tunn2[i]);
+	mem_free(dd->ent);
+	if (dd->ent2room) {
+		for (i = 0; dd->ent2room[i]; ++i) {
+			mem_free(dd->ent2room[i]);
+		}
+		mem_free(dd->ent2room);
 	}
-	mem_free(dd->tunn1);
-	mem_free(dd->tunn2);
+	mem_free(dd->door);
+	mem_free(dd->wall);
+	mem_free(dd->tunn);
 }
 
 /**
  * Generate a random level.
  *
- * Confusingly, this function also generates the town level (level 0).
  * \param p is the current player struct, in practice the global player
  * \return a pointer to the new level
  */
-static struct chunk *cave_generate(struct player *p)
+static struct chunk *cave_generate(struct player *p, uint32_t seed)
 {
 	const char *error = "no generation";
-	int i, tries = 0;
+	int y, x, y_coord, x_coord, tries = 0;
 	struct chunk *chunk = NULL;
+	struct connector *dun_join = NULL, *one_off_above = NULL, *one_off_below = NULL;
+	struct loc centre = p->grid;
 
 	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
-		int y, x;
 		struct dun_data dun_body;
 		bool forge_made = p->unique_forge_made;
 
@@ -925,20 +1219,32 @@ static struct chunk *cave_generate(struct player *p)
 		dun = &dun_body;
 		dun->cent = mem_zalloc(z_info->level_room_max * sizeof(struct loc));
 		dun->cent_n = 0;
-		dun->corner = mem_zalloc(z_info->level_room_max
-								 * sizeof(struct rectangle));
-		dun->piece = mem_zalloc(z_info->level_room_max * sizeof(int));
-		dun->tunn1 = mem_zalloc(z_info->dungeon_hgt * sizeof(int*));
-		dun->tunn2 = mem_zalloc(z_info->dungeon_hgt * sizeof(int*));
-		for (y = 0; y < z_info->dungeon_hgt; y++) {
-			dun->tunn1[y] = mem_zalloc(z_info->dungeon_wid * sizeof(int));
-			dun->tunn2[y] = mem_zalloc(z_info->dungeon_wid * sizeof(int));
+		dun->ent_n = mem_zalloc(z_info->level_room_max * sizeof(*dun->ent_n));
+		dun->ent = mem_zalloc(z_info->level_room_max * sizeof(*dun->ent));
+		dun->ent2room = NULL;
+		dun->door = mem_zalloc(z_info->level_door_max * sizeof(struct loc));
+		dun->wall = mem_zalloc(z_info->wall_pierce_max * sizeof(struct loc));
+		dun->tunn = mem_zalloc(z_info->tunn_grid_max * sizeof(struct loc));
+		dun->join = NULL;
+		dun->one_off_above = NULL;
+		dun->one_off_below = NULL;
+		dun->curr_join = NULL;
+		dun->nstair_room = 0;
+
+		/* Get connector info */
+		dun->persist = true;
+		get_join_info(p, dun);
+
+		/* Set the RNG to give reproducible results */
+		//B This needs work, as we really want reproducible results for
+		//B terrain only.  Options are to use Rand_quick only for terrain,
+		//B or to clear out monsters and objects on re-generation (and
+		//B maybe add some back?).  Messy.
+		Rand_quick = true;
+		if (!seed) {
+			seed = randint0(0x10000000);
 		}
-		dun->connection = mem_zalloc(z_info->level_room_max * sizeof(bool*));
-		for (i = 0; i < z_info->level_room_max; ++i) {
-			dun->connection[i] = mem_zalloc(z_info->level_room_max
-											* sizeof(bool));
-		}
+		Rand_value = seed;
 
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p);
@@ -950,7 +1256,14 @@ static struct chunk *cave_generate(struct player *p)
 			p->unique_forge_made = forge_made;
 			event_signal_flag(EVENT_GEN_LEVEL_END, false);
 			continue;
+			if (seed) {
+				quit_fmt("Generation seed failure!");
+			} else {
+				continue;
+			}
 		}
+
+		Rand_quick = false;
 
 		/* Clear generation flags */
 		for (y = 0; y < chunk->height; y++) {
@@ -964,8 +1277,13 @@ static struct chunk *cave_generate(struct player *p)
 		}
 
 		/* Regenerate levels that overflow their maxima */
-		if (cave_monster_max(chunk) >= z_info->level_monster_max)
-			error = "too many monsters";
+		if (mon_max >= z_info->monster_max) {
+			if (seed) {
+				quit_fmt("Generation seed failure!");
+			} else {
+				error = "too many monsters";
+			}
+		}
 
 		if (error) {
 			if (OPT(p, cheat_room)) {
@@ -973,82 +1291,282 @@ static struct chunk *cave_generate(struct player *p)
 			}
 			uncreate_artifacts(chunk);
 			uncreate_greater_vaults(chunk, p);
-			cave_clear(chunk, p);
+			chunk_wipe(chunk);
+			delete_temp_monsters();
 			p->unique_forge_made = forge_made;
 			event_signal_flag(EVENT_GEN_LEVEL_END, false);
 		}
 
+		one_off_above = dun->one_off_above;
+		one_off_below = dun->one_off_below;
+		dun_join = dun->join;
 		cleanup_dun_data(dun);
 	}
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
-	/* Validate the dungeon (we could use more checks here) */
-	chunk_validate_objects(chunk);
-
-	/* Allocate new known level */
-	p->cave = cave_new(chunk->height, chunk->width);
-	p->cave->depth = chunk->depth;
-	p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
-								   * sizeof(struct object*));
-	p->cave->obj_max = chunk->obj_max;
-	for (i = 0; i <= p->cave->obj_max; i++) {
-		p->cave->objects[i] = NULL;
-	}
-
 	/* Clear stair creation */
-	p->upkeep->create_stair = FEAT_NONE;
+	//p->upkeep->create_stair = FEAT_NONE;
 
+	/* Chunk it */
+	y_coord = centre.y / CHUNK_SIDE;
+	x_coord = centre.x / CHUNK_SIDE;
+	for (y = 0; y < ARENA_CHUNKS; y++) {
+		for (x = 0; x < ARENA_CHUNKS; x++) {
+			struct chunk_ref ref = { 0 };
+			int y0 = y - y_coord;
+			int x0 = x - x_coord;
+			int lower, upper;
+			bool reload;
+			struct gen_loc *location = NULL;
+			struct loc grid;
+
+			/* Get the location data */
+			ref.z_pos = p->depth;
+			ref.y_pos =	chunk_list[p->last_place].y_pos + y0;
+			ref.x_pos =	chunk_list[p->last_place].x_pos + x0;
+			ref.region = find_region(ref.y_pos, ref.x_pos);
+
+			/* Should have been generated before */
+			reload = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos, &lower,
+								  &upper);
+
+			/* Access the old place in the gen_loc_list */
+			if (reload) {
+				location = &gen_loc_list[upper];
+			} else {
+				quit("Location failure!");
+			}
+
+			/* Write the seed */
+			location->seed = seed;
+
+			/* Now write the connectors */
+			for (grid.y = y * CHUNK_SIDE; grid.y < (y + 1) * CHUNK_SIDE;
+				 grid.y++) {
+				for (grid.x = x * CHUNK_SIDE; grid.x < (x + 1) * CHUNK_SIDE;
+					 grid.x++) {
+					int feat = square(chunk, grid)->feat;
+					if (feat_is_stair(feat)	|| feat_is_chasm(feat)) {
+						/* Check previous join info for conflicts */
+						struct connector *join = dun_join, *new;
+						while (join) {
+							if (loc_eq(grid, join->grid)) break;
+							join = join->next;
+						}
+						if (join) continue;
+						join = one_off_above;
+						while (join) {
+							if (loc_eq(grid, join->grid)) break;
+							join = join->next;
+						}
+						join = one_off_below;
+						if (join) continue;
+						while (join) {
+							if (loc_eq(grid, join->grid)) break;
+							join = join->next;
+						}
+						if (join) continue;
+
+						/* Write the join */
+						new = mem_zalloc(sizeof *new);
+						new->grid.y = grid.y - y * CHUNK_SIDE;
+						new->grid.x = grid.x - x * CHUNK_SIDE;
+						new->feat = feat;
+						sqinfo_copy(new->info, square(chunk, grid)->info);
+						new->next = location->join;
+						location->join = new;
+					}
+				}
+			}
+		}
+	}
+	connectors_free(dun_join);
+	connectors_free(one_off_above);
+	connectors_free(one_off_below);
+
+	set_monster_place_current();
 	return chunk;
 }
 
 /**
- * Prepare the level the player is about to enter
+ * Prepare a new level for the player to enter
+ * This can happen for three reasons:
+ *   1. It's the first turn of the game
+ *   2. The player is changing z-level and a new level needs to be generated
+ *   3. The player is changing z-level and an old level needs to be reloaded
  *
  * \param p is the current player struct, in practice the global player
 */
 void prepare_next_level(struct player *p)
 {
-	int x, y;
-	bool noted = false;
+	int i, x, y;
+	struct chunk *chunk = NULL, *p_chunk = NULL;
 
-	/* Deal with any existing current level */
-	if (character_dungeon) {
-		/* Deal with missing out on stuff */
-		for (y = 0; y < cave->height; y++) {
-			for (x = 0; x < cave->width; x++) {
-				struct loc grid = loc(x, y);
+	/* First turn */
+	if (turn == 1) {
+		/* Make an arena to build into */
+		chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
 
-				/* Artifacts */
-				struct object *obj = square_object(cave, grid);
-				while (obj) {
-					if (obj->artifact) {
-						history_lose_artifact(p, obj->artifact);
-						mark_artifact_created(obj->artifact, true);
-					}
-					obj = obj->next;
-				}
+		for (y = - ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
+			for (x = - ARENA_CHUNKS / 2; x <= ARENA_CHUNKS / 2; x++) {
+				struct chunk_ref ref = { 0 };
 
-				/* Greater vaults */
-				if (!noted && square_isknown(cave, grid) &&
-					square_isgreatervault(cave, grid)) {
-					history_add(p, format("Left without entering %s",
-										  cave->vault_name), HIST_VAULT_LOST);
-					noted = true;
-				}
+				/* Get the location data */
+				ref.z_pos = chunk_list[p->place].z_pos;
+				ref.y_pos = chunk_list[p->place].y_pos;
+				ref.x_pos = chunk_list[p->place].x_pos;
+				chunk_offset_data(&ref, 0, y, x);
+
+				/* Generate a new chunk */
+				(void) chunk_fill(chunk, &ref, y + ARENA_CHUNKS / 2,
+								  x + ARENA_CHUNKS / 2);
 			}
 		}
+		player_place(chunk, p, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
 
-		/* Clear the old cave */
-		if (cave) {
-			cave_clear(cave, p);
-			cave = NULL;
+		/* Allocate new known level */
+		p->cave = chunk_new(chunk->height, chunk->width);
+		p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
+									   * sizeof(struct object*));
+		p->cave->obj_max = chunk->obj_max;
+		for (i = 0; i <= p->cave->obj_max; i++) {
+			p->cave->objects[i] = NULL;
+		}
+	} else {
+		/* No existing level */
+		if (p->place == MAX_CHUNKS) {
+			int y_coord = p->grid.y / CHUNK_SIDE;
+			int x_coord = p->grid.x / CHUNK_SIDE;
+			uint32_t seed;
+
+			/* The assumption here is that dungeon levels are always generated
+			 * all at once, and there are no, for example, long tunnels of
+			 * generation at the same z-level.  If that assumption becomes
+			 * wrong, this code will have to change. */
+			bool completely_new = false;
+
+			/* Deal with location data */
+			for (y = 0; y < ARENA_CHUNKS; y++) {
+				for (x = 0; x < ARENA_CHUNKS; x++) {
+					struct chunk_ref ref = { 0 };
+					int y0 = y - y_coord;
+					int x0 = x - x_coord;
+					int lower, upper;
+					bool reload;
+
+					/* Get the location data */
+					ref.z_pos = p->depth;
+					ref.y_pos = chunk_list[p->last_place].y_pos + y0;
+					ref.x_pos = chunk_list[p->last_place].x_pos + x0;
+					ref.region = find_region(ref.y_pos, ref.x_pos);
+
+					/* See if we've been generated before */
+					reload = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos,
+										  &lower, &upper);
+
+					/* New gen_loc, or seed loading and checking */
+					if (!reload) {
+						gen_loc_make(ref.x_pos, ref.y_pos, ref.z_pos, upper);
+						completely_new = true;
+					} else if (!y && !x) {
+						assert(gen_loc_list[upper].seed);
+						seed = gen_loc_list[upper].seed;
+					} else {
+						assert(seed == gen_loc_list[upper].seed);
+					}
+
+					/* Store the chunk reference */
+					ref.gen_loc_idx = upper;
+					(void) chunk_store(ARENA_CHUNKS / 2, ARENA_CHUNKS / 2,
+									   ref.region, ref.z_pos, ref.y_pos,
+									   ref.x_pos, ref.gen_loc_idx, false);
+
+					/* Is this where the player is? */
+					if ((y0 == 0) && (x0 == 0)) {
+						p->place = chunk_find(ref);
+						assert(p->place != MAX_CHUNKS);
+					}
+				}
+			}
+
+			/* Generate */
+			if (completely_new) {
+				chunk = cave_generate(p, 0);
+			} else {
+				/* Re-generate */
+				chunk = cave_generate(p, seed);
+			}
+
+			/* Allocate new known level */
+			p->cave = chunk_new(chunk->height, chunk->width);
+			p->cave->objects = mem_realloc(p->cave->objects,
+										   (chunk->obj_max + 1)
+										   * sizeof(struct object*));
+			p->cave->obj_max = chunk->obj_max;
+			for (i = 0; i <= p->cave->obj_max; i++) {
+				p->cave->objects[i] = NULL;
+			}
+		} else {
+			/* Otherwise load up the chunks */
+			struct chunk_ref centre = chunk_list[p->place];
+			assert(centre.chunk);
+
+			/* Silly games */
+			chunk_wipe(cave);
+			chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
+			cave = chunk;
+			chunk_wipe(p->cave);
+			p_chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
+			p->cave = p_chunk;
+
+			/* Dungeon levels may not be centred on the player */
+			if (p->depth) {
+				centre.y_pos += ARENA_CHUNKS / 2 - player->grid.y / CHUNK_SIDE;
+				centre.x_pos += ARENA_CHUNKS / 2 - player->grid.x / CHUNK_SIDE;
+			}
+
+			for (y = 0; y < ARENA_CHUNKS; y++) {
+				for (x = 0; x < ARENA_CHUNKS; x++) {
+					int chunk_idx;
+					struct chunk_ref ref = { 0 };
+
+					/* Get the location data */
+					ref.z_pos = p->depth;
+					ref.y_pos = centre.y_pos + y - ARENA_CHUNKS / 2;
+					ref.x_pos = centre.x_pos + x - ARENA_CHUNKS / 2;
+					ref.region = find_region(ref.y_pos, ref.x_pos);
+
+					/* Load it */
+					chunk_idx = chunk_find(ref);
+					if ((chunk_idx != MAX_CHUNKS) &&
+						chunk_list[chunk_idx].chunk) {
+						chunk_read(chunk_idx, y, x);
+					} else {
+						quit("Failed to find chunk!");
+					}
+				}
+			}
+			player_place(chunk, p, p->grid);
 		}
 	}
 
 	/* Generate a new level */
-	cave = cave_generate(p);
+	cave = chunk;
 	event_signal_flag(EVENT_GEN_LEVEL_END, true);
+
+	/* Validate the dungeon (we could use more checks here) */
+	chunk_validate_objects(chunk);
+
+	/* Record details for where we came from, if possible */
+	if (chunk_list[p->place].adjacent[DIR_UP] == p->last_place) {
+		chunk_list[p->last_place].adjacent[DIR_DOWN] = p->place;
+	} else if (chunk_list[p->place].adjacent[DIR_DOWN] == p->last_place) {
+		chunk_list[p->last_place].adjacent[DIR_UP] = p->place;
+	}
+
+	/* Apply illumination */
+	cave_illuminate(cave, is_daytime());
 
 	/* Note any forges generated, done here in case generation fails earlier */
 	for (y = 0; y < cave->height; y++) {

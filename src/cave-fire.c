@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "generate.h"
 #include "init.h"
 #include "project.h"
 
@@ -268,7 +269,7 @@ static int fire_n = 0;
 /**
  * Version of SQUARE_FIRE flags in old cave_info array - NRM
  */
-static bool	fire_info[256 * 55];
+static bool	fire_info[256 * ARENA_SIDE];
 
 /**
  * Temporary data used by "vinfo_init()"
