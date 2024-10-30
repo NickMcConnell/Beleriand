@@ -315,8 +315,11 @@ void wr_randomizer(void)
 	for (i = 0; i < RAND_DEG; i++)
 		wr_u32b(STATE[i]);
 
+	/* Horrific hack to allow monster group flow saving */
+	wr_u32b(1);
+
 	/* NULL padding */
-	for (i = 0; i < 59 - RAND_DEG; i++)
+	for (i = 1; i < 59 - RAND_DEG; i++)
 		wr_u32b(0);
 }
 
@@ -909,4 +912,21 @@ void wr_history(void)
 		}
 		wr_string(history_list[i].event);
 	}
+}
+
+void wr_monster_groups(void)
+{
+	size_t i;
+
+	/* Dump the group flow centres and wandering pauses */
+	for (i = 1; i < z_info->level_monster_max; i++) {
+		if (cave->monster_groups[i]) {
+			struct monster_group *group = cave->monster_groups[i];
+			wr_u16b(i);
+			wr_byte(group->flow.centre.x);
+			wr_byte(group->flow.centre.y);
+			wr_s16b(group->wandering_pause);
+		}
+	}
+	wr_u16b(0);
 }
