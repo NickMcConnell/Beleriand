@@ -146,6 +146,18 @@ static void wipe_smithing_objects(void)
 	memset(smith_art, 0, sizeof(*smith_art));
 }
 
+/**
+ * Know the smithing object
+ */
+static void know_smith_obj(void)
+{
+	object_copy(smith_obj_known, smith_obj);
+	smith_obj->known = smith_obj_known;
+}
+
+/**
+ * Reset all the smithing objects
+ */
 static void reset_smithing_objects(struct object_kind *kind)
 {
 	object_wipe(smith_obj);
@@ -155,8 +167,7 @@ static void reset_smithing_objects(struct object_kind *kind)
 	release_ability_list(smith_art->abilities);
 	memset(smith_art, 0, sizeof(*smith_art));
 	create_base_object(kind, smith_obj);
-	object_copy(smith_obj_known, smith_obj);
-	smith_obj->known = smith_obj_known;
+	know_smith_obj();
 	object_copy(smith_obj_backup, smith_obj);
 	pval = pval_valid(smith_obj) ? smith_obj->kind->pval : 0;
 }
@@ -361,6 +372,7 @@ static void show_smith_obj(void)
 		mode |= ODESC_PREFIX;
 	}
 	include_pval(smith_obj);
+	know_smith_obj();
 	object_desc(o_desc, sizeof(o_desc), smith_obj, mode, player);
 	my_strcat(o_desc, format("   %d.%d lb",
 							 smith_obj->weight * smith_obj->number / 10,
@@ -431,6 +443,7 @@ static void sval_display(struct menu *menu, int oid, bool cursor, int row,
 	(void)object_difficulty(obj, cost);
 	attr = smith_affordable(obj, cost) ? COLOUR_WHITE : COLOUR_SLATE;
 	if (cursor) {
+		know_smith_obj();
 		show_smith_obj();
 	}
 	exclude_pval(obj);
@@ -594,13 +607,10 @@ static void special_display(struct menu *menu, int oid, bool cursor, int row,
 	struct ego_item **choice = (struct ego_item **) menu->menu_data;
 	uint8_t attr = affordable_specials[oid] ? COLOUR_WHITE : COLOUR_SLATE;
 	if (cursor) {
-		struct object known_body;
-		struct object *known_obj = &known_body;
 		create_special(smith_obj, choice[oid]);
-		object_copy(known_obj, smith_obj);
-		smith_obj->known = known_obj;
 		pval = pval_valid(smith_obj) ? smith_obj->pval : 0;
 		include_pval(smith_obj);
+		know_smith_obj();
 		show_smith_obj();
 		exclude_pval(smith_obj);
 	}
@@ -880,11 +890,8 @@ static void artefact_display(struct menu *menu, int oid, bool cursor, int row,
 	attr = smithing_art_cat_counts[oid] > 0 ?
 		(cursor ? COLOUR_L_BLUE : COLOUR_WHITE) : COLOUR_L_DARK;
 	if (cursor) {
-		struct object known_body;
-		struct object *known_obj = &known_body;
-		object_copy(known_obj, smith_obj);
-		smith_obj->known = known_obj;
 		include_pval(smith_obj);
+		know_smith_obj();
 		show_smith_obj();
 		exclude_pval(smith_obj);
 	}
