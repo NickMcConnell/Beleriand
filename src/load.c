@@ -79,11 +79,6 @@ static uint8_t mflag_size = 0;
 static uint8_t trf_size = 0;
 
 /**
- * Hack value to indicate whether to read monster group flows or not
- */
-static bool read_monster_groups = false;
-
-/**
  * Read an object.
  */
 static struct object *rd_item(void)
@@ -391,12 +386,8 @@ int rd_randomizer(void)
 	for (i = 0; i < RAND_DEG; i++)
 		rd_u32b(&STATE[i]);
 
-	/* Horrific hack to allow monster group flow saving */
-	rd_u32b(&noop);
-	if (noop) read_monster_groups = true;
-
 	/* NULL padding */
-	for (i = 1; i < 59 - RAND_DEG; i++)
+	for (i = 0; i < 59 - RAND_DEG; i++)
 		rd_u32b(&noop);
 
 	Rand_quick = false;
@@ -1459,8 +1450,6 @@ int rd_monster_groups(void)
 	uint8_t tmp8u;
 	int16_t tmp16s;
 	struct monster_group *group;
-
-	if (!read_monster_groups) return 0;
 
 	/* Read the group flow centres and wandering pauses */
 	rd_u16b(&tmp16u);

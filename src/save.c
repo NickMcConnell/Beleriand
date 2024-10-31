@@ -315,11 +315,8 @@ void wr_randomizer(void)
 	for (i = 0; i < RAND_DEG; i++)
 		wr_u32b(STATE[i]);
 
-	/* Horrific hack to allow monster group flow saving */
-	wr_u32b(1);
-
 	/* NULL padding */
-	for (i = 1; i < 59 - RAND_DEG; i++)
+	for (i = 0; i < 59 - RAND_DEG; i++)
 		wr_u32b(0);
 }
 
