@@ -103,7 +103,9 @@ static int test_code0(void *state) {
 	null(f->mimic);
 	eq(f->fidx, FEAT_FLOOR);
 	eq(f->priority, 0);
+	eq(f->forge_bonus, 0);
 	eq(f->dig, 0);
+	eq(f->pit_difficulty, 0);
 	require(flag_is_empty(f->flags, TF_SIZE));
 	eq(f->d_attr, 0);
 	eq(f->d_char, 0);
@@ -111,6 +113,10 @@ static int test_code0(void *state) {
 	null(f->run_msg);
 	null(f->hurt_msg);
 	null(f->die_msg);
+	null(f->dig_msg);
+	null(f->fail_msg);
+	null(f->str_msg);
+	null(f->confused_msg);
 	null(f->confused_msg);
 	null(f->look_prefix);
 	null(f->look_in_preposition);
@@ -141,7 +147,7 @@ static int test_name_bad0(void *state) {
 
 static int test_graphics0(void *state) {
 	struct parser *p = (struct parser*) state;
-	enum parser_error r = parser_parse(state, "graphics:::red");
+	enum parser_error r = parser_parse(state, "graphics:::Light Green");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
