@@ -2798,16 +2798,12 @@ static enum parser_error parse_object_property_subtype(struct parser *p) {
 		prop->subtype = OFT_PROT;
 	} else if (streq(name, "misc ability")) {
 		prop->subtype = OFT_MISC;
-	} else if (streq(name, "light")) {
-		prop->subtype = OFT_LIGHT;
+	} else if (streq(name, "basic")) {
+		prop->subtype = OFT_BASIC;
 	} else if (streq(name, "melee")) {
 		prop->subtype = OFT_MELEE;
 	} else if (streq(name, "bad")) {
 		prop->subtype = OFT_BAD;
-	} else if (streq(name, "dig")) {
-		prop->subtype = OFT_DIG;
-	} else if (streq(name, "throw")) {
-		prop->subtype = OFT_THROW;
 	} else {
 		return PARSE_ERROR_INVALID_SUBTYPE;
 	}

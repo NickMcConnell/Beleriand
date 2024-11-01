@@ -322,19 +322,19 @@ slay-msg:drains life from {name}
 
 name:burns out
 type:flag
-subtype:light
+subtype:basic
 id-type:on wield
 code:BURNS_OUT
 
 name:takes fuel
 type:flag
-subtype:light
+subtype:basic
 id-type:on wield
 code:TAKES_FUEL
 
 name:no fuel
 type:flag
-subtype:light
+subtype:basic
 id-type:on wield
 code:NO_FUEL
 
@@ -405,65 +405,65 @@ desc:Is cursed
 
 name:power 1 digging
 type:flag
-subtype:dig
+subtype:basic
 id-type:on wield
 code:DIG_1
 
 name:power 2 digging
 type:flag
-subtype:dig
+subtype:basic
 id-type:on wield
 code:DIG_2
 
 name:throwing
 type:flag
-subtype:throw
+subtype:basic
 id-type:on wield
 code:THROWING
 
 name:indestructible
 type:flag
-subtype:misc ability
+subtype:basic
 code:INDESTRUCTIBLE
 
 name:no smithing
 type:flag
-subtype:misc ability
+subtype:basic
 code:NO_SMITHING
 
 name:no random
 type:flag
-subtype:misc ability
+subtype:basic
 code:NO_RANDOM
 
 name:mithril
 type:flag
-subtype:misc ability
+subtype:basic
 code:MITHRIL
 
 name:axe
 type:flag
-subtype:misc ability
+subtype:basic
 code:AXE
 
 name:polearm
 type:flag
-subtype:misc ability
+subtype:basic
 code:POLEARM
 
 name:enchantable
 type:flag
-subtype:misc ability
+subtype:basic
 code:ENCHANTABLE
 
 name:hand and a half
 type:flag
-subtype:misc ability
+subtype:basic
 code:HAND_AND_A_HALF
 
 name:two handed
 type:flag
-subtype:misc ability
+subtype:basic
 code:TWO_HANDED
 
 name:ignore acid

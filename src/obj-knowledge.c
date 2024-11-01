@@ -76,9 +76,7 @@ static void init_rune(void)
 	for (i = 1; i < OF_MAX; i++) {
 		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
 		if (prop->subtype == OFT_NONE) continue;
-		if (prop->subtype == OFT_LIGHT) continue;
-		if (prop->subtype == OFT_DIG) continue;
-		if (prop->subtype == OFT_THROW) continue;
+		if (prop->subtype == OFT_BASIC) continue;
 		count++;
 	}
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
@@ -158,9 +156,7 @@ static void init_rune(void)
 	for (i = 1; i < OF_MAX; i++) {
 		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
 		if (prop->subtype == OFT_NONE) continue;
-		if (prop->subtype == OFT_LIGHT) continue;
-		if (prop->subtype == OFT_DIG) continue;
-		if (prop->subtype == OFT_THROW) continue;
+		if (prop->subtype == OFT_BASIC) continue;
 
 		rune_list[count++] = (struct rune)
 			{ RUNE_VAR_FLAG, i, 0, prop->name };

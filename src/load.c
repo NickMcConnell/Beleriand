@@ -1524,6 +1524,10 @@ int rd_monster_groups(void)
 	int16_t tmp16s;
 	struct monster_group *group;
 
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
 	/* Read the group flow centres and wandering pauses */
 	rd_u16b(&tmp16u);
 	while (tmp16u) {

@@ -170,21 +170,15 @@ static int test_subtype0(void *state) {
 	r = parser_parse(p, "subtype:misc ability");
 	eq(r, PARSE_ERROR_NONE);
 	eq(prop->subtype, OFT_MISC);
-	r = parser_parse(p, "subtype:light");
+	r = parser_parse(p, "subtype:basic");
 	eq(r, PARSE_ERROR_NONE);
-	eq(prop->subtype, OFT_LIGHT);
+	eq(prop->subtype, OFT_BASIC);
 	r = parser_parse(p, "subtype:melee");
 	eq(r, PARSE_ERROR_NONE);
 	eq(prop->subtype, OFT_MELEE);
 	r = parser_parse(p, "subtype:bad");
 	eq(r, PARSE_ERROR_NONE);
 	eq(prop->subtype, OFT_BAD);
-	r = parser_parse(p, "subtype:dig");
-	eq(r, PARSE_ERROR_NONE);
-	eq(prop->subtype, OFT_DIG);
-	r = parser_parse(p, "subtype:throw");
-	eq(r, PARSE_ERROR_NONE);
-	eq(prop->subtype, OFT_THROW);
 	ok;
 }
 

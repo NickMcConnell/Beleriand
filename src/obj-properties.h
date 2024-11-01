@@ -87,11 +87,9 @@ enum object_flag_type {
 	OFT_SUST,		/* sustains a stat */
 	OFT_PROT,		/* protection from an effect */
 	OFT_MISC,		/* a good property, suitable for ego items */
-	OFT_LIGHT,		/* applicable only to light sources */
+	OFT_BASIC,		/* basic obvious property of the item */
 	OFT_MELEE,		/* applicable only to melee weapons */
 	OFT_BAD,		/* an undesirable flag */
-	OFT_DIG,		/* applicable only to diggers */
-	OFT_THROW,		/* applicable only to throwables */
 
 	OFT_MAX
 };
