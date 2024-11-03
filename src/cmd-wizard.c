@@ -1189,36 +1189,106 @@ void do_cmd_wiz_increase_exp(struct command *cmd)
  */
 void do_cmd_wiz_jump_level(struct command *cmd)
 {
-	int level, choose_gen;
+	int x_pos = 0, y_pos = 0, z_pos = 0, choose_gen = 0;
+	char prompt[80], s[80];
+	int i, y, x;
+	struct chunk *chunk;
+	int centre;
 
-	if (cmd_get_arg_number(cmd, "level", &level) != CMD_OK) {
-		char prompt[80], s[80];
+	/* Ask for x */
+	my_strcpy(prompt, "Give x position : ", sizeof(prompt));
+	strnfmt(s, sizeof(s), "%d",	chunk_list[player->place].x_pos);
+	if (!get_string(prompt, s, 30)) return;
+	if (!get_int_from_string(s, &x_pos)) return;
 
-		strnfmt(prompt, sizeof(prompt), "Jump to level (0-%d): ",
-			z_info->dun_depth);
+	/* Ask for y */
+	my_strcpy(prompt, "Give y position : ", sizeof(prompt));
+	strnfmt(s, sizeof(s), "%d",	chunk_list[player->place].y_pos);
+	if (!get_string(prompt, s, 30)) return;
+	if (!get_int_from_string(s, &y_pos)) return;
 
-		/* Set default */
-		strnfmt(s, sizeof(s), "%d", player->depth);
+	/* Ask for z */
+	my_strcpy(prompt, "Give z position : ", sizeof(prompt));
+	strnfmt(s, sizeof(s), "%d",	chunk_list[player->place].z_pos);
+	if (!get_string(prompt, s, 30)) return;
+	if (!get_int_from_string(s, &z_pos)) return;
 
-		if (!get_string(prompt, s, sizeof(s))) return;
-		if (!get_int_from_string(s, &level)) return;
-		cmd_set_arg_number(cmd, "level", level);
+	//B for now
+	z_pos = 0;
+
+	character_dungeon = false;
+
+	/* Save off the old chunks */
+	centre = chunk_get_centre();
+	for (y = -ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
+		for (x = -ARENA_CHUNKS / 2; x < ARENA_CHUNKS / 2; x++) {
+			struct chunk_ref ref = chunk_list[centre];
+
+			/* Get the location data */
+			chunk_offset_data(&ref, 0, y, x);
+			ref.z_pos = player->depth;
+
+			/* Store it */
+			(void) chunk_store(y + ARENA_CHUNKS / 2, x + ARENA_CHUNKS / 2,
+							   ref.region, ref.z_pos, ref.y_pos, ref.x_pos,
+							   ref.gen_loc_idx, true);
+		}
 	}
 
-	/* Paranoia */
-	if (level < 0 || level > z_info->dun_depth) return;
+	/* Make an arena to build into */
+	chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
 
-	if (cmd_get_arg_choice(cmd, "choice", &choose_gen) != CMD_OK) {
+	/* Set the chunk */
+	player->last_place = player->place;
+
+	for (y = -ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
+		for (x = -ARENA_CHUNKS / 2; x < ARENA_CHUNKS / 2; x++) {
+			struct chunk_ref ref = { 0 };
+			int idx;
+
+			/* Get the location data */
+			ref.z_pos = z_pos;
+			ref.y_pos = y_pos;
+			ref.x_pos = x_pos;
+			chunk_offset_data(&ref, 0, y, x);
+
+			/* Generate a new chunk */
+			idx = chunk_fill(chunk, &ref, y + ARENA_CHUNKS / 2,
+							 x + ARENA_CHUNKS / 2);
+			if ((y == 1) && (x == 1)) {
+				square_set_feat(chunk, loc(CHUNK_SIDE / 2, CHUNK_SIDE / 2),
+								FEAT_ROAD);
+				player->place = idx;
+			}
+		}
+	}
+	player_place(chunk, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+	cave = chunk;
+
+	/* Allocate new known level */
+	player->cave = chunk_new(chunk->height, chunk->width);
+	player->cave->objects = mem_realloc(player->cave->objects,
+										(chunk->obj_max + 1)
+										* sizeof(struct object*));
+	player->cave->obj_max = chunk->obj_max;
+	for (i = 0; i <= player->cave->obj_max; i++) {
+		player->cave->objects[i] = NULL;
+	}
+
+	if (z_pos > 0 && cmd_get_arg_choice(cmd, "choice", &choose_gen) != CMD_OK) {
 		choose_gen = (get_check("Choose cave profile? ")) ? 1 : 0;
 		cmd_set_arg_choice(cmd, "choice", choose_gen);
 	}
 
-	if (choose_gen) {
+	if (choose_gen || !z_pos) {
 		player->noscore |= NOSCORE_JUMPING;
 	}
 
-	msg("You jump to dungeon level %d.", level);
-	dungeon_change_level(player, level);
+	/* Accept request */
+	msg("You jump to %s.", region_info[chunk_list[player->place].region].name);
+
+	/* Save the game when we arrive on the new level. */
+	player->upkeep->autosave = true;
 
 	/*
 	 * Because of the structure of the game loop, need to take some energy,
@@ -1226,6 +1296,12 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	 * performing another action that takes energy.
 	 */
 	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Apply illumination */
+	cave_illuminate(cave, is_daytime());
+
+	/* The dungeon is ready */
+	character_dungeon = true;
 }
 
 
