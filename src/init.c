@@ -809,7 +809,7 @@ static errr finish_parse_region(struct parser *p)
 	int y, x, i;
 
 	/* Scan the list for the max id */
-	z_info->region_max = 0;
+	z_info->region_max = 1;
 	region = parser_priv(p);
 	while (region) {
 		z_info->region_max++;
@@ -818,7 +818,7 @@ static errr finish_parse_region(struct parser *p)
 
 	/* Copy to the array */
 	region_info = mem_zalloc(sizeof(*region) * z_info->region_max);
-	for (region = parser_priv(p), i = 0; region; region = region->next, i++) {
+	for (region = parser_priv(p), i = 1; region; region = region->next, i++) {
 		region->index = i;
 		memcpy(&region_info[region->index], region, sizeof(*region));
 	}
@@ -844,7 +844,7 @@ static errr finish_parse_region(struct parser *p)
 		}
 	}
 
-	for (i = 0; i < z_info->region_max; i++) {
+	for (i = 1; i < z_info->region_max; i++) {
 		struct world_region *reg = &region_info[i];
 		int y_start = reg->y_offset;
 		int x_start = reg->x_offset;
@@ -937,7 +937,7 @@ static enum parser_error parse_river_source(struct parser *p)
 
 	/* Set all the data */
 	stretch->miles->part = RIVER_SOURCE;
-	letter = parser_getchar(p, "letter");
+	//letter = parser_getchar(p, "letter");
 	number = parser_getint(p, "number");
 	y = parser_getint(p, "y");
 	x = parser_getint(p, "x");
