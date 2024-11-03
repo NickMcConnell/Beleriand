@@ -10,6 +10,8 @@
 #include "player-timed.h"
 #include "ui-input.h"
 
+struct monster *monsters;
+
 int setup_tests(void **state) {
 	struct monster_race *r = &test_r_human;
 	struct monster *m = mem_zalloc(sizeof *m);
@@ -32,8 +34,7 @@ int setup_tests(void **state) {
 			cave->squares[y][x].info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
 		}
 	}
-	cave->monsters = mem_zalloc(2 *sizeof(struct monster));
-	cave->mon_max = 1;
+	monsters = mem_zalloc(2 *sizeof(struct monster));
 
 	rand_fix(100);
 	return 0;
@@ -42,7 +43,7 @@ int setup_tests(void **state) {
 int teardown_tests(void *state) {
 	struct monster *m = state;
 	int y, x;
-	mem_free(cave->monsters);
+	mem_free(monsters);
 	for (y = 0; y < cave->height; y++) {
 		for (x = 0; x < cave->width; x++) {
 			mem_free(cave->squares[y][x].info);

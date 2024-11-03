@@ -141,9 +141,9 @@ static int test_obj_pile_simple(void *state) {
 	effect_simple(EF_EARTHQUAKE, source_player(), "0", 0,
 		MAX(cave->width / 2, cave->height / 2), 0, NULL);
 	wiz_light(cave, player);
-	cave_free(player->cave);
+	chunk_wipe(player->cave);
 	player->cave = NULL;
-	cave_free(cave);
+	chunk_wipe(cave);
 	cave = NULL;
 	ok;
 }
@@ -162,9 +162,9 @@ static int test_obj_pile_orphan(void *state) {
 	effect_simple(EF_EARTHQUAKE, source_player(), "0", 0,
 		MAX(cave->width / 2, cave->height / 2), 0, NULL);
 	wiz_light(cave, player);
-	cave_free(player->cave);
+	chunk_wipe(player->cave);
 	player->cave = NULL;
-	cave_free(cave);
+	chunk_wipe(cave);
 	cave = NULL;
 	ok;
 }

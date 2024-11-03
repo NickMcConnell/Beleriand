@@ -776,6 +776,11 @@ int rd_player(void)
 		my_strcpy(player->died_from, "(alive and well)",
 				  sizeof(player->died_from));
 
+	/* Location info */
+	rd_s16b(&player->home);
+	rd_s16b(&player->place);
+	rd_s16b(&player->last_place);
+
 	rd_s16b(&player->energy);
 
 	/* Total energy used so far */
@@ -1281,6 +1286,58 @@ static int rd_objects_aux(struct chunk *c)
 	return 0;
 }
 
+/**
+ * Read monsters
+ */
+static int rd_monsters_aux(void)
+{
+	int i;
+	uint16_t limit;
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
+	/* Read the monster count */
+	rd_u16b(&limit);
+	if (limit > z_info->monster_max) {
+		note(format("Too many (%d) monster entries!", limit));
+		return (-1);
+	}
+
+	/* Read the monsters */
+	for (i = 1; i < limit; i++) {
+		struct monster *mon;
+		struct monster monster_body;
+		struct chunk *c;
+
+		/* Get local monster */
+		mon = &monster_body;
+		memset(mon, 0, sizeof(*mon));
+
+		/* Read the monster */
+		if (!rd_monster(mon)) {
+			note(format("Cannot read monster %d", i));
+			return (-1);
+		}
+
+		/* Set the chunk */
+		c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
+
+		/* Place monster in dungeon */
+		if (place_monster(c, mon->grid, mon, 0) != i) {
+			note(format("Cannot place monster %d", i));
+			return (-1);
+		}
+
+		/* Initialize flow */
+		mon = monster(mon->midx);
+		flow_new(c, &mon->flow);
+	}
+
+	return 0;
+}
+
 static int rd_traps_aux(struct chunk *c)
 {
 	struct loc grid;
@@ -1371,71 +1428,6 @@ int rd_objects(void)
 	if (rd_objects_aux(player->cave))
 		return -1;
 
-	return 0;
-}
-
-/**
- * Read the monster list - wrapper functions
- */
-int rd_monsters(void)
-{
-	int i;
-	uint16_t limit;
-
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
-
-	/* Read the monster count */
-	rd_u16b(&limit);
-	if (limit > z_info->monster_max) {
-		note(format("Too many (%d) monster entries!", limit));
-		return (-1);
-	}
-
-	/* Read the monsters */
-	for (i = 1; i < limit; i++) {
-		struct monster *mon;
-		struct monster monster_body;
-		struct chunk *c;
-
-		/* Get local monster */
-		mon = &monster_body;
-		memset(mon, 0, sizeof(*mon));
-
-		/* Read the monster */
-		if (!rd_monster(mon)) {
-			note(format("Cannot read monster %d", i));
-			return (-1);
-		}
-
-		/* Set the chunk */
-		c = mon->place < 0 ? cave : chunk_list[mon->place].chunk;
-
-		/* Place monster in dungeon */
-		if (place_monster(c, mon->grid, mon, 0) != i) {
-			note(format("Cannot place monster %d", i));
-			return (-1);
-		}
-	}
-
-#if OBJ_RECOVER
-	player->cave->objects = mem_zalloc((cave->obj_max + 1) * sizeof(struct object*));
-	player->cave->obj_max = cave->obj_max;
-	for (i = 0; i <= cave->obj_max; i++) {
-		struct object *obj = cave->objects[i], *known_obj;
-		if (!obj) continue;
-		known_obj = object_new();
-		obj->known = known_obj;
-		object_copy(known_obj, obj);
-		player->cave->objects[i] = known_obj;
-	}
-#else
-	/* Associate known objects */
-	for (i = 0; i < player->cave->obj_max; i++)
-		if (cave->objects[i] && player->cave->objects[i])
-			cave->objects[i]->known = player->cave->objects[i];
-#endif
 	return 0;
 }
 
@@ -1542,6 +1534,40 @@ int rd_chunks(void)
 		ref->p_chunk = p_c;
 	}
 
+	return 0;
+}
+
+/**
+ * Read the monster list - wrapper functions
+ */
+int rd_monsters(void)
+{
+	int i;
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
+	if (rd_monsters_aux())
+		return -1;
+
+#if OBJ_RECOVER
+	player->cave->objects = mem_zalloc((cave->obj_max + 1) * sizeof(struct object*));
+	player->cave->obj_max = cave->obj_max;
+	for (i = 0; i <= cave->obj_max; i++) {
+		struct object *obj = cave->objects[i], *known_obj;
+		if (!obj) continue;
+		known_obj = object_new();
+		obj->known = known_obj;
+		object_copy(known_obj, obj);
+		player->cave->objects[i] = known_obj;
+	}
+#else
+	/* Associate known objects */
+	for (i = 0; i < player->cave->obj_max; i++)
+		if (cave->objects[i] && player->cave->objects[i])
+			cave->objects[i]->known = player->cave->objects[i];
+#endif
 	return 0;
 }
 
@@ -1685,7 +1711,7 @@ int rd_monster_groups(void)
 	/* Read the group flow centres and wandering pauses */
 	rd_u16b(&tmp16u);
 	while (tmp16u) {
-		group = cave->monster_groups[tmp16u];
+		group = monster_groups[tmp16u];
 		rd_byte(&tmp8u);
 		group->flow.centre.x = tmp8u;
 		rd_byte(&tmp8u);

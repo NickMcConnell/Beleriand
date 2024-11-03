@@ -137,7 +137,7 @@ static int test_step(void *state) {
 			reverse_direction(dir));
 		run_game_loop();
 	}
-	eq(player->depth, 1);
+	eq(player->depth, 0);
 
 	ok;
 }

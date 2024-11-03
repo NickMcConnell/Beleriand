@@ -313,6 +313,8 @@ void monster_swap(struct loc grid1, struct loc grid2)
 {
 	struct monster *mon;
 	int y_offset, x_offset;
+	int old_y_chunk = player->grid.y / CHUNK_SIDE;
+	int old_x_chunk = player->grid.x / CHUNK_SIDE;
 
 	/* Monsters */
 	int m1 = square(cave, grid1)->mon;
@@ -428,53 +430,20 @@ void monster_swap(struct loc grid1, struct loc grid2)
     }
 
 	/* Deal with change of chunk */
-	y_offset = grid2.y / CHUNK_SIDE - grid1.y / CHUNK_SIDE;
-	x_offset = grid2.x / CHUNK_SIDE - grid1.x / CHUNK_SIDE;
+	y_offset = player->grid.y / CHUNK_SIDE - old_y_chunk;
+	x_offset = player->grid.x / CHUNK_SIDE - old_x_chunk;
 
-	/* Both will have changed chunk, or neither will */
-	if ((y_offset != 0) || (x_offset != 0)) {
-		struct monster *mon1 = square_monster(cave, grid2);
-		struct monster *mon2 = square_monster(cave, grid1);
-		int adj1 = chunk_offset_to_adjacent(0, y_offset, x_offset);
-		int adj2 = chunk_offset_to_adjacent(0, -y_offset, -x_offset);
+	/* On the surface, re-align */
+	if (player->depth == 0) {
+		if ((y_offset != 0) || (x_offset != 0))
+			chunk_change(0, y_offset, x_offset);
+	} else {
+		/* In the dungeon, change place */
+		int adj_index = chunk_offset_to_adjacent(0, y_offset, x_offset);
 
-		/* m1 is the player, or m2 is, or both are monsters */
-		if (m1 < 0) {
-			/* Move monster */
-			if (mon2) mon2->place = player->place;
-
-			/* On the surface, re-align */
-			if (player->depth == 0) {
-				if ((y_offset != 0) || (x_offset != 0)) {
-					chunk_change(0, y_offset, x_offset);
-				}
-			} else {
-				/* In the dungeon, change place */
-				if (adj1 != DIR_NONE) {
-					player->last_place = player->place;
-					player->place = chunk_list[player->place].adjacent[adj1];
-				}
-			}
-		} else if (m2 < 0) {
-			/* Move monster */
-			if (mon1) mon1->place = player->place;
-
-			/* On the surface, re-align */
-			if (player->depth == 0) {
-				if ((y_offset != 0) || (x_offset != 0)) {
-					chunk_change(0, -y_offset, -x_offset);
-				}
-			} else {
-				/* In the dungeon, change place */
-				if (adj2 != DIR_NONE) {
-					player->last_place = player->place;
-					player->place = chunk_list[player->place].adjacent[adj2];
-				}
-			}
-		} else {
-			/* Swap places */
-			if (mon1) mon1->place = chunk_list[player->place].adjacent[adj1];
-			if (mon2) mon2->place = chunk_list[player->place].adjacent[adj2];
+		if (adj_index != DIR_NONE) {
+			player->last_place = player->place;
+			player->place = chunk_list[player->place].adjacent[adj_index];
 		}
 	}
 }
