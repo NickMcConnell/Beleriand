@@ -505,6 +505,11 @@ void wr_player(void)
 	wr_s16b(player->max_depth);
 	wr_u16b(player->staircasiness);
 
+	/* Location info */
+	wr_s16b(player->home);
+	wr_s16b(player->place);
+	wr_s16b(player->last_place);
+
 	wr_s16b(player->energy);
 
 	/* Total energy used so far */
@@ -1076,9 +1081,9 @@ void wr_monster_groups(void)
 	uint16_t i;
 
 	/* Dump the group flow centres and wandering pauses */
-	for (i = 1; i < z_info->level_monster_max; i++) {
-		if (cave->monster_groups[i]) {
-			struct monster_group *group = cave->monster_groups[i];
+	for (i = 1; i < z_info->monster_max; i++) {
+		if (monster_groups[i]) {
+			struct monster_group *group = monster_groups[i];
 			wr_u16b(i);
 			wr_byte(group->flow.centre.x);
 			wr_byte(group->flow.centre.y);

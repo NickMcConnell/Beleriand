@@ -106,9 +106,6 @@ TEST_CONSTANT(mon_regen_hp_period, "regen-hp-period", "mon-play")
 TEST_CONSTANT(mon_regen_sp_period, "regen-sp-period", "mon-play")
 
 TEST_CONSTANT(level_room_max, "room-max", "dun-gen")
-TEST_CONSTANT(level_room_min, "room-min", "dun-gen")
-TEST_CONSTANT(block_hgt, "block-hgt", "dun-gen")
-TEST_CONSTANT(block_wid, "block-wid", "dun-gen")
 
 TEST_CONSTANT(dun_depth, "dun-depth", "world")
 TEST_CONSTANT(max_depth, "max-depth", "world")
@@ -142,7 +139,7 @@ struct test tests[] = {
 	{ "negative", test_negative },
 	{ "too_large", test_too_large },
 	{ "baddirective", test_baddirective },
-	{ "monsters_max", test_level_monster_max },
+	{ "monsters_max", test_monster_max },
 	{ "mon_chance", test_alloc_monster_chance },
 	{ "group_max", test_monster_group_max },
 	{ "mult_rate", test_repro_monster_rate },
@@ -155,9 +152,6 @@ struct test tests[] = {
 	{ "mon_regen_hp_period", test_mon_regen_hp_period },
 	{ "mon_regen_sp_period", test_mon_regen_sp_period },
 	{ "room_max", test_level_room_max },
-	{ "room_min", test_level_room_min },
-	{ "block_hgt", test_block_hgt },
-	{ "block_wid", test_block_wid },
 	{ "dun_depth", test_dun_depth },
 	{ "max_depth", test_max_depth },
 	{ "day_length", test_day_length },

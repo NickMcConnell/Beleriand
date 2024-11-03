@@ -1251,16 +1251,12 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 		event_signal_string(EVENT_GEN_LEVEL_START, dun->profile->name);
 		chunk = dun->profile->builder(p);
 		if (!chunk) {
-			error = "Failed to find builder";
+			error = "Failed to build level";
 			cleanup_dun_data(dun);
 			p->unique_forge_made = forge_made;
 			event_signal_flag(EVENT_GEN_LEVEL_END, false);
+			seed = 0;
 			continue;
-			if (seed) {
-				quit_fmt("Generation seed failure!");
-			} else {
-				continue;
-			}
 		}
 
 		Rand_quick = false;

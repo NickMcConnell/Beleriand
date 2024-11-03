@@ -276,6 +276,8 @@ static void chunk_copy_grid(struct player *p, struct chunk *source,
 				source->squares[grid.y][grid.x].mon = 0;
 				mon->grid = dest_grid;
 				mon->place = idx;
+				flow_free(source, &mon->flow);
+				flow_new(dest, &mon->flow);
 			}
 
 			/* Player */
