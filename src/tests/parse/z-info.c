@@ -111,7 +111,6 @@ TEST_CONSTANT(dun_depth, "dun-depth", "world")
 TEST_CONSTANT(max_depth, "max-depth", "world")
 TEST_CONSTANT(day_length, "day-length", "world")
 TEST_CONSTANT(dungeon_hgt, "dungeon-hgt", "world")
-TEST_CONSTANT(dungeon_wid, "dungeon-wid", "world")
 TEST_CONSTANT(move_energy, "move-energy", "world")
 TEST_CONSTANT(flow_max, "flow-max", "world")
 
@@ -156,7 +155,6 @@ struct test tests[] = {
 	{ "max_depth", test_max_depth },
 	{ "day_length", test_day_length },
 	{ "dungeon_hgt", test_dungeon_hgt },
-	{ "dungeon_wid", test_dungeon_wid },
 	{ "move_energy", test_move_energy },
 	{ "flow_max", test_flow_max },
 	{ "pack_size", test_pack_size },
