@@ -266,7 +266,7 @@ struct vault {
  * the chunk_list
  */
 #define CHUNK_SIDE 44
-#define ARENA_CHUNKS 5
+#define ARENA_CHUNKS 3
 #define ARENA_SIDE (CHUNK_SIDE * ARENA_CHUNKS)
 #define CPM 20
 #define MAX_CHUNKS 256
