@@ -68,9 +68,7 @@ static void do_cmd_go_up_aux(void)
 	/* Zoom out */
 	if (!player->depth && (player->upkeep->zoom_level < z_info->max_zoom)) {
 		player->upkeep->zoom_level *= 2;
-		player->upkeep->redraw |= (PR_MAP | PR_EXTRA);
-		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW);
-		handle_stuff(player);
+		event_signal(EVENT_ZOOM);
 		return;
 	}
 
@@ -169,9 +167,7 @@ static void do_cmd_go_down_aux(void)
 	/* Zoom out */
 	if (!player->depth && (player->upkeep->zoom_level > 1)) {
 		player->upkeep->zoom_level /= 2;
-		player->upkeep->redraw |= (PR_MAP | PR_EXTRA);
-		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW);
-		handle_stuff(player);
+		event_signal(EVENT_ZOOM);
 		return;
 	}
 

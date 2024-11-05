@@ -1105,13 +1105,13 @@ static void trace_map_updates(game_event_type type, game_event_data *data,
 static void update_maps(game_event_type type, game_event_data *data, void *user)
 {
 	term *t = user;
+	int level = player->upkeep->zoom_level;
 
 	/* This signals a whole-map redraw. */
-	if (data->point.x == -1 && data->point.y == -1)
+	if (data->point.x == -1 && data->point.y == -1) {
 		prt_map_zoomed();
-
-	/* Single point to be redrawn */
-	else {
+	} else {
+		/* Single point to be redrawn */
 		struct grid_data g;
 		int a, ta;
 		wchar_t c, tc;
@@ -1119,20 +1119,27 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		int ky, kx;
 		int vy, vx;
 		int clipy;
-		int level = player->upkeep->zoom_level;
+		int vlevel;
+		int y_add = 0, x_add = 0;
 
 		/* Location relative to panel */
 		ky = data->point.y - t->offset_y;
 		kx = data->point.x - t->offset_x;
 
 		if (t == angband_term[0]) {
+			/* Centre the map */
+			for (vlevel = level; vlevel > 1; vlevel /= 2) {
+				y_add += SCREEN_HGT / (vlevel * 2);
+				x_add += SCREEN_WID / (vlevel * 2);
+			}
+
 			/* Verify location */
 			if ((ky < 0) || (ky >= SCREEN_HGT)) return;
 			if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 			/* Location in window */
-			vy = tile_height * ky / level + ROW_MAP;
-			vx = tile_width * kx / level + COL_MAP;
+			vy = tile_height * ky / level + ROW_MAP + y_add;
+			vx = tile_width * kx / level + COL_MAP + x_add;
 
 			/* Protect the status line against modification. */
 			clipy = ROW_MAP + SCREEN_ROWS;
@@ -2453,6 +2460,43 @@ static void repeated_command_display(game_event_type type,
 }
 
 /**
+ * Housekeeping on zoom
+ */
+static void zoom_display_update(game_event_type type, game_event_data *data,
+								void *user)
+{
+	/* Hack -- enforce illegal panel */
+	Term->offset_y = z_info->dungeon_hgt;
+	Term->offset_x = z_info->dungeon_wid;
+
+	/* Choose panel */
+	verify_panel();
+
+	/* Clear */
+	Term_clear();
+
+	/* Update stuff */
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+
+	/* Calculate torch radius */
+	player->upkeep->update |= (PU_TORCH);
+
+	/* Fully update the visuals (and monster distances) */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
+
+	/* Redraw dungeon */
+	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
+
+	/* Redraw "statusy" things */
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST | PR_ITEMLIST);
+
+	handle_stuff(player);
+
+	/* Refresh */
+	Term_fresh();
+}
+
+/**
  * Housekeeping on arriving on a new level
  */
 static void new_level_display_update(game_event_type type,
@@ -2738,6 +2782,9 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	/* Refresh the screen and put the cursor in the appropriate place */
 	event_add_handler(EVENT_REFRESH, refresh, NULL);
 
+	/* Do the visual updates required on zooming */
+	event_add_handler(EVENT_ZOOM, zoom_display_update, NULL);
+
 	/* Do the visual updates required on a new dungeon level */
 	event_add_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
 
@@ -2813,6 +2860,9 @@ static void ui_leave_world(game_event_type type, game_event_data *data,
 
 	/* Refresh the screen and put the cursor in the appropriate place */
 	event_remove_handler(EVENT_REFRESH, refresh, NULL);
+
+	/* Do the visual updates required on zooming */
+	event_remove_handler(EVENT_ZOOM, zoom_display_update, NULL);
 
 	/* Do the visual updates required on a new dungeon level */
 	event_remove_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
