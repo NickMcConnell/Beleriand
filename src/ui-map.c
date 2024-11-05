@@ -821,6 +821,8 @@ void prt_map_zoomed(void)
 	int ty, tx;
 	int clipy;
 	int level = player->upkeep->zoom_level;
+	int vlevel;
+	int y_add = 0, x_add = 0;
 
 	/* Redraw map sub-windows */
 	prt_map_aux();
@@ -832,12 +834,18 @@ void prt_map_zoomed(void)
 	/* Avoid overwriting the last row with padding for big tiles. */
 	clipy = ROW_MAP + SCREEN_ROWS;
 
+	/* Centre the map */
+	for (vlevel = level; vlevel > 1; vlevel /= 2) {
+		y_add += SCREEN_HGT / (vlevel * 2);
+		x_add += SCREEN_WID / (vlevel * 2);
+	}
+
 	/* Dump the map */
-	for (y = Term->offset_y, vy = ROW_MAP; y < ty; y++) {
+	for (y = Term->offset_y, vy = ROW_MAP + y_add; y < ty; y++) {
 		if (y % level) {
 			continue;
 		}
-		for (x = Term->offset_x, vx = COL_MAP; x < tx; x++) {
+		for (x = Term->offset_x, vx = COL_MAP + x_add; x < tx; x++) {
 			if (x % level) {
 				continue;
 			}

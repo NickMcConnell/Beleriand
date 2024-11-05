@@ -857,7 +857,7 @@ void tutorial_prepare_section(const char *name, struct player *p)
 				}
 			}
 
-			cave_free(p->cave);
+			chunk_wipe(p->cave);
 			p->cave = NULL;
 		}
 		/* Mimic cave_clear() in generate.c. */
@@ -1005,7 +1005,7 @@ void tutorial_prepare_section(const char *name, struct player *p)
 	}
 
 	/* Set up the player's version of the cave. */
-	p->cave = cave_new(cave->height, cave->width);
+	p->cave = chunk_new(cave->height, cave->width);
 	p->cave->depth = cave->depth;
 	p->cave->objects = mem_realloc(p->cave->objects,
 		(cave->obj_max + 1) * sizeof(struct object*));
