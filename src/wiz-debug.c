@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "generate.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "wizard.h"
@@ -55,5 +56,5 @@ void wiz_cheat_death(void)
 	my_strcpy(player->died_from, "Cheating death", sizeof(player->died_from));
 
 	/* Back to the start */
-	dungeon_change_level(player, 1);
+	chunk_change(player, -100, 0, 0);
 }

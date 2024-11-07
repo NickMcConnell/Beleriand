@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "combat.h"
 #include "effects.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-attack.h"
 #include "mon-util.h"
@@ -1058,8 +1059,7 @@ void hit_trap(struct loc grid)
 
 		/* Some traps drop you a dungeon level */
 		if (trf_has(trap->kind->flags, TRF_DOWN)) {
-			int next = dungeon_get_next_level(player, player->depth, 1);
-			dungeon_change_level(player, next);
+			chunk_change(player, 1, 0, 0);
 			history_add(player, format("Fell through a %s", trap->kind->name),
 						HIST_FELL_DOWN_LEVEL);
 			return;
