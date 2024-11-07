@@ -59,74 +59,6 @@ static const char *skill_names[] = {
 };
 
 /**
- * Determines the shallowest a player is allowed to go.
- * As time goes on, they are forced deeper and deeper.
- */
-int player_min_depth(struct player *p)
-{
-	int turns = 0;
-	int depth = 0;
-
-	/* Base minimum depth */
-	while (turns < p->turn) {
-		depth += 1;
-		turns += 1000 + 50 * depth;
-	}
-
-	/* Bounds on the base */
-	depth = MIN(MAX(depth, 1), z_info->dun_depth);
-
-	/* Can't leave the throne room */
-	if (p->depth == z_info->dun_depth) {
-		depth = z_info->dun_depth;
-	}
-
-	/* No limits in the endgame */
-	if (p->on_the_run) {
-		depth = 0;
-	}
-
-	return depth;
-}
-
-/**
- * Increment to the next or decrement to the preceeding level.
- * Keep in mind to check all intermediate level for unskippable quests
-*/
-int dungeon_get_next_level(struct player *p, int dlev, int added)
-{
-	int target_level;
-
-	/* Get target level */
-	target_level = dlev + added;
-
-	/* Don't allow levels below max */
-	if (target_level > z_info->dun_depth)
-		target_level = z_info->dun_depth;
-
-	/* Don't allow levels above the town */
-	if (target_level < 0) target_level = 0;
-
-	return target_level;
-}
-
-/**
- * Change dungeon level - e.g. by going up stairs or with WoR.
- */
-void dungeon_change_level(struct player *p, int dlev)
-{
-	/* New depth */
-	p->depth = dlev;
-
-	/* Leaving, make new level */
-	p->upkeep->generate_level = true;
-
-	/* Save the game when we arrive on the new level. */
-	p->upkeep->autosave = true;
-}
-
-
-/**
  * Simple exponential function for integers with non-negative powers
  */
 int int_exp(int base, int power)
@@ -549,7 +481,7 @@ void player_fall_in_chasm(struct player *p)
 	player_falling_damage(p, false);
 
 	/* New level */
-	dungeon_change_level(p, MIN(p->depth + 2, z_info->dun_depth - 1));
+	chunk_change(p, MIN(p->depth + 2, z_info->dun_depth - 1), 0, 0);
 }
 
 /**
@@ -879,7 +811,7 @@ void player_blast_floor(struct player *p)
 			event_signal(EVENT_MESSAGE_FLUSH);
 
 			/* Change level */
-			dungeon_change_level(p, p->depth + 1);
+			chunk_change(p, p->depth + 1, 0, 0);
 		} else {
 			msg("Cracks spread across the floor, but it holds firm.");
 		}

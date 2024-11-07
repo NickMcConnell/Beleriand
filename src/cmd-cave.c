@@ -161,7 +161,6 @@ void do_cmd_go_up(struct command *cmd)
  */
 static void do_cmd_go_down_aux(void)
 {
-	int new_depth;
 	int change = square_isshaft(cave, player->grid) ? 2 : 1;
 
 	/* Zoom out */
@@ -184,14 +183,11 @@ static void do_cmd_go_down_aux(void)
 		return;
 	}
 
-	/* Calculate the depth to aim for */
-	new_depth = dungeon_get_next_level(player, player->depth, change);
-	
 	/* Create a way back */
 	player->upkeep->create_stair = (change == 2) ? FEAT_LESS_SHAFT : FEAT_LESS;
 	
 	/* Warn players if this could lead them to Morgoth's Throne Room */
-	if (new_depth == z_info->dun_depth) {
+	if (player->depth + change >= z_info->dun_depth) {
 		if (!player->on_the_run) {
 			msg("From up this stair comes the harsh din of feasting in Morgoth's own hall.");
 			if (!get_check("Are you completely sure you wish to descend? ")) {
@@ -217,12 +213,11 @@ static void do_cmd_go_down_aux(void)
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
 
 	/* Can never return to the throne room... */
-	if ((player->on_the_run) && (new_depth == z_info->dun_depth)) {
+	if ((player->on_the_run) && (player->depth + change >= z_info->dun_depth)) {
 		msgt(MSG_STAIRS_DOWN, "Try though you might, you cannot find your way back to Morgoth's throne.");
 		msgt(MSG_STAIRS_DOWN, "You emerge near where you began.");
 		player->upkeep->create_stair = FEAT_MORE;
-		new_depth = z_info->dun_depth - 1;
-		change = new_depth - player->depth;
+		change = 0;
 	}
 
 	/* Another staircase has been used... */
@@ -232,7 +227,7 @@ static void do_cmd_go_down_aux(void)
 	if (OPT(player, birth_discon_stairs)) {
 		player->upkeep->create_stair = FEAT_NONE;
 	}
-	
+
 	/* Change level */
 	chunk_change(player, change, 0, 0);
 }
