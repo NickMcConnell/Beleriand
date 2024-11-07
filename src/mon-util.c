@@ -436,7 +436,7 @@ void monster_swap(struct loc grid1, struct loc grid2)
 	/* On the surface, re-align */
 	if (player->depth == 0) {
 		if ((y_offset != 0) || (x_offset != 0))
-			chunk_change(0, y_offset, x_offset);
+			chunk_change(player, 0, y_offset, x_offset);
 	} else {
 		/* In the dungeon, change place */
 		int adj_index = chunk_offset_to_adjacent(0, y_offset, x_offset);

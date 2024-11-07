@@ -1537,7 +1537,7 @@ void prepare_next_level(struct player *p)
 					chunk_idx = chunk_find(ref);
 					if ((chunk_idx != MAX_CHUNKS) &&
 						chunk_list[chunk_idx].chunk) {
-						chunk_read(chunk_idx, y, x);
+						chunk_read(p, chunk_idx, y, x);
 					} else {
 						quit("Failed to find chunk!");
 					}
