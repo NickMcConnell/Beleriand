@@ -1636,18 +1636,8 @@ bool build_crossed(struct chunk *c, struct loc centre)
 	h_hgt = 1;                /* 3 */
 	h_wid = rand_range(5, 7); /* 11, 13, 15 */
 
-	y1h = centre.y - h_hgt;
-	x1h = centre.x - h_wid;
-	y2h = centre.y + h_hgt;
-	x2h = centre.x + h_wid;
-
 	v_hgt = rand_range(3, 6); /* 7, 9, 11, 13 */
 	v_wid = rand_range(1, 2); /* 3, 5 */
-
-	y1v = centre.y - v_hgt;
-	x1v = centre.x - v_wid;
-	y2v = centre.y + v_hgt;
-	x2v = centre.x + v_wid;
 
 	/* Calculate height and width */
 	height = 2 * v_hgt + 1;
@@ -1657,6 +1647,17 @@ bool build_crossed(struct chunk *c, struct loc centre)
 	event_signal_size(EVENT_GEN_ROOM_CHOOSE_SIZE, height + 2, width + 2);
 	if (!find_space(&centre, height + 2, width + 2))
 		return (false);
+
+	/* Get the room boundaries */
+	y1h = centre.y - h_hgt;
+	x1h = centre.x - h_wid;
+	y2h = centre.y + h_hgt;
+	x2h = centre.x + h_wid;
+
+	y1v = centre.y - v_hgt;
+	x1v = centre.x - v_wid;
+	y2v = centre.y + v_hgt;
+	x2v = centre.x + v_wid;
 
 	/* Generate new rooms */
 	generate_room(c, y1h - 1, x1h - 1, y2h + 1, x2h + 1, light);
