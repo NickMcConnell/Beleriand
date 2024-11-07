@@ -144,7 +144,7 @@ static void do_cmd_go_up_aux(void)
 	}
 	
 	/* Change level */
-	chunk_change(change, 0, 0);
+	chunk_change(player, change, 0, 0);
 }
 
 
@@ -234,7 +234,7 @@ static void do_cmd_go_down_aux(void)
 	}
 	
 	/* Change level */
-	chunk_change(change, 0, 0);
+	chunk_change(player, change, 0, 0);
 }
 
 

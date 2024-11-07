@@ -304,7 +304,7 @@ void get_random_symmetry_transform(int height, int width, int flags,
 int calc_default_transpose_weight(int height, int width);
 bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 	 int y0, int x0, int rotate, bool reflect);
-void chunk_read(int idx, int y_coord, int x_coord);
+void chunk_read(struct player *p, int idx, int y_coord, int x_coord);
 void chunk_validate_objects(struct chunk *c);
 int chunk_offset_to_adjacent(int z_offset, int y_offset, int x_offset);
 int find_region(int y_pos, int x_pos);
@@ -320,7 +320,7 @@ int chunk_store(int y_coord, int x_coord, uint16_t region, uint16_t z_pos,
 int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_coord,
 			   int x_coord);
 int chunk_get_centre(void);
-void chunk_change(int z_offset, int y_offset, int x_offset);
+void chunk_change(struct player *p, int z_offset, int y_offset, int x_offset);
 
 
 /* gen-room.c */

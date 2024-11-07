@@ -544,7 +544,7 @@ bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
  * Read a chunk from the chunk list and put it back into the current playing
  * area
  */
-void chunk_read(int idx, int y_coord, int x_coord)
+void chunk_read(struct player *p, int idx, int y_coord, int x_coord)
 {
 	int i, y0 = y_coord * CHUNK_SIDE, x0 = x_coord * CHUNK_SIDE;
 	struct chunk *chunk = chunk_list[idx].chunk;
@@ -554,14 +554,14 @@ void chunk_read(int idx, int y_coord, int x_coord)
 	restore_monsters(idx, turn - chunk_list[idx].turn);
 
 	/* Copy everything across */
-	chunk_copy_grid(player, chunk, cave, CHUNK_SIDE, CHUNK_SIDE,
+	chunk_copy_grid(p, chunk, cave, CHUNK_SIDE, CHUNK_SIDE,
 					loc(0, 0), loc(x0, y0), CHUNK_CUR, 0, false, false);
-	chunk_copy_grid(player, p_chunk, player->cave, CHUNK_SIDE, CHUNK_SIDE,
+	chunk_copy_grid(p, p_chunk, p->cave, CHUNK_SIDE, CHUNK_SIDE,
 					loc(0, 0), loc(x0, y0), CHUNK_CUR, 0, false, false);
-	chunk_copy_objects_add(player, chunk, p_chunk, cave, player->cave);
+	chunk_copy_objects_add(p, chunk, p_chunk, cave, p->cave);
 	chunk_validate_objects(cave);
-	chunk_validate_objects(player->cave);
-	object_lists_check_integrity(cave, player->cave);
+	chunk_validate_objects(p->cave);
+	object_lists_check_integrity(cave, p->cave);
 
 	/* Feature counts */
 	for (i = 0; i < FEAT_MAX + 1; i++) {
@@ -581,18 +581,18 @@ void chunk_read(int idx, int y_coord, int x_coord)
 /**
  * Write a pair of chunks to memory and record pointers to them
  */
-static void chunk_write(int idx, int y_coord, int x_coord,
+static void chunk_write(struct player *p, int idx, int y_coord, int x_coord,
 						struct chunk **chunk, struct chunk **p_chunk)
 {
 	struct loc from = loc(x_coord * CHUNK_SIDE, y_coord * CHUNK_SIDE);
 	struct chunk *new = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
 	struct chunk *p_new = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
 
-	chunk_copy_grid(player, cave, new, CHUNK_SIDE, CHUNK_SIDE,
+	chunk_copy_grid(p, cave, new, CHUNK_SIDE, CHUNK_SIDE,
 					from, loc(0, 0), idx, 0, false, false);
-	chunk_copy_grid(player, player->cave, p_new, CHUNK_SIDE, CHUNK_SIDE,
+	chunk_copy_grid(p, p->cave, p_new, CHUNK_SIDE, CHUNK_SIDE,
 					from, loc(0, 0), idx, 0, false, false);
-	chunk_copy_objects_split(player, cave, player->cave, new, p_new, CHUNK_SIDE,
+	chunk_copy_objects_split(p, cave, p->cave, new, p_new, CHUNK_SIDE,
 							 CHUNK_SIDE, loc(0, 0));
 	chunk_validate_objects(new);
 	chunk_validate_objects(p_new);
@@ -682,10 +682,10 @@ static void chunk_adjacent_to_offset(int adjacent, int *z_off, int *y_off,
 /**
  * Translate place in current surface arena into a chunk_list index
  */
-static int chunk_get_idx(int y_coord, int x_coord)
+static int chunk_get_idx(struct player *p, int y_coord, int x_coord)
 {
 	int y_off = ARENA_CHUNKS / 2, x_off = ARENA_CHUNKS / 2;
-	int idx = player->place;
+	int idx = p->place;
 
 	/* Move north or south */
 	if (y_coord < y_off) {
@@ -1067,7 +1067,7 @@ int chunk_store(int y_coord, int x_coord, uint16_t region, uint16_t z_pos,
 
 	/* Write the chunks */
 	if (write) {
-		chunk_write(idx, y_coord, x_coord, &chunk_list[idx].chunk,
+		chunk_write(player, idx, y_coord, x_coord, &chunk_list[idx].chunk,
 					&chunk_list[idx].p_chunk);
 	}
 
@@ -1370,7 +1370,7 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_coord, int x_coord)
  *
  * Used for walking off the edge of a chunk, currently only for the surface
  */
-static void arena_realign(int y_offset, int x_offset)
+static void arena_realign(struct player *p, int y_offset, int x_offset)
 {
 	int i, x, y;
 	bool chunk_exists[ARENA_CHUNKS][ARENA_CHUNKS] = { 0 };
@@ -1403,7 +1403,7 @@ static void arena_realign(int y_offset, int x_offset)
 			}
 
 			/* Access the chunk's placeholder in chunk_list */
-			chunk_idx = chunk_get_idx(y, x);
+			chunk_idx = chunk_get_idx(p, y, x);
 			if (chunk_idx == MAX_CHUNKS) continue;
 			ref = &chunk_list[chunk_idx];
 
@@ -1445,11 +1445,11 @@ static void arena_realign(int y_offset, int x_offset)
 		dest_top_left.x = 0;
 		width = (ARENA_CHUNKS - 1) * CHUNK_SIDE;
 	}
-	chunk_copy_grid(player, cave, new, height, width, src_top_left,
+	chunk_copy_grid(p, cave, new, height, width, src_top_left,
 					dest_top_left, CHUNK_CUR, 0, false, true);
-	chunk_copy_grid(player, player->cave, p_new, height, width,	src_top_left,
+	chunk_copy_grid(p, p->cave, p_new, height, width,	src_top_left,
 					dest_top_left, CHUNK_CUR, 0, false, true);
-	chunk_copy_objects_split(player, cave, player->cave, new, p_new, height,
+	chunk_copy_objects_split(p, cave, p->cave, new, p_new, height,
 							 width, dest_top_left);
 	chunk_validate_objects(new);
 	chunk_validate_objects(p_new);
@@ -1461,13 +1461,13 @@ static void arena_realign(int y_offset, int x_offset)
 	}
 
 	chunk_wipe(cave);
-	chunk_wipe(player->cave);
+	chunk_wipe(p->cave);
 	cave = new;
-	player->cave = p_new;
+	p->cave = p_new;
 
 	/* Player has moved chunks */
-	player->last_place = player->place;
-	player->place = chunk_list[player->place].adjacent[new_dir];
+	p->last_place = p->place;
+	p->place = chunk_list[p->place].adjacent[new_dir];
 
 	/* Reload or generate chunks to fill the playing area. 
 	 * Note that chunk generation needs to write the adjacent[] entries */
@@ -1480,14 +1480,14 @@ static void arena_realign(int y_offset, int x_offset)
 			if (chunk_exists[y][x]) continue;
 
 			/* Load it if it is in the chunk list */
-			chunk_idx = chunk_get_idx(y, x);
+			chunk_idx = chunk_get_idx(p, y, x);
 			if ((chunk_idx != MAX_CHUNKS) && chunk_list[chunk_idx].chunk) {
-				chunk_read(chunk_idx, y, x);
+				chunk_read(p, chunk_idx, y, x);
 			} else {
 				/* Otherwise generate a new one */
-				ref.y_pos = chunk_list[player->place].y_pos + y
+				ref.y_pos = chunk_list[p->place].y_pos + y
 					- ARENA_CHUNKS / 2;
-				ref.x_pos = chunk_list[player->place].x_pos + x
+				ref.x_pos = chunk_list[p->place].x_pos + x
 					- ARENA_CHUNKS / 2;
 				(void) chunk_fill(cave, &ref, y, x);
 			}
@@ -1495,7 +1495,7 @@ static void arena_realign(int y_offset, int x_offset)
 	}
 	set_monster_place_current();
 	cave_illuminate(cave, is_daytime());
-	update_view(cave, player);
+	update_view(cave, p);
 }
 
 /**
@@ -1540,7 +1540,7 @@ int chunk_get_centre(void)
  *
  * Used for stairs, teleport level, falling
  */
-static void level_change(int z_offset)
+static void level_change(struct player *p, int z_offset)
 {
 	int y, x, new_idx;
 	int centre = chunk_get_centre();
@@ -1551,7 +1551,7 @@ static void level_change(int z_offset)
 			struct chunk_ref ref = chunk_list[centre];
 
 			/* Get the location data */
-			ref.z_pos = player->depth;
+			ref.z_pos = p->depth;
 			chunk_offset_data(&ref, 0, y, x);
 
 			/* Store it */
@@ -1565,17 +1565,17 @@ static void level_change(int z_offset)
 	new_idx = chunk_offset_to_adjacent(z_offset, 0, 0);
 
 	/* Set the chunk (possibly invalid) */
-	player->last_place = player->place;
-	player->place = chunk_list[player->place].adjacent[new_idx];
+	p->last_place = p->place;
+	p->place = chunk_list[p->place].adjacent[new_idx];
 
 	/* Leaving, make new level */
-	player->upkeep->generate_level = true;
+	p->upkeep->generate_level = true;
 
 	/* Save the game when we arrive on the new level. */
-	player->upkeep->autosave = true;
+	p->upkeep->autosave = true;
 
 	/* Set depth */
-	player->depth += z_offset;
+	p->depth += z_offset;
 }
 
 /**
@@ -1583,11 +1583,11 @@ static void level_change(int z_offset)
  * needs to handle moving in the eight surface directions, plus up or down
  * one level, and the consequent moving of chunks to and from chunk_list.
  */
-void chunk_change(int z_offset, int y_offset, int x_offset)
+void chunk_change(struct player *p, int z_offset, int y_offset, int x_offset)
 {
 	if (z_offset) {
-		level_change(z_offset);
+		level_change(p, z_offset);
 	} else {
-		arena_realign(y_offset, x_offset);
+		arena_realign(p, y_offset, x_offset);
 	}
 }
