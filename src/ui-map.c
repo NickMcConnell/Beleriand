@@ -797,6 +797,9 @@ static void get_zoomed_grid_data(struct grid_data *g, int *ap, wchar_t *cp,
 
 		/* Get the "player" tile */
 		*ap = monster_x_attr[race->ridx];
+		if (!((*ap) & 0x80)) {
+			*ap = health_attr(player->chp, player->mhp);
+		}
 		*cp = monster_x_char[race->ridx];
 	}
 
