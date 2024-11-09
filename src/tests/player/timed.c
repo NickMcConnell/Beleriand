@@ -75,7 +75,7 @@ int teardown_tests(void *state) {
 	struct test_timed_state *st = (struct test_timed_state*) state;
 
 	cleanup_event_handlers(st);
-	wipe_mon_list(cave, player);
+	wipe_mon_list();
 	cleanup_angband();
 	return 0;
 }
