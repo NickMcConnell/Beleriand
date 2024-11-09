@@ -610,7 +610,7 @@ void wipe_mon_list(void)
 
 	/* Delete all the monsters */
 	for (m_idx = mon_max - 1; m_idx >= 1; m_idx--) {
-		delete_monster_idx(m_idx);
+		if (monster(m_idx)->race) delete_monster_idx(m_idx);
 	}
 
 	/* Delete all the monster groups */
