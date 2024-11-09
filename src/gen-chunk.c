@@ -407,6 +407,7 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 
 			/* Move floor objects, pairing with known objects as needed */
 			while (obj) {
+				int oidx = obj->oidx;
 				count++;
 				/* Find the known object if it is here */
 				p_obj = square_object(p_dest, grid);
@@ -418,7 +419,7 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 				/* Relabel */
 				dest->objects[count] = obj;
 				dest->objects[count]->oidx = count;
-				source->objects[obj->oidx] = NULL;
+				source->objects[oidx] = NULL;
 
 				/* Keep track of known objects */
 				if (p_obj) {
@@ -437,7 +438,7 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 					/* Relabel */
 					p_dest->objects[count] = p_obj;
 					p_dest->objects[count]->oidx = count;
-					p_source->objects[p_obj->oidx] = NULL;
+					p_source->objects[oidx] = NULL;
 					assert(p_obj == obj->known);
 				}
 				obj = obj->next;
