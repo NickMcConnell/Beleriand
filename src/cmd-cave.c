@@ -85,12 +85,6 @@ static void do_cmd_go_up_aux(void)
 		return;
 	}
 
-	/* Force descend */
-	if (OPT(player, birth_force_descend) && (silmarils_possessed(player) == 0)){
-		msg("You have vowed to not to return until you hold a Silmaril.");
-		return;
-	}
-	
 	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
@@ -135,14 +129,6 @@ static void do_cmd_go_up_aux(void)
 		player->truce = false;
 	}
 
-	/* Another staircase has been used... */
-	player->stairs_taken++;
-	player->staircasiness += 1000;
-
-	if (OPT(player, birth_discon_stairs)) {
-		player->upkeep->create_stair = FEAT_NONE;
-	}
-	
 	/* Change level */
 	chunk_change(player, change, 0, 0);
 }
@@ -218,14 +204,6 @@ static void do_cmd_go_down_aux(void)
 		msgt(MSG_STAIRS_DOWN, "You emerge near where you began.");
 		player->upkeep->create_stair = FEAT_MORE;
 		change = 0;
-	}
-
-	/* Another staircase has been used... */
-	player->stairs_taken++;
-	player->staircasiness += 1000;
-
-	if (OPT(player, birth_discon_stairs)) {
-		player->upkeep->create_stair = FEAT_NONE;
 	}
 
 	/* Change level */

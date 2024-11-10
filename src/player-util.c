@@ -452,9 +452,6 @@ void player_falling_damage(struct player *p, bool stun)
 	if (stun) { 
 		(void)player_inc_timed(p, TMD_STUN, dam * 5, true, true, true);
 	}
-
-	/* Reset staircasiness */
-	p->staircasiness = 0;
 }
 
 /**

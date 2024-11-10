@@ -766,7 +766,6 @@ int rd_player(void)
 	rd_s16b(&player->csp);
 
 	rd_s16b(&player->max_depth);
-	rd_u16b(&player->staircasiness);
 
 	/* Hack -- Repair maximum dungeon level */
 	if (player->max_depth < 0) player->max_depth = 1;
@@ -834,7 +833,6 @@ int rd_player(void)
 	player->song[SONG_MINOR] = song_by_idx(tmp8u);
 	rd_s16b(&player->song_duration);
 	rd_s16b(&player->wrath);
-	rd_u16b(&player->stairs_taken);
 	rd_u16b(&player->forge_drought);
 	rd_u16b(&player->forge_count);
 	rd_byte(&tmp8u);
