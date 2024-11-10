@@ -503,7 +503,6 @@ void wr_player(void)
 
 	/* Max Dungeon Level */
 	wr_s16b(player->max_depth);
-	wr_u16b(player->staircasiness);
 
 	/* Location info */
 	wr_s16b(player->home);
@@ -540,7 +539,6 @@ void wr_player(void)
 	wr_byte(player->song[SONG_MINOR] ? player->song[SONG_MINOR]->index : 0);
 	wr_s16b(player->song_duration);
 	wr_s16b(player->wrath); 
-	wr_u16b(player->stairs_taken);
 	wr_u16b(player->forge_drought);
 	wr_u16b(player->forge_count);
 	wr_byte(player->stealth_mode);

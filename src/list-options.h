@@ -101,10 +101,6 @@ OP(cheat_timestop,        "Debug: Don't allow monsters to move",
 CHEAT, false)
 OP(score_timestop,        "Score: Don't allow monsters to move",
 SCORE, false)
-OP(birth_discon_stairs,   "Disconnected stairs",
-BIRTH, false)
-OP(birth_force_descend,   "Force player descent (never make up stairs)",
-BIRTH, false)
 OP(birth_no_artifacts,    "Restrict creation of artifacts",
 BIRTH, false)
 

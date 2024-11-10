@@ -1002,22 +1002,6 @@ static void process_player_post_energy_use_cleanup(void)
 	if (!(turn % 100))
 		equip_learn_after_time(player);
 
-	/* Lower the staircasiness */
-	if (player->staircasiness > 0) {
-		int amount;
-
-        /* Decreases much faster on the escape */
-        if (player->on_the_run) {
-            /* Amount is one hundredth of the current value, rounding up */
-            amount = (player->staircasiness + 99) / 100;
-        } else {
-            /* Amount is one thousandth of the current value, rounding up */
-            amount = (player->staircasiness + 999) / 1000;
-        }
-
-		player->staircasiness -= amount;
-	}
-
 	/* Increase the time since the last forge */
 	player->forge_drought++;
 

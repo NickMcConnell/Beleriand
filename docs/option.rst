@@ -123,18 +123,6 @@ future characters, 'r' to reset the current selections to the defaults
 for a new character, and 'x' to reset the current selections to the
 Angband maintainer's defaults for the birth options.
 
-Generate disconnected stairs ``birth_discon_stairs``
-  With this option turned off, if you go down stairs, you start the new level
-  on an up staircase, and vice versa (if you go up stairs, you start the
-  next level on a down staircase).
-
-  With this option on, you will never start on a staircase - but other
-  staircases up and down elsewhere on the level will still be generated.
-
-Force player descent (never make up stairs) ``birth_force_descend``
-  Upwards staircases do not work.  All downward staircases, transport the
-  character one level down (two for shafts).  
-
 Restrict creation of artifacts ``birth_no_artifacts``
   No artifacts will be created. Ever. Just *how* masochistic are you?
 

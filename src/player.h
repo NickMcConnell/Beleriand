@@ -518,9 +518,6 @@ struct player {
 
 	int16_t food;				/* Current nutrition */
 
-	uint16_t stairs_taken;	/* The number of times stairs have been used */
-	uint16_t staircasiness;	/* Increases on taking stairs and slowly decays */
-
 	uint16_t forge_drought;	/* Number of turns since a forge was generated */
 	uint16_t forge_count;	/* The number of forges that have been generated */
 
