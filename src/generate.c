@@ -1232,7 +1232,6 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 		dun->nstair_room = 0;
 
 		/* Get connector info */
-		dun->persist = true;
 		get_join_info(p, dun);
 
 		/* Set the RNG to give reproducible results */

@@ -3733,7 +3733,7 @@ void reset_monsters(void)
 }
 
 /**
- * Allow monsters on a frozen persistent level to recover
+ * Allow monsters on a frozen level to recover
  */
 void restore_monsters(int place, int num_turns)
 {

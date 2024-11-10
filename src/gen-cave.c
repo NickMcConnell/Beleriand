@@ -1162,7 +1162,7 @@ static void do_traditional_tunneling(struct chunk *c)
 
 
 /**
- * Build the staircase rooms for a persistent level.
+ * Build the staircase rooms.
  */
 static void build_staircase_rooms(struct chunk *c, const char *label)
 {
@@ -1194,21 +1194,18 @@ static void build_staircase_rooms(struct chunk *c, const char *label)
 
 
 /**
- * Add stairs to a level, taking into account the special treatment needed
- * for persistent levels.
+ * Add stairs to a level, taking into account joins to other levels.
  */
-static void handle_level_stairs(struct chunk *c, bool persistent,
-		int down_count, int up_count)
+static void handle_level_stairs(struct chunk *c, int down_count, int up_count)
 {
 	/*
-	 * For persistent levels, require that the stairs be at least four
-	 * grids apart (two for surrounding walls; two for a buffer between
-	 * the walls; the buffer space could be one - shared by the
-	 * staircases - but the reservations in the room map don't allow for
-	 * that) so the staircase rooms in the connecting level won't overlap.
-	 * For non-persistent levels, don't constrain the stair placement.
+	 * Require that the stairs be at least four grids apart (two for
+	 * surrounding walls; two for a buffer between the walls; the buffer
+	 * space could be one - shared by the staircases - but the reservations
+	 * in the room map don't allow for that) so the staircase rooms in the
+	 * connecting level won't overlap.
 	 */
-	int minsep = (persistent) ? 4 : 0;
+	int minsep = 4;
 
 	if (player->depth < z_info->max_depth - 1) {
 		alloc_stairs(c, FEAT_MORE, down_count, minsep, false,
@@ -1228,12 +1225,11 @@ static void handle_level_stairs(struct chunk *c, bool persistent,
  * \param depth is the chunk's native depth
  * \param height are the chunk's dimensions
  * \param width are the chunk's dimensions
- * \param persistent If true, handle the connections for persistent levels.
  * \param forge if true forces a forge on this level
  * \return a pointer to the generated chunk
  */
 static struct chunk *standard_chunk(struct player *p, int depth, int height,
-									int width, bool persistent, bool forge)
+									int width, bool forge)
 {
 	int i;
 	int key, rarity;
@@ -1272,9 +1268,7 @@ static struct chunk *standard_chunk(struct player *p, int depth, int height,
 	reset_entrance_data(c);
 
 	/* Build the special staircase rooms */
-	if (persistent) {
-		build_staircase_rooms(c, "Modified Generation");
-	}
+	build_staircase_rooms(c, "Standard Generation");
 
 	/* Guarantee a forge if one hasn't been generated in a while */
 	if (forge) {
@@ -1423,7 +1417,7 @@ struct chunk *standard_gen(struct player *p) {
 	dun->block_wid = dun->profile->block_size;
 
 	c = standard_chunk(p, p->depth, MIN(z_info->dungeon_hgt, y_size),
-					   MIN(z_info->dungeon_wid, x_size), dun->persist, forge);
+					   MIN(z_info->dungeon_wid, x_size), forge);
 	if (!c) return NULL;
 
 	/* Generate permanent walls around the edge of the generated area */
@@ -1435,7 +1429,7 @@ struct chunk *standard_gen(struct player *p) {
 		build_streamer(c, FEAT_QUARTZ);
 
 	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
-	handle_level_stairs(c, dun->persist, below ? 0 : rand_range(3, 4),
+	handle_level_stairs(c, below ? 0 : rand_range(3, 4),
 						above ? 0 : rand_range(3, 4));
 
     /* Add any chasms if needed */

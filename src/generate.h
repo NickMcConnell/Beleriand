@@ -148,10 +148,10 @@ struct dun_data {
     /*!< Array of which blocks are used */
     bool **room_map;
 
-    /*!< Info for connecting to persistent levels */
+    /*!< Info for connecting between levels */
     struct connector *join;
 
-    /*!< Info for avoiding conflicts with persistent levels two away */
+    /*!< Info for avoiding conflicts with levels two away */
     struct connector *one_off_above;
     struct connector *one_off_below;
 
@@ -160,9 +160,6 @@ struct dun_data {
 
     /*!< The number of staircase rooms */
     int nstair_room;
-
-    /*!< Whether or not  persistent levels are being used */
-    bool persist;
 
     /*!< Whether or not this is a quest level */
     bool quest;
