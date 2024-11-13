@@ -669,7 +669,8 @@ void object_see(struct player *p, struct object *obj)
 		assert(! obj->known);
 		new_obj = object_new();
 		obj->known = new_obj;
-		object_set_base_known(p, obj);
+		new_obj->kind = obj->kind;
+		new_obj->number = obj->number;
 
 		/* List the known object */
 		p->cave->objects[obj->oidx] = new_obj;
@@ -686,13 +687,8 @@ void object_see(struct player *p, struct object *obj)
 
 		/* Make sure knowledge is correct */
 		assert(known_obj == obj->known);
-
-		if (known_obj->kind != obj->kind) {
-			/* Copy over actual details */
-			object_set_base_known(p, obj);
-		} else {
-			known_obj->number = obj->number;
-		}
+		known_obj->kind = obj->kind;
+		known_obj->number = obj->number;
 
 		/* If monster held, we're done */
 		if (obj->held_m_idx) return;

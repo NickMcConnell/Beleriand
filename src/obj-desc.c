@@ -22,6 +22,7 @@
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
+#include "obj-make.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-abilities.h"
@@ -335,23 +336,29 @@ static size_t obj_desc_chest(const struct object *obj, char *buf, size_t max,
 static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max, 
 		size_t end, uint32_t mode, const struct player *p)
 {
+	/* Handle special jewellery values */
+	int att = obj->att == SPECIAL_VALUE ? 0 : obj->att;
+	int evn = obj->evn == SPECIAL_VALUE ? 0 : obj->evn;
+	int ds = obj->ds == SPECIAL_VALUE ? 0 : obj->ds;
+	int ps = obj->ps == SPECIAL_VALUE ? 0 : obj->ps;
+
 	/* Display damage dice for weapons */
 	if (kf_has(obj->kind->kind_flags, KF_SHOW_DICE)) {
-		int ds = obj->ds + hand_and_a_half_bonus((struct player *) p, obj);
-		strnfcat(buf, max, &end, " (%+d,%dd%d)", obj->att, obj->dd, ds);
-	} else if (tval_is_ammo(obj) && obj->att) {
+		ds += hand_and_a_half_bonus((struct player *) p, obj);
+		strnfcat(buf, max, &end, " (%+d,%dd%d)", att, obj->dd, ds);
+	} else if (tval_is_ammo(obj) && att) {
 		/* Display attack for arrows if non-zero */
-		strnfcat(buf, max, &end, " (%+d)", obj->att);
-	} else if (obj->att) {
+		strnfcat(buf, max, &end, " (%+d)", att);
+	} else if (att) {
 		/* Display attack if known and non-zero */
-		strnfcat(buf, max, &end, " (%+d)", obj->att);
+		strnfcat(buf, max, &end, " (%+d)", att);
 	}
 
 	/* Show evasion/protection info */
-	if (obj->pd && obj->ps) {
-		strnfcat(buf, max, &end, " [%+d,%dd%d]", obj->evn, obj->pd, obj->ps);
-	} else if (obj->evn) {
-		strnfcat(buf, max, &end, " [%+d]", obj->evn);
+	if (obj->pd && ps) {
+		strnfcat(buf, max, &end, " [%+d,%dd%d]", evn, obj->pd, ps);
+	} else if (evn) {
+		strnfcat(buf, max, &end, " [%+d]", evn);
 	}
 
 	return end;
@@ -383,7 +390,7 @@ static size_t obj_desc_mods(const struct object *obj, char *buf, size_t max,
 	/* Run through possible modifiers and store distinct ones */
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		/* Check for known non-zero mods */
-		if (obj->modifiers[i] != 0) {
+		if ((obj->modifiers[i] != 0) && (obj->modifiers[i] != SPECIAL_VALUE)) {
 			/* If no mods stored yet, store and move on */
 			if (!num_mods) {
 				mods[num_mods++] = obj->modifiers[i];
@@ -549,7 +556,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj,
 
 	/* Modifiers, charges, flavour details, inscriptions */
 	if (mode & ODESC_EXTRA) {
-		end = obj_desc_mods(obj, buf, max, end);
+		end = obj_desc_mods(obj->known, buf, max, end);
 		end = obj_desc_charges(obj, buf, max, end, mode);
 		end = obj_desc_inscrip(obj, buf, max, end, p);
 	}

@@ -302,9 +302,7 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
 
 	for (i = 1; i < OF_MAX; i++) {
 		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
-		if (!prop || ((prop->subtype != OFT_MISC) &&
-					  (prop->subtype != OFT_MELEE) &&
-					  (prop->subtype != OFT_BAD))) continue;
+		if (!prop) continue;
 		if (of_has(flags, prop->index)) {
 			textblock_append(tb, "%s.  ", prop->desc);
 			printed = true;
