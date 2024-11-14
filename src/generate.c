@@ -1202,7 +1202,8 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 	const char *error = "no generation";
 	int y, x, y_coord, x_coord, tries = 0;
 	struct chunk *chunk = NULL;
-	struct connector *dun_join = NULL, *one_off_above = NULL, *one_off_below = NULL;
+	struct connector *dun_join = NULL, *one_off_above = NULL,
+		*one_off_below = NULL;
 	struct loc centre = p->grid;
 
 	/* Generate */
@@ -1230,20 +1231,20 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 		dun->one_off_below = NULL;
 		dun->curr_join = NULL;
 		dun->nstair_room = 0;
+		dun->first_time = (seed == 0);
+		dun->seed = seed;
 
 		/* Get connector info */
 		get_join_info(p, dun);
 
-		/* Set the RNG to give reproducible results */
-		//B This needs work, as we really want reproducible results for
-		//B terrain only.  Options are to use Rand_quick only for terrain,
-		//B or to clear out monsters and objects on re-generation (and
-		//B maybe add some back?).  Messy.
+		/* Set the RNG to give reproducible results.  Note that only terrain
+		 * is generated with the simple RNG, as objects, traps and  monsters
+		 * are only generated the first time for any location. */
 		Rand_quick = true;
-		if (!seed) {
-			seed = randint0(0x10000000);
+		if (!dun->seed) {
+			dun->seed = randint0(0x10000000);
 		}
-		Rand_value = seed;
+		Rand_value = dun->seed;
 
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p);
@@ -1252,6 +1253,7 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 		if (!chunk) {
 			error = "Failed to build level";
 			cleanup_dun_data(dun);
+			if (!dun->first_time) quit_fmt("Failed to rebuild level");
 			p->unique_forge_made = forge_made;
 			event_signal_flag(EVENT_GEN_LEVEL_END, false);
 			seed = 0;
@@ -1260,21 +1262,10 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 
 		Rand_quick = false;
 
-		/* Clear generation flags */
-		for (y = 0; y < chunk->height; y++) {
-			for (x = 0; x < chunk->width; x++) {
-				struct loc grid = loc(x, y);
-
-				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_INNER);
-				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_OUTER);
-				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_SOLID);
-			}
-		}
-
 		/* Regenerate levels that overflow their maxima */
 		if (mon_max >= z_info->monster_max) {
-			if (seed) {
-				quit_fmt("Generation seed failure!");
+			if (!dun->first_time) {
+				quit_fmt("Too many monsters in rebuilt level!");
 			} else {
 				error = "too many monsters";
 			}
@@ -1290,6 +1281,19 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 			delete_temp_monsters();
 			p->unique_forge_made = forge_made;
 			event_signal_flag(EVENT_GEN_LEVEL_END, false);
+			cleanup_dun_data(dun);
+			continue;
+		}
+
+		/* Clear generation flags */
+		for (y = 0; y < chunk->height; y++) {
+			for (x = 0; x < chunk->width; x++) {
+				struct loc grid = loc(x, y);
+
+				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_INNER);
+				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_OUTER);
+				sqinfo_off(square(chunk, grid)->info, SQUARE_WALL_SOLID);
+			}
 		}
 
 		one_off_above = dun->one_off_above;
@@ -1334,7 +1338,7 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 			}
 
 			/* Write the seed */
-			location->seed = seed;
+			location->seed = dun->seed;
 
 			/* Now write the connectors */
 			for (grid.y = y * CHUNK_SIDE; grid.y < (y + 1) * CHUNK_SIDE;

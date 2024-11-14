@@ -946,6 +946,15 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 	get_terrain(c, loc(0, 0), loc(v->wid, v->hgt), *centre, v->hgt, v->wid,
 				rotate, reflect, v->flags, floor, data, false);
 
+	/* Finished if it's been generated before */
+	if (!dun->first_time) return true;
+
+	/* Switch random number generator so terrain always generates the same */
+	Rand_quick = false;
+
+	/* Save the current seed value */
+	dun->seed = Rand_value;
+
 	/* Place regular dungeon monsters and objects */
 	for (t = data, y = 0; y < v->hgt && *t; y++) {
 		for (x = 0; x < v->wid && *t; x++, t++) {
@@ -1288,6 +1297,10 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 			}
 		}
 	}
+
+	/* Revert to the quick RNG, restore the seed */
+	Rand_value = dun->seed;
+	Rand_quick = true;
 
 	return true;
 }

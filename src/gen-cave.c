@@ -1464,6 +1464,27 @@ struct chunk *standard_gen(struct player *p) {
 	/* Remove all monster restrictions. */
 	//mon_restrict(NULL, p->depth, p->depth, true);
 
+	/* Place Morgoth if on the run */
+	if (p->on_the_run && !p->morgoth_slain) {
+		/* Place Morgoth */
+		struct loc grid;
+		int count = 100;
+
+		/* Find a suitable place */
+		while (cave_find(c, &grid, square_suits_start) && count--) {
+			/* Out of sight of the player */
+			if (!los(c, p->grid, grid)) {
+				struct monster_group_info info = {0, 0};
+				place_new_monster_one(c, grid, lookup_monster("Morgoth"), true,
+									  true, info, ORIGIN_DROP);
+				break;
+			}
+		}
+	}
+
+	/* If we've generated this level before, we're done now */
+	if (!dun->first_time) return c;
+
 	/* Put some monsters in the dungeon */
 	if (p->depth == 1) {
 		/* Smaller number of monsters at 50ft */
@@ -1484,24 +1505,6 @@ struct chunk *standard_gen(struct player *p) {
 
     /* Place the traps */
     place_traps(c);
-
-	/* Place Morgoth if on the run */
-	if (p->on_the_run && !p->morgoth_slain) {
-		/* Place Morgoth */
-		struct loc grid;
-		int count = 100;
-
-		/* Find a suitable place */
-		while (cave_find(c, &grid, square_suits_start) && count--) {
-			/* Out of sight of the player */
-			if (!los(c, p->grid, grid)) {
-				struct monster_group_info info = {0, 0};
-				place_new_monster_one(c, grid, lookup_monster("Morgoth"), true,
-									  true, info, ORIGIN_DROP);
-				break;
-			}
-		}
-	}
 
 	/* Add a curved sword near the player if this is the start of the game */
 	if (p->turn == 0) {

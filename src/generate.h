@@ -163,6 +163,12 @@ struct dun_data {
 
     /*!< Whether or not this is a quest level */
     bool quest;
+
+    /*!< Whether this is the first time this level has been generated */
+    bool first_time;
+
+    /*!< Saved seed value for quick random number generator */
+    uint32_t seed;
 };
 
 

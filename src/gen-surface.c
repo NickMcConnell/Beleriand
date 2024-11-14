@@ -704,5 +704,10 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 		make_piece(c, standard, chunk);
 	}
 	point_set_dispose(chunk);
+
+	/* Re-activate the complex RNG now terrain generation is done */
+	Rand_quick = false;
+
+	//TODO generate monsters, perhaps objects
 }
 
