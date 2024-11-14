@@ -1121,7 +1121,6 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 
 		/* ...and generate the chunk */
 		surface_gen(c, ref, y_coord, x_coord, first);
-		Rand_quick = false;
 	}
 }
 
