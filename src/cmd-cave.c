@@ -138,6 +138,12 @@ static void do_cmd_go_up_aux(void)
 		return;
 	}
 
+	/* Monsters may get opportunist or zone of control attacks */
+	monster_opportunist_or_zone(player, player->grid);
+
+	/* Player may be dead */
+	if (player->chp < 0) return;
+
 	/* Calculate the new depth to arrive at */
 	min = player_min_depth(player);
 
@@ -266,6 +272,12 @@ static void do_cmd_go_down_aux(void)
 
 	/* Store the action type */
 	player->previous_action[0] = ACTION_MISC;
+
+	/* Monsters may get opportunist or zone of control attacks */
+	monster_opportunist_or_zone(player, player->grid);
+
+	/* Player may be dead */
+	if (player->chp < 0) return;
 
 	/* Success */
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
