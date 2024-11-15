@@ -92,6 +92,7 @@ bool player_can_leap(struct player *p, struct loc grid, int dir);
 bool player_break_web(struct player *p);
 bool player_escape_pit(struct player *p);
 void player_blast_ceiling(struct player *p);
+bool player_can_fall_through_floor(struct player *p);
 void player_blast_floor(struct player *p);
 int lookup_skill(const char *name);
 bool player_action_is_movement(struct player *p, int n);

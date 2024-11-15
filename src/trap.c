@@ -815,8 +815,8 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
 
 		/* Check legality of trapdoors. */
 		if (trf_has(kind->flags, TRF_DOWN)) {
-			/* No trap doors on the deepest level */
-			if (player->depth >= z_info->dun_depth)
+			/* No trap doors if there's nowhere to fall */
+			if (!player_can_fall_through_floor(player))
 				continue;
 	    }
 
@@ -1059,6 +1059,7 @@ void hit_trap(struct loc grid)
 
 		/* Some traps drop you a dungeon level */
 		if (trf_has(trap->kind->flags, TRF_DOWN)) {
+			square_set_feat(cave, grid, FEAT_CHASM);
 			chunk_change(player, 1, 0, 0);
 			history_add(player, format("Fell through a %s", trap->kind->name),
 						HIST_FELL_DOWN_LEVEL);

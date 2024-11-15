@@ -779,6 +779,47 @@ void player_blast_ceiling(struct player *p)
 }
 
 /**
+ * Test if the level below can be fallen into from the current player grid
+ *
+ * Note that we disallowing falling into levels which have been generated
+ * before but are no longer in the chunk list, as this would mean regenerating
+ * the entire level just to check one grid.
+ */
+bool player_can_fall_through_floor(struct player *p)
+{
+	bool exists;
+	int upper, lower, chunk_idx;
+
+	/* Only one floor in the tutorial */
+	if (in_tutorial()) return false;
+
+	/* No falling into or through the throne room */
+	if (p->depth >= z_info->dun_depth - 1) return false;
+
+	/* If the floor below already exists, only fall into passable terrain. */
+	exists = gen_loc_find(chunk_list[p->place].x_pos,
+						  chunk_list[p->place].y_pos,
+						  chunk_list[p->place].z_pos + 1, &upper, &lower);
+	if (exists) {
+		chunk_idx = chunk_list[p->place].adjacent[DIR_DOWN];
+		if (chunk_idx < MAX_CHUNKS) {
+			struct loc grid = loc(p->grid.x % CHUNK_SIDE,
+								  p->grid.y % CHUNK_SIDE);
+			/* Require passable terrain below */
+			if (!square_ispassable(chunk_list[chunk_idx].chunk, grid)) {
+				return false;
+			}
+		} else {
+			/* Chunk has aged off, don't bother regenerating */
+			return false;
+		}
+	}
+
+	/* No reason not to allow it */
+	return true;
+}
+
+/**
  * Aim a horn of blasting at the floor
  */
 void player_blast_floor(struct player *p)
@@ -790,7 +831,7 @@ void player_blast_floor(struct player *p)
 
 	/* Skill check of Will vs 10 */
 	if (skill_check(source_player(), will, 10, source_none()) > 0) {
-		if (p->depth < z_info->dun_depth - 1 && !in_tutorial()) {
+		if (player_can_fall_through_floor(p)) {
 			msg("The floor crumbles beneath you!");
 			event_signal(EVENT_MESSAGE_FLUSH);
 			msg("You fall through...");
@@ -808,6 +849,7 @@ void player_blast_floor(struct player *p)
 			event_signal(EVENT_MESSAGE_FLUSH);
 
 			/* Change level */
+			square_set_feat(cave, p->grid, FEAT_CHASM);
 			chunk_change(p, p->depth + 1, 0, 0);
 		} else {
 			msg("Cracks spread across the floor, but it holds firm.");
