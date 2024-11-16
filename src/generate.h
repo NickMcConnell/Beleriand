@@ -82,6 +82,8 @@ struct area_profile {
 };
 
 struct formation_profile {
+	struct formation_profile *next;
+
 	const char *name;
 	char *feats;
 	int num_feats;
@@ -97,7 +99,7 @@ struct surface_profile {
 	char *base_feats;
 	int num_base_feats;
 	struct area_profile *areas;
-	struct formation_profile formations;
+	struct formation_profile *formations;
 	int num_form_types;
 };
 

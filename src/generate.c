@@ -95,7 +95,6 @@ static const char *room_flags[] = {
 static enum parser_error parse_surface_name(struct parser *p) {
 	struct surface_profile *h = parser_priv(p);
 	struct surface_profile *s = mem_zalloc(sizeof *s);
-	//size_t i;
 
 	s->name = string_make(parser_getstr(p, "name"));
 	s->base_feats = mem_zalloc(sizeof(char));
@@ -123,8 +122,8 @@ static enum parser_error parse_surface_feat(struct parser *p) {
 
 	if (!s)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (s->formations.name) {
-		f = &s->formations;
+	if (s->formations) {
+		f = s->formations;
 		f->feats = mem_realloc(f->feats, (f->num_feats + 2) * sizeof(char));
 		f->feats[f->num_feats] = feat;
 		f->num_feats++;
@@ -211,8 +210,8 @@ static enum parser_error parse_surface_size(struct parser *p) {
 	if (!s)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	if (s->formations.name) {
-		f = &s->formations;
+	if (s->formations) {
+		f = s->formations;
 		f->size = parser_getrand(p, "size");
 	} else {
 		/* Go to the last valid area profile */
@@ -233,7 +232,11 @@ static enum parser_error parse_surface_formation(struct parser *p) {
 	if (!s)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	f = &s->formations;
+	f = mem_zalloc(sizeof(*f));
+	if (s->formations) {
+		f->next = s->formations;
+	}
+	s->formations = f;
 	f->name = string_make(parser_getstr(p, "name"));
 	f->feats = mem_zalloc(sizeof(char));
 	f->feats[0] = '\0';
@@ -247,7 +250,7 @@ static enum parser_error parse_surface_proportion(struct parser *p) {
 	if (!s)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	f = &s->formations;
+	f = s->formations;
 	f->proportion = parser_getint(p, "proportion");
 	return PARSE_ERROR_NONE;
 }
@@ -308,16 +311,22 @@ static void cleanup_surface(void)
 	int i;
 	for (i = 0; i < z_info->surface_max; i++) {
 		struct area_profile *a = surface_profiles[i].areas, *n;
+		struct formation_profile *f = surface_profiles[i].formations, *n1;
 		while (a) {
 			n = a->next;
 			string_free((char *) a->name);
 			mem_free(a);
 			a = n;
 		}
+		while (f) {
+			n1 = f->next;
+			string_free((char *) f->name);
+			mem_free(f->feats);
+			mem_free(f);
+			f = n1;
+		}
 		string_free((char *) surface_profiles[i].name);
 		string_free(surface_profiles[i].base_feats);
-		string_free((char *) surface_profiles[i].formations.name);
-		string_free(surface_profiles[i].formations.feats);
 	}
 	mem_free(surface_profiles);
 }
