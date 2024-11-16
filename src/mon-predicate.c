@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "game-world.h"
+#include "generate.h"
 #include "mon-group.h"
 #include "mon-spell.h"
 #include "mon-util.h"
@@ -133,5 +134,5 @@ bool monster_is_listened(const struct monster *mon)
  */
 bool monster_is_stored(const struct monster *mon)
 {
-	return chunk_list[mon->place].chunk != NULL ;
+	return mon->place != CHUNK_CUR;
 }
