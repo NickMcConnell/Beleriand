@@ -185,6 +185,14 @@ bool feat_is_stair(int feat)
 }
 
 /**
+ * True if the feature is a shaft.
+ */
+bool feat_is_shaft(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_SHAFT);
+}
+
+/**
  * True if the feature is a downstair.
  */
 bool feat_is_downstair(int feat)
@@ -473,8 +481,7 @@ bool square_isdownstairs(struct chunk *c, struct loc grid)
  */
 bool square_isshaft(struct chunk *c, struct loc grid)
 {
-	int feat = square(c, grid)->feat;
-	return tf_has(f_info[feat].flags, TF_SHAFT);
+	return feat_is_shaft(square(c, grid)->feat);
 }
 
 /**
@@ -1376,16 +1383,6 @@ void square_add_web(struct chunk *c, struct loc grid)
 {
 	struct trap_kind *web = lookup_trap("web");
 	place_trap(c, grid, web->tidx, 0);
-}
-
-void square_add_stairs(struct chunk *c, struct loc grid, int depth) {
-	int down = randint0(100) < 50;
-	if (depth == 0)
-		down = 1;
-	else if (depth >= z_info->dun_depth)
-		down = 0;
-
-	square_set_feat(c, grid, down ? FEAT_MORE : FEAT_LESS);
 }
 
 void square_add_door(struct chunk *c, struct loc grid, bool closed) {

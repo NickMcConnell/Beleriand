@@ -428,8 +428,6 @@ struct player_upkeep {
 							 * inventory listings when offering
 							 * a choice.  See obj-ui.c */
 
-	int create_stair;	/* Stair to create on next level */
-	bool create_rubble;	/* Create rubble on next level */
 	bool force_forge;		/* Force the generation of a forge on this level */
 	int zoom_level;			/* How far we have zoomed out from the usual
 							 * map.  Only used on the surface. */

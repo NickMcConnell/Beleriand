@@ -385,32 +385,19 @@ static int choose_down_stairs(struct chunk *c)
  * \param grid location
  * \param first is whether or not this is the first stair on the level.
  * \param feat stair terrain type
- *
- * All stairs from the surface go down. All stairs on the bottom level go up.
  */
-static void place_stairs(struct chunk *c, struct loc grid, bool first, int feat)
+static void place_stairs(struct chunk *c, struct loc grid, bool first, int feat,
+						 bool any)
 {
-	if (!c->depth) {
-		/* Surface -- must go down */
-		square_set_feat(c, grid, FEAT_MORE);
-	} else if (c->depth >= z_info->dun_depth) {
-		/* Bottom -- must go up */
-		if (first) {
-			square_set_feat(c, grid, FEAT_LESS);
-		} else {
-			square_set_feat(c, grid, choose_up_stairs(c));
+	/* Allow shafts, but guarantee the first one is an ordinary stair */
+	if (!first) {
+		if (any && (feat == FEAT_LESS)) {
+			feat = choose_up_stairs(c);
+		} else if (any && (feat == FEAT_MORE)) {
+			feat = choose_down_stairs(c);
 		}
-	} else {
-		/* Allow shafts, but guarantee the first one is an ordinary stair */
-		if (!first) {
-			if (feat == FEAT_LESS) {
-				feat = choose_up_stairs(c);
-			} else if (feat == FEAT_MORE) {
-				feat = choose_down_stairs(c);
-			}
-		}
-		square_set_feat(c, grid, feat);
 	}
+	square_set_feat(c, grid, feat);
 }
 
 
@@ -613,14 +600,10 @@ void place_forge(struct chunk *c, struct loc grid)
  * \param minsep If greater than zero, the stairs must be more than minsep
  * grids in x or y from other staircases.  sepany controls which types of
  * staircases are considered when enforcing the separation constraint.
- * \param sepany If true, the minimum separation contraint applies to any
- * type of staircase.  Otherwise, the minimum separation contraint only applies
- * to staircases of the same type.
- * \param avoid_list If not NULL and minsep is greater than zero, also avoid
- * the locations in avoid_list which have staircases of the opposite type.
+ * \param any If true, any type of staircase in the given  direction is valid.
+ *  Otherwise, only staircases of the exact type of feat are.
  */
-void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
-		const struct connector *avoid_list)
+void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool any)
 {
 	int i, navalloc, nav, walls;
 	struct loc *av;
@@ -632,9 +615,6 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 		 * Get the locations of the stairs already there that'll have
 		 * to be avoided.
 		 */
-		square_predicate tester = (sepany) ? square_isstairs :
-			((feat == FEAT_MORE) ?
-			square_isdownstairs : square_isupstairs);
 		struct loc grid;
 		const struct connector *avc;
 
@@ -642,29 +622,25 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 		av = mem_alloc(navalloc * sizeof(*av));
 		for (grid.y = 0; grid.y < c->height; ++grid.y) {
 			for (grid.x = 0; grid.x < c->width; ++grid.x) {
-				if ((*tester)(c, grid)) {
+				if (square_isstairs(c, grid) || square_isshaft(c, grid)) {
 					assert(nav >= 0 && nav <= navalloc);
 					if (nav == navalloc) {
 						navalloc += navalloc;
-						av = mem_realloc(av, navalloc *
-							sizeof(*av));
+						av = mem_realloc(av, navalloc * sizeof(*av));
 					}
 					av[nav++] = grid;
 				}
 			}
 		}
 
-		/* Also add the locations that were passed in. */
-		for (avc = avoid_list; avc; avc = avc->next) {
-			if (avc->feat != feat) {
-				assert(nav >= 0 && nav <= navalloc);
-				if (nav == navalloc) {
-					navalloc += navalloc;
-					av = mem_realloc(av, navalloc *
-						sizeof(*av));
-				}
-				av[nav++] = avc->grid;
+		/* Also add the join locations. */
+		for (avc = dun->join; avc; avc = avc->next) {
+			assert(nav >= 0 && nav <= navalloc);
+			if (nav == navalloc) {
+				navalloc += navalloc;
+				av = mem_realloc(av, navalloc *	sizeof(*av));
 			}
+			av[nav++] = avc->grid;
 		}
 	} else {
 		navalloc = 0;
@@ -682,7 +658,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 		/* Try to find; then decrease "walls" */
 		while (i < num && cave_find_get_grid(&grid, state)) {
 			if (!square_isempty(c, grid)
-					|| square_num_walls_adjacent(c, grid) != walls) {
+				|| square_num_walls_adjacent(c, grid) != walls) {
 				continue;
 			}
 			if (minsep > 0) {
@@ -709,8 +685,8 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 				av[nav++] = grid;
 			}
 
-			place_stairs(c, grid, first, feat);
-			assert(square_isstairs(c, grid));
+			place_stairs(c, grid, first, feat, any);
+			assert(square_isstairs(c, grid) || square_isshaft(c, grid));
 			++i;
 		}
 
@@ -723,94 +699,6 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 
 	mem_free(state);
 	mem_free(av);
-}
-
-
-/**
- * Are there any stairs within line of sight?
- */
-static bool stairs_within_los(struct chunk *c, struct loc grid0)
-{
-	int y, x;
-
-	/* Scan the visible area */
-	for (y = grid0.y - 15; y < grid0.y + 15; y++) {
-		for (x = grid0.x - 15; x < grid0.x + 15; x++) {
-			struct loc grid = loc(x, y);
-			if (!square_in_bounds_fully(c, grid)) continue;
-			if (!los(c, grid0, grid)) continue;
-
-			/* Detect stairs */
-			if (square_isstairs(c, grid)) {
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-/**
- * Locate a valid starting point for the player in a chunk
- * \param c is the chunk of interest
- * \param grid is, when the search is successful, dereferenced and set to the
- * coordinates of the starting location
- * \return success
- */
-static bool find_start(struct chunk *c, struct loc *grid)
-{
-	int *state = cave_find_init(loc(1, 1), loc(c->width - 2, c->height - 2));
-	bool found = false;
-	int count = 100;
-
-	/* Find the best possible place */
-	while (!found && cave_find_get_grid(grid, state) && count--) {
-		/* Require empty square that isn't in an interesting room or vault */
-		found = square_suits_start(c, *grid);
-
-		/* Require a room if it is the first level */
-		if ((player->turn == 0) && !square_isroom(c, *grid)) found = false;
-
-		/* Don't generate stairs in line of sight if player arrived by stairs */
-		if (stairs_within_los(c, *grid) && player->upkeep->create_stair) {
-			found = false;
-		}
-	}
-
-	mem_free(state);
-
-	return found;
-}
-
-
-/**
- * Place the player at a random starting location.
- * \param c current chunk
- * \param p the player
- * \return true on success or false on failure
- */
-bool new_player_spot(struct chunk *c, struct player *p)
-{
-	//struct loc grid;
-
-	///* Try to find a good place to put the player */
-	//if (!find_start(c, &grid)) {
-	//	msg("Failed to place player; please report.  Restarting generation.");
-	//	dump_level_simple(NULL, "Player Placement Failure", c);
-	//	return false;
-	//}
-
-	///* Destroy area if falling due to blasting through the floor */
-    //if (p->upkeep->create_stair == FEAT_RUBBLE) {
-	//	effect_simple(EF_EARTHQUAKE, source_grid(grid), "0", 0, 5, 0, NULL);
-	//}
-
-	//if (p->upkeep->create_stair && square_changeable(c, grid)) {
-	//	object_pile_free(c, NULL, square_object(c, grid));
-	//	square_set_feat(c, grid, p->upkeep->create_stair);
-	//}
-	player_place(c, p, p->grid);
-	return true;
 }
 
 
@@ -1066,11 +954,11 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 			}
 				/* Stairs */
 			case '<': {
-				place_stairs(c, grid, false, FEAT_LESS);
+				place_stairs(c, grid, false, FEAT_LESS, false);
 				break;
 			}
 			case '>': {
-				place_stairs(c, grid, false, FEAT_MORE);
+				place_stairs(c, grid, false, FEAT_MORE, false);
 				break;
 			}
 				/* Water */

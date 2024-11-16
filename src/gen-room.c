@@ -1424,7 +1424,7 @@ bool build_staircase(struct chunk *c, struct loc centre)
 	draw_rectangle(c, centre.y - 1, centre.x - 1, centre.y + 1, centre.x + 1,
 		FEAT_GRANITE, SQUARE_WALL_OUTER, false);
 
-	/* Place the correct stair */
+	/* Place the correct stair or shaft */
 	square_set_feat(c, centre, join->feat);
 
 	/* Success */
