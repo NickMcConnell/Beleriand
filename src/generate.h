@@ -151,10 +151,6 @@ struct dun_data {
     /*!< Info for connecting between levels */
     struct connector *join;
 
-    /*!< Info for avoiding conflicts with levels two away */
-    struct connector *one_off_above;
-    struct connector *one_off_below;
-
     /*!< The connection information to use for the next staircase room */
     struct connector *curr_join;
 
@@ -371,7 +367,6 @@ bool find_nearby_grid(struct chunk *c, struct loc *grid, struct loc centre,
 void correct_dir(struct loc *offset, struct loc grid1, struct loc grid2);
 void adjust_dir(struct loc *offset, struct loc grid1, struct loc grid2);
 void rand_dir(struct loc *offset);
-bool new_player_spot(struct chunk *c, struct player *p);
 int trap_placement_chance(struct chunk *c, struct loc grid);
 void place_traps(struct chunk *c);
 void place_item_near_player(struct chunk *c, struct player *p, int tval,
@@ -382,8 +377,7 @@ void place_secret_door(struct chunk *c, struct loc grid);
 void place_closed_door(struct chunk *c, struct loc grid);
 void place_random_door(struct chunk *c, struct loc grid);
 void place_forge(struct chunk *c, struct loc grid);
-void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
-				  const struct connector *avoid_list);
+void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool any);
 int alloc_object(struct chunk *c, int set, int typ, int num, int depth,
 	uint8_t origin);
 struct room_profile lookup_room_profile(const char *name);

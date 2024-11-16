@@ -550,198 +550,6 @@ static struct file_parser dungeon_parser = {
 	cleanup_dungeon
 };
 
-#if 0
-/**
- * ------------------------------------------------------------------------
- * Parsing functions for dungeon_profile.txt
- * ------------------------------------------------------------------------ */
-static enum parser_error parse_profile_name(struct parser *p) {
-	struct cave_profile *h = parser_priv(p);
-	struct cave_profile *c = mem_zalloc(sizeof *c);
-	size_t i;
-
-	c->name = string_make(parser_getstr(p, "name"));
-	for (i = 0; i < N_ELEMENTS(cave_builders); i++)
-		if (streq(c->name, cave_builders[i].name))
-			break;
-
-	if (i == N_ELEMENTS(cave_builders))
-		return PARSE_ERROR_NO_BUILDER_FOUND;
-	c->builder = cave_builders[i].builder;
-	c->next = h;
-	parser_setpriv(p, c);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_profile_rooms(struct parser *p) {
-	struct cave_profile *c = parser_priv(p);
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->dun_rooms = parser_getint(p, "rooms");
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_profile_streamer(struct parser *p) {
-	struct cave_profile *c = parser_priv(p);
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->str.den = parser_getint(p, "den");
-	c->str.rng = parser_getint(p, "rng");
-	c->str.qua = parser_getint(p, "qua");
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_profile_alloc(struct parser *p) {
-	struct cave_profile *c = parser_priv(p);
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->alloc = parser_getint(p, "alloc");
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_profile_room(struct parser *p) {
-	struct cave_profile *c = parser_priv(p);
-	struct room_profile *r = c->room_profiles;
-	size_t i;
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	/* Go to the last valid room profile, then allocate a new one */
-	if (!r) {
-		c->room_profiles = mem_zalloc(sizeof(struct room_profile));
-		r = c->room_profiles;
-	} else {
-		while (r->next)
-			r = r->next;
-		r->next = mem_zalloc(sizeof(struct room_profile));
-		r = r->next;
-	}
-
-	/* Now read the data */
-	r->name = string_make(parser_getsym(p, "name"));
-	for (i = 0; i < N_ELEMENTS(room_builders); i++)
-		if (streq(r->name, room_builders[i].name))
-			break;
-
-	if (i == N_ELEMENTS(room_builders))
-		return PARSE_ERROR_NO_ROOM_FOUND;
-	r->builder = room_builders[i].builder;
-	r->hardness = parser_getint(p, "hardness");
-	r->level = parser_getint(p, "level");
-	r->random = parser_getint(p, "random");
-	return PARSE_ERROR_NONE;
-}
-
-static struct parser *init_parse_profile(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-	parser_reg(p, "name str name", parse_profile_name);
-	parser_reg(p, "rooms int rooms", parse_profile_rooms);
-	parser_reg(p, "streamer int den int rng int qua", parse_profile_streamer);
-	parser_reg(p, "alloc int alloc", parse_profile_alloc);
-	parser_reg(p, "room sym name int hardness int level int random", parse_profile_room);
-	return p;
-}
-
-static errr run_parse_profile(struct parser *p) {
-	return parse_file_quit_not_found(p, "dungeon_profile");
-}
-
-static errr finish_parse_profile(struct parser *p) {
-	struct cave_profile *n, *c = parser_priv(p);
-	int num;
-
-	/* Count the list */
-	z_info->dungeon_max = 0;
-	while (c) {
-		z_info->dungeon_max++;
-		c = c->next;
-	}
-
-	/* Allocate the array and copy the records to it */
-	cave_profiles = mem_zalloc(z_info->dungeon_max * sizeof(*c));
-	num = z_info->dungeon_max - 1;
-	for (c = parser_priv(p); c; c = n) {
-		/* Main record */
-		memcpy(&cave_profiles[num], c, sizeof(*c));
-		n = c->next;
-		if (num < z_info->dungeon_max - 1) {
-			cave_profiles[num].next = &cave_profiles[num + 1];
-		} else {
-			cave_profiles[num].next = NULL;
-		}
-
-		if (c->room_profiles) {
-			struct room_profile *r_old = c->room_profiles;
-			struct room_profile *r_new;
-			int i;
-
-			/* Count the room profiles */
-			cave_profiles[num].n_room_profiles = 0;
-			while (r_old) {
-				++cave_profiles[num].n_room_profiles;
-				r_old = r_old->next;
-			}
-
-			/* Now allocate the room profile array */
-			r_new = mem_zalloc(cave_profiles[num].n_room_profiles
-				* sizeof(*r_new));
-
-			r_old = c->room_profiles;
-			for (i = 0; i < cave_profiles[num].n_room_profiles; i++) {
-				struct room_profile *r_temp = r_old;
-
-				/* Copy from the linked list to the array */
-				memcpy(&r_new[i], r_old, sizeof(*r_old));
-
-				/* Set the next profile pointer correctly. */
-				if (r_new[i].next) {
-					r_new[i].next = &r_new[i + 1];
-				}
-
-				/* Tidy up and advance to the next profile. */
-				r_old = r_old->next;
-				mem_free(r_temp);
-			}
-
-			cave_profiles[num].room_profiles = r_new;
-		} else {
-			cave_profiles[num].n_room_profiles = 0;
-			cave_profiles[num].room_profiles = NULL;
-		}
-
-		mem_free(c);
-		num--;
-	}
-
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_profile(void)
-{
-	int i, j;
-	for (i = 0; i < z_info->dungeon_max; i++) {
-		for (j = 0; j < cave_profiles[i].n_room_profiles; j++)
-			string_free((char *) cave_profiles[i].room_profiles[j].name);
-		mem_free(cave_profiles[i].room_profiles);
-		string_free((char *) cave_profiles[i].name);
-	}
-	mem_free(cave_profiles);
-}
-
-static struct file_parser dungeon_parser = {
-	"dungeon_profile",
-	init_parse_profile,
-	run_parse_profile,
-	finish_parse_profile,
-	cleanup_profile
-};
-#endif
 
 /**
  * ------------------------------------------------------------------------
@@ -1054,7 +862,11 @@ static const struct cave_profile *choose_profile(struct player *p)
  * Helper routines for generation
  * ------------------------------------------------------------------------ */
 /**
- * Get information for constructing stairs in the correct places
+ * Get information for constructing stairs and chasms in the correct places
+ *
+ * Note that the no more than one level can be skipped consecutively (via a down
+ * shaft or a chasm), so existence of a level below the level we are generating
+ * ALWAYS implies the existence of a level above.
  */
 static void get_join_info(struct player *p, struct dun_data *dd)
 {
@@ -1068,8 +880,8 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 			struct chunk_ref ref = { 0 };
 			int y0 = y - y_coord;
 			int x0 = x - x_coord;
-			int lower, upper;
-			bool exists;
+			int lower_up1, lower_up2, lower_down1, lower_down2, upper;
+			bool exists_up1, exists_up2, exists_down1, exists_down2;
 			struct gen_loc *location;
 			struct connector *join;
 
@@ -1079,13 +891,82 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 			ref.x_pos = chunk_list[p->last_place].x_pos + x0;
 			ref.region = find_region(ref.y_pos, ref.x_pos);
 
-			/* See if the location up has been generated before */
-			exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1, &lower,
-								  &upper);
+			/* See if the nearby locations have been generated before */
+			exists_up1 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1,
+									  &lower_up1, &upper);
+			exists_up2 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1,
+									  &lower_up2, &upper);
+			exists_down1 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1,
+										&lower_down1, &upper);
+			exists_down2 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1,
+										&lower_down2, &upper);
 
-			/* Get the joins from the location up */
-			if (exists) {
-				location = &gen_loc_list[lower];
+			/* Check the level two up for chasms and down stairs and shafts */
+			if (exists_up2) {
+				location = &gen_loc_list[lower_up2];
+				join = location->join;
+				while (join) {
+					if (join->feat == FEAT_MORE_SHAFT) {
+						/* Join must be an up shaft */
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_LESS_SHAFT;
+						new->next = dd->join;
+						dd->join = new;
+					} else if (join->feat == FEAT_CHASM) {
+						/* Check one up level, may already be dealt with */
+						if (exists_up1) {
+							struct gen_loc *loc = &gen_loc_list[lower_up1];
+							struct connector *join1 = loc->join;
+							bool no_need = false;
+							while (join1) {
+								if (!loc_eq(join1->grid, join->grid)) {
+									join1 = join1->next;
+									continue;
+								}
+								if (join1->feat != FEAT_CHASM) {
+									no_need = true;
+								}
+								break;
+							}
+							if (no_need) {
+								join = join->next;
+								continue;
+							}
+						}
+
+						/* Join must be a floor */
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_FLOOR;
+						new->next = dd->join;
+						dd->join = new;
+					} else if ((join->feat == FEAT_MORE) && !exists_up1) {
+						/*
+						 * When there is a location two levels up but there
+						 * isn't one above, remember where the down staircases
+						 * two up are so up stairs on the level above can be
+						 * safely placed.  We do this by just setting the
+						 * feature to be a wall.
+						 */
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_GRANITE;
+						new->next = dd->join;
+						dd->join = new;
+					} else {
+						/* Do a terrain check? */
+					}
+					join = join->next;
+				}
+			}
+
+			/* Check the level one up for chasms and down stairs */
+			if (exists_up1) {
+				location = &gen_loc_list[lower_up1];
 				join = location->join;
 				while (join) {
 					if (join->feat == FEAT_MORE) {
@@ -1095,41 +976,45 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 						new->feat = FEAT_LESS;
 						new->next = dd->join;
 						dd->join = new;
+					} else if (join->feat == FEAT_CHASM) {
+						/* Two up level chasm case is already dealt with */
+						if (!exists_up2) {
+							struct connector *new = mem_zalloc(sizeof *new);
+							/* If on second bottom level, put a floor */
+							bool floor = (p->depth == z_info->dun_depth - 1);
+
+							/* Join is a floor or a chasm */
+							new->grid.y = join->grid.y + y * CHUNK_SIDE;
+							new->grid.x = join->grid.x + x * CHUNK_SIDE;
+							new->feat = floor ? FEAT_FLOOR : FEAT_CHASM;
+							new->next = dd->join;
+							dd->join = new;
+						}
+					} else if ((join->feat == FEAT_LESS) && !exists_up2) {
+						/*
+						 * When there isn't a location two levels up but there
+						 * is one above, remember where the up staircases are
+						 * so up shafts on this level won't conflict with them
+						 * if the two-up level is ever generated.  We do this
+						 * by just setting the feature to be a wall.
+						 */
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_GRANITE;
+						new->next = dd->join;
+						dd->join = new;
+					} else {
+						/* Do a terrain check? */
 					}
 					join = join->next;
 				}
-			} else {
-				/*
-				 * When there isn't a location above but there is one two levels
-				 * up, remember where the down staircases are so up staircases
-				 * on this level won't conflict with them if the level above is
-				 * ever generated.
-				 */
-				exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 2,
-									  &lower, &upper);
-				if (exists) {
-					location = &gen_loc_list[lower];
-					for (join = location->join; join; join = join->next) {
-						if (join->feat == FEAT_MORE) {
-							struct connector *nc = mem_zalloc(sizeof(*nc));
-							struct loc offset = loc(x * CHUNK_SIDE,
-													y * CHUNK_SIDE);
-							nc->grid = loc_sum(join->grid, offset);
-							nc->feat = FEAT_MORE;
-							nc->next = dd->one_off_above;
-							dd->one_off_above = nc;
-						}
-					}
-				}
 			}
-			
-			/* See if the location down has been generated before */
-			exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos + 1, &lower,
-								  &upper);
 
-			/* Get the joins from the location down */
-			if (exists) {
-				location = &gen_loc_list[lower];
+			/* Check the level one down for up and down stairs */
+			if (exists_down1) {
+				assert(exists_up1);
+				location = &gen_loc_list[lower_down1];
 				join = location->join;
 				while (join) {
 					if (join->feat == FEAT_LESS) {
@@ -1139,26 +1024,35 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 						new->feat = FEAT_MORE;
 						new->next = dd->join;
 						dd->join = new;
+					} else if (feat_is_downstair(join->feat)) {
+						/* Prevent anything that might conflict */
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_GRANITE;
+						new->next = dd->join;
+						dd->join = new;
 					}
 					join = join->next;
 				}
-			} else {
-				/* Same logic as above for looking one past the next level */
-				exists = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos + 2,
-									  &lower, &upper);
-				if (exists) {
-					location = &gen_loc_list[lower];
-					for (join = location->join; join; join = join->next) {
-						if (join->feat == FEAT_LESS) {
-							struct connector *nc = mem_zalloc(sizeof(*nc));
-							struct loc offset = loc(x * CHUNK_SIDE,
-													y * CHUNK_SIDE);
-							nc->grid = loc_sum(join->grid, offset);
-							nc->feat = FEAT_LESS;
-							nc->next = dd->one_off_above;
-							dd->one_off_above = nc;
-						}
+			}
+
+			/* Check the level two down for up shafts */
+			if (exists_down2) {
+				assert(exists_down1);
+				location = &gen_loc_list[lower_down1];
+				join = location->join;
+				while (join) {
+					if (join->feat == FEAT_LESS_SHAFT) {
+						struct connector *new = mem_zalloc(sizeof *new);
+						new->grid.y = join->grid.y + y * CHUNK_SIDE;
+						new->grid.x = join->grid.x + x * CHUNK_SIDE;
+						new->feat = FEAT_MORE_SHAFT;
+						new->next = dd->join;
+						dd->join = new;
+						dd->join = new;
 					}
+					join = join->next;
 				}
 			}
 		}
@@ -1202,8 +1096,7 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 	const char *error = "no generation";
 	int y, x, y_coord, x_coord, tries = 0;
 	struct chunk *chunk = NULL;
-	struct connector *dun_join = NULL, *one_off_above = NULL,
-		*one_off_below = NULL;
+	struct connector *dun_join = NULL;
 	struct loc centre = p->grid;
 
 	/* Generate */
@@ -1227,8 +1120,6 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 		dun->wall = mem_zalloc(z_info->wall_pierce_max * sizeof(struct loc));
 		dun->tunn = mem_zalloc(z_info->tunn_grid_max * sizeof(struct loc));
 		dun->join = NULL;
-		dun->one_off_above = NULL;
-		dun->one_off_below = NULL;
 		dun->curr_join = NULL;
 		dun->nstair_room = 0;
 		dun->first_time = (seed == 0);
@@ -1296,16 +1187,11 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 			}
 		}
 
-		one_off_above = dun->one_off_above;
-		one_off_below = dun->one_off_below;
 		dun_join = dun->join;
 		cleanup_dun_data(dun);
 	}
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
-
-	/* Clear stair creation */
-	//p->upkeep->create_stair = FEAT_NONE;
 
 	/* Chunk it */
 	y_coord = centre.y / CHUNK_SIDE;
@@ -1346,29 +1232,10 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 				for (grid.x = x * CHUNK_SIDE; grid.x < (x + 1) * CHUNK_SIDE;
 					 grid.x++) {
 					int feat = square(chunk, grid)->feat;
-					if (feat_is_stair(feat)	|| feat_is_chasm(feat)) {
-						/* Check previous join info for conflicts */
-						struct connector *join = dun_join, *new;
-						while (join) {
-							if (loc_eq(grid, join->grid)) break;
-							join = join->next;
-						}
-						if (join) continue;
-						join = one_off_above;
-						while (join) {
-							if (loc_eq(grid, join->grid)) break;
-							join = join->next;
-						}
-						join = one_off_below;
-						if (join) continue;
-						while (join) {
-							if (loc_eq(grid, join->grid)) break;
-							join = join->next;
-						}
-						if (join) continue;
-
+					if (feat_is_stair(feat)	|| feat_is_shaft(feat)
+						|| feat_is_chasm(feat)) {
 						/* Write the join */
-						new = mem_zalloc(sizeof *new);
+						struct connector *new = mem_zalloc(sizeof *new);
 						new->grid.y = grid.y - y * CHUNK_SIDE;
 						new->grid.x = grid.x - x * CHUNK_SIDE;
 						new->feat = feat;
@@ -1381,8 +1248,6 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 		}
 	}
 	connectors_free(dun_join);
-	connectors_free(one_off_above);
-	connectors_free(one_off_below);
 
 	set_monster_place_current();
 	return chunk;

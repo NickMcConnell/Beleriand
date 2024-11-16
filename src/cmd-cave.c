@@ -104,9 +104,6 @@ static void do_cmd_go_up_aux(void)
 	/* Player may be dead */
 	if (player->chp < 0) return;
 
-	/* Create a way back */
-	player->upkeep->create_stair = (change == -2) ? FEAT_MORE_SHAFT : FEAT_MORE;
-	
 	/* Deal with cases where you can find your way */
 	msgt(MSG_STAIRS_UP, "You enter a maze of up staircases.");
 
@@ -169,15 +166,11 @@ static void do_cmd_go_down_aux(void)
 		return;
 	}
 
-	/* Create a way back */
-	player->upkeep->create_stair = (change == 2) ? FEAT_LESS_SHAFT : FEAT_LESS;
-	
 	/* Warn players if this could lead them to Morgoth's Throne Room */
 	if (player->depth + change >= z_info->dun_depth) {
 		if (!player->on_the_run) {
 			msg("From up this stair comes the harsh din of feasting in Morgoth's own hall.");
 			if (!get_check("Are you completely sure you wish to descend? ")) {
-				player->upkeep->create_stair = FEAT_NONE;
 				return;
 			}
 		}
@@ -202,7 +195,6 @@ static void do_cmd_go_down_aux(void)
 	if ((player->on_the_run) && (player->depth + change >= z_info->dun_depth)) {
 		msgt(MSG_STAIRS_DOWN, "Try though you might, you cannot find your way back to Morgoth's throne.");
 		msgt(MSG_STAIRS_DOWN, "You emerge near where you began.");
-		player->upkeep->create_stair = FEAT_MORE;
 		change = 0;
 	}
 

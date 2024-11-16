@@ -275,6 +275,7 @@ bool feat_is_icy(int feat);
 bool feat_is_protect(int feat);
 bool feat_is_expose(int feat);
 bool feat_is_stair(int feat);
+bool feat_is_shaft(int feat);
 bool feat_is_downstair(int feat);
 bool feat_is_upstair(int feat);
 bool feat_is_run1(int feat);
@@ -407,7 +408,6 @@ void square_set_trap(struct chunk *c, struct loc grid, struct trap *trap);
 void square_add_trap(struct chunk *c, struct loc grid);
 void square_add_glyph(struct chunk *c, struct loc grid, int type);
 void square_add_web(struct chunk *c, struct loc grid);
-void square_add_stairs(struct chunk *c, struct loc grid, int depth);
 void square_add_door(struct chunk *c, struct loc grid, bool closed);
 
 /* Feature modifiers */

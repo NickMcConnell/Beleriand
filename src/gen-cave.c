@@ -130,13 +130,46 @@ static void flood_access(struct chunk *c, struct loc grid, bool **access,
 }
 
 /**
+ * Places a thread of some feature from one grid to another.
+ *
+ * \param c is the current chunk
+ * \param feat is the feature
+ * \param grid1 is the start grid
+ * \param grid2 is the finish grid
+ */
+static void build_thread(struct chunk *c, int feat, struct loc grid1,
+						 struct loc grid2)
+{
+	struct loc grid = grid1, offset;
+
+	while (!loc_eq(grid, grid2)) {
+		/* Get the basic directions */
+		offset.x = CMP(grid2.x, grid.x);
+		offset.y = CMP(grid2.y, grid.y);
+
+		/* Favour cardinal directions slightly */
+		if (offset.x && offset.y && one_in_(3)) {
+			if (one_in_(2)) {
+				offset.x = 0;
+			} else {
+				offset.y = 0;
+			}
+		}
+
+		/* Move toward the target */
+		grid = loc_sum(offset, grid);
+		square_set_feat(c, grid, feat);
+	}
+}
+
+/**
  * Make sure that the level is sufficiently connected.
  *
  * Currently a failure here results in a new level being generated, which is OK
- * as long as it's not happening too often.  Ideally connect_rooms_stairs()
- * should be rewritten so it doesn't happen at all - NRM.
+ * as long as it's not happening too often.  Failure can now only happen from
+ * the player not reaching the stairs due to rubble.
  */
-static bool check_connectivity(struct chunk *c)
+static bool ensure_connectivity(struct chunk *c)
 {
 	struct loc grid;
 	bool result = false;
@@ -148,13 +181,33 @@ static bool check_connectivity(struct chunk *c)
 	}
 
 	/* Make sure entire dungeon is connected (ignoring rubble) */
-	flood_access(c, player->grid, access, true);
-	for (grid.y = 0; grid.y < c->height; grid.y++) {
-		for (grid.x = 0; grid.x < c->width; grid.x++) {
-			if (player_pass(c, grid, true) && !access[grid.y][grid.x]) {
-				goto CLEANUP;
+	while (true) {
+		bool fail = false;
+		int dist = 2;
+		struct loc target;
+		flood_access(c, player->grid, access, true);
+		for (grid.y = 0; grid.y < c->height; grid.y++) {
+			for (grid.x = 0; grid.x < c->width; grid.x++) {
+				if (player_pass(c, grid, true) && !access[grid.y][grid.x]) {
+					fail = true;
+					break;
+				}
 			}
+			if (fail) break;
 		}
+		if (!fail) break;
+
+		/* Find a room to connect the fail grid to */
+		while (true) {
+			struct loc tl, br;
+			tl.x = MAX(grid.x - dist, 1);
+			br.x = MIN(grid.x + dist, c->width - 1);
+			tl.y = MAX(grid.y - dist, 1);
+			br.y = MIN(grid.y + dist, c->height - 1);
+			if (cave_find_in_range(c, &target, tl, br, square_isroom)) break;
+			dist++;
+		}
+		build_thread(c, FEAT_FLOOR, grid, target);
 	}
 
 	/* Reset the array used for checking connectivity */
@@ -188,14 +241,9 @@ CLEANUP:
  * Places a streamer of rock through dungeon.
  *
  * \param c is the current chunk
- * \param feat is the base feature (FEAT_MAGMA or FEAT_QUARTZ)
- *
- * Note that their are actually six different terrain features used to
- * represent streamers. Three each of magma and quartz, one for basic vein, one
- * with hidden gold, and one with known gold. The hidden gold types are
- * currently unused.
+ * \param feat is the base feature (currently only FEAT_QUARTZ)
  */
-static bool build_streamer(struct chunk *c, int feat)
+static void build_streamer(struct chunk *c, int feat)
 {
 	/* Hack -- Choose starting point */
 	struct loc grid = rand_loc(loc(c->width / 2, c->height / 2), 15, 10);
@@ -228,8 +276,6 @@ static bool build_streamer(struct chunk *c, int feat)
 		/* Stop at dungeon edge */
 		if (!square_in_bounds(c, grid)) break;
 	}
-
-	return true;
 }
 
 /**
@@ -376,6 +422,14 @@ static void build_chasms(struct chunk *c)
     int chasms = 0;
     //int blocks = (c->height / z_info->block_hgt) * (c->width / z_info->block_wid);
     int blocks = 15; //Another guess - NRM
+
+	/* If the level below is already built, no chasms */
+	int lower, upper;
+	bool below = gen_loc_find(chunk_list[player->place].x_pos,
+							  chunk_list[player->place].y_pos,
+							  chunk_list[player->place].z_pos + 1,
+							  &lower, &upper);
+	if (below) return;
 
     /* Determine whether to add chasms, and how many */
     if ((c->depth > 2) && (c->depth < z_info->dun_depth - 1) &&
@@ -1179,6 +1233,7 @@ static void build_staircase_rooms(struct chunk *c, const char *label)
 	}
 	assert(i < num_rooms);
 	for (join = dun->join; join; join = join->next) {
+		if (!(feat_is_stair(join->feat) || feat_is_shaft(join->feat))) continue;
 		dun->curr_join = join;
 		if (!room_build(c, profile)) {
 			dump_level_simple(NULL, format("%s:  Failed to Build "
@@ -1196,7 +1251,7 @@ static void build_staircase_rooms(struct chunk *c, const char *label)
 /**
  * Add stairs to a level, taking into account joins to other levels.
  */
-static void handle_level_stairs(struct chunk *c, int down_count, int up_count)
+static void handle_level_stairs(struct chunk *c, struct player *p, int count)
 {
 	/*
 	 * Require that the stairs be at least four grids apart (two for
@@ -1206,14 +1261,37 @@ static void handle_level_stairs(struct chunk *c, int down_count, int up_count)
 	 * connecting level won't overlap.
 	 */
 	int minsep = 4;
+	int lower, upper;
+	bool one_above = gen_loc_find(chunk_list[p->place].x_pos,
+								  chunk_list[p->place].y_pos,
+								  chunk_list[p->place].z_pos - 1,
+								  &lower, &upper);
+	bool one_below = gen_loc_find(chunk_list[p->place].x_pos,
+								  chunk_list[p->place].y_pos,
+								  chunk_list[p->place].z_pos + 1,
+								  &lower, &upper);
+	bool two_above = gen_loc_find(chunk_list[p->place].x_pos,
+								  chunk_list[p->place].y_pos,
+								  chunk_list[p->place].z_pos - 1,
+								  &lower, &upper);
+	bool two_below = gen_loc_find(chunk_list[p->place].x_pos,
+								  chunk_list[p->place].y_pos,
+								  chunk_list[p->place].z_pos + 1,
+								  &lower, &upper);
 
-	if (player->depth < z_info->max_depth - 1) {
-		alloc_stairs(c, FEAT_MORE, down_count, minsep, false,
-			dun->one_off_below);
+	if (!one_below) {
+		assert(!two_below);
+		alloc_stairs(c, FEAT_MORE, count, minsep, true);
+	} else if (!two_below) {
+		alloc_stairs(c, FEAT_MORE_SHAFT, count / 2, minsep, false);
 	}
-	if (chunk_list[player->place].adjacent[DIR_UP]) {
-		alloc_stairs(c, FEAT_LESS, up_count, minsep, false,
-			dun->one_off_above);
+
+	if (!one_above) {
+		assert(two_above);
+		alloc_stairs(c, FEAT_MORE, count / 2 + 1, minsep, false);
+	} else if (!two_above) {
+		assert(one_above);
+		alloc_stairs(c, FEAT_MORE_SHAFT, count / 2, minsep, false);
 	}
 }
 
@@ -1353,13 +1431,6 @@ static struct chunk *standard_chunk(struct player *p, int depth, int height,
 
 	/* Connect all the rooms together */
 	do_traditional_tunneling(c);
-	//if (!check_connectivity(c)) {
-	//	uncreate_artifacts(c);
-	//	uncreate_greater_vaults(c, p);
-	//	//delete_temp_monsters();
-	//	chunk_wipe(c);
-	//	return NULL;
-	//}
 
 	/* Turn the outer permanent walls back to granite */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
@@ -1395,19 +1466,12 @@ struct chunk *standard_gen(struct player *p) {
 	int i;
 	int y_size = ARENA_SIDE, x_size = ARENA_SIDE;
 	struct chunk *c;
+	bool forge = false;
+	struct connector *join;
 
 	/* Hack - variables for allocations */
 	int rubble_gen, mon_gen, obj_room_gen;
 
-	/* Levels above and below impose stair restrictions */
-	int lower, upper;
-	bool forge = false;
-	bool above = gen_loc_find(chunk_list[p->place].x_pos,
-							  chunk_list[p->place].y_pos,
-							  chunk_list[p->place].z_pos - 1, &lower, &upper);
-	bool below = gen_loc_find(chunk_list[p->place].x_pos,
-							  chunk_list[p->place].y_pos,
-							  chunk_list[p->place].z_pos + 1, &lower, &upper);
 
 	/* Guarantee a forge if one hasn't been generated in a while */
 	if (p->forge_drought >= rand_range(2000, 5000)) forge = true;
@@ -1428,9 +1492,8 @@ struct chunk *standard_gen(struct player *p) {
 	for (i = 0; i < dun->profile->str.qua; i++)
 		build_streamer(c, FEAT_QUARTZ);
 
-	/* Place 3 or 4 down stairs and 1 or 2 up stairs near some walls */
-	handle_level_stairs(c, below ? 0 : rand_range(3, 4),
-						above ? 0 : rand_range(3, 4));
+	/* Place stairs near some walls as allowed by levels above and below */
+	handle_level_stairs(c, p, rand_range(3, 4));
 
     /* Add any chasms if needed */
     build_chasms(c);
@@ -1442,17 +1505,18 @@ struct chunk *standard_gen(struct player *p) {
 	}
 	alloc_object(c, SET_BOTH, TYP_RUBBLE, rubble_gen, p->depth, ORIGIN_FLOOR);
 
-	/* Determine the character location */
-	if (!new_player_spot(c, p)) {
-		uncreate_artifacts(c);
-		uncreate_greater_vaults(c, p);
-		delete_temp_monsters();
-		chunk_wipe(c);
-		return NULL;
+	/* Add join floors (the bottoms of chasms) */
+	for (join = dun->join; join; join = join->next) {
+		if (feat_is_floor(join->feat)) {
+			/* Allow any passable terrain, but replace impassable with floor */
+			if (!square_ispassable(c, join->grid)) {
+				square_set_feat(c, join->grid, FEAT_FLOOR);
+			}
+		}
 	}
 
 	/* Check dungeon connectivity */
-	if (!check_connectivity(c)) {
+	if (!ensure_connectivity(c)) {
 		if (OPT(p, cheat_room)) msg("Failed connectivity.");
 		uncreate_artifacts(c);
 		uncreate_greater_vaults(c, p);
@@ -1463,6 +1527,9 @@ struct chunk *standard_gen(struct player *p) {
 
 	/* Remove all monster restrictions. */
 	//mon_restrict(NULL, p->depth, p->depth, true);
+
+	/* Place the player */
+	player_place(c, p, p->grid);
 
 	/* Place Morgoth if on the run */
 	if (p->on_the_run && !p->morgoth_slain) {

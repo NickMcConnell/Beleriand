@@ -2501,7 +2501,6 @@ void disconnect_stats(int nsim, bool stop_on_disconnect)
 		 * 100% of the time act as if came in via a down staircase.
 		 */
 		use_stairs = true;
-		player->upkeep->create_stair = FEAT_LESS;
 
 		/* Make a new cave */
 		prepare_next_level(player);
