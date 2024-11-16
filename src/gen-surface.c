@@ -579,6 +579,7 @@ static void make_piece(struct chunk *c, enum biome_type terrain,
 	int i, form_grids, size = point_set_size(piece);
 	struct surface_profile *s;
 	struct area_profile *area;
+	struct formation_profile *form;
 
 	/* Get the correct surface profile */
 	for (i = 0; i < z_info->surface_max; i++) {
@@ -623,19 +624,25 @@ static void make_piece(struct chunk *c, enum biome_type terrain,
 	}
 
 	/* Place some formations */
-	if (!s->formations.proportion) return;
-	form_grids = size / s->formations.proportion;
-	if (one_in_(2)) {
-		form_grids -= randint0(form_grids / 2);
-	} else {
-		form_grids += randint0(form_grids / 2);
-	}
-	while (form_grids > 0) {
-		form_grids -= make_formation(c, piece, s->base_feats,
-									 s->num_base_feats, s->formations.feats,
-									 s->formations.num_feats,
-									 randcalc(s->formations.size, 0,
-											  RANDOMISE));
+	form = s->formations;
+	while (form) {
+		if (!form->proportion) {
+			form = form->next;
+			continue;
+		}
+		form_grids = size / form->proportion;
+		if (one_in_(2)) {
+			form_grids -= randint0(form_grids / 2);
+		} else {
+			form_grids += randint0(form_grids / 2);
+		}
+		while (form_grids > 0) {
+			form_grids -= make_formation(c, piece, s->base_feats,
+										 s->num_base_feats, form->feats,
+										 form->num_feats,
+										 randcalc(form->size, 0, RANDOMISE));
+		}
+		form = form->next;
 	}
 }
 
