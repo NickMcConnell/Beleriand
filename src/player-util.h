@@ -79,6 +79,8 @@ void convert_mana_to_hp(struct player *p, int32_t sp);
 void player_digest(struct player *p);
 void player_update_light(struct player *p);
 struct object *player_best_digger(struct player *p, bool forbid_stack);
+int player_check_terrain_damage(struct player *p, struct loc grid, bool actual);
+void player_take_terrain_damage(struct player *p, struct loc grid);
 bool player_radiates(struct player *p);
 void player_fall_in_pit(struct player *p, bool spiked);
 void player_falling_damage(struct player *p, bool stun);

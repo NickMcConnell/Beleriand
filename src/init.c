@@ -133,6 +133,14 @@ static const char *terrain_flags[] =
     NULL
 };
 
+static const char *mon_race_flags[] =
+{
+	#define RF(a, b, c) #a,
+	#include "list-mon-race-flags.h"
+	#undef RF
+	NULL
+};
+
 static const char *player_info_flags[] =
 {
 	#define PF(a, b) #a,
@@ -1750,6 +1758,20 @@ static enum parser_error parse_feat_look_in_preposition(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_feat_resist_flag(struct parser *p) {
+	struct feature *f = parser_priv(p);
+	int flag = lookup_flag(mon_race_flags, parser_getsym(p, "flag"));
+
+	if (!f) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	if (flag == FLAG_END) {
+		return PARSE_ERROR_INVALID_FLAG;
+	}
+	f->resist_flag = flag;
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_feat(void) {
 	struct parser *p = parser_new();
 
@@ -1772,6 +1794,7 @@ static struct parser *init_parse_feat(void) {
 	parser_reg(p, "confused-msg str text", parse_feat_confused_msg);
 	parser_reg(p, "look-prefix str text", parse_feat_look_prefix);
 	parser_reg(p, "look-in-preposition str text", parse_feat_look_in_preposition);
+	parser_reg(p, "resist-flag sym flag", parse_feat_resist_flag);
 
 	/*
 	 * Since the layout of the terrain array is fixed by list-terrain.h,

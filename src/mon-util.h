@@ -41,12 +41,13 @@ void drop_loot(struct chunk *c, struct monster *mon, struct loc grid,
 void monster_death(struct monster *mon, struct player *p, bool by_player,
 				   const char *note, bool stats);
 bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
-							enum mon_messages hurt_msg,
 							enum mon_messages die_msg);
 bool mon_take_hit(struct monster *mon, struct player *p, int dam,
 	const char *note);
 bool similar_monsters(struct monster *mon1, struct monster *mon2);
 void scare_onlooking_friends(const struct monster *mon, int amount);
+void monster_take_terrain_damage(struct monster *mon);
+bool monster_taking_terrain_damage(struct chunk *c, struct monster *mon);
 bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj);
 
 #endif /* MONSTER_UTILITIES_H */

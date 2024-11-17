@@ -125,6 +125,12 @@ static bool monster_can_exist(struct chunk *c, struct monster *mon,
 		}
 	}
 
+	/* Square is horribly dangerous */
+	if (square_isfiery(c, grid) &&
+		!(rf_has(race->flags, RF_FLYING) || rf_has(race->flags, RF_RES_FIRE))) {
+		return false;
+	}
+
 	/* Anything else passable is fine */
 	if (square_ispassable(c, grid)) return true;
 
@@ -382,6 +388,19 @@ static int distance_squared(struct loc grid1, struct loc grid2)
 	int y_diff = grid1.y - grid2.y;
 	int x_diff = grid1.x - grid2.x;
 	return y_diff * y_diff + x_diff * x_diff;
+}
+
+/**
+ * Check if the monster can occupy a grid safely
+ */
+static bool monster_hates_grid(struct monster *mon, struct loc grid)
+{
+	/* Only some creatures can handle damaging terrain */
+	if (square_isdamaging(cave, grid) &&
+		!rf_has(mon->race->flags, square_feat(cave, grid)->resist_flag)) {
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -788,6 +807,9 @@ static bool get_move_find_safety(struct monster *mon, struct loc *tgrid)
 					continue;
 				}
 
+				/* Ignore damaging terrain if they can't handle it */
+				if (monster_hates_grid(mon, grid)) continue;
+
 				/* Get the accumulated cost to enter this grid */
 				parent_cost = safe_cost[y][x];
 
@@ -1126,6 +1148,9 @@ static bool get_move_retreat(struct monster *mon, struct loc *tgrid)
                 /* Check bounds */
                 if (!square_in_bounds(cave, grid)) continue;
 
+				/* Ignore damaging terrain if they can't handle it */
+				if (monster_hates_grid(mon, grid)) continue;
+
                 /* Accept the first non-visible grid with a higher cost */
                 if (flow_dist(mon->flow, grid) >
 					flow_dist(mon->flow, mon->grid)) {
@@ -1155,6 +1180,9 @@ static bool get_move_retreat(struct monster *mon, struct loc *tgrid)
 
 			/* No grids in LOS */
 			if (square_isview(cave, grid)) continue;
+
+			/* Ignore damaging terrain if they can't handle it */
+			if (monster_hates_grid(mon, grid)) continue;
 
 			/* Grid must be pretty easy to enter */
 			if (monster_entry_chance(cave, mon, grid, &dummy) < 50) continue;
@@ -1274,6 +1302,9 @@ static void get_move_advance(struct monster *mon, struct loc *tgrid)
 
 		/* Check Bounds */
 		if (!square_in_bounds(cave, grid)) continue;
+
+		/* Ignore damaging terrain if they can't handle it */
+		if (monster_hates_grid(mon, grid)) continue;
 
 		/* We're following a scent trail */
 		if (can_use_scent) {
@@ -1521,6 +1552,13 @@ static bool get_move(struct monster *mon, struct loc *tgrid, bool *fear,
 
 		/* If we can't hit anything, do not move */
 		return false;
+	}
+
+	/* Monster is taking damage from terrain */
+	if (monster_taking_terrain_damage(cave, mon)) {
+		/* Try to find safe place */
+		get_move_retreat(mon, tgrid);
+		return true;
 	}
 
 	/* Monster is only allowed to use targeting information. */
@@ -3702,6 +3740,9 @@ void process_monsters(int minimum_energy)
 
 		/* The monster takes its turn */
 		monster_turn(mon);
+
+		/* Monster can take terrain damage after its turn. */
+		monster_take_terrain_damage(mon);
 
 		/* Monster is no longer current */
 		mon_current = -1;

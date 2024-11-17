@@ -1020,9 +1020,61 @@ void monster_death(struct monster *mon, struct player *p, bool by_player,
 }
 
 /**
- * Decreases a monster's hit points by `dam` and handle monster death.
+ * Deal damage to a monster from another monster (or at least not the player).
  *
- * Hack -- we "delay" fear messages by passing around a "fear" flag.\\TODO??
+ * This is a helper for melee handlers. It is very similar to mon_take_hit(),
+ * but eliminates the player-oriented stuff of that function.
+ *
+ * \param context is the project_m context.
+ * \param hurt_msg is the message if the monster is hurt (if any).
+ * \return true if the monster died, false if it is still alive.
+ */
+bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
+							enum mon_messages die_msg)
+{
+	assert(t_mon);
+
+	/* "Unique" monsters can only be "killed" by the player */
+	if (monster_is_unique(t_mon)) {
+		/* Reduce monster hp to zero, but don't kill it. */
+		if (dam > t_mon->hp) dam = t_mon->hp;
+	}
+
+	/* Redraw (later) if needed */
+	if (player->upkeep->health_who == t_mon)
+		player->upkeep->redraw |= (PR_HEALTH);
+
+	/* Hurt the monster */
+	t_mon->hp -= dam;
+
+	/* Dead or damaged monster */
+	if (t_mon->hp < 0) {
+		/* Death message */
+		add_monster_message(t_mon, die_msg, false);
+
+		/* Generate treasure, etc */
+		monster_death(t_mon, player, false, NULL, false);
+
+		return true;
+	}
+
+	/* If there was real damage dealt... */
+	if (dam > 0) {
+		/* Wake it up */
+		make_alert(t_mon, dam);
+
+		/* Recalculate desired minimum range */
+		if (dam > 0) t_mon->min_range = 0;
+	}
+
+	/* Monster will always go active */
+	mflag_on(t_mon->mflag, MFLAG_ACTIVE);
+
+	return false;
+}
+
+/**
+ * Decreases a monster's hit points by `dam` and handle monster death.
  *
  * We announce monster death (using an optional "death message" (`note`)
  * if given, and a otherwise a generic killed/destroyed message).
@@ -1116,6 +1168,41 @@ void scare_onlooking_friends(const struct monster *mon, int amount)
 
 	return;
 }
+
+/**
+ * Terrain damages monster
+ */
+void monster_take_terrain_damage(struct monster *mon)
+{
+	int dd = 4;
+	int ds = 4;
+
+	if (!mon->race) return;
+
+	/* Flyers take less damage */
+	if (rf_has(mon->race->flags, RF_FLYING)) dd = 1;
+
+	/* Damage the monster */
+	if (square_isfiery(cave, mon->grid)) {
+		if (!rf_has(mon->race->flags, RF_RES_FIRE)) {
+			mon_take_nonplayer_hit(damroll(dd, ds), mon, MON_MSG_DISINTEGRATES);
+		}
+	}
+}
+
+/**
+ * Terrain is currently damaging monster
+ */
+bool monster_taking_terrain_damage(struct chunk *c, struct monster *mon)
+{
+	if (square_isdamaging(c, mon->grid) &&
+		!rf_has(mon->race->flags, square_feat(c, mon->grid)->resist_flag)) {
+		return true;
+	}
+
+	return false;
+}
+
 /**
  * ------------------------------------------------------------------------
  * Monster inventory utilities
