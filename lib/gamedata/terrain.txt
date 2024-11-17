@@ -441,3 +441,15 @@ flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | RUN2 | ICY | TRAP
 flags:MTRAP | TORCH
 desc:An exposed sheet of ice.  Can be walked across by anything, and can
 desc: hold items.  Does not break line of sight.
+
+code:LAVA
+name:lava
+graphics:#:r
+priority:10
+flags:LOS | PROJECT | FIERY | PASSABLE | NO_SCENT | BRIGHT
+look-prefix:some
+desc:A fiery pool of glowing lava.  Step in it at your peril!
+walk-msg:The lava will scald you!  Really step in?
+run-msg:Lava blocks your path.  Step into it?
+hurt-msg:The lava burns you!
+die-msg:burning to a cinder in lava

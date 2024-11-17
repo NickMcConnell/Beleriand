@@ -282,7 +282,9 @@ static void cave_unlight(struct point_set *ps)
 		struct loc grid = ps->pts[i];
 
 		/* Darken the grid... */
-		sqinfo_off(square(cave, ps->pts[i])->info, SQUARE_GLOW);
+		if (!square_isbright(cave, ps->pts[i])) {
+			sqinfo_off(square(cave, ps->pts[i])->info, SQUARE_GLOW);
+		}
 
 		/* Hack -- Forget "boring" grids */
 		if (square_isfloor(cave, grid))

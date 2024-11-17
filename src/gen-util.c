@@ -933,7 +933,7 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 				/* Quartz vein */
 			case '%': square_set_feat(c, grid, FEAT_QUARTZ); break;
 				/* Glyph of warding */
-			case ';': square_add_glyph(c, grid, GLYPH_WARDING); break;
+			case '8': square_add_glyph(c, grid, GLYPH_WARDING); break;
 				/* Visible door */
 			case '+': place_closed_door(c, grid); break;
 				/* Secret door */
@@ -961,16 +961,18 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 				place_stairs(c, grid, false, FEAT_MORE, false);
 				break;
 			}
+				/* Lava */
+			case '`': square_set_feat(c, grid, FEAT_LAVA); break;
 				/* Water */
 			case '/': square_set_feat(c, grid, FEAT_S_WATER); break;
 				/* Trees */
-				//case ';': {
-				//if (one_in_(2))
-				//	square_set_feat(c, grid, FEAT_TREE);
-				//else
-				//	square_set_feat(c, grid, FEAT_TREE2);
-				//break;
-				//}
+			case ';': {
+				if (one_in_(2))
+					square_set_feat(c, grid, FEAT_L_TREE);
+				else
+					square_set_feat(c, grid, FEAT_H_TREE);
+				break;
+			}
 				/* Dune */
 			case '(': square_set_feat(c, grid, FEAT_DUNE); break;
 			}

@@ -62,7 +62,7 @@ static void project_feature_handler_DARK(project_feature_handler_context_t *cont
 {
 	const struct loc grid = context->grid;
 
-	if ((player->depth != 0 || !is_daytime())) {
+	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, grid)) {
 		/* Turn off the light */
 		sqinfo_off(square(cave, grid)->info, SQUARE_GLOW);
 	}

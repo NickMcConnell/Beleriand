@@ -145,6 +145,22 @@ bool feat_is_torch(int feat)
 }
 
 /**
+ * True if the feature is internally lit.
+ */
+bool feat_is_bright(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_BRIGHT);
+}
+
+/**
+ * True if the feature is internally lit.
+ */
+bool feat_is_fiery(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_FIERY);
+}
+
+/**
  * True if the feature is a pit.
  */
 bool feat_is_pit(int feat)
@@ -817,11 +833,35 @@ bool square_ispit(struct chunk *c, struct loc grid) {
 }
 
 /**
+ * True if the cave square is internally lit.
+ */
+bool square_isbright(struct chunk *c, struct loc grid) {
+	assert(square_in_bounds(c, grid));
+	return feat_is_bright(square(c, grid)->feat);
+}
+
+/**
+ * True if the cave square is fire-based.
+ */
+bool square_isfiery(struct chunk *c, struct loc grid) {
+	assert(square_in_bounds(c, grid));
+	return feat_is_fiery(square(c, grid)->feat);
+}
+
+/**
  * True if the cave square is lit.
  */
 bool square_islit(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return square_light(c, grid) > 0 ? true : false;
+}
+
+/**
+ * True if the cave square can damage the inhabitant - only lava so far
+ */
+bool square_isdamaging(struct chunk *c, struct loc grid) {
+	assert(square_in_bounds(c, grid));
+	return feat_is_fiery(square(c, grid)->feat);
 }
 
 /**
@@ -1306,6 +1346,11 @@ void square_set_feat(struct chunk *c, struct loc grid, int feat)
 
 	/* Make the change */
 	c->squares[grid.y][grid.x].feat = feat;
+
+	/* Light bright terrain */
+	if (feat_is_bright(feat)) {
+		sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+	}
 
 	/* Make the new terrain feel at home */
 	if (character_dungeon) {
