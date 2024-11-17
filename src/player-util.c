@@ -357,6 +357,52 @@ bool player_radiates(struct player *p)
 }
 
 /**
+ * See how much damage the player will take from terrain.
+ *
+ * \param p is the player to check
+ * \param grid is the location of the terrain
+ * \param actual, if true, will cause the player to learn the appropriate
+ * runes if equipment or effects mitigate the damage.
+ */
+int player_check_terrain_damage(struct player *p, struct loc grid, bool actual)
+{
+	int dam_taken = 0;
+
+	if (square_isfiery(cave, grid)) {
+		int dd = 4;
+		int ds = 4;
+
+		/* Fire damage */
+		dam_taken = adjust_dam(p, dd, ds, ELEM_FIRE);
+
+	}
+
+	return dam_taken;
+}
+
+/**
+ * Terrain damages the player
+ */
+void player_take_terrain_damage(struct player *p, struct loc grid)
+{
+	int dam_taken = player_check_terrain_damage(p, grid, true);
+	int res = p->state.el_info[ELEM_FIRE].res_level;
+
+	if (!dam_taken) {
+		return;
+	}
+
+	/* Damage the player and inventory. */
+	if (square_isfiery(cave, grid)) {
+		char dam_text[32] = "";
+
+		msg("%s%s", square_feat(cave, grid)->hurt_msg, dam_text);
+		inven_damage(p, ELEM_FIRE, MIN((dam_taken / 10) + 1, 3), res);
+	}
+	take_hit(p, dam_taken, square_feat(cave, grid)->die_msg);
+}
+
+/**
  * Player falls in a pit, maybe spiked
  */
 void player_fall_in_pit(struct player *p, bool spiked)

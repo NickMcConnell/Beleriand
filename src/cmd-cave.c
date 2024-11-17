@@ -1655,6 +1655,24 @@ void move_player(int dir, bool disarm)
 		bool web = square_iswebbed(cave, player->grid);
 		bool step = true;
 
+		/* If not confused, allow check before moving into damaging terrain. */
+		if (square_isdamaging(cave, grid) && !player->timed[TMD_CONFUSED]) {
+			struct feature *feat = square_feat(cave, grid);
+			int dam_taken = player_check_terrain_damage(player,	grid, false);
+
+			/* Check if running, or going to cost more than a third of hp. */
+			if (player->upkeep->running && dam_taken) {
+				if (!get_check(feat->run_msg)) {
+					player->upkeep->running = 0;
+					step = false;
+				}
+			} else {
+				if (dam_taken > player->chp / 3) {
+					step = get_check(feat->walk_msg);
+				}
+			}
+		}
+
 		/* Check before walking on known traps/chasms on movement */
 		if (!confused && square_isknown(cave, grid)) {
 			/* If the player hasn't already leapt */
