@@ -678,6 +678,26 @@ static void calc_lighting(struct chunk *c, struct player *p)
 			} else {
 				c->squares[y][x].light = 0;
 			}
+
+			/* Squares with bright terrain have intensity 2 */
+			if (square_isbright(c, grid)) {
+				int dir;
+				c->squares[y][x].light += 2;
+				for (dir = 0; dir < 8; dir++) {
+					struct loc adj_grid = loc_sum(grid, ddgrid_ddd[dir]);
+					if (!square_in_bounds(c, adj_grid)) continue;
+					/*
+					 * Only brighten a wall if the player
+					 * is in position to view the face
+					 * that's lit up.
+					 */
+					if (!square_allowslos(c, adj_grid) &&
+							!source_can_light_wall(
+							c, p, grid, adj_grid))
+							continue;
+					c->squares[adj_grid.y][adj_grid.x].light += 1;
+				}
+			}
 		}
 	}
 

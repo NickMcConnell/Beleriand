@@ -709,6 +709,8 @@ extern bool generate_starburst_room(struct chunk *c, struct point_set *set,
 
 							if (light) {
 								sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+							} else if (!square_isbright(c, grid)) {
+								sqinfo_off(square(c, grid)->info, SQUARE_GLOW);
 							}
 						}
 
