@@ -488,6 +488,8 @@ void chunk_wipe(struct chunk *c)
 
 	mem_free(c->feat_count);
 	mem_free(c->objects);
+	string_free(c->vault_name);
+	string_free(c->name);
 	mem_free(c);
 }
 

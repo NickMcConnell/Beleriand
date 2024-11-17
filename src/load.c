@@ -1473,10 +1473,7 @@ int rd_chunks(void)
 		}
 
 		rd_byte(&tmp8u);
-		if (tmp8u) {
-			c = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
-			p_c = chunk_new(CHUNK_SIDE, CHUNK_SIDE);
-		} else {
+		if (!tmp8u) {
 			continue;
 		}
 
