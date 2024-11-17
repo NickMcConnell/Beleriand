@@ -1360,7 +1360,9 @@ static void cleanup_river(void)
 	int idx;
 	for (idx = 0; idx < z_info->river_max; idx++) {
 		struct river_stretch *stretch = river_info[idx].stretch, *next;
-		mem_free(river_info[idx].name);
+		string_free(river_info[idx].name);
+		string_free(river_info[idx].filename);
+		string_free(river_info[idx].join);
 		while (stretch) {
 			struct river_mile *mile = stretch->miles, *next_mile;
 			next = stretch->next;
