@@ -1029,21 +1029,30 @@ static size_t prt_unignore(int row, int col)
 }
 
 
+static int fmt_depth(char buf[], int max)
+{
+	const char *name = region_info[chunk_list[player->place].region].name;
+	if (player->depth) {
+		my_strcpy(buf, format("%s %d'", name, player->depth * 50), max);
+	} else {
+		my_strcpy(buf, format("%s", name), max);
+	}
+	return strlen(buf);
+}
+
 /**
  * Prints depth in stat area
  */
 static size_t prt_depth(int row, int col)
 {
-	char buf[32];
-	if (!player->depth)
-		my_strcpy(buf, "Surface", sizeof(buf));
-	else
-		strnfmt(buf, sizeof(buf), "%d'", player->depth * 50);
+	char depths[80];
+
+	fmt_depth(depths, sizeof(depths));
 
 	/* Right-Adjust the "depth", and clear old values */
-	put_str(format("%7s", buf), row, col);
+	put_str(depths, row, col);
 
-	return 7;
+	return strlen(depths) + 1;
 }
 
 /**
