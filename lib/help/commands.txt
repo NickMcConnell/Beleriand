@@ -63,7 +63,7 @@ combination and does not pass it on):
   z    Stay still                      Z    Rest for a period
   !    -                               ^a   (special - debug command)
   @    Character description           ^b   (hjkl - bash a door)
-  #    -                               ^c   (special - break)
+  #    Check time                      ^c   (special - break)
   $    -                               ^d   -
   %    -                               ^e   Toggle inven/equip window
   ^    (special - control key)         ^f   Fuel your light source

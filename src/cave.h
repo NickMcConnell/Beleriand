@@ -237,7 +237,7 @@ void square_light_spot(struct chunk *c, struct loc grid);
 void light_room(struct loc grid, bool light);
 void wiz_light(struct chunk *c, struct player *p);
 void wiz_dark(struct chunk *c, struct player *p);
-void cave_illuminate(struct chunk *c, bool daytime);
+void illuminate(struct chunk *c);
 void expose_to_sun(struct chunk *c, struct loc grid, bool daytime);
 
 /* cave-square.c */

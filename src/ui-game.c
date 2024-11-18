@@ -183,7 +183,8 @@ struct cmd_info cmd_info[] =
 	{ "Abilities list", { KC_TAB, KC_TAB, KC_TAB, KC_TAB }, CMD_NULL, do_cmd_abilities, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL, 0, NULL, NULL, NULL, 0 }
+	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Show the time of day", { '#' }, CMD_NULL, do_cmd_time, NULL, 0, NULL, NULL, NULL, 0 }
 };
 
 /**

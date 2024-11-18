@@ -463,9 +463,9 @@ void wiz_dark(struct chunk *c, struct player *p)
 }
 
 /**
- * Light or Darken the town
+ * Light or darken outside areas
  */
-void cave_illuminate(struct chunk *c, bool daytime)
+void illuminate(struct chunk *c)
 {
 	int y, x;
 
@@ -489,14 +489,19 @@ void cave_illuminate(struct chunk *c, bool daytime)
 					light = true;
 			}
 
-			/* Only interesting grids at night */
+			/* Light or darken */
 			if (is_daylight()) {
 				sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
 				if (light && square_isview(c, grid)) square_memorize(c, grid);
 			}
+			if (is_night()) {
+				if (!square_isbright(cave, grid)) {
+					/* Turn off the light */
+					sqinfo_off(square(cave, grid)->info, SQUARE_GLOW);
+				}
+			}
 		}
 	}
-			
 			
 	/* Fully update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
