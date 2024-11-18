@@ -63,7 +63,7 @@ combination and does not pass it on):
   z    -                               Z    -
   !    -                               ^a   (special - debug command)
   @    Center map                      ^b   (hjkl - bash a door)
-  #    -                               ^c   (special - break)
+  #    Check time                      ^c   (special - break)
   $    -                               ^d   Forge an item
   %    -                               ^e   Toggle inven/equip window
   ^    (special - control key)         ^f   Fuel your light source

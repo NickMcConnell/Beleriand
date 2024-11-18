@@ -1494,7 +1494,7 @@ static void arena_realign(struct player *p, int y_offset, int x_offset)
 		}
 	}
 	set_monster_place_current();
-	cave_illuminate(cave, is_daytime());
+	illuminate(cave);
 	update_view(cave, p);
 }
 

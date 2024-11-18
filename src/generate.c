@@ -1439,7 +1439,7 @@ void prepare_next_level(struct player *p)
 	}
 
 	/* Apply illumination */
-	cave_illuminate(cave, is_daytime());
+	illuminate(cave);
 
 	/* Note any forges generated, done here in case generation fails earlier */
 	for (y = 0; y < cave->height; y++) {

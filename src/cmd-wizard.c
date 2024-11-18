@@ -1255,7 +1255,7 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 			/* Generate a new chunk */
 			idx = chunk_fill(chunk, &ref, y + ARENA_CHUNKS / 2,
 							 x + ARENA_CHUNKS / 2);
-			if ((y == 1) && (x == 1)) {
+			if ((y == 0) && (x == 0)) {
 				square_set_feat(chunk, loc(CHUNK_SIDE / 2, CHUNK_SIDE / 2),
 								FEAT_ROAD);
 				player->place = idx;
@@ -1298,7 +1298,7 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply illumination */
-	cave_illuminate(cave, is_daytime());
+	if (!z_pos) illuminate(cave);
 
 	/* The dungeon is ready */
 	character_dungeon = true;

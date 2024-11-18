@@ -743,12 +743,32 @@ void process_world(struct chunk *c)
 		play_ambient_sound();
 	}
 
+	/* Handle sunshine */
+	if (outside()) {
+		/* Daybreak/Nightfall */
+		if (!(turn % ((10L * z_info->day_length) / 2))) {
+			/* Check for dawn */
+			bool dawn = (!(turn % (10L * z_info->day_length)));
+
+			if (dawn) {
+				/* Day breaks */
+				msg("The sun has risen.");
+			} else {
+				/* Night falls */
+				msg("The sun has fallen.");
+			}
+
+			/* Illuminate */
+			illuminate(c);
+		}
+	}
+
 	/* Handle  the "surface" */
 	if (!player->depth) {
-		if (percent_chance(10)) {
+		//B NONE FOR NOWif (percent_chance(10)) {
 			/* Make a new monster */
-			(void)pick_and_place_monster_on_stairs(c, player, true, 0, false);
-		}
+		//	(void)pick_and_place_monster_on_stairs(c, player, true, 0, false);
+		//}
 	}
 
 	/* Check for creature generation */

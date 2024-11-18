@@ -22,6 +22,7 @@
 #include "cmd-core.h"
 #include "cmds.h"
 #include "game-input.h"
+#include "game-world.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-util.h"
@@ -162,4 +163,23 @@ void do_cmd_note(void)
 
 	/* Add a history entry */
 	history_add(player, note, HIST_USER_INPUT);
+}
+
+/**
+ * Display the time and date
+ */
+void do_cmd_time(void)
+{
+	int32_t len = 10L * z_info->day_length;
+	int32_t tick = turn % len + len / 4;
+
+	int day = turn / len + 1;
+	int hour = (24 * tick / len) % 24;
+	int min = (1440 * tick / len) % 60;
+
+
+	/* Message */
+	msg("This is day %d. The time is %d:%02d %s.", day,
+		(hour % 12 == 0) ? 12 : (hour % 12), min,
+		(hour < 12) ? "AM" : "PM");
 }
