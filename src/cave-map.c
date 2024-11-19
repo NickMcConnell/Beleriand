@@ -476,7 +476,7 @@ void illuminate(struct chunk *c)
 			bool light = false;
 			struct loc grid = loc(x, y);
 			
-			/* Skip grids with no surrounding floors or stairs */
+			/* Skip grids with no surrounding lightable features */
 			for (d = 0; d < 9; d++) {
 				/* Extract adjacent (legal) location */
 				struct loc a_grid = loc_sum(grid, ddgrid_ddd[d]);
@@ -485,7 +485,7 @@ void illuminate(struct chunk *c)
 				if (!square_in_bounds_fully(c, a_grid)) continue;
 
 				/* Test */
-				if (square_isfloor(c, a_grid) || square_isstairs(c, a_grid))
+				if (square_issun(c, a_grid))
 					light = true;
 			}
 
@@ -502,7 +502,7 @@ void illuminate(struct chunk *c)
 			}
 		}
 	}
-			
+
 	/* Fully update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 

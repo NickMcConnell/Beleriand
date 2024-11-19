@@ -671,9 +671,11 @@ static void calc_lighting(struct chunk *c, struct player *p)
 		for (x = 0; x < c->width; x++) {
 			struct loc grid = loc(x, y);
 
-			if (square_isglow(c, grid) &&
-					(square_allowslos(c, grid) ||
-					glow_can_light_wall(c, p, grid))) {
+			if (square_issun(c, grid) && is_daylight()) {
+				c->squares[y][x].light = 1;
+			} else if (square_isglow(c, grid) &&
+					   (square_allowslos(c, grid) ||
+						glow_can_light_wall(c, p, grid))) {
 				c->squares[y][x].light = 1;
 			} else {
 				c->squares[y][x].light = 0;
@@ -682,7 +684,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 			/* Squares with bright terrain have intensity 2 */
 			if (square_isbright(c, grid)) {
 				int dir;
-				c->squares[y][x].light += 2;
+				c->squares[y][x].light = 2;
 				for (dir = 0; dir < 8; dir++) {
 					struct loc adj_grid = loc_sum(grid, ddgrid_ddd[dir]);
 					if (!square_in_bounds(c, adj_grid)) continue;
@@ -826,7 +828,7 @@ static void update_view_one(struct chunk *c, struct loc grid, struct player *p)
 	int xc = x, yc = y;
 
 	int d = distance(grid, p->grid);
-	bool close = d < p->upkeep->cur_light;
+	bool close = d < p->upkeep->cur_light || is_daylight();
 
 	/* Too far away */
 	if (d > z_info->max_sight) return;

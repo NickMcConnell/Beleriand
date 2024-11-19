@@ -145,6 +145,14 @@ bool feat_is_torch(int feat)
 }
 
 /**
+ * True if the feature can be lit by light the sun.
+ */
+bool feat_is_sun(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_SUN);
+}
+
+/**
  * True if the feature is internally lit.
  */
 bool feat_is_bright(int feat)
@@ -830,6 +838,14 @@ bool square_isstrongwall(struct chunk *c, struct loc grid) {
 bool square_ispit(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return feat_is_pit(square(c, grid)->feat);
+}
+
+/**
+ * True if the cave square can be lit by the sun.
+ */
+bool square_issun(struct chunk *c, struct loc grid) {
+	assert(square_in_bounds(c, grid));
+	return feat_is_sun(square(c, grid)->feat);
 }
 
 /**

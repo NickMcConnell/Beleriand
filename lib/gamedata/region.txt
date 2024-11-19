@@ -16,20 +16,18 @@
 # y-offset:y offset of the top of the region map
 # x-offest:x offset of the left edge of the region map
 # D:Map of the region using the following legend:
+# * Snow
 # + Forest
-# - Lake
-# ~ Ocean
-# . Plain
 # , Moor/Waste
+# - Lake
+# . Plain
+# / Desert
+# = Town
+# X Impassable Mountain
 # ^ Mountain
 # _ Swamp
 # | Dark Forest
-# X Impassable Mountain
-# W Impassable Water (Ocean)
-# / Desert
-# * Snow
-# = Town
-# & Landmark
+# ~ Ocean
 
 name:Helcaraxë
 danger:2
