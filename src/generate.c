@@ -1343,6 +1343,7 @@ void prepare_next_level(struct player *p)
 						gen_loc_make(ref.x_pos, ref.y_pos, ref.z_pos, upper);
 						completely_new = true;
 					} else if (!y && !x) {
+						/* Dungeon level, so should already have a seed */
 						assert(gen_loc_list[upper].seed);
 						seed = gen_loc_list[upper].seed;
 					} else {

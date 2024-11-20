@@ -438,11 +438,13 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 	/* Check each edge and set the other biomes if needed */
 	if (right) {
 		bool gen_e = gen_loc_find(x_pos + 1, y_pos, 0, &lower1, &upper1);
+		gen_e = gen_e && (gen_loc_list[upper1].seed != 0);
 		if (east != standard) {
 			tweak->biome1 = east;
 			if (bottom) {
 				bool gen_s = gen_loc_find(x_pos, y_pos + 1, 0, &lower2,
 										  &upper2);
+				gen_s = gen_s && (gen_loc_list[upper2].seed != 0);
 				if (east == south) {
 					/* Full corner */
 					tweak->dir1 = DIR_NONE;
@@ -457,6 +459,7 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 			} else if (top) {
 				bool gen_n = gen_loc_find(x_pos, y_pos - 1, 0, &lower2,
 										  &upper2);
+				gen_n = gen_n && (gen_loc_list[upper2].seed != 0);
 				if (east == north) {
 					/* Full corner */
 					tweak->dir1 = DIR_NONE;
@@ -484,11 +487,13 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 	}
 	if (bottom) {
 		bool gen_s = gen_loc_find(x_pos, y_pos + 1, 0, &lower1, &upper1);
+		gen_s = gen_s && (gen_loc_list[upper1].seed != 0);
 		if (south != standard) {
 			tweak->biome1 = south;
 			if (left) {
 				bool gen_w = gen_loc_find(x_pos - 1, y_pos, 0, &lower2,
 										  &upper2);
+				gen_w = gen_w && (gen_loc_list[upper2].seed != 0);
 				if (west == south) {
 					/* Full corner */
 					tweak->dir1 = DIR_NONE;
@@ -516,10 +521,12 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 	}
 	if (left) {
 		bool gen_w = gen_loc_find(x_pos - 1, y_pos, 0, &lower1, &upper1);
+		gen_w = gen_w && (gen_loc_list[upper1].seed != 0);
 		if (west != standard) {
 			tweak->biome1 = west;
 			if (top) {
 				bool gen_n = gen_loc_find(x_pos, y_pos - 1, 0, &lower2, &upper2);
+				gen_n = gen_n && (gen_loc_list[upper2].seed != 0);
 				if (west == north) {
 					/* Full corner */
 					tweak->dir1 = DIR_NONE;
@@ -548,6 +555,7 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 	}
 	if (top) {
 		bool gen_n = gen_loc_find(x_pos, y_pos - 1, 0, &lower1, &upper1);
+		gen_n = gen_n && (gen_loc_list[upper1].seed != 0);
 		if (north != standard) {
 			tweak->biome1 = north;
 			if ((north == east) && ((y_pos % CPM) == CPM - 2)) {

@@ -130,7 +130,22 @@ struct square_mile;
 struct river_chunk {
 	int map_y;         /**< Map y coordinate of river chunk */
 	int map_x;         /**< Map x coordinate of river chunk */
-	uint16_t width;        /**< River width */
+	uint16_t width;    /**< River width */
+};
+
+/**
+ * Information about how a river crosses the border of a chunk
+ *
+ * Note that this structure holds information about one side only; rivers
+ * crossing a corner will require two overlapping river_edges
+ */
+struct river_edge {
+	struct river_edge *next;
+
+	struct river *river;	/**< The river */
+	enum direction side;	/**< Side of the chunk crossed */
+	uint8_t start;			/**< Smallest crossing coordinate */
+	uint8_t finish;			/**< Largest crossing coordinate */
 };
 
 /**
@@ -184,6 +199,21 @@ struct road_chunk {
 };
 
 /**
+ * Information about how a road crosses the border of a chunk
+ *
+ * Note that this structure holds information about one side only; roads
+ * crossing a corner will require two overlapping road_edges
+ */
+struct road_edge {
+	struct road_edge *next;
+
+	struct road *road;		/**< The road */
+	enum direction side;	/**< Side of the chunk crossed */
+	uint8_t start;			/**< Smallest crossing coordinate */
+	uint8_t finish;			/**< Largest crossing coordinate */
+};
+
+/**
  * Information about roads
  */
 struct road {
@@ -211,7 +241,7 @@ struct map_square {
 /**
  * Information about square miles.
  *
- * A square mile contains 100 regular size chunks (10x10), and there are
+ * A square mile contains 400 regular size chunks (20x20), and there are
  * 49x49 (= 2401) of them to a map square.  Each square mile is represented
  * as a single grid in region.txt.
  */
@@ -290,6 +320,8 @@ struct gen_loc {
 	uint32_t seed;			/**< RNG seed for generating the chunk repeatably */
     struct terrain_change *change;	/**< Changes made since generation */
     struct connector *join;	/**< Information for generating adjoining chunks */
+	struct river_edge *river_edge;	/**< River edge crossing data */
+	struct road_edge *road_edge;	/**< Road edge crossing data */
 };
 
 extern uint32_t seed_randart;
