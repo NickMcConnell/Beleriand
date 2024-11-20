@@ -157,7 +157,8 @@ static int gen_loc_cmp(struct gen_loc gen_loc1, struct gen_loc gen_loc2)
  */
 bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *below, int *above)
 {
-	struct gen_loc gen_loc = { 0, x_pos, y_pos, z_pos, 0, NULL, NULL };
+	struct gen_loc gen_loc = { 0, x_pos, y_pos, z_pos, 0, NULL, NULL, NULL,
+		NULL };
 	int idx;
 
 	/* Exhaust for small values to avoid edge effects */
@@ -277,6 +278,8 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
 	gen_loc_list[idx].z_pos = z_pos;
 	gen_loc_list[idx].change = NULL;
 	gen_loc_list[idx].join = NULL;
+	gen_loc_list[idx].river_edge = NULL;
+	gen_loc_list[idx].road_edge = NULL;
 }
 
 struct square_mile *square_mile(wchar_t letter, int number, int y, int x)

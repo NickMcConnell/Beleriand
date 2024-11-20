@@ -852,6 +852,7 @@ bool player_can_fall_through_floor(struct player *p)
 			struct loc grid = loc(p->grid.x % CHUNK_SIDE,
 								  p->grid.y % CHUNK_SIDE);
 			/* Require passable terrain below */
+			assert(chunk_list[chunk_idx].chunk);
 			if (!square_ispassable(chunk_list[chunk_idx].chunk, grid)) {
 				return false;
 			}

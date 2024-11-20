@@ -41,7 +41,7 @@ extern const int *dist_offsets_y[10];
 extern const int *dist_offsets_x[10];
 extern const uint8_t side_dirs[20][8];
 
-enum {
+enum direction {
 	DIR_UNKNOWN = 0,
 	DIR_UP = 0,
 	DIR_NW = 7,
