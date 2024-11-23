@@ -1,4 +1,8 @@
-Welcome to the changelog for NarSil 1.3.1.
+Welcome to the changelog for NarSil 1.4.0.
 
-Changes so far - take out everything that looks like Angband and replace it
-with things that look like Sil.
+Changes for 1.4
+ - Replace Sil's ID with Angband-like rune-based ID.
+ - Add a player-known version of the dungeon and objects, updated on contact
+
+Changes for 1.3
+ - take out everything that looks like Angband and replace it with things that look like Sil.

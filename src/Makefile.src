@@ -6,7 +6,7 @@
 #
 
 NAME = NarSil
-VERSION = 1.3.1
+VERSION = 1.4.0
 COPYRIGHT = (c) 1995-2024 Angband contributors
 PROGNAME = narsil
 
