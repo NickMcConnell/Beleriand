@@ -49,8 +49,6 @@ uint32_t seed_flavor;		/* Hack -- consistent object colors */
 int32_t turn;			/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
-struct level *maps;
-struct level *world;
 struct world_region *region_info;
 struct square_mile **square_miles;
 struct landmark *landmark_info;
