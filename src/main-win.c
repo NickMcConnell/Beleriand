@@ -2671,8 +2671,8 @@ static void windows_map_aux(void)
 		for (x = min_x; x < max_x; x++) {
 			struct grid_data g;
 
-			map_info(loc(x, y), &g);
-			grid_data_as_text(&g, &a, &c, &ta, &tc);
+			map_info(cave, player->cave, loc(x, y), &g);
+			grid_data_as_text(cave, &g, &a, &c, &ta, &tc);
 
 			/* Ignore non-graphics */
 			if (a & 0x80)
