@@ -84,12 +84,14 @@
  * into different monsters, and terrain may be objects, monsters, or stay the
  * same.
  */
-void map_info(struct loc grid, struct grid_data *g)
+void map_info(struct chunk *c, struct chunk *p_c, struct loc grid,
+			  struct grid_data *g)
 {
 	struct object *obj;
 
-	assert(grid.x < cave->width);
-	assert(grid.y < cave->height);
+	assert(c && p_c);
+	assert(grid.x < c->width);
+	assert(grid.y < c->height);
 
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_kind = NULL;
@@ -100,45 +102,45 @@ void map_info(struct loc grid, struct grid_data *g)
 	g->lighting = LIGHTING_LIT;
 
 	/* Use real feature (remove later) */
-	g->f_idx = square(cave, grid)->feat;
+	g->f_idx = square(c, grid)->feat;
 	if (f_info[g->f_idx].mimic)
 		g->f_idx = (uint32_t) (f_info[g->f_idx].mimic - f_info);
 
-	g->in_view = (square_isseen(cave, grid)) ? true : false;
-	g->is_player = (square(cave, grid)->mon < 0) ? true : false;
-	g->m_idx = (g->is_player) ? 0 : square(cave, grid)->mon;
+	g->in_view = (square_isseen(c, grid)) ? true : false;
+	g->is_player = (square(c, grid)->mon < 0) ? true : false;
+	g->m_idx = (g->is_player) ? 0 : square(c, grid)->mon;
 	g->hallucinate = player->timed[TMD_IMAGE] ? true : false;
 	g->rage = player->timed[TMD_RAGE] ? true : false;
 
-	if (square_isglow(cave, grid)) {
+	if (square_isglow(c, grid)) {
 		g->lighting = LIGHTING_LIT;
 	}
 	if (g->in_view) {
-		bool lit = square_islit(cave, grid);
+		bool lit = square_islit(c, grid);
 
 		if (lit) {
 			g->lighting = LIGHTING_LOS;
 		}
 
 		/* Remember seen feature */
-		square_memorize(cave, grid);
+		square_memorize(c, grid);
 	} else if (g->rage) {
 		/* Rage shows nothing out of view */
 		g->f_idx = FEAT_NONE;
 		g->m_idx = 0;
 		return;
-	} else if (!square_isknown(cave, grid)) {
+	} else if (!square_isknown(c, grid)) {
 		g->f_idx = FEAT_NONE;
 	}
 
 	/* Use known feature */
-	g->f_idx = square(player->cave, grid)->feat;
+	g->f_idx = square(p_c, grid)->feat;
 	if (f_info[g->f_idx].mimic)
 		g->f_idx = (uint32_t) (f_info[g->f_idx].mimic - f_info);
 
 	/* There is a known trap in this square */
-	if (square_trap(player->cave, grid) && square_isknown(cave, grid)) {
-		struct trap *trap = square(player->cave, grid)->trap;
+	if (square_trap(p_c, grid) && square_isknown(c, grid)) {
+		struct trap *trap = square(p_c, grid)->trap;
 
 		/* Scan the square trap list */
 		while (trap) {
@@ -153,7 +155,7 @@ void map_info(struct loc grid, struct grid_data *g)
     }
 
 	/* Objects */
-	for (obj = square_object(player->cave, grid); obj; obj = obj->next) {
+	for (obj = square_object(p_c, grid); obj; obj = obj->next) {
 		if (ignore_known_item_ok(player, obj)) {
 			/* Item stays hidden */
 		} else if (!g->first_kind) {
@@ -161,7 +163,7 @@ void map_info(struct loc grid, struct grid_data *g)
 			 * For glowing, need to test the base object, not just
 			 * what the player knows.
 			 */
-			struct object *base_obj = cave->objects[obj->oidx];
+			struct object *base_obj = c->objects[obj->oidx];
 
 			g->first_kind = obj->kind;
 			g->first_art = obj->artifact;

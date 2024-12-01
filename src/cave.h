@@ -231,7 +231,8 @@ void update_view(struct chunk *c, struct player *p);
 bool no_light(const struct player *p);
 
 /* cave-map.c */
-void map_info(struct loc grid, struct grid_data *g);
+void map_info(struct chunk *c, struct chunk *p_c, struct loc grid,
+			  struct grid_data *g);
 void square_note_spot(struct chunk *c, struct loc grid);
 void square_light_spot(struct chunk *c, struct loc grid);
 void light_room(struct loc grid, bool light);

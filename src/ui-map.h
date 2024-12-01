@@ -16,12 +16,12 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-extern void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp,
-							  int *tap, wchar_t *tcp);
+extern void grid_data_as_text(struct chunk *chunk, struct grid_data *g,
+							  int *ap, wchar_t *cp, int *tap, wchar_t *tcp);
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(wchar_t c, uint8_t a, int y, int x);
 extern void prt_map(void);
-extern void prt_map_zoomed(void);
+extern void prt_map_zoomed(struct chunk *chunk, struct chunk *p_chunk);
 extern void display_map(int *cy, int *cx);
 extern void do_cmd_view_map(void);
 extern void mini_screenshot(game_event_type type, game_event_data *data,

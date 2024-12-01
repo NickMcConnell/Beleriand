@@ -193,8 +193,8 @@ static void grid_get_attr(struct grid_data *g, int *a)
  * This will probably be done outside of the current text->graphics mappings
  * though.
  */
-void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
-					   wchar_t *tcp)
+void grid_data_as_text(struct chunk *chunk, struct grid_data *g, int *ap,
+					   wchar_t *cp, int *tap, wchar_t *tcp)
 {
 	struct feature *feat = &f_info[g->f_idx];
 
@@ -214,7 +214,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	/* There is a trap in this grid, and we are not hallucinating */
 	if (g->trap && (!g->hallucinate)) {
 	    /* Change graphics to indicate visible traps */
-	    get_trap_graphics(cave, g, &a, &c);
+	    get_trap_graphics(chunk, g, &a, &c);
 	}
 
 	/* If there's an object, deal with that. */
@@ -664,8 +664,8 @@ static void prt_map_aux(void)
 				}
 
 				/* Determine what is there */
-				map_info(loc(x, y), &g);
-				grid_data_as_text(&g, &a, &c, &ta, &tc);
+				map_info(cave, player->cave, loc(x, y), &g);
+				grid_data_as_text(cave, &g, &a, &c, &ta, &tc);
 				Term_queue_char(t, vx, vy, a, c, ta, tc);
 
 				if ((tile_width > 1) || (tile_height > 1))
@@ -725,8 +725,8 @@ void prt_map(void)
 			if (!square_in_bounds(cave, loc(x, y))) continue;
 
 			/* Determine what is there */
-			map_info(loc(x, y), &g);
-			grid_data_as_text(&g, &a, &c, &ta, &tc);
+			map_info(cave, player->cave, loc(x, y), &g);
+			grid_data_as_text(cave, &g, &a, &c, &ta, &tc);
 
 			/* Hack -- Queue it */
 			Term_queue_char(Term, vx, vy, a, c, ta, tc);
@@ -737,9 +737,10 @@ void prt_map(void)
 		}
 }
 
-static void get_zoomed_grid_data(struct grid_data *g, int *ap, wchar_t *cp,
-								 int *tap, wchar_t *tcp, struct loc grid,
-								 int level)
+static void get_zoomed_grid_data(struct chunk *chunk, struct chunk *p_chunk,
+								 struct grid_data *g,
+								 int *ap, wchar_t *cp, int *tap, wchar_t *tcp,
+								 struct loc grid, int level)
 {
 	int y, x, pri = 0, max = 0;
 	bool pgrid = false;
@@ -748,8 +749,8 @@ static void get_zoomed_grid_data(struct grid_data *g, int *ap, wchar_t *cp,
 	uint8_t *count = mem_zalloc(FEAT_MAX * sizeof(uint8_t));
 
 	/* Get the attr/char at the base location */
-	map_info(grid, g);
-	grid_data_as_text(g, ap, cp, tap, tcp);
+	map_info(chunk, p_chunk, grid, g);
+	grid_data_as_text(chunk, g, ap, cp, tap, tcp);
 
 	/* Analyse all the grids */
 	for (y = grid.y; y < grid.y + level; y++) {
@@ -759,15 +760,15 @@ static void get_zoomed_grid_data(struct grid_data *g, int *ap, wchar_t *cp,
 			int this_pri;
 
 			/* Check bounds */
-			if (!square_in_bounds(cave, loc(x, y))) continue;
+			if (!square_in_bounds(chunk, loc(x, y))) continue;
 
-			if (square_isplayer(cave, loc(x, y))) {
+			if (square_isplayer(chunk, loc(x, y))) {
 				pgrid = true;
 			}
 
 			/* Get the attr/char at that map location */
-			map_info(loc(x, y), g);
-			grid_data_as_text(g, &a, &c, &ta, &tc);
+			map_info(chunk, p_chunk, loc(x, y), g);
+			grid_data_as_text(chunk, g, &a, &c, &ta, &tc);
 
 			/* Get the priority of that attr/char */
 			this_pri = f_info[g->f_idx].priority;
@@ -784,7 +785,7 @@ static void get_zoomed_grid_data(struct grid_data *g, int *ap, wchar_t *cp,
 											(this_pri > pri))) {
 				max = count[g->f_idx];
 				pri = this_pri;
-				grid_data_as_text(g, ap, cp, tap, tcp);
+				grid_data_as_text(chunk, g, ap, cp, tap, tcp);
 			}
 		}
 	}
@@ -792,8 +793,8 @@ static void get_zoomed_grid_data(struct grid_data *g, int *ap, wchar_t *cp,
 	if (pgrid) {
 		struct monster_race *race = &r_info[0];
 		/* Get the terrain at the player's spot. */
-		map_info(player->grid, g);
-		grid_data_as_text(g, ap, cp, tap, tcp);
+		map_info(chunk, p_chunk, player->grid, g);
+		grid_data_as_text(chunk, g, ap, cp, tap, tcp);
 
 		/* Get the "player" tile */
 		*ap = monster_x_attr[race->ridx];
@@ -813,7 +814,7 @@ static void get_zoomed_grid_data(struct grid_data *g, int *ap, wchar_t *cp,
  *
  * The main screen will always be at least 24x80 in size.
  */
-void prt_map_zoomed(void)
+void prt_map_zoomed(struct chunk *chunk, struct chunk *p_chunk)
 {
 	int a, ta;
 	wchar_t c, tc;
@@ -834,9 +835,9 @@ void prt_map_zoomed(void)
 	sy = MAX(0, Term->offset_y - ((level - 1) * SCREEN_HGT) / 2);
 	sx = MAX(0, Term->offset_x - ((level - 1) * SCREEN_WID) / 2);
 	ty = MIN(Term->offset_y + ((level - 1) * SCREEN_HGT) / 2 + SCREEN_HGT,
-			 cave->height);
+			 chunk->height);
 	tx = MIN(Term->offset_x + ((level - 1) * SCREEN_WID) / 2 + SCREEN_WID,
-			 cave->width);
+			 chunk->width);
 
 	/* Avoid overwriting the last row with padding for big tiles. */
 	clipy = ROW_MAP + SCREEN_ROWS;
@@ -856,10 +857,11 @@ void prt_map_zoomed(void)
 			}
 
 			/* Check bounds */
-			if (!square_in_bounds(cave, loc(x, y))) continue;
+			if (!square_in_bounds(chunk, loc(x, y))) continue;
 
 			/* Determine what is there */
-			get_zoomed_grid_data(&g, &a, &c, &ta, &tc, loc(x, y), level);
+			get_zoomed_grid_data(chunk, p_chunk, &g, &a, &c, &ta, &tc,
+								 loc(x, y), level);
 
 			/* Hack -- Queue it */
 			Term_queue_char(Term, vx, vy, a, c, ta, tc);
@@ -952,8 +954,8 @@ void display_map(int *cy, int *cx)
 			if (tile_width > 1) col = col - (col % tile_width);
 
 			/* Get the attr/char at that map location */
-			map_info(loc(x, y), &g);
-			grid_data_as_text(&g, &a, &c, &ta, &tc);
+			map_info(cave, player->cave, loc(x, y), &g);
+			grid_data_as_text(cave, &g, &a, &c, &ta, &tc);
 
 			/* Get the priority of that attr/char */
 			tp = f_info[g.f_idx].priority;
@@ -965,7 +967,7 @@ void display_map(int *cy, int *cx)
 			if (mp[row][col] < tp) {
 				/* Hack - make every grid on the map lit */
 				g.lighting = LIGHTING_LIT;
-				grid_data_as_text(&g, &a, &c, &ta, &tc);
+				grid_data_as_text(cave, &g, &a, &c, &ta, &tc);
 
 				Term_queue_char(Term, col + 1, row + 1, a, c, ta, tc);
 
@@ -992,9 +994,9 @@ void display_map(int *cy, int *cx)
 		row = row - (row % tile_height);
 
 	/* Get the terrain at the player's spot. */
-	map_info(player->grid, &g);
+	map_info(cave, player->cave, player->grid, &g);
 	g.lighting = LIGHTING_LIT;
-	grid_data_as_text(&g, &a, &c, &ta, &tc);
+	grid_data_as_text(cave, &g, &a, &c, &ta, &tc);
 
 	/* Get the "player" tile */
 	a = monster_x_attr[race->ridx];
@@ -1086,8 +1088,8 @@ void mini_screenshot(game_event_type type, game_event_data *data, void *user)
 				wchar_t c, tc;
 				struct loc grid = loc(player->grid.x + x, player->grid.y + y);
 				if (square_in_bounds(cave, grid)) {
-					map_info(grid, &g);
-					grid_data_as_text(&g, &a, &c, &ta, &tc);
+					map_info(cave, player->cave, grid, &g);
+					grid_data_as_text(cave, &g, &a, &c, &ta, &tc);
 					mini_screenshot_char[y + 3][x + 3] = c;
 					mini_screenshot_attr[y + 3][x + 3] = a;
 				} else {

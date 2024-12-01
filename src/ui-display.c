@@ -1120,7 +1120,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 
 	/* This signals a whole-map redraw. */
 	if (data->point.x == -1 && data->point.y == -1) {
-		prt_map_zoomed();
+		prt_map_zoomed(cave, player->cave);
 	} else {
 		/* Single point to be redrawn */
 		struct grid_data g;
@@ -1169,8 +1169,8 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 
 
 		/* Redraw the grid spot */
-		map_info(data->point, &g);
-		grid_data_as_text(&g, &a, &c, &ta, &tc);
+		map_info(cave, player->cave, data->point, &g);
+		grid_data_as_text(cave, &g, &a, &c, &ta, &tc);
 		Term_queue_char(t, vx, vy, a, c, ta, tc);
 #ifdef MAP_DEBUG
 		/* Plot 'spot' updates in light green to make them visible */
