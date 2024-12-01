@@ -84,7 +84,7 @@ world:dungeon-hgt:132
 world:dungeon-wid:132
 
 # Max level of zoom on the surface map
-world:max-zoom:4
+world:max-zoom:16
 
 # Energy needed by player or monsters to move
 world:move-energy:100
