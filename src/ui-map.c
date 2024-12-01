@@ -822,33 +822,35 @@ void prt_map_zoomed(void)
 	int y, x;
 	int vy, vx;
 	int ty, tx;
+	int sy, sx;
 	int clipy;
 	int level = player->upkeep->zoom_level;
-	int vlevel;
 	int y_add = 0, x_add = 0;
 
 	/* Redraw map sub-windows */
 	prt_map_aux();
 
 	/* Assume screen */
-	ty = Term->offset_y + SCREEN_HGT;
-	tx = Term->offset_x + SCREEN_WID;
+	sy = MAX(0, Term->offset_y - ((level - 1) * SCREEN_HGT) / 2);
+	sx = MAX(0, Term->offset_x - ((level - 1) * SCREEN_WID) / 2);
+	ty = MIN(Term->offset_y + ((level - 1) * SCREEN_HGT) / 2 + SCREEN_HGT,
+			 cave->height);
+	tx = MIN(Term->offset_x + ((level - 1) * SCREEN_WID) / 2 + SCREEN_WID,
+			 cave->width);
 
 	/* Avoid overwriting the last row with padding for big tiles. */
 	clipy = ROW_MAP + SCREEN_ROWS;
 
 	/* Centre the map */
-	for (vlevel = level; vlevel > 1; vlevel /= 2) {
-		y_add += SCREEN_HGT / (vlevel * 2);
-		x_add += SCREEN_WID / (vlevel * 2);
-	}
+	y_add = MAX(0, (SCREEN_HGT - ((ty - sy) / level)) / 2);
+	x_add = MAX(0, (SCREEN_WID - ((tx - sx) / level)) / 2);
 
 	/* Dump the map */
-	for (y = Term->offset_y, vy = ROW_MAP + y_add; y < ty; y++) {
+	for (y = sy, vy = ROW_MAP + y_add; y < ty; y++) {
 		if (y % level) {
 			continue;
 		}
-		for (x = Term->offset_x, vx = COL_MAP + x_add; x < tx; x++) {
+		for (x = sx, vx = COL_MAP + x_add; x < tx; x++) {
 			if (x % level) {
 				continue;
 			}
