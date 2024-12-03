@@ -1121,6 +1121,9 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	/* This signals a whole-map redraw. */
 	if (data->point.x == -1 && data->point.y == -1) {
 		prt_map_zoomed(cave, player->cave);
+	} else if (level > 1) {
+		/* Don't do point updates if zoomed */
+		return;
 	} else {
 		/* Single point to be redrawn */
 		struct grid_data g;

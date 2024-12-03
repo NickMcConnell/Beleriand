@@ -58,6 +58,10 @@
 #include "trap.h"
 #include "tutorial.h"
 
+#define MAX_ZOOM 7
+static int zoom_index = 0;
+static int zoom_level[MAX_ZOOM] = { 1, 2, 4, 8, 16, 32, 44 };
+
 /**
  * Go up one level
  */
@@ -66,8 +70,9 @@ static void do_cmd_go_up_aux(void)
 	int change = square_isshaft(cave, player->grid) ? -2 : -1;
 
 	/* Zoom out */
-	if (!player->depth && (player->upkeep->zoom_level < z_info->max_zoom)) {
-		player->upkeep->zoom_level *= 2;
+	if (!player->depth && (zoom_index < MAX_ZOOM - 1)) {
+		zoom_index++;
+		player->upkeep->zoom_level = zoom_level[zoom_index];
 		event_signal(EVENT_ZOOM);
 		return;
 	}
@@ -146,9 +151,10 @@ static void do_cmd_go_down_aux(void)
 {
 	int change = square_isshaft(cave, player->grid) ? 2 : 1;
 
-	/* Zoom out */
-	if (!player->depth && (player->upkeep->zoom_level > 1)) {
-		player->upkeep->zoom_level /= 2;
+	/* Zoom in */
+	if (!player->depth && (zoom_index > 0)) {
+		zoom_index--;
+		player->upkeep->zoom_level = zoom_level[zoom_index];
 		event_signal(EVENT_ZOOM);
 		return;
 	}

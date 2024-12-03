@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "generate.h"
 #include "grafmode.h"
 #include "init.h"
 #include "mon-make.h"
@@ -808,6 +809,82 @@ static void get_zoomed_grid_data(struct chunk *chunk, struct chunk *p_chunk,
 }
 
 /**
+ * Print chunks adjacent to the current playing arena when the map is zoomed
+ * out so that the arena doesn't fill the screen.
+ */
+static void prt_map_zoomed_chunks(int x_margin, int y_margin, int level)
+{
+	int side = CHUNK_SIDE / level;
+	int num_x = x_margin / side, num_y = y_margin / side;
+	int rem_x = x_margin - num_x * side, rem_y = y_margin - num_y * side;
+	int x_pos = chunk_list[player->place].x_pos - ARENA_CHUNKS / 2 - num_x;
+	int y_pos = chunk_list[player->place].y_pos - ARENA_CHUNKS / 2 - num_y;
+	int x, y;
+
+	/* Avoid overwriting the last row with padding for big tiles. */
+	int clipy = ROW_MAP + SCREEN_ROWS;
+
+	/* Iterate over the entire area.  As chunks in the arena don't have
+	 * chunk / player chunk entries in the chunk list, they will be
+	 * automatically skipped */
+	for (y = y_pos; y < y_pos + 2 * num_y + ARENA_CHUNKS; y++) {
+		for (x = x_pos; x < x_pos + 2 * num_x + ARENA_CHUNKS; x++) {
+			struct chunk *chunk, *p_chunk;
+			int x1, y1;
+			int vx, vy;
+			int a, ta;
+			wchar_t c, tc;
+			struct grid_data g;
+
+			/* Find the chunk */
+			struct chunk_ref ref = { 0 };
+			int idx;
+			ref.x_pos = x;
+			ref.y_pos = y;
+			ref.z_pos = 0;
+			idx = chunk_find(ref);
+
+			/* Check validity */
+			if (idx == MAX_CHUNKS) continue;
+			if (!(chunk_list[idx].chunk && chunk_list[idx].p_chunk)) continue;
+
+			/* Print the map */
+			chunk = chunk_list[idx].chunk;
+			p_chunk = chunk_list[idx].p_chunk;
+			for (y1 = 0, vy = ROW_MAP + rem_y + (y - y_pos) * side;
+				 y1 < CHUNK_SIDE; y1++) {
+				if (y1 % level) {
+					continue;
+				}
+				for (x1 = 0, vx = COL_MAP + rem_x + (x - x_pos) * side;
+					 x1 < CHUNK_SIDE; x1++) {
+					if (x1 % level) {
+						continue;
+					}
+
+					/* Check bounds */
+					if (!square_in_bounds(chunk, loc(x1, y1))) continue;
+
+					/* Determine what is there */
+					get_zoomed_grid_data(chunk, p_chunk, &g, &a, &c, &ta, &tc,
+										 loc(x1, y1), level);
+
+					/* Hack -- Queue it */
+					Term_queue_char(Term, vx, vy, a, c, ta, tc);
+
+					if ((tile_width > 1) || (tile_height > 1)) {
+						Term_big_queue_char(Term, vx, vy, clipy, a, c,
+											COLOUR_WHITE, L' ');
+					}
+					vx += tile_width;
+				}
+				vy += tile_height;
+			}
+		}
+	}
+}
+
+/**
  * Redraw (on the screen) the current map panel
  *
  * Note the inline use of "light_spot()" for efficiency.
@@ -873,6 +950,11 @@ void prt_map_zoomed(struct chunk *chunk, struct chunk *p_chunk)
 			vx += tile_width;
 		}
 		vy += tile_height;
+	}
+
+	/* Add visited chunks around the main map as they fit */
+	if (x_add || y_add) {
+		prt_map_zoomed_chunks(x_add, y_add, level);
 	}
 }
 
