@@ -933,7 +933,7 @@ int chunk_find(struct chunk_ref ref)
 	/* Search the list */
 	for (i = 0; i < MAX_CHUNKS; i++) {
 		/* Reject wrong values */
-		if (ref.region != chunk_list[i].region) continue;
+		//if (ref.region != chunk_list[i].region) continue;
 		if (ref.x_pos != chunk_list[i].x_pos) continue;
 		if (ref.y_pos != chunk_list[i].y_pos) continue;
 		if (ref.z_pos != chunk_list[i].z_pos) continue;
@@ -1495,6 +1495,7 @@ static void arena_realign(struct player *p, int y_offset, int x_offset)
 	}
 	set_monster_place_current();
 	illuminate(cave);
+	event_signal(EVENT_ZOOM);
 	update_view(cave, p);
 }
 
