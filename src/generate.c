@@ -1138,10 +1138,10 @@ static struct chunk *cave_generate(struct player *p, uint32_t seed)
 		get_join_info(p, dun);
 
 		/* Set the RNG to give reproducible results.  Note that only terrain
-		 * is generated with the simple RNG, as objects, traps and  monsters
-		 * are only generated the first time for any location. */
+		 * is generated with the simple RNG, as objects, traps and monsters
+		 * are generated differently each time for any location. */
 		Rand_quick = true;
-		if (!dun->seed) {
+		while (!dun->seed) {
 			dun->seed = randint0(0x10000000);
 		}
 		Rand_value = dun->seed;
