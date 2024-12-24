@@ -1116,7 +1116,9 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 	} else {
 		/* or set the RNG to give reproducible results... */
 		Rand_quick = true;
-		loc->seed = randint0(0x10000000);
+		while (!loc->seed) {
+			loc->seed = randint0(0x10000000);
+		}
 		Rand_value = loc->seed;
 
 		/* ...and generate the chunk */
