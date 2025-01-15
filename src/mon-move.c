@@ -2415,7 +2415,6 @@ static void process_move_exchange_places(struct monster *mon)
     struct monster_lore *lore = get_lore(mon->race);
     char m_name1[80];
     char m_name2[80];
-    struct loc grid = mon->grid;
 
 	monster_desc(m_name1, sizeof(m_name1), mon, (MDESC_PRO_VIS | MDESC_OBJE));
     monster_desc(m_name2, sizeof(m_name2), mon, MDESC_PRO_VIS);
@@ -2425,9 +2424,6 @@ static void process_move_exchange_places(struct monster *mon)
 
     /* Swap positions with the player */
     monster_swap(mon->grid, player->grid);
-
-    /* Update some things */
-    update_view(cave, player);
 
     /* Attack of opportunity */
     if (!player->timed[TMD_AFRAID] && !player->timed[TMD_ENTRANCED] &&
@@ -2443,14 +2439,8 @@ static void process_move_exchange_places(struct monster *mon)
 		rf_on(lore->flags, RF_EXCHANGE);
 	}
 
-    /* Set off traps */
-    if (square_isplayertrap(cave, grid) || square_ischasm(cave, grid)) {
-		/* Reveal the trap */
-		square_reveal_trap(cave, grid, true);
-
-        /* Hit the trap */
-        hit_trap(grid);
-    }
+    /* Set off traps etc */
+	player_handle_post_move(player, true, true);
 }
 
 /**

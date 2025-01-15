@@ -781,15 +781,7 @@ void do_cmd_exchange(struct command *cmd)
 
 	/* Swap positions with the monster */
 	monster_swap(player->grid, grid);
-
-	/* Set off traps */
-	if (square_isplayertrap(cave, grid)) {
-		/* Hit the trap */
-		square_reveal_trap(cave, grid, true);
-		hit_trap(grid);
-	} else if (square_ischasm(cave, grid)) {
-		player_fall_in_chasm(player);
-	}
+	player_handle_post_move(player, true, false);
 }
 
 
@@ -1324,6 +1316,7 @@ static bool do_cmd_bash_aux(struct loc grid)
 
 		/* Move the player onto the door square */
 		monster_swap(player->grid, grid);
+		player_handle_post_move(player, false, false);
 
 		/* Make a lot of noise */
 		monsters_hear(true, false, -10);
@@ -1581,20 +1574,8 @@ static void player_land(struct player *p)
     /* Make some noise when landing */
     p->stealth_score -= 5;
 
-	/* Set off traps */
-	if (square_issecrettrap(cave, p->grid)) {
-		disturb(player, false);
-		square_reveal_trap(cave, p->grid, true);
-		hit_trap(p->grid);
-	} else if (square_isdisarmabletrap(cave, p->grid)) {
-		disturb(player, false);
-		hit_trap(p->grid);
-	}
-
-	/* Fall into chasms */
-	if (square_ischasm(cave, p->grid)) {
-		player_fall_in_chasm(p);
-	}
+	/* Handle traps, objects, chasms etc */
+	player_handle_post_move(p, true, false);
 }
 
 /**
@@ -1836,63 +1817,13 @@ void move_player(int dir, bool disarm)
 
 			/* Move player */
 			monster_swap(player->grid, grid);
-
-			/* New location */
-			grid = player->grid;
+			player_handle_post_move(player, true, false);
 
 			/* Spontaneous Searching */
 			perceive(player);
 
 			/* Remember this direction of movement */
 			player->previous_action[0] = dir;
-
-			/* Discover stairs if blind */
-			if (square_isstairs(cave, grid)) {
-				square_memorize(cave, grid);
-				square_light_spot(cave, grid);
-			}
-
-			/* Remark on Forge and discover it if blind */
-			if (square_isforge(cave, grid)) {
-				struct feature *feat = square_feat(cave, grid);
-				if ((feat->fidx == FEAT_FORGE_UNIQUE) &&
-					!player->unique_forge_seen) {
-					msg("You enter the forge 'Orodruth' - the Mountain's Anger - where Grond was made in days of old.");
-					msg("The fires burn still.");
-					player->unique_forge_seen = true;
-					history_add(player, "Entered the forge 'Orodruth'",
-								HIST_FORGE_FOUND);
-				} else {
-					const char *article = square_apparent_look_prefix(cave, grid);
-					char name[50];
-					square_apparent_name(cave, grid, name, sizeof(name));
-					msg("You enter %s%s.", article, name);
-				}
-				square_memorize(cave, grid);
-				square_light_spot(cave, grid);
-			}
-
-			/* Discover invisible traps, set off visible ones */
-			if (square_isplayertrap(cave, grid)) {
-				disturb(player, false);
-				square_reveal_trap(cave, grid, true);
-				hit_trap(grid);
-			} else if (square_ischasm(cave, grid)) {
-				player_fall_in_chasm(player);
-			}
-
-			/* Check for having left the level by falling */
-			if (!player->upkeep->generate_level) {
-				/* Update view */
-				update_view(cave, player);
-				cmdq_push(CMD_AUTOPICKUP);
-				/*
-				 * The autopickup is a side effect of the move:  whatever
-				 * command triggered the move will be the target for CMD_REPEAT
-				 * rather than repeating the autopickup.
-				 */
-				cmdq_peek()->is_background_command = true;
-			}
 		}
 	}
 

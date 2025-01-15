@@ -1066,8 +1066,15 @@ void hit_trap(struct loc grid)
 		}
 
 		/* Some traps drop you onto them */
-		if (trf_has(trap->kind->flags, TRF_PIT))
+		if (trf_has(trap->kind->flags, TRF_PIT)) {
 			monster_swap(player->grid, trap->grid);
+			/*
+			 * Don't retrigger the trap, but handle the
+			 * other side effects of an involuntary move of the
+			 * player.
+			 */
+			player_handle_post_move(player, false, true);
+		}
 
 		/* Some traps disappear after activating */
 		if (trf_has(trap->kind->flags, TRF_ONETIME)) {

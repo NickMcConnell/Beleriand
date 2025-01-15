@@ -1434,7 +1434,74 @@ void player_place(struct chunk *c, struct player *p, struct loc grid)
 	square_set_mon(c, grid, -1);
 }
 
-/*
+/**
+ * Take care of bookkeeping after moving the player with monster_swap().
+ *
+ * \param p is the player that was moved.
+ * \param eval_trap, if true, will cause evaluation (possibly affecting the
+ * player) of the traps in the grid.
+ * \param is_involuntary, if true, will do appropriate actions (flush the
+ * command queue) for a move not expected by the player.
+ */
+void player_handle_post_move(struct player *p, bool eval_trap,
+							 bool is_involuntary)
+{
+	/* Flush command queue for involuntary moves */
+	if (is_involuntary) {
+		cmdq_flush();
+	}
+
+	/* Notice objects */
+	square_know_pile(cave, p->grid);
+
+	/* Discover stairs if blind */
+	if (square_isstairs(cave, p->grid)) {
+		square_memorize(cave, p->grid);
+		square_light_spot(cave, p->grid);
+	}
+
+	/* Remark on Forge and discover it if blind */
+	if (square_isforge(cave, p->grid)) {
+		struct feature *feat = square_feat(cave, p->grid);
+		if ((feat->fidx == FEAT_FORGE_UNIQUE) && !p->unique_forge_seen) {
+			msg("You enter the forge 'Orodruth' - the Mountain's Anger - where Grond was made in days of old.");
+			msg("The fires burn still.");
+			p->unique_forge_seen = true;
+			history_add(p, "Entered the forge 'Orodruth'", HIST_FORGE_FOUND);
+		} else {
+			const char *article = square_apparent_look_prefix(cave, p->grid);
+			char name[50];
+			square_apparent_name(cave, p->grid, name, sizeof(name));
+			msg("You enter %s%s.", article, name);
+		}
+		square_memorize(cave, p->grid);
+		square_light_spot(cave, p->grid);
+	}
+
+	/* Discover invisible traps, set off visible ones */
+	if (eval_trap && square_isplayertrap(cave, p->grid)) {
+		disturb(p, false);
+		square_reveal_trap(cave, p->grid, true);
+		hit_trap(p->grid);
+	} else if (square_ischasm(cave, p->grid)) {
+		player_fall_in_chasm(p);
+	}
+
+	/* Check for having left the level by falling */
+	if (!p->upkeep->generate_level) {
+		/* Update view */
+		update_view(cave, p);
+		cmdq_push(CMD_AUTOPICKUP);
+		/*
+		 * The autopickup is a side effect of the move:  whatever
+		 * command triggered the move will be the target for CMD_REPEAT
+		 * rather than repeating the autopickup.
+		 */
+		cmdq_peek()->is_background_command = true;
+	}
+}
+
+/**
  * Something has happened to disturb the player.
  *
  * All disturbance cancels repeated commands, resting, and running.

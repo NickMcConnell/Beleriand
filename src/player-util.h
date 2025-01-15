@@ -128,6 +128,8 @@ int player_get_resting_repeat_count(struct player *p);
 void player_set_resting_repeat_count(struct player *p, int16_t count);
 bool player_resists(const struct player *p, int element);
 void player_place(struct chunk *c, struct player *p, struct loc grid);
+void player_handle_post_move(struct player *p, bool eval_trap,
+							 bool is_involuntary);
 void disturb(struct player *p, bool stop_stealth);
 void search(struct player *p);
 void perceive(struct player *p);

@@ -395,6 +395,7 @@ bool effect_handler_DEADFALL(effect_handler_context_t *context)
 
 		/* Move player */
 		monster_swap(pgrid, safe_grid);
+		player_handle_post_move(player, true, true);
 	}
 
 	/* Take the damage */
@@ -491,6 +492,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 				if (num > 0) {
 					monster_swap(pgrid, safe);
+					player_handle_post_move(player, true, true);
 				} else {
 					/* Remember to make the player fall into the pit later */
 					fall_in = true;
