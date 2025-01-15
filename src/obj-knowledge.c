@@ -670,6 +670,8 @@ void object_see(struct player *p, struct object *obj)
 		new_obj = object_new();
 		obj->known = new_obj;
 		new_obj->kind = obj->kind;
+		new_obj->tval = obj->tval;
+		new_obj->sval = obj->sval;
 		new_obj->number = obj->number;
 
 		/* List the known object */
@@ -688,6 +690,8 @@ void object_see(struct player *p, struct object *obj)
 		/* Make sure knowledge is correct */
 		assert(known_obj == obj->known);
 		known_obj->kind = obj->kind;
+		known_obj->tval = obj->tval;
+		known_obj->sval = obj->sval;
 		known_obj->number = obj->number;
 
 		/* If monster held, we're done */
