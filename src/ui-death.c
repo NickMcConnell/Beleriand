@@ -113,6 +113,9 @@ static void death_dungeon(const char *title, int row)
 
 		/* ID it */
 		object_flavor_aware(player, obj);
+		object_see(player, obj);
+		object_touch(player, obj);
+		player_know_object(player, obj);
 	}
 
 	/* Light the level, show all monsters and redraw */
