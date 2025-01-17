@@ -309,6 +309,10 @@ void ego_apply_magic(struct object *obj, bool smithing)
 		/* Apply modifiers */
 		for (i = 0; i < OBJ_MOD_MAX; i++) {
 			obj->modifiers[i] = ego->modifiers[i] != 0 ? obj->pval : 0;
+			/* Hackish, deal with shadow cloaks */
+			if (obj->kind->modifiers[i].base && !tval_is_jewelry(obj)) {
+				obj->modifiers[i] += obj->kind->modifiers[i].base;
+			}
 		}
 	} else {
 		/* Remember pval for lights */
@@ -331,6 +335,10 @@ void ego_apply_magic(struct object *obj, bool smithing)
 		/* Apply modifiers */
 		for (i = 0; i < OBJ_MOD_MAX; i++) {
 			obj->modifiers[i] = ego->modifiers[i] != 0 ? obj->pval : 0;
+			/* Hackish, deal with shadow cloaks */
+			if (obj->kind->modifiers[i].base && !tval_is_jewelry(obj)) {
+				obj->modifiers[i] += obj->kind->modifiers[i].base;
+			}
 		}
 		obj->pval = light_pval;
 	}
