@@ -1385,7 +1385,8 @@ void square_apparent_name(struct chunk *c, struct loc grid, char *name,
 
 	/* Handle forges */
 	if (square_isforge(c, grid)) {
-		int uses = square_forge_uses(c, grid);
+		/* Use actual forge uses */
+		int uses = square_forge_uses(cave, grid);
 		if (!uses) {
 			my_strcpy(forge_string, " (exhausted)", sizeof(forge_string));
 		} else if (uses == 1) {
