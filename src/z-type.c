@@ -104,6 +104,19 @@ void add_to_point_set(struct point_set *ps, struct loc grid)
 	}
 }
 
+/**
+ * Add to the given point set all the points of a second point set, then
+ * free the second point set.
+ */
+void point_set_union(struct point_set *ps1, struct point_set *ps2)
+{
+	int i;
+	for (i = 0; i < ps2->n; i++) {
+		add_to_point_set(ps1, ps2->pts[i]);
+	}
+	point_set_dispose(ps2);
+}
+
 int point_set_size(struct point_set *ps)
 {
 	return ps->n;

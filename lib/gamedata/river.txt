@@ -51,11 +51,8 @@ filename:Ginglith
 name:River Glithui
 filename:Glithui
 
-name:Greater Gelion river
+name:Gelion tributary
 filename:GreaterGelion
-
-name:Greater Gelion tributary
-filename:GreaterGelion1
 
 name:Southern River of Lammoth 
 filename:Lammoth1

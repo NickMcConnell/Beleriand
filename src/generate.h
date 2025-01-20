@@ -269,7 +269,8 @@ struct vault {
 #define CHUNK_SIDE 44
 #define ARENA_CHUNKS 3
 #define ARENA_SIDE (CHUNK_SIDE * ARENA_CHUNKS)
-#define CPM 20
+#define CPM 20						/* Chunks per mile */
+#define MPS 49						/* Square miles per map square */
 #define MAX_CHUNKS 256
 #define CHUNK_TEMP -2
 #define CHUNK_CUR -1
@@ -293,6 +294,7 @@ bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
 					int y_coord, int x_coord);
 
 /* gen-surface.c */
+void map_river_miles(struct square_mile *sq_mile);
 void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 				 int x_coord, struct connector *first);
 
@@ -369,6 +371,7 @@ bool find_nearby_grid(struct chunk *c, struct loc *grid, struct loc centre,
 void correct_dir(struct loc *offset, struct loc grid1, struct loc grid2);
 void adjust_dir(struct loc *offset, struct loc grid1, struct loc grid2);
 void rand_dir(struct loc *offset);
+enum direction opposite_dir(enum direction dir);
 int trap_placement_chance(struct chunk *c, struct loc grid);
 void place_traps(struct chunk *c);
 void place_item_near_player(struct chunk *c, struct player *p, int tval,

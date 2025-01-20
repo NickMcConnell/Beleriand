@@ -186,12 +186,21 @@ static void record_square_mile_river_data(struct river_mile *r_mile)
 {
 	struct square_mile *sq_mile = r_mile->sq_mile;
 	struct river_mile *check = sq_mile->river_miles;
+	int count = 0;
 
-	/* Ensure no repeats */
+	/* Ensure no repeats, not too many river miles per square mile */
 	while (check) {
 		if (check == r_mile) return;
 		check = check->next;
+		count++;
 	}
+	if ((count > 2) || ((count == 2) && (r_mile->part != RIVER_JOIN))) {
+		quit_fmt("Too many river miles in %c%d (%d,%d)",
+				 sq_mile->map_square.letter, sq_mile->map_square.number,
+				 sq_mile->map_square_grid.x, sq_mile->map_square_grid.y);
+	}
+
+	/* Add the river mile */
 	r_mile->next = sq_mile->river_miles;
 	sq_mile->river_miles = r_mile;
 }
@@ -751,15 +760,17 @@ static errr finish_parse_region(struct parser *p)
 
 	square_miles = mem_zalloc(MAX_Y_REGION * sizeof(struct square_mile*));
 	for (y = 0; y < MAX_Y_REGION; y++) {
-		char letter = 'A' + y / 49;
+		char letter = 'A' + y / MPS;
 		if (letter > 'I') letter++;
 		square_miles[y] = mem_zalloc(MAX_X_REGION * sizeof(struct square_mile));
 		for (x = 0; x < MAX_X_REGION; x++) {
 			square_miles[y][x].biome = '~';
 			square_miles[y][x].map_square.letter = letter;
-			square_miles[y][x].map_square.number = x / 49 + 1;
-			square_miles[y][x].map_square_grid.y = y % 49;
-			square_miles[y][x].map_square_grid.x = x % 49;
+			square_miles[y][x].map_square.number = x / MPS + 1;
+			square_miles[y][x].map_square_grid.y = y % MPS;
+			square_miles[y][x].map_square_grid.x = x % MPS;
+			square_miles[y][x].map_grid.y = y;
+			square_miles[y][x].map_grid.x = x;
 		}
 	}
 
@@ -841,6 +852,7 @@ static enum parser_error parse_river_source(struct parser *p)
 
 	if (!river)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	stretch->river = river;
 	stretch->index = index;
 
 	/* Set a new stretch to follow the last one */
@@ -852,10 +864,12 @@ static enum parser_error parse_river_source(struct parser *p)
 	} else {
 		river->stretch = stretch;
 	}
-	stretch->miles = mem_zalloc(sizeof(struct square_mile));
+	stretch->miles = mem_zalloc(sizeof(struct river_mile));
 
 	/* Set all the data */
+	stretch->miles->river = river;
 	stretch->miles->part = RIVER_SOURCE;
+	stretch->miles->stretch = stretch;
 	number = parser_getint(p, "number");
 	y = parser_getint(p, "y");
 	x = parser_getint(p, "x");
@@ -887,10 +901,12 @@ static enum parser_error parse_river_stretch(struct parser *p)
 		mile = mile->downstream;
 	}
 	assert(mile);
-	new = mem_zalloc(sizeof(struct square_mile));
+	new = mem_zalloc(sizeof(struct river_mile));
 
 	/* Set all the data */
+	new->river = river;
 	new->part = RIVER_STRETCH;
+	new->stretch = stretch;
 	letter = parser_getchar(p, "letter");
 	number = parser_getint(p, "number");
 	y = parser_getint(p, "y");
@@ -898,6 +914,7 @@ static enum parser_error parse_river_stretch(struct parser *p)
 	new->sq_mile = square_mile(letter, number, y, x);
 	record_square_mile_river_data(new);
 	mile->downstream = new;
+	new->upstream = mile;
 
 	return PARSE_ERROR_NONE;
 }
@@ -914,6 +931,8 @@ static enum parser_error parse_river_split(struct parser *p)
 
 	if (!river)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	stretch1->river = river;
+	stretch2->river = river;
 
 	/* Set the new stretches to follow the last one */
 	while (current) {
@@ -934,8 +953,12 @@ static enum parser_error parse_river_split(struct parser *p)
 	stretch2->miles = mem_zalloc(sizeof(struct river_mile));
 
 	/* Set all the data */
+	stretch1->miles->river = river;
+	stretch2->miles->river = river;
 	stretch1->miles->part = RIVER_SPLIT;
 	stretch2->miles->part = RIVER_SPLIT;
+	stretch1->miles->stretch = stretch1;
+	stretch2->miles->stretch = stretch2;
 	letter = parser_getchar(p, "letter");
 	number = parser_getint(p, "number");
 	y = parser_getint(p, "y");
@@ -980,7 +1003,9 @@ static enum parser_error parse_river_join(struct parser *p)
 	new = mem_zalloc(sizeof(struct river_mile));
 
 	/* Set all the data */
+	new->river = river;
 	new->part = RIVER_JOIN;
+	new->stretch = stretch;
 	letter = parser_getchar(p, "letter");
 	number = parser_getint(p, "number");
 	y = parser_getint(p, "y");
@@ -988,6 +1013,7 @@ static enum parser_error parse_river_join(struct parser *p)
 	new->sq_mile = square_mile(letter, number, y, x);
 	record_square_mile_river_data(new);
 	mile->downstream = new;
+	new->upstream = mile;
 
 	/* Work out what we're joining, and whether we need a new stretch */
 	join = parser_getsym(p, "join");
@@ -1004,7 +1030,10 @@ static enum parser_error parse_river_join(struct parser *p)
 				mem_zalloc(sizeof(*next_stretch));
 			struct river_mile *new_mile = mem_zalloc(sizeof(*new_mile));
 			next_stretch->index = index;
+			next_stretch->river = river;
+			new_mile->river = river;
 			new_mile->part = RIVER_JOIN;
+			new_mile->stretch = next_stretch;
 			new_mile->sq_mile = new->sq_mile;
 			record_square_mile_river_data(new_mile);
 			next_stretch->miles = new_mile;
@@ -1014,10 +1043,6 @@ static enum parser_error parse_river_join(struct parser *p)
 				stretch = stretch->next;
 			}
 			stretch->next = next_stretch;
-			new_mile->part = RIVER_JOIN;
-			new_mile->sq_mile = new->sq_mile;
-			record_square_mile_river_data(new_mile);
-			next_stretch->miles = new_mile;
 		} else {
 			assert(next->in1);
 			assert(next->miles);
@@ -1057,6 +1082,7 @@ static enum parser_error parse_river_underground(struct parser *p)
 		/* Start of underground stretch */
 		struct river_stretch *next = mem_zalloc(sizeof(*next));
 		new = mem_zalloc(sizeof(*new));
+		next->river = river;
 		next->index = index;
 		next->miles = new;
 		stretch->out1 = next;
@@ -1069,10 +1095,13 @@ static enum parser_error parse_river_underground(struct parser *p)
 		/* Add to underground stretch */
 		new = mem_zalloc(sizeof(*new));
 		mile->downstream = new;
+		new->upstream = mile;
 	}
 
 	/* Set all the data */
+	new->river = river;
 	new->part = RIVER_UNDERGROUND;
+	new->stretch = stretch;
 	letter = parser_getchar(p, "letter");
 	number = parser_getint(p, "number");
 	y = parser_getint(p, "y");
@@ -1093,6 +1122,7 @@ static enum parser_error parse_river_emerge(struct parser *p)
 
 	if (!river)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	stretch->river = river;
 	stretch->index = index;
 
 	/* Set a new stretch to follow the last one */
@@ -1106,7 +1136,9 @@ static enum parser_error parse_river_emerge(struct parser *p)
 	stretch->miles = mem_zalloc(sizeof(struct river_mile));
 
 	/* Set all the data */
+	stretch->miles->river = river;
 	stretch->miles->part = RIVER_EMERGE;
+	stretch->miles->stretch = stretch;
 	letter = parser_getchar(p, "letter");
 	number = parser_getint(p, "number");
 	y = parser_getint(p, "y");
@@ -1142,7 +1174,9 @@ static enum parser_error parse_river_lake(struct parser *p)
 	new = mem_zalloc(sizeof(struct river_mile));
 
 	/* Set all the data */
+	new->river = river;
 	new->part = RIVER_LAKE;
+	new->stretch = stretch;
 	letter = parser_getchar(p, "letter");
 	number = parser_getint(p, "number");
 	y = parser_getint(p, "y");
@@ -1150,6 +1184,7 @@ static enum parser_error parse_river_lake(struct parser *p)
 	new->sq_mile = square_mile(letter, number, y, x);
 	record_square_mile_river_data(new);
 	mile->downstream = new;
+	new->upstream = mile;
 
 	return PARSE_ERROR_NONE;
 }
@@ -1180,7 +1215,9 @@ static enum parser_error parse_river_sea(struct parser *p)
 	new = mem_zalloc(sizeof(struct river_mile));
 
 	/* Set all the data */
+	new->river = river;
 	new->part = RIVER_SEA;
+	new->stretch = stretch;
 	letter = parser_getchar(p, "letter");
 	number = parser_getint(p, "number");
 	y = parser_getint(p, "y");
@@ -1188,6 +1225,7 @@ static enum parser_error parse_river_sea(struct parser *p)
 	new->sq_mile = square_mile(letter, number, y, x);
 	record_square_mile_river_data(new);
 	mile->downstream = new;
+	new->upstream = mile;
 
 	return PARSE_ERROR_NONE;
 }
