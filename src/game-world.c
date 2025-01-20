@@ -276,14 +276,16 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
 	gen_loc_list[idx].z_pos = z_pos;
 	gen_loc_list[idx].change = NULL;
 	gen_loc_list[idx].join = NULL;
-	gen_loc_list[idx].river_edge = NULL;
+	//gen_loc_list[idx].river_edge = NULL;
+	//gen_loc_list[idx].river_piece = NULL;
+	gen_loc_list[idx].river_grids = NULL;
 	gen_loc_list[idx].road_edge = NULL;
 }
 
 struct square_mile *square_mile(wchar_t letter, int number, int y, int x)
 {
 	int letter_trans = letter > L'I' ? letter - L'B' : letter - L'A';
-	return &square_miles[49 * letter_trans + y][49 * (number - 1) + x];
+	return &square_miles[MPS * letter_trans + y][MPS * (number - 1) + x];
 }
 
 /**

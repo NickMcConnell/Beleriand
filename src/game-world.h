@@ -38,8 +38,8 @@ enum {
 /**
  * Maximum x and y values for square miles
  */
-#define MAX_Y_REGION 588
-#define MAX_X_REGION 735
+#define MAX_Y_REGION (12 * 49)
+#define MAX_X_REGION (15 * 49)
 
 /**
  * Codes for the different surface biomes
@@ -130,6 +130,7 @@ struct square_mile;
 /**
  * Information about a piece of river at a chunk
  */
+//TODO DELETE?
 struct river_chunk {
 	int map_y;         /**< Map y coordinate of river chunk */
 	int map_x;         /**< Map x coordinate of river chunk */
@@ -142,6 +143,7 @@ struct river_chunk {
  * Note that this structure holds information about one side only; rivers
  * crossing a corner will require two overlapping river_edges
  */
+//TODO DELETE?
 struct river_edge {
 	struct river_edge *next;
 
@@ -149,15 +151,45 @@ struct river_edge {
 	enum direction side;	/**< Side of the chunk crossed */
 	uint8_t start;			/**< Smallest crossing coordinate */
 	uint8_t finish;			/**< Largest crossing coordinate */
+	bool corner_addition;	/**< Cuts square mile for smoothing */
+};
+
+/**
+ * Grid making up part of a river in a chunk
+ *
+ * Note that the actual terrain (shallow or deep water) is calculated after
+ * this is placed, so there is no need to record it here
+ */
+struct river_grid {
+	struct river_grid *next;
+	struct loc grid;
+};
+
+/**
+ * Grids making up part of a river in a chunk
+ *
+ * Note that the actual terrain (shallow or deep water) is calculated after
+ * this is placed, so there is no need to record it here
+ */
+//TODO DELETE?
+struct river_piece {
+	struct river_piece *next;
+
+	struct river_grid *grids;	/**< Set of river grids in this chunk */
 };
 
 /**
  * Information about a piece of river at a square mile
  */
 struct river_mile {
+	struct river *river;			/**< The river we're a part of */
 	enum river_part part;			/**< Description of this river mile */
+	struct river_stretch *stretch;	/**< The stretch we're in */
 	struct square_mile *sq_mile;	/**< The square mile we're in */
+	struct river_mile *upstream;	/**< The river mile that flows into us */
 	struct river_mile *downstream;	/**< The river mile we flow into */
+	struct loc entry;				/**< The chunk we enter the square mile */
+	struct loc exit;				/**< The chunk we leave the square mile */
 
 	struct river_mile *next;		/**< Next river mile in this square mile */
 };
@@ -167,7 +199,8 @@ struct river_mile {
  * made up of river_miles
  */
 struct river_stretch {
-	int index;
+	struct river *river;		/**< The river we're a part of */
+	int index;					/**< Index of this stretch in the river */
 	struct river_mile *miles;	/**< List of river miles forming the stretch */
 	struct river_stretch *in1;	/**< Stretch flowing into this one, if any */
 	struct river_stretch *in2;	/**< Second stretch flowing into this one */
@@ -247,7 +280,9 @@ struct square_mile {
 	struct world_region *region;	/**< The region containing us */
 	struct map_square map_square;	/**< The map square containing us */
 	struct loc map_square_grid;		/**< Our position (49x49) in map_square */
+	struct loc map_grid;			/**< Our position in the whole map */
 	struct river_mile *river_miles;	/**< List of river miles we contain */
+	bool mapped;					/**< Our rivers/roads have been plotted */
 };
 
 /**
@@ -315,7 +350,9 @@ struct gen_loc {
 	uint32_t seed;			/**< RNG seed for generating the chunk repeatably */
     struct terrain_change *change;	/**< Changes made since generation */
     struct connector *join;	/**< Information for generating adjoining chunks */
-	struct river_edge *river_edge;	/**< River edge crossing data */
+	//struct river_edge *river_edge;	/**< River edge crossing data */
+	//struct river_piece *river_piece;	/**< Piece of river in the location */
+	struct river_grid *river_grids;	/**< River grids in the location */
 	struct road_edge *road_edge;	/**< Road edge crossing data */
 };
 

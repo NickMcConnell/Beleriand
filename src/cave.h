@@ -44,6 +44,7 @@ extern const uint8_t side_dirs[20][8];
 enum direction {
 	DIR_UNKNOWN = 0,
 	DIR_UP = 0,
+	DIR_HOR_MIN = 1,
 	DIR_NW = 7,
 	DIR_N = 8,
 	DIR_NE = 9,
@@ -55,6 +56,7 @@ enum direction {
 	DIR_S = 2,
 	DIR_SE = 3,
 	DIR_DOWN = 10,
+	DIR_HOR_MAX = 10,
 	DIR_MAX = 11
 };
 

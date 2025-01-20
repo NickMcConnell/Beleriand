@@ -56,6 +56,7 @@ struct point_set {
 struct point_set *point_set_new(int initial_size);
 void point_set_dispose(struct point_set *ps);
 void add_to_point_set(struct point_set *ps, struct loc grid);
+void point_set_union(struct point_set *ps1, struct point_set *ps2);
 int point_set_size(struct point_set *ps);
 int point_set_contains(struct point_set *ps, struct loc grid);
 struct loc point_set_random(struct point_set *ps);

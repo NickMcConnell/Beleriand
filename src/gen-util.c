@@ -344,6 +344,19 @@ void rand_dir(struct loc *offset)
 
 
 /**
+ * Give the opposite to a given direction.
+ * \param dir original direction
+ */
+enum direction opposite_dir(enum direction dir)
+{
+	if (dir == DIR_NONE) return DIR_NONE;
+	else if (dir == DIR_UP) return DIR_DOWN;
+	else if (dir == DIR_DOWN) return DIR_UP;
+	return cycle[chome[dir + 4]];
+}
+
+
+/**
  * Place rubble at a given location, provided we are deep enough.
  * \param c current chunk
  * \param grid location

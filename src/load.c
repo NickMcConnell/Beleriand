@@ -1583,7 +1583,7 @@ int rd_locations(void)
 		uint8_t tmp8u;
 		uint16_t tmp16u;
 		uint32_t tmp32u;
-		struct gen_loc *location = NULL;
+		struct gen_loc *loc = NULL;
 		uint16_t num_changes = 0, num_joins = 0;
 
 		/* Increase the array size if necessary */
@@ -1595,16 +1595,21 @@ int rd_locations(void)
 				memset(&gen_loc_list[j], 0, sizeof(struct gen_loc));
 			}
 		}
-		location = &gen_loc_list[i];
+		loc = &gen_loc_list[i];
 
 		rd_u16b(&tmp16u);
-		location->x_pos = tmp16u;
+		loc->x_pos = tmp16u;
 		rd_u16b(&tmp16u);
-		location->y_pos = tmp16u;
+		loc->y_pos = tmp16u;
 		rd_u16b(&tmp16u);
-		location->z_pos = tmp16u;
+		loc->z_pos = tmp16u;
 		rd_u32b(&tmp32u);
-		location->seed = tmp32u;
+		loc->seed = tmp32u;
+
+		/* If on the surface, mark this location's square mile as mapped */
+		if (!loc->z_pos) {
+			square_miles[loc->y_pos / CPM][loc->x_pos / CPM].mapped = true;
+		}
 
 		/* Read the terrain changes */
 		rd_u16b(&num_changes);
@@ -1616,8 +1621,8 @@ int rd_locations(void)
 			change->grid.x = tmp8u;
 			rd_byte(&tmp8u);
 			change->feat = tmp8u;
-			change->next = location->change;
-			location->change = change;
+			change->next = loc->change;
+			loc->change = change;
 		}
 
 		/* Read the joins */
@@ -1634,8 +1639,8 @@ int rd_locations(void)
 				rd_byte(&tmp8u);
 				join->info[k] = tmp8u;
 			}
-			join->next = location->join;
-			location->join = join;
+			join->next = loc->join;
+			loc->join = join;
 		}
 	}
 	return 0;
