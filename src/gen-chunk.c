@@ -1136,6 +1136,7 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_coord, int x_coord)
 	int lower, upper, region;
 	bool reload;
 	struct gen_loc *location;
+	struct square_mile *mile = &square_miles[y_pos / CPM][x_pos / CPM];
 	struct connector east[CHUNK_SIDE] = {{{0}, 0, {0}, 0, 0}};
 	struct connector west[CHUNK_SIDE] = {{{0}, 0, {0}, 0, 0}};
 	struct connector north[CHUNK_SIDE] = {{{0}, 0, {0}, 0, 0}};
@@ -1156,6 +1157,11 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_coord, int x_coord)
 	} else {
 		gen_loc_make(x_pos, y_pos, z_pos, upper);
 		location = &gen_loc_list[upper];
+	}
+
+	/* Check for new square miles and do river mapping */
+	if (!mile->mapped) {
+		map_river_miles(mile);
 	}
 
 	/* Store the chunk reference */

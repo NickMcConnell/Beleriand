@@ -1026,7 +1026,7 @@ static void find_river_chunk(struct square_mile *sq_mile, struct loc *int_chunk,
 			bool found = gen_loc_find(tl_x + i, use_y, 0, &lower, &upper);
 			if (found) {
 				struct gen_loc location = gen_loc_list[upper];
-				if (location.river_grids) {
+				if (location.river_piece) {
 					/* Chunk in the adjacent square mile */
 					*ext_chunk = loc(tl_x + i, use_y);
 
@@ -1041,7 +1041,7 @@ static void find_river_chunk(struct square_mile *sq_mile, struct loc *int_chunk,
 			bool found = gen_loc_find(use_x, tl_y + i, 0, &lower, &upper);
 			if (found) {
 				struct gen_loc location = gen_loc_list[upper];
-				if (location.river_grids) {
+				if (location.river_piece) {
 					/* Chunk in the adjacent square mile */
 					*ext_chunk = loc(use_x, tl_y + i);
 
@@ -1400,14 +1400,14 @@ static int widen_river_course(int side, uint16_t **course, enum direction dir)
 /**
  *
  */
-static struct river_grid *find_chunk_river_grids(struct loc grid)
+static struct river_piece *find_chunk_river_piece(struct loc grid)
 {
 	int lower, upper;
 	bool found;
 	if ((grid.y < 0) || (grid.y >= CPM * MAX_Y_REGION - 1) ||
 		(grid.x < 0) || (grid.x >= CPM * MAX_X_REGION - 1)) return NULL;
 	found = gen_loc_find(grid.x, grid.y, 0, &lower, &upper);
-	if (found) return gen_loc_list[upper].river_grids;
+	if (found) return gen_loc_list[upper].river_piece;
 	return NULL;
 }
 
@@ -1451,8 +1451,8 @@ static void write_river_pieces(struct square_mile *sq_mile,
 	int width = get_river_width(r_mile);
 
 	/* Check the chunks before the start and after the end of river */
-	struct river_grid *river_grid_s = find_chunk_river_grids(start_adj);
-	struct river_grid *river_grid_f = find_chunk_river_grids(finish_adj);
+	struct river_piece *river_piece_s = find_chunk_river_piece(start_adj);
+	struct river_piece *river_piece_f = find_chunk_river_piece(finish_adj);
 
 	/* Are we putting in river as a connector between diagonal square miles? */
 	bool start_connect = (start_dir % 2) && (start_dir != DIR_NONE);
@@ -1481,14 +1481,15 @@ static void write_river_pieces(struct square_mile *sq_mile,
 	}
 
 	/* Set direction for any incoming river from a set external chunk. */
-	if (river_grid_s || start_connect) {
+	if (river_piece_s || start_connect) {
 		int min = CHUNK_SIDE - 1, max = 0;
+		struct river_grid *rgrid = river_piece_s->grids;
 		in_dir = grid_direction(start, start_adj, CHUNK_SIDE);
 		assert(in_dir % 2 == 0);
 
 		/* Find the range of adjacent grids */
-		while (river_grid_s) {
-			struct loc test = river_grid_s->grid;
+		while (rgrid) {
+			struct loc test = rgrid->grid;
 			if (grid_outside(test, in_dir, CHUNK_SIDE)) {
 				if ((in_dir == DIR_N) || (in_dir == DIR_S)) {
 					if (test.x > max) max = test.x;
@@ -1498,7 +1499,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 					if (test.y < min) min = test.y;
 				}
 			}
-			river_grid_s = river_grid_s->next;
+			rgrid = rgrid->next;
 		}
 
 		/* Pick the starting grid to connect with existing external river */
@@ -1611,16 +1612,17 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			} else {
 				gen_loc_make(start_adj.x, start_adj.y, 0, upper);
 				location = &gen_loc_list[upper];
+				location->river_piece = mem_zalloc(sizeof(struct river_piece*));
 			}
 
 			/* Write the grids */
 			for (y = 0; y < CHUNK_SIDE; y++) {
 				for (x = 0; x < CHUNK_SIDE; x++) {
 					if (course1[y][x]) {
-						struct river_grid *rgrid = mem_zalloc(sizeof(*rgrid));
-						rgrid->next = location->river_grids;
-						rgrid->grid = loc(x, y);
-						location->river_grids = rgrid;
+						struct river_grid *rgrid1 = mem_zalloc(sizeof(*rgrid));
+						rgrid1->next = location->river_piece->grids;
+						rgrid1->grid = loc(x, y);
+						location->river_piece->grids = rgrid1;
 					}
 				}
 			}
@@ -1634,14 +1636,15 @@ static void write_river_pieces(struct square_mile *sq_mile,
 	}
 
 	/* Set direction for any outgoinging river to a set external chunk. */
-	if (river_grid_f || finish_connect) {
+	if (river_piece_f || finish_connect) {
 		int min = CHUNK_SIDE - 1, max = 0;
+		struct river_grid *rgrid = river_piece_f->grids;
 		out_dir = grid_direction(finish_adj, finish, CHUNK_SIDE);
 		assert(out_dir % 2 == 0);
 
 		/* Find the range of adjacent grids */
-		while (river_grid_f) {
-			struct loc test = river_grid_f->grid;
+		while (rgrid) {
+			struct loc test = rgrid->grid;
 			if (grid_outside(test, out_dir, CHUNK_SIDE)) {
 				if ((out_dir == DIR_N) || (out_dir == DIR_S)) {
 					if (test.x > max) max = test.x;
@@ -1651,7 +1654,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 					if (test.y < min) min = test.y;
 				}
 			}
-			river_grid_f = river_grid_f->next;
+			rgrid = rgrid->next;
 		}
 
 		/* Pick the finishing grid to connect with existing external river */
@@ -1765,16 +1768,17 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			} else {
 				gen_loc_make(finish_adj.x, finish_adj.y, 0, upper);
 				location = &gen_loc_list[upper];
+				location->river_piece = mem_zalloc(sizeof(struct river_piece*));
 			}
 
 			/* Write the grids */
 			for (y = 0; y < CHUNK_SIDE; y++) {
 				for (x = 0; x < CHUNK_SIDE; x++) {
 					if (course1[y][x]) {
-						struct river_grid *rgrid = mem_zalloc(sizeof(*rgrid));
-						rgrid->next = location->river_grids;
-						rgrid->grid = loc(x, y);
-						location->river_grids = rgrid;
+						struct river_grid *rgrid1 = mem_zalloc(sizeof(*rgrid));
+						rgrid1->next = location->river_piece->grids;
+						rgrid1->grid = loc(x, y);
+						location->river_piece->grids = rgrid1;
 					}
 				}
 			}
@@ -1837,6 +1841,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		} else {
 			gen_loc_make(current_chunk.x, current_chunk.y, 0, upper);
 			location = &gen_loc_list[upper];
+			location->river_piece = mem_zalloc(sizeof(struct river_piece*));
 		}
 
 		/* Write the grids */
@@ -1844,9 +1849,9 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			for (x = 0; x < CHUNK_SIDE; x++) {
 				if (course1[y][x]) {
 					struct river_grid *rgrid = mem_zalloc(sizeof(*rgrid));
-					rgrid->next = location->river_grids;
+					rgrid->next = location->river_piece->grids;
 					rgrid->grid = loc(x, y);
-					location->river_grids = rgrid;
+					location->river_piece->grids = rgrid;
 				}
 			}
 		}
@@ -2097,6 +2102,32 @@ static void make_piece(struct chunk *c, enum biome_type terrain,
 	}
 }
 
+//TODO CURRENT
+static void make_river_piece(struct chunk *c, struct river_piece *piece)
+{
+	int y, x;
+
+	/* Place the grids */
+	struct river_grid *rgrid = piece->grids;
+	while (rgrid) {
+		square_set_feat(c, rgrid->grid, FEAT_S_WATER);
+		rgrid = rgrid->next;
+	}
+
+	/* Set deep water */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			struct loc grid = loc(x, y);
+			if (!square_iswater(c, grid)) continue;
+
+			/* Surrounded by all or all but one grid means deep */
+			if (count_neighbors(NULL, c, grid, square_iswater, false) > 6) {
+				square_set_feat(c, rgrid->grid, FEAT_D_WATER);
+			}
+		}
+	}
+}
+
 void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 				 int x_coord, struct connector *first_conn)
 {
@@ -2104,6 +2135,9 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 	struct point_set *chunk = make_chunk_point_set(c, top_left);
 	enum biome_type standard;
 	struct biome_tweak tweak = { DIR_NONE, 0, -1, DIR_NONE, 0, -1 };
+	struct gen_loc *location;
+	int lower, upper;
+	bool found;
 
 	/* Get the standard biome based on region.txt */
 	standard = square_miles[ref->y_pos / CPM][ref->x_pos / CPM].biome;
@@ -2165,6 +2199,12 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 
 	/* Re-activate the complex RNG now terrain generation is done */
 	Rand_quick = false;
+
+	/* Place river if any */
+	found = gen_loc_find(ref->x_pos, ref->y_pos, 0, &lower, &upper);
+	assert(found);
+	location = &gen_loc_list[upper];
+	make_river_piece(c, location->river_piece);
 
 	//TODO generate monsters, perhaps objects
 }

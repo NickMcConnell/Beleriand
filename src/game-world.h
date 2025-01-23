@@ -171,11 +171,11 @@ struct river_grid {
  * Note that the actual terrain (shallow or deep water) is calculated after
  * this is placed, so there is no need to record it here
  */
-//TODO DELETE?
 struct river_piece {
-	struct river_piece *next;
+	//struct river_piece *next;
 
 	struct river_grid *grids;	/**< Set of river grids in this chunk */
+	enum direction dir;			/**< Direction this piece of river is flowing */
 };
 
 /**
@@ -351,8 +351,8 @@ struct gen_loc {
     struct terrain_change *change;	/**< Changes made since generation */
     struct connector *join;	/**< Information for generating adjoining chunks */
 	//struct river_edge *river_edge;	/**< River edge crossing data */
-	//struct river_piece *river_piece;	/**< Piece of river in the location */
-	struct river_grid *river_grids;	/**< River grids in the location */
+	struct river_piece *river_piece;	/**< Piece of river in the location */
+	//struct river_grid *river_grids;	/**< River grids in the location */
 	struct road_edge *road_edge;	/**< Road edge crossing data */
 };
 
