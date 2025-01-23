@@ -564,6 +564,14 @@ bool square_ischasm(struct chunk *c, struct loc grid)
 }
 
 /**
+ * True if the square is water.
+ */
+bool square_iswater(struct chunk *c, struct loc grid)
+{
+	return feat_is_watery(square(c, grid)->feat);
+}
+
+/**
  * SQUARE INFO PREDICATES
  *
  * These functions tell whether a square is marked with one of the SQUARE_*

@@ -325,6 +325,7 @@ bool square_isimpassable(struct chunk *c, struct loc grid);
 bool square_isknown(struct chunk *c, struct loc grid);
 bool square_ismemorybad(struct chunk *c, struct loc grid);
 bool square_ischasm(struct chunk *c, struct loc grid);
+bool square_iswater(struct chunk *c, struct loc grid);
 
 /* SQUARE INFO PREDICATES */
 bool square_ismark(struct chunk *c, struct loc grid);
