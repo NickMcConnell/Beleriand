@@ -1242,7 +1242,7 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	player->last_place = player->place;
 
 	for (y = -ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
-		for (x = -ARENA_CHUNKS / 2; x < ARENA_CHUNKS / 2; x++) {
+		for (x = -ARENA_CHUNKS / 2; x <= ARENA_CHUNKS / 2; x++) {
 			struct chunk_ref ref = { 0 };
 			int idx;
 

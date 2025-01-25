@@ -600,7 +600,7 @@ static int map_corner_to_edge(size_t side, enum direction start_corner,
 	/* Start in the top left corner, chart a course to the bottom.
 	 * This is too simplistic, as it can never wind back and forward. */
 	course[y][x] = ++count;
-	while ((y < side - 1) || (x < finish)) {
+	while ((y < side - 1) && (x < finish)) {
 		if (randint0(y_dist + x_dist) < y_dist) {
 			/* y move */
 			y++;
@@ -661,7 +661,12 @@ static int map_corner_to_edge(size_t side, enum direction start_corner,
 	for (y = 0; y < side; y++) {
 		temp[y] = mem_zalloc(side * sizeof(uint16_t));
 	}
-	memcpy(temp, course, side * side * sizeof(uint16_t));
+	//memcpy(temp, course, side * side * sizeof(uint16_t));
+	for (y = 0; y < side; y++) {
+		for (x = 0; x < side; x++) {
+			temp[y][x] = course[y][x];
+		}
+	}
 
 	/* Do the symmetry transform */
 	for (y = 0; y < side; y++) {
@@ -696,7 +701,7 @@ static int map_corner_to_corner(size_t side, enum direction start_corner,
 	/* Start in the top left corner, chart a course to the bottom right.
 	 * Slightly less simplistic than corner to edge, but not much. */
 	course[y][x] = ++count;
-	while ((y < side - 1) || (x < side - 1)) {
+	while ((y < side - 1) && (x < side - 1)) {
 		if (one_in_(side / 5)) {
 			/* y move */
 			y++;
@@ -744,7 +749,12 @@ static int map_corner_to_corner(size_t side, enum direction start_corner,
 	for (y = 0; y < side; y++) {
 		temp[y] = mem_zalloc(side * sizeof(uint16_t));
 	}
-	memcpy(temp, course, side * side * sizeof(uint16_t));
+	//memcpy(temp, course, side * side * sizeof(uint16_t));
+	for (y = 0; y < side; y++) {
+		for (x = 0; x < side; x++) {
+			temp[y][x] = course[y][x];
+		}
+	}
 
 	/* Do the symmetry transform */
 	for (y = 0; y < side; y++) {
@@ -778,7 +788,7 @@ static int map_edge_to_opposite(size_t side, enum direction start_edge,
 
 	/* Start at the top, chart a course to the bottom.  Moderately sensible. */
 	course[y][x] = ++count;
-	while ((y < side - 1) || (x != side - 1)) {
+	while ((y < side - 1) && (x != side - 1)) {
 		/* Just always progress in the main direction */
 		y++;
 		y_dist--;
@@ -839,7 +849,12 @@ static int map_edge_to_opposite(size_t side, enum direction start_edge,
 	for (y = 0; y < side; y++) {
 		temp[y] = mem_zalloc(side * sizeof(uint16_t));
 	}
-	memcpy(temp, course, side * side * sizeof(uint16_t));
+	//memcpy(temp, course, side * side * sizeof(uint16_t));
+	for (y = 0; y < side; y++) {
+		for (x = 0; x < side; x++) {
+			temp[y][x] = course[y][x];
+		}
+	}
 
 	/* Do the symmetry transform */
 	for (y = 0; y < side; y++) {
@@ -876,7 +891,7 @@ static int map_edge_to_adjacent(size_t side, enum direction start_edge,
 	/* Start at the top, chart a course to the right edge.
 	 * Very like corner to corner. */
 	course[y][x] = ++count;
-	while ((y < finish) || (x < side - 1)) {
+	while ((y < finish) && (x < side - 1)) {
 		if (one_in_((finish + side - start) / 10) && (y < finish)) {
 			y++;
 			y_dist--;
@@ -928,7 +943,12 @@ static int map_edge_to_adjacent(size_t side, enum direction start_edge,
 	for (y = 0; y < side; y++) {
 		temp[y] = mem_zalloc(side * sizeof(uint16_t));
 	}
-	memcpy(temp, course, side * side * sizeof(uint16_t));
+	//memcpy(temp, course, side * side * sizeof(uint16_t));
+	for (y = 0; y < side; y++) {
+		for (x = 0; x < side; x++) {
+			temp[y][x] = course[y][x];
+		}
+	}
 
 	/* Do the symmetry transform */
 	for (y = 0; y < side; y++) {
@@ -1197,8 +1217,8 @@ static int map_course(size_t side, enum direction start_dir, struct loc *start,
 			num = map_corner_to_corner(side, start_dir, course);
 		} else {
 			/* Corner to non-adjacent edge */
-			assert((chome[cycle[finish_dir] + 1] != start_dir) &&
-				   (chome[cycle[finish_dir] - 1] != start_dir));
+			assert((cycle[chome[finish_dir] + 1] != start_dir) &&
+				   (cycle[chome[finish_dir] - 1] != start_dir));
 			num = map_corner_to_edge(side, start_dir, finish_dir, finish_point,
 									 course);
 		}
@@ -1206,8 +1226,8 @@ static int map_course(size_t side, enum direction start_dir, struct loc *start,
 		/* Start is an edge */
 		if (finish_dir % 2) {
 			/* Edge to corner - do corner to edge in reverse */
-			assert((chome[cycle[finish_dir] + 1] != start_dir) &&
-				   (chome[cycle[finish_dir] - 1] != start_dir));
+			assert((cycle[chome[finish_dir] + 1] != start_dir) &&
+				   (cycle[chome[finish_dir] - 1] != start_dir));
 			num = map_corner_to_edge(side, finish_dir, start_dir, start_point,
 									 course);
 		} else if (finish_dir == opposite_dir(start_dir)) {
@@ -1285,7 +1305,7 @@ static int grid_direction(struct loc here, struct loc from, int side)
 	if (ABS(offset.x) == (side - 1)) offset.x = -1;
 	if (ABS(offset.y) == (side - 1)) offset.y = -1;
 	for (dir = DIR_HOR_MIN; dir < DIR_HOR_MAX; dir++) {
-		if (loc_eq(offset, ddgrid_ddd[dir])) break;
+		if (loc_eq(offset, ddgrid[dir])) break;
 	}
 	assert(dir < DIR_HOR_MAX);
 	assert(dir != DIR_NONE);
@@ -1354,7 +1374,7 @@ static int widen_river_course(int side, uint16_t **course, enum direction dir)
 	}
 
 	/* Pick widening grids */
-	assert((dir != DIR_NONE) && (dir % 1));
+	assert((dir != DIR_NONE) && (dir % 2));
 	for (grid.y = 0; grid.y < side; grid.y++) {
 		for (grid.x = 0; grid.x < side; grid.x++) {
 			if (!course[grid.y][grid.x]) continue;
@@ -1442,7 +1462,8 @@ static void write_river_pieces(struct square_mile *sq_mile,
 {
 	int k;
 	struct loc prev_chunk = start_adj;
-	struct loc current_chunk;
+	struct loc current_chunk = loc_sum(find_course_index(CPM, 1, course),
+									   start);
 	struct loc in_grid = loc(-1, -1), out_grid = loc(-1, -1);
 	struct loc exit_grid = loc(-1, -1);
 	enum direction in_dir = DIR_NONE, out_dir = DIR_NONE, widen_dir = DIR_NONE;
@@ -1482,38 +1503,42 @@ static void write_river_pieces(struct square_mile *sq_mile,
 
 	/* Set direction for any incoming river from a set external chunk. */
 	if (river_piece_s || start_connect) {
-		int min = CHUNK_SIDE - 1, max = 0;
-		struct river_grid *rgrid = river_piece_s->grids;
 		in_dir = grid_direction(start, start_adj, CHUNK_SIDE);
 		assert(in_dir % 2 == 0);
 
-		/* Find the range of adjacent grids */
-		while (rgrid) {
-			struct loc test = rgrid->grid;
-			if (grid_outside(test, in_dir, CHUNK_SIDE)) {
-				if ((in_dir == DIR_N) || (in_dir == DIR_S)) {
-					if (test.x > max) max = test.x;
-					if (test.x < min) min = test.x;
-				} else {
-					if (test.y > max) max = test.y;
-					if (test.y < min) min = test.y;
+		if (river_piece_s) {
+			/* There is already an external piece of river to connect to */
+			int min = CHUNK_SIDE - 1, max = 0;
+			struct river_grid *rgrid = river_piece_s->grids;
+
+			/* Find the range of adjacent grids */
+			while (rgrid) {
+				struct loc test = rgrid->grid;
+				if (grid_outside(test, in_dir, CHUNK_SIDE)) {
+					if ((in_dir == DIR_N) || (in_dir == DIR_S)) {
+						if (test.x > max) max = test.x;
+						if (test.x < min) min = test.x;
+					} else {
+						if (test.y > max) max = test.y;
+						if (test.y < min) min = test.y;
+					}
+				}
+				rgrid = rgrid->next;
+			}
+
+			/* Pick the starting grid to connect with existing external river */
+			if (min < max) {
+				if (in_dir == DIR_N) {
+					in_grid = loc((min + max) / 2, 0);
+				} else if (in_dir == DIR_E) {
+					in_grid = loc(CHUNK_SIDE - 1, (min + max) / 2);
+				} else if (in_dir == DIR_S) {
+					in_grid = loc((min + max) / 2, CHUNK_SIDE - 1);
+				} else if (in_dir == DIR_W) {
+					in_grid = loc(0, (min + max) / 2);
 				}
 			}
-			rgrid = rgrid->next;
-		}
-
-		/* Pick the starting grid to connect with existing external river */
-		if (min < max) {
-			if (in_dir == DIR_N) {
-				in_grid = loc((min + max) / 2, 0);
-			} else if (in_dir == DIR_E) {
-				in_grid = loc(CHUNK_SIDE - 1, (min + max) / 2);
-			} else if (in_dir == DIR_S) {
-				in_grid = loc((min + max) / 2, CHUNK_SIDE - 1);
-			} else if (in_dir == DIR_W) {
-				in_grid = loc(0, (min + max) / 2);
-			}
-		} else if ((start_dir % 2) && (start_dir != DIR_NONE)) {
+		} else {
 			/* Make external river and remember where we come in */
 			int y, x;
 			int start_point = randint0(CHUNK_SIDE);
@@ -1591,15 +1616,19 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			(void) map_course(CHUNK_SIDE, in_dir, &in_grid, out_dir,
 							  &out_grid, course1);
 
-			/* Set in_grid for next chunk */
+			/* Set in_grid and in_dir for next chunk */
 			if (out_dir == DIR_N) {
 				in_grid = loc(finish_point, CHUNK_SIDE - 1);
+				in_dir = DIR_S;
 			} else if (out_dir == DIR_E) {
 				in_grid = loc(0, finish_point);
+				in_dir = DIR_W;
 			} else if (out_dir == DIR_S) {
 				in_grid = loc(finish_point, 0);
+				in_dir = DIR_N;
 			} else {
 				in_grid = loc(CHUNK_SIDE - 1, finish_point);
+				in_dir = DIR_E;
 			}
 
 			/* Widen */
@@ -1619,7 +1648,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			for (y = 0; y < CHUNK_SIDE; y++) {
 				for (x = 0; x < CHUNK_SIDE; x++) {
 					if (course1[y][x]) {
-						struct river_grid *rgrid1 = mem_zalloc(sizeof(*rgrid));
+						struct river_grid *rgrid1 = mem_zalloc(sizeof(*rgrid1));
 						rgrid1->next = location->river_piece->grids;
 						rgrid1->grid = loc(x, y);
 						location->river_piece->grids = rgrid1;
@@ -1637,38 +1666,40 @@ static void write_river_pieces(struct square_mile *sq_mile,
 
 	/* Set direction for any outgoinging river to a set external chunk. */
 	if (river_piece_f || finish_connect) {
-		int min = CHUNK_SIDE - 1, max = 0;
-		struct river_grid *rgrid = river_piece_f->grids;
 		out_dir = grid_direction(finish_adj, finish, CHUNK_SIDE);
 		assert(out_dir % 2 == 0);
 
-		/* Find the range of adjacent grids */
-		while (rgrid) {
-			struct loc test = rgrid->grid;
-			if (grid_outside(test, out_dir, CHUNK_SIDE)) {
-				if ((out_dir == DIR_N) || (out_dir == DIR_S)) {
-					if (test.x > max) max = test.x;
-					if (test.x < min) min = test.x;
-				} else {
-					if (test.y > max) max = test.y;
-					if (test.y < min) min = test.y;
+		if (river_piece_f) {
+			int min = CHUNK_SIDE - 1, max = 0;
+			struct river_grid *rgrid = river_piece_f->grids;
+			/* Find the range of adjacent grids */
+			while (rgrid) {
+				struct loc test = rgrid->grid;
+				if (grid_outside(test, out_dir, CHUNK_SIDE)) {
+					if ((out_dir == DIR_N) || (out_dir == DIR_S)) {
+						if (test.x > max) max = test.x;
+						if (test.x < min) min = test.x;
+					} else {
+						if (test.y > max) max = test.y;
+						if (test.y < min) min = test.y;
+					}
+				}
+				rgrid = rgrid->next;
+			}
+
+			/* Pick the finish grid to connect with existing external river */
+			if (min < max) {
+				if (out_dir == DIR_N) {
+					exit_grid = loc((min + max) / 2, 0);
+				} else if (out_dir == DIR_E) {
+					exit_grid = loc(CHUNK_SIDE - 1, (min + max) / 2);
+				} else if (out_dir == DIR_S) {
+					exit_grid = loc((min + max) / 2, CHUNK_SIDE - 1);
+				} else if (out_dir == DIR_W) {
+					exit_grid = loc(0, (min + max) / 2);
 				}
 			}
-			rgrid = rgrid->next;
-		}
-
-		/* Pick the finishing grid to connect with existing external river */
-		if (min < max) {
-			if (out_dir == DIR_N) {
-				exit_grid = loc((min + max) / 2, 0);
-			} else if (out_dir == DIR_E) {
-				exit_grid = loc(CHUNK_SIDE - 1, (min + max) / 2);
-			} else if (out_dir == DIR_S) {
-				exit_grid = loc((min + max) / 2, CHUNK_SIDE - 1);
-			} else if (out_dir == DIR_W) {
-				exit_grid = loc(0, (min + max) / 2);
-			}
-		} else if ((finish_dir % 2) && (finish_dir != DIR_NONE)) {
+		} else {
 			/* Make external river and remember where we leave */
 			int y, x;
 			int start_point = randint0(CHUNK_SIDE);
@@ -1775,7 +1806,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			for (y = 0; y < CHUNK_SIDE; y++) {
 				for (x = 0; x < CHUNK_SIDE; x++) {
 					if (course1[y][x]) {
-						struct river_grid *rgrid1 = mem_zalloc(sizeof(*rgrid));
+						struct river_grid *rgrid1 = mem_zalloc(sizeof(*rgrid1));
 						rgrid1->next = location->river_piece->grids;
 						rgrid1->grid = loc(x, y);
 						location->river_piece->grids = rgrid1;
@@ -1794,7 +1825,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 	/* Progress along the square mile course, writing river in every chunk */
 	for (k = 1; k <= num; k++) {
 		struct loc next_chunk = (k < num) ?
-			find_course_index(CPM, k + 1, course) : finish_adj;
+			loc_sum(find_course_index(CPM, k + 1, course), start) : finish_adj;
 		int y, x;
 		int lower, upper;
 		bool reload;
@@ -1807,12 +1838,12 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		}
 
 		/* Get entry and exit directions */
-		next_chunk = (k < num) ?
-			find_course_index(CPM, k + 1, course) : finish_adj;
+		//next_chunk = (k < num) ?
+		//	find_course_index(CPM, k + 1, course) : finish_adj;
 		if (k > 1) {
 			in_dir = grid_direction(current_chunk, prev_chunk, CPM);
-		} else {
-			in_dir = start_dir;
+			//} else {
+			//in_dir = start_dir;
 		}
 		if (k < num) {
 			out_dir = grid_direction(next_chunk, current_chunk, CPM);
@@ -1911,13 +1942,13 @@ void map_river_miles(struct square_mile *sq_mile)
 
 		/* Find the incoming and outgoing directions */
 		if (upstream) {
-			start_dir = grid_direction(upstream->sq_mile->map_square_grid,
-									   sq_mile->map_square_grid, MPS);
+			start_dir = grid_direction(upstream->sq_mile->map_grid,
+									   sq_mile->map_grid, MPS);
 			two_up = true;
 		}
 		if (downstream) {
-			finish_dir = grid_direction(downstream->sq_mile->map_square_grid,
-										sq_mile->map_square_grid, MPS);
+			finish_dir = grid_direction(downstream->sq_mile->map_grid,
+										sq_mile->map_grid, MPS);
 			two_down = true;
 		}
 
@@ -2122,7 +2153,7 @@ static void make_river_piece(struct chunk *c, struct river_piece *piece)
 
 			/* Surrounded by all or all but one grid means deep */
 			if (count_neighbors(NULL, c, grid, square_iswater, false) > 6) {
-				square_set_feat(c, rgrid->grid, FEAT_D_WATER);
+				square_set_feat(c, grid, FEAT_D_WATER);
 			}
 		}
 	}
@@ -2204,7 +2235,9 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 	found = gen_loc_find(ref->x_pos, ref->y_pos, 0, &lower, &upper);
 	assert(found);
 	location = &gen_loc_list[upper];
-	make_river_piece(c, location->river_piece);
+	if (location->river_piece) {
+		make_river_piece(c, location->river_piece);
+	}
 
 	//TODO generate monsters, perhaps objects
 }
