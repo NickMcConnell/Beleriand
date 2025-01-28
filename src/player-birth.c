@@ -897,9 +897,12 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Dummy chunk (stairs to Angband), for now */
 	player->place = 0; //TEMP
 	chunk_list[0].z_pos = 0;
-	chunk_list[0].y_pos = 839;
-	chunk_list[0].x_pos = 7926;
-	chunk_list[0].region = find_region(839, 7926);
+	//chunk_list[0].y_pos = 839;
+	//chunk_list[0].x_pos = 7926;
+	//chunk_list[0].region = find_region(839, 7926);
+	chunk_list[0].y_pos = 4910;
+	chunk_list[0].x_pos = 3230;
+	chunk_list[0].region = find_region(4910, 3230);
 	player->depth = 0;
 
 	/* No locations generated yet */
