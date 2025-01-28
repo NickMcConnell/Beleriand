@@ -584,6 +584,9 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
  * ------------------------------------------------------------------------ */
 /**
  * Map a course from the corner of a square grid to a non-adjacent edge.
+ *
+ * We start in the top left corner and chart a course to the bottom, then
+ * do a symmetry transform to get the directions right.
  */
 static int map_corner_to_edge(size_t side, enum direction start_corner,
 							   enum direction finish_edge, size_t finish,
@@ -597,10 +600,56 @@ static int map_corner_to_edge(size_t side, enum direction start_corner,
 	int count = 0;
 	uint16_t **temp;
 
-	/* Start in the top left corner, chart a course to the bottom.
-	 * This is too simplistic, as it can never wind back and forward. */
+	/* Calculate rotation, reflection and adjustment to the finishing point
+	 * CAREFULLY to get it right. Note that symmetry_transform() does
+	 * rotations first, then reflections, and all eight symmetries of the
+	 * square need to be considered individually. */
+	if (start_corner == DIR_NW) {
+		if (finish_edge == DIR_S) {
+			/* No transform needed */
+		} else if (finish_edge == DIR_E) {
+			rotate = 1;
+			reflect = true;
+		} else {
+			quit_fmt("Incorrect edge direction in map_corner_to_edge()");
+		}
+	} else if (start_corner == DIR_NE) {
+		if (finish_edge == DIR_S) {
+			reflect = true;
+			x_dist = side - 1 - finish;
+		} else if (finish_edge == DIR_W) {
+			rotate = 1;
+		} else {
+			quit_fmt("Incorrect edge direction in map_corner_to_edge()");
+		}
+	} else if (start_corner == DIR_SE) {
+		if (finish_edge == DIR_W) {
+			rotate = 3;
+			reflect = true;
+			x_dist = side - 1 - finish;
+		} else if (finish_edge == DIR_N) {
+			rotate = 2;
+			x_dist = side - 1 - finish;
+		} else {
+			quit_fmt("Incorrect edge direction in map_corner_to_edge()");
+		}
+	} else if (start_corner == DIR_SW) {
+		if (finish_edge == DIR_N) {
+			rotate = 2;
+			reflect = true;
+		} else if (finish_edge == DIR_E) {
+			rotate = 3;
+			x_dist = side - 1 - finish;
+		} else {
+			quit_fmt("Incorrect edge direction in map_corner_to_edge()");
+		}
+	} else {
+		quit_fmt("Incorrect corner direction in map_corner_to_edge()");
+	}
+
+	/* This is too simplistic, as it can never wind back and forward. */
 	course[y][x] = ++count;
-	while ((y < side - 1) && (x < finish)) {
+	while ((y_dist > 0) || (x_dist > 0)) {
 		if (randint0(y_dist + x_dist) < y_dist) {
 			/* y move */
 			y++;
@@ -617,43 +666,27 @@ static int map_corner_to_edge(size_t side, enum direction start_corner,
 				if (y_dist > 0) {
 					y++;
 					y_dist--;
+					course[y][x] = ++count;
 				}
-				course[y][x] = ++count;
 				if (x_dist > 0) {
 					x++;
 					x_dist--;
+					course[y][x] = ++count;
 				}
-				course[y][x] = ++count;
 			} else {
 				/* Both move, x first */
 				if (x_dist > 0) {
 					x++;
 					x_dist--;
+					course[y][x] = ++count;
 				}
-				course[y][x] = ++count;
 				if (y_dist > 0) {
 					y++;
 					y_dist--;
+					course[y][x] = ++count;
 				}
-				course[y][x] = ++count;
 			}
 		}
-	}
-
-	/* Calculate rotation and reflection to get it right */
-	if (start_corner == DIR_NW) {
-		if (finish_edge == DIR_E) reflect = true;
-	} else if (start_corner == DIR_NE) {
-		if (finish_edge == DIR_S) reflect = true;
-		rotate = 1;
-	} else if (start_corner == DIR_SE) {
-		if (finish_edge == DIR_W) reflect = true;
-		rotate = 2;
-	} else if (start_corner == DIR_SW) {
-		if (finish_edge == DIR_N) reflect = true;
-		rotate = 3;
-	} else {
-		quit_fmt("Incorrect corner direction in map_corner_to_edge()");
 	}
 
 	/* Allocate temporary course array, copy data */
@@ -698,16 +731,19 @@ static int map_corner_to_corner(size_t side, enum direction start_corner,
 	int count = 0;
 	uint16_t **temp;
 
+	/* Reflect if necessary */
+	if ((start_corner == DIR_NE) || (start_corner == DIR_SW)) reflect = true;
+
 	/* Start in the top left corner, chart a course to the bottom right.
 	 * Slightly less simplistic than corner to edge, but not much. */
 	course[y][x] = ++count;
-	while ((y < side - 1) && (x < side - 1)) {
-		if (one_in_(side / 5)) {
+	while ((y_dist > 0) || (x_dist > 0)) {
+		if (one_in_(side / 5) && (y_dist > 0)) {
 			/* y move */
 			y++;
 			y_dist--;
 			course[y][x] = ++count;
-		} else if (one_in_(side / 5)) {
+		} else if (one_in_(side / 5) && (x_dist > 0)) {
 			/* x move */
 			x++;
 			x_dist--;
@@ -739,10 +775,8 @@ static int map_corner_to_corner(size_t side, enum direction start_corner,
 				course[y][x] = ++count;
 			}
 		}
+		course[y][x] = ++count;
 	}
-
-	/* Reflect if necessary */
-	if ((start_corner == DIR_NE) || (start_corner == DIR_SW)) reflect = true;
 
 	/* Allocate temporary course array, copy data */
 	temp = mem_zalloc(side * sizeof(uint16_t*));
@@ -786,62 +820,73 @@ static int map_edge_to_opposite(size_t side, enum direction start_edge,
 	int count = 0;
 	uint16_t **temp;
 
+	/* Rotate, reverse direction if necessary */
+	if (start_edge == DIR_E) {
+		rotate = 1;
+	} else if (start_edge == DIR_S) {
+		x = finish;
+		x_dist = -x_dist;
+	} else if (start_edge == DIR_W) {
+		rotate = 1;
+		x = finish;
+		x_dist = -x_dist;
+	}
+
 	/* Start at the top, chart a course to the bottom.  Moderately sensible. */
 	course[y][x] = ++count;
-	while ((y < side - 1) && (x != side - 1)) {
+	while ((y_dist > 0) || (x_dist != 0)) {
 		/* Just always progress in the main direction */
-		y++;
-		y_dist--;
-		course[y][x] = ++count;
+		if (y_dist > 0) {
+			y++;
+			y_dist--;
+			course[y][x] = ++count;
+		}
 		/* If we have some room to play with, allow occasional bad x moves */
-		if (y_dist > ABS(x_dist)) {
+		if (y_dist > ABS(x_dist) - 1) {
 			if (one_in_(y_dist + side)) {
 				/* Bad move */
 				if (x_dist < 0) {
 					x++;
 					x_dist--;
+					course[y][x] = ++count;
 				} else if (x_dist > 0) {
 					x--;
 					x_dist++;
+					course[y][x] = ++count;
 				} else if (one_in_(2)) {
 					x++;
 					x_dist--;
+					course[y][x] = ++count;
 				} else {
 					x--;
 					x_dist++;
+					course[y][x] = ++count;
 				}
-				course[y][x] = ++count;
 			} else if (one_in_(y_dist - ABS(x_dist))) {
 				/* Good move */
 				if (x_dist < 0) {
 					x--;
 					x_dist++;
+					course[y][x] = ++count;
 				} else if (x_dist > 0) {
 					x++;
 					x_dist--;
+					course[y][x] = ++count;
 				}
-				course[y][x] = ++count;
 			}
 		} else {
 			/* We have no latitude, head stright for the finish */
 			if (x_dist > 0) {
 				x++;
 				x_dist--;
+				course[y][x] = ++count;
 			} else if (x_dist < 0) {
 				x--;
 				x_dist++;
+				course[y][x] = ++count;
 			}
-			course[y][x] = ++count;
 		}
-	}
-
-	/* Rotate if necessary */
-	if (start_edge == DIR_E) {
-		rotate = 1;
-	} else if (start_edge == DIR_S) {
-		rotate = 2;
-	} else if (start_edge == DIR_W) {
-		rotate = 3;
+		course[y][x] = ++count;
 	}
 
 	/* Allocate temporary course array, copy data */
@@ -888,15 +933,72 @@ static int map_edge_to_adjacent(size_t side, enum direction start_edge,
 	int count = 0;
 	uint16_t **temp;
 
+	/* Rotate and adjust start and finish points if necessary. Given there are
+	 * only four basic configurations (cutting off the four corners) we can
+	 * choose not to use reflects at all. */
+	if (start_edge == DIR_N) {
+		if (finish_edge == DIR_E) {
+			/* All set */
+		} else if (finish_edge == DIR_W) {
+			rotate = 3;
+			y_dist = start;
+			x = finish;
+			x_dist = side - 1 - finish;
+		} else {
+			quit_fmt("Incorrect finish edge in map_edge_to_adjacent()");
+		}
+	} else if (start_edge == DIR_E) {
+		if (finish_edge == DIR_S) {
+			rotate = 1;
+			y_dist = side - 1 - finish;
+		} else if (finish_edge == DIR_N) {
+			y_dist = start;
+			x = finish;
+			x_dist = side - 1 - finish;
+		} else {
+			quit_fmt("Incorrect finish edge in map_edge_to_adjacent()");
+		}
+	} else if (start_edge == DIR_S) {
+		if (finish_edge == DIR_W) {
+			rotate = 2;
+			x = side - 1 - start;
+			x_dist = start;
+			y_dist = side - 1 - finish;
+		} else if (finish_edge == DIR_E) {
+			rotate = 1;
+			y_dist = start;
+			x = finish;
+			x_dist = side - 1 - finish;
+		} else {
+			quit_fmt("Incorrect finish edge in map_edge_to_adjacent()");
+		}
+	} else if (start_edge == DIR_W) {
+		if (finish_edge == DIR_N) {
+			rotate = 3;
+			y_dist = finish;
+			x = side - 1 - start;
+			x_dist = start;
+		} else if (finish_edge == DIR_S) {
+			rotate = 2;
+			y_dist = side - 1 - start;
+			x = side - 1 - finish;
+			x_dist = finish;
+		} else {
+			quit_fmt("Incorrect finish edge in map_edge_to_adjacent()");
+		}
+	} else {
+		quit_fmt("Incorrect start edge in map_corner_to_edge()");
+	}
+
 	/* Start at the top, chart a course to the right edge.
 	 * Very like corner to corner. */
 	course[y][x] = ++count;
-	while ((y < finish) && (x < side - 1)) {
-		if (one_in_((finish + side - start) / 10) && (y < finish)) {
+	while ((y_dist > 0) || (x_dist > 0)) {
+		if (one_in_((finish + side - start) / 10) && (y_dist > 0)) {
 			y++;
 			y_dist--;
 			course[y][x] = ++count;
-		} else if (one_in_((finish + side - start) / 10) && (x < side - 1)) {
+		} else if (one_in_((finish + side - start) / 10) && (x_dist > 0)) {
 			x++;
 			x_dist--;
 			course[y][x] = ++count;
@@ -910,32 +1012,18 @@ static int map_edge_to_adjacent(size_t side, enum direction start_edge,
 				x_dist--;
 				course[y][x] = ++count;
 			} else {
-				if (y < finish) {
+				if (y_dist > 0) {
 					y++;
 					y_dist--;
 					course[y][x] = ++count;
 				}
-				if (x < side - 1) {
+				if (x_dist > 0) {
 					x++;
 					x_dist--;
 					course[y][x] = ++count;
 				}
 			}
 		}
-	}
-
-	/* Rotate if necessary */
-	if (start_edge == DIR_N) {
-		if (finish_edge == DIR_W) reflect = true;
-	} else if (start_edge == DIR_E) {
-		rotate = 1;
-		if (finish_edge == DIR_N) reflect = true;
-	} else if (start_edge == DIR_S) {
-		rotate = 2;
-		if (finish_edge == DIR_E) reflect = true;
-	} else if (start_edge == DIR_W) {
-		rotate = 3;
-		if (finish_edge == DIR_S) reflect = true;
 	}
 
 	/* Allocate temporary course array, copy data */
@@ -1167,9 +1255,9 @@ static int map_course(size_t side, enum direction start_dir, struct loc *start,
 		/* Pick the correct coordinate */
 		assert(start_dir % 2 == 0);
 		if ((start_dir == DIR_N) || (start_dir == DIR_S)) {
-			start_point = start->x;
+			start_point = start->x % side;
 		} else {
-			start_point = start->y;
+			start_point = start->y % side;
 		}
 	}
 
@@ -1201,9 +1289,9 @@ static int map_course(size_t side, enum direction start_dir, struct loc *start,
 		/* Pick the correct coordinate */
 		assert(finish_dir % 2 == 0);
 		if ((finish_dir == DIR_N) || (finish_dir == DIR_S)) {
-			finish_point = finish->x;
+			finish_point = finish->x % side;
 		} else {
-			finish_point = finish->y;
+			finish_point = finish->y % side;
 		}
 	}
 
@@ -1461,9 +1549,12 @@ static void write_river_pieces(struct square_mile *sq_mile,
 							   uint16_t **course, int num)
 {
 	int k;
+
+	/* Coordinates of the chunk in the top left corner */
+	struct loc tl = loc(sq_mile->map_grid.x * CPM, sq_mile->map_grid.y * CPM);
+
 	struct loc prev_chunk = start_adj;
-	struct loc current_chunk = loc_sum(find_course_index(CPM, 1, course),
-									   start);
+	struct loc current_chunk = loc_sum(find_course_index(CPM, 1, course), tl);
 	struct loc in_grid = loc(-1, -1), out_grid = loc(-1, -1);
 	struct loc exit_grid = loc(-1, -1);
 	enum direction in_dir = DIR_NONE, out_dir = DIR_NONE, widen_dir = DIR_NONE;
@@ -1825,8 +1916,8 @@ static void write_river_pieces(struct square_mile *sq_mile,
 	/* Progress along the square mile course, writing river in every chunk */
 	for (k = 1; k <= num; k++) {
 		struct loc next_chunk = (k < num) ?
-			loc_sum(find_course_index(CPM, k + 1, course), start) : finish_adj;
-		int y, x;
+			loc_sum(find_course_index(CPM, k + 1, course), tl) : finish_adj;
+		int y, x, num_grids;
 		int lower, upper;
 		bool reload;
 		struct gen_loc *location;
@@ -1838,15 +1929,11 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		}
 
 		/* Get entry and exit directions */
-		//next_chunk = (k < num) ?
-		//	find_course_index(CPM, k + 1, course) : finish_adj;
 		if (k > 1) {
 			in_dir = grid_direction(current_chunk, prev_chunk, CPM);
-			//} else {
-			//in_dir = start_dir;
 		}
 		if (k < num) {
-			out_dir = grid_direction(next_chunk, current_chunk, CPM);
+			out_dir = grid_direction(current_chunk, next_chunk, CPM);
 		} else {
 			out_dir = finish_dir;
 			out_grid = exit_grid;
@@ -1855,8 +1942,8 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		//TODO handle sources and sinks
 
 		/* Map a course across the chunk */
-		(void) map_course(CHUNK_SIDE, in_dir, &in_grid, out_dir,
-						  &out_grid, course1);
+		num_grids =  map_course(CHUNK_SIDE, in_dir, &in_grid, out_dir,
+								&out_grid, course1);
 
 		/* Write new in_grid adjacent to out_grid in out_dir */
 		in_grid = loc_sum(out_grid, ddgrid[out_dir]);
@@ -1883,9 +1970,11 @@ static void write_river_pieces(struct square_mile *sq_mile,
 					rgrid->next = location->river_piece->grids;
 					rgrid->grid = loc(x, y);
 					location->river_piece->grids = rgrid;
+					num_grids--;
 				}
 			}
 		}
+		//assert(num_grids == 0);
 
 		/* Prepare for the next chunk */
 		prev_chunk = current_chunk;

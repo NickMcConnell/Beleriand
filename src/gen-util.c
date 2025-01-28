@@ -352,7 +352,7 @@ enum direction opposite_dir(enum direction dir)
 	if (dir == DIR_NONE) return DIR_NONE;
 	else if (dir == DIR_UP) return DIR_DOWN;
 	else if (dir == DIR_DOWN) return DIR_UP;
-	return cycle[chome[dir + 4]];
+	return cycle[chome[dir] + 4];
 }
 
 
