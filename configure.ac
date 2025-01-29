@@ -597,13 +597,14 @@ else
 fi
 if test "x$wsetgid" = "xyes"; then
 	echo "  (as group ${SETEGID})"
-elif test "x$with_private_dirs" = "xyes"; then
+elif test "x$with_private_dirs" = "xyes" && test ! "x$enable_win" = "xyes"; then
 	echo "  (with private save and score files in ~/.angband/Beleriand/)"
 fi
 if test "x$with_sphinx" = "xyes"; then
 	echo "  documentation:                          Yes"
 else
 	echo "  documentation:                          No"
+fi
 
 echo
 echo "-- Frontends --"
