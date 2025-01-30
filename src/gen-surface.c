@@ -853,11 +853,11 @@ static int map_edge_to_opposite(size_t side, enum direction start_edge,
 					x--;
 					x_dist++;
 					course[y][x] = ++count;
-				} else if (one_in_(2)) {
+				} else if (one_in_(2) && (x < side - 1)) {
 					x++;
 					x_dist--;
 					course[y][x] = ++count;
-				} else {
+				} else if (x > 0) {
 					x--;
 					x_dist++;
 					course[y][x] = ++count;
@@ -1732,7 +1732,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			} else {
 				gen_loc_make(start_adj.x, start_adj.y, 0, upper);
 				location = &gen_loc_list[upper];
-				location->river_piece = mem_zalloc(sizeof(struct river_piece*));
+				location->river_piece = mem_zalloc(sizeof(struct river_piece));
 			}
 
 			/* Write the grids */
@@ -1890,7 +1890,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			} else {
 				gen_loc_make(finish_adj.x, finish_adj.y, 0, upper);
 				location = &gen_loc_list[upper];
-				location->river_piece = mem_zalloc(sizeof(struct river_piece*));
+				location->river_piece = mem_zalloc(sizeof(struct river_piece));
 			}
 
 			/* Write the grids */
@@ -1959,7 +1959,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		} else {
 			gen_loc_make(current_chunk.x, current_chunk.y, 0, upper);
 			location = &gen_loc_list[upper];
-			location->river_piece = mem_zalloc(sizeof(struct river_piece*));
+			location->river_piece = mem_zalloc(sizeof(struct river_piece));
 		}
 
 		/* Write the grids */
