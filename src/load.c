@@ -1646,7 +1646,7 @@ int rd_locations(void)
 		/* Read the river piece */
 		rd_u16b(&num_river_grids);
 		if (num_river_grids) {
-			loc->river_piece = mem_zalloc(sizeof(struct river_piece*));
+			loc->river_piece = mem_zalloc(sizeof(struct river_piece));
 			for (j = 0; j < num_river_grids; j++) {
 				struct river_grid *rgrid = mem_zalloc(sizeof(*rgrid));
 				rd_byte(&tmp8u);
