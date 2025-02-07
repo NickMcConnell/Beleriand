@@ -1012,7 +1012,7 @@ void wr_locations(void)
 
 	for (i = 0; i < gen_loc_cnt; i++) {
 		struct gen_loc *location = &gen_loc_list[i];
-		int num_changes = 0, num_joins = 0, num_river_grids = 0;
+		int num_changes = 0, num_joins = 0;
 		struct terrain_change *change;
 		struct connector *join;
 		struct river_piece *river = location->river_piece;
@@ -1053,12 +1053,8 @@ void wr_locations(void)
 
 		/* Count the river grids, if any */
 		if (river) {
-			for (rgrid = river->grids; rgrid; rgrid = rgrid->next) {
-				num_river_grids++;
-			}
-
 			/* Write the river grids and direction */
-			wr_u16b(num_river_grids);
+			wr_u16b(river->num_grids);
 			for (rgrid = river->grids; rgrid; rgrid = rgrid->next) {
 				wr_byte(rgrid->grid.y);
 				wr_byte(rgrid->grid.x);

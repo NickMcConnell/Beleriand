@@ -172,9 +172,8 @@ struct river_grid {
  * this is placed, so there is no need to record it here
  */
 struct river_piece {
-	//struct river_piece *next;
-
 	struct river_grid *grids;	/**< Set of river grids in this chunk */
+	int num_grids;				/**< Number of river grids in this chunk */
 	enum direction dir;			/**< Direction this piece of river is flowing */
 };
 

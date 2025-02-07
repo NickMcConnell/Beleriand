@@ -875,7 +875,7 @@ static int map_edge_to_opposite(size_t side, enum direction start_edge,
 				}
 			}
 		} else {
-			/* We have no latitude, head stright for the finish */
+			/* We have no latitude, head straight for the finish */
 			if (x_dist > 0) {
 				x++;
 				x_dist--;
@@ -886,7 +886,6 @@ static int map_edge_to_opposite(size_t side, enum direction start_edge,
 				course[y][x] = ++count;
 			}
 		}
-		course[y][x] = ++count;
 	}
 
 	/* Allocate temporary course array, copy data */
@@ -1449,6 +1448,7 @@ static bool grid_in_square(int side, struct loc grid)
  *
  * This also has the problem of being truncated at the edge of the square.
  */
+//TODO Use width!
 static int widen_river_course(int side, uint16_t **course, enum direction dir)
 {
 	struct loc grid, new;
@@ -1533,6 +1533,66 @@ static struct loc find_course_index(int side, int index, uint16_t **course)
 	return loc(-1, -1);		
 }
 
+static struct loc get_external_river_connect(enum direction dir,
+											 struct river_piece *piece)
+{
+	struct loc grid = loc(-1, -1);
+	int min = CHUNK_SIDE - 1, max = 0;
+	struct river_grid *rgrid = piece->grids;
+
+	/* Find the range of adjacent grids */
+	while (rgrid) {
+		struct loc test = rgrid->grid;
+		if (grid_outside(test, dir, CHUNK_SIDE)) {
+			if ((dir == DIR_N) || (dir == DIR_S)) {
+				if (test.x > max) max = test.x;
+				if (test.x < min) min = test.x;
+			} else {
+				if (test.y > max) max = test.y;
+				if (test.y < min) min = test.y;
+			}
+		}
+		rgrid = rgrid->next;
+	}
+
+	/* Pick the grid to connect with existing external river */
+	if (min < max) {
+		if (dir == DIR_N) {
+			grid = loc((min + max) / 2, 0);
+		} else if (dir == DIR_E) {
+			grid = loc(CHUNK_SIDE - 1, (min + max) / 2);
+		} else if (dir == DIR_S) {
+			grid = loc((min + max) / 2, CHUNK_SIDE - 1);
+		} else if (dir == DIR_W) {
+			grid = loc(0, (min + max) / 2);
+		}
+	}
+
+	/* Check it's a valid grid */
+	if ((grid.x < 0) || (grid.y < 0)) quit_fmt("Failed to connect river piece");
+
+	return grid;
+}
+
+static void write_river_piece(uint16_t **course, struct gen_loc *location)
+{
+	int y, x, count = 0;
+
+	/* Write the grids */
+	for (y = 0; y < CHUNK_SIDE; y++) {
+		for (x = 0; x < CHUNK_SIDE; x++) {
+			if (course[y][x]) {
+				struct river_grid *rgrid = mem_zalloc(sizeof(*rgrid));
+				rgrid->next = location->river_piece->grids;
+				rgrid->grid = loc(x, y);
+				location->river_piece->grids = rgrid;
+				count++;
+			}
+		}
+	}
+	location->river_piece->num_grids = count;
+}
+
 /**
  * Write pieces for each location in a mapped course across a square mile for a
  * river mile.
@@ -1598,40 +1658,11 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		assert(in_dir % 2 == 0);
 
 		if (river_piece_s) {
-			/* There is already an external piece of river to connect to */
-			int min = CHUNK_SIDE - 1, max = 0;
-			struct river_grid *rgrid = river_piece_s->grids;
-
-			/* Find the range of adjacent grids */
-			while (rgrid) {
-				struct loc test = rgrid->grid;
-				if (grid_outside(test, in_dir, CHUNK_SIDE)) {
-					if ((in_dir == DIR_N) || (in_dir == DIR_S)) {
-						if (test.x > max) max = test.x;
-						if (test.x < min) min = test.x;
-					} else {
-						if (test.y > max) max = test.y;
-						if (test.y < min) min = test.y;
-					}
-				}
-				rgrid = rgrid->next;
-			}
-
-			/* Pick the starting grid to connect with existing external river */
-			if (min < max) {
-				if (in_dir == DIR_N) {
-					in_grid = loc((min + max) / 2, 0);
-				} else if (in_dir == DIR_E) {
-					in_grid = loc(CHUNK_SIDE - 1, (min + max) / 2);
-				} else if (in_dir == DIR_S) {
-					in_grid = loc((min + max) / 2, CHUNK_SIDE - 1);
-				} else if (in_dir == DIR_W) {
-					in_grid = loc(0, (min + max) / 2);
-				}
-			}
+			/* There's already an external piece of river */
+			in_grid = get_external_river_connect(in_dir, river_piece_s);
 		} else {
 			/* Make external river and remember where we come in */
-			int y, x;
+			int y;
 			int start_point = randint0(CHUNK_SIDE);
 			int finish_point = randint0(CHUNK_SIDE);
 			int lower, upper;
@@ -1735,17 +1766,8 @@ static void write_river_pieces(struct square_mile *sq_mile,
 				location->river_piece = mem_zalloc(sizeof(struct river_piece));
 			}
 
-			/* Write the grids */
-			for (y = 0; y < CHUNK_SIDE; y++) {
-				for (x = 0; x < CHUNK_SIDE; x++) {
-					if (course1[y][x]) {
-						struct river_grid *rgrid1 = mem_zalloc(sizeof(*rgrid1));
-						rgrid1->next = location->river_piece->grids;
-						rgrid1->grid = loc(x, y);
-						location->river_piece->grids = rgrid1;
-					}
-				}
-			}
+			/* Write the river piece */
+			write_river_piece(course1, location);
 
 			/* Free the course array */
 			for (y = 0; y < CHUNK_SIDE; y++) {
@@ -1761,38 +1783,11 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		assert(out_dir % 2 == 0);
 
 		if (river_piece_f) {
-			int min = CHUNK_SIDE - 1, max = 0;
-			struct river_grid *rgrid = river_piece_f->grids;
-			/* Find the range of adjacent grids */
-			while (rgrid) {
-				struct loc test = rgrid->grid;
-				if (grid_outside(test, out_dir, CHUNK_SIDE)) {
-					if ((out_dir == DIR_N) || (out_dir == DIR_S)) {
-						if (test.x > max) max = test.x;
-						if (test.x < min) min = test.x;
-					} else {
-						if (test.y > max) max = test.y;
-						if (test.y < min) min = test.y;
-					}
-				}
-				rgrid = rgrid->next;
-			}
-
-			/* Pick the finish grid to connect with existing external river */
-			if (min < max) {
-				if (out_dir == DIR_N) {
-					exit_grid = loc((min + max) / 2, 0);
-				} else if (out_dir == DIR_E) {
-					exit_grid = loc(CHUNK_SIDE - 1, (min + max) / 2);
-				} else if (out_dir == DIR_S) {
-					exit_grid = loc((min + max) / 2, CHUNK_SIDE - 1);
-				} else if (out_dir == DIR_W) {
-					exit_grid = loc(0, (min + max) / 2);
-				}
-			}
+			/* There's already an external piece of river */
+			exit_grid = get_external_river_connect(out_dir, river_piece_f);
 		} else {
 			/* Make external river and remember where we leave */
-			int y, x;
+			int y;
 			int start_point = randint0(CHUNK_SIDE);
 			int finish_point = randint0(CHUNK_SIDE);
 			int lower, upper;
@@ -1893,17 +1888,8 @@ static void write_river_pieces(struct square_mile *sq_mile,
 				location->river_piece = mem_zalloc(sizeof(struct river_piece));
 			}
 
-			/* Write the grids */
-			for (y = 0; y < CHUNK_SIDE; y++) {
-				for (x = 0; x < CHUNK_SIDE; x++) {
-					if (course1[y][x]) {
-						struct river_grid *rgrid1 = mem_zalloc(sizeof(*rgrid1));
-						rgrid1->next = location->river_piece->grids;
-						rgrid1->grid = loc(x, y);
-						location->river_piece->grids = rgrid1;
-					}
-				}
-			}
+			/* Write the river piece */
+			write_river_piece(course1, location);
 
 			/* Free the course array */
 			for (y = 0; y < CHUNK_SIDE; y++) {
@@ -1917,7 +1903,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 	for (k = 1; k <= num; k++) {
 		struct loc next_chunk = (k < num) ?
 			loc_sum(find_course_index(CPM, k + 1, course), tl) : finish_adj;
-		int y, x, num_grids;
+		int y;
 		int lower, upper;
 		bool reload;
 		struct gen_loc *location;
@@ -1934,6 +1920,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		}
 		if (k < num) {
 			out_dir = grid_direction(current_chunk, next_chunk, CPM);
+			out_grid = loc(-1, -1);
 		} else {
 			out_dir = finish_dir;
 			out_grid = exit_grid;
@@ -1942,8 +1929,8 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		//TODO handle sources and sinks
 
 		/* Map a course across the chunk */
-		num_grids =  map_course(CHUNK_SIDE, in_dir, &in_grid, out_dir,
-								&out_grid, course1);
+		(void) map_course(CHUNK_SIDE, in_dir, &in_grid, out_dir, &out_grid,
+						  course1);
 
 		/* Write new in_grid adjacent to out_grid in out_dir */
 		in_grid = loc_sum(out_grid, ddgrid[out_dir]);
@@ -1955,26 +1942,23 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		reload = gen_loc_find(current_chunk.x, current_chunk.y, 0, &lower,
 							  &upper);
 		if (reload) {
-			quit_fmt("Trying to create existing location");
+			struct chunk_ref pref = chunk_list[player->place];
+			/* Check the generated chunk is in the current playing arena */
+			if ((ABS(pref.x_pos - current_chunk.x) <= ARENA_CHUNKS / 2) &&
+				(ABS(pref.y_pos - current_chunk.y) <= ARENA_CHUNKS / 2)) {
+				location = &gen_loc_list[upper];
+				location->river_piece = mem_zalloc(sizeof(struct river_piece));
+			} else {
+				quit_fmt("Trying to create existing location");
+			}
 		} else {
 			gen_loc_make(current_chunk.x, current_chunk.y, 0, upper);
 			location = &gen_loc_list[upper];
 			location->river_piece = mem_zalloc(sizeof(struct river_piece));
 		}
 
-		/* Write the grids */
-		for (y = 0; y < CHUNK_SIDE; y++) {
-			for (x = 0; x < CHUNK_SIDE; x++) {
-				if (course1[y][x]) {
-					struct river_grid *rgrid = mem_zalloc(sizeof(*rgrid));
-					rgrid->next = location->river_piece->grids;
-					rgrid->grid = loc(x, y);
-					location->river_piece->grids = rgrid;
-					num_grids--;
-				}
-			}
-		}
-		//assert(num_grids == 0);
+		/* Write the river piece */
+		write_river_piece(course1, location);
 
 		/* Prepare for the next chunk */
 		prev_chunk = current_chunk;
@@ -2031,13 +2015,13 @@ void map_river_miles(struct square_mile *sq_mile)
 
 		/* Find the incoming and outgoing directions */
 		if (upstream) {
-			start_dir = grid_direction(upstream->sq_mile->map_grid,
-									   sq_mile->map_grid, MPS);
+			start_dir = grid_direction(sq_mile->map_grid,
+									   upstream->sq_mile->map_grid, MPS);
 			two_up = true;
 		}
 		if (downstream) {
-			finish_dir = grid_direction(downstream->sq_mile->map_grid,
-										sq_mile->map_grid, MPS);
+			finish_dir = grid_direction(sq_mile->map_grid,
+										downstream->sq_mile->map_grid, MPS);
 			two_down = true;
 		}
 
@@ -2223,21 +2207,22 @@ static void make_piece(struct chunk *c, enum biome_type terrain,
 }
 
 //TODO CURRENT
-static void make_river_piece(struct chunk *c, struct river_piece *piece)
+static void make_river_piece(struct chunk *c, struct loc top_left,
+							 struct river_piece *piece)
 {
 	int y, x;
 
 	/* Place the grids */
 	struct river_grid *rgrid = piece->grids;
 	while (rgrid) {
-		square_set_feat(c, rgrid->grid, FEAT_S_WATER);
+		square_set_feat(c, loc_sum(top_left, rgrid->grid), FEAT_S_WATER);
 		rgrid = rgrid->next;
 	}
 
 	/* Set deep water */
 	for (y = 0; y < CHUNK_SIDE; y++) {
 		for (x = 0; x < CHUNK_SIDE; x++) {
-			struct loc grid = loc(x, y);
+			struct loc grid = loc_sum(top_left, loc(x, y));
 			if (!square_iswater(c, grid)) continue;
 
 			/* Surrounded by all or all but one grid means deep */
@@ -2325,7 +2310,7 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 	assert(found);
 	location = &gen_loc_list[upper];
 	if (location->river_piece) {
-		make_river_piece(c, location->river_piece);
+		make_river_piece(c, top_left, location->river_piece);
 	}
 
 	//TODO generate monsters, perhaps objects
