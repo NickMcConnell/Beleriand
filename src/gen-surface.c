@@ -1448,38 +1448,11 @@ static bool grid_in_square(int side, struct loc grid)
  *
  * This also has the problem of being truncated at the edge of the square.
  */
-//TODO Use width!
-static int widen_river_course(int side, uint16_t **course, enum direction dir)
+static int widen_river_course(int side, uint16_t **course, enum direction dir,
+							  int width)
 {
 	struct loc grid, new;
-	int count = 1;
-	
-	/* Allocate widen array */
-	bool **widen = mem_zalloc(side * sizeof(bool*));
-	int y;
-	for (y = 0; y < side; y++) {
-		widen[y] = mem_zalloc(side * sizeof(bool));
-	}
-
-	/* Pick widening grids */
-	assert((dir != DIR_NONE) && (dir % 2));
-	for (grid.y = 0; grid.y < side; grid.y++) {
-		for (grid.x = 0; grid.x < side; grid.x++) {
-			if (!course[grid.y][grid.x]) continue;
-
-			/* Add diagonal */
-			new = loc_sum(grid, ddgrid[dir]);
-			if (grid_in_square(side, new)) widen[new.y][new.x] = true;
-
-			/* Add cardinal anti-clockwise */
-			new = loc_sum(grid, ddgrid[cycle[chome[dir] + 1]]);
-			if (grid_in_square(side, new)) widen[new.y][new.x] = true;
-
-			/* Add cardinal clockwise */
-			new = loc_sum(grid, ddgrid[cycle[chome[dir] - 1]]);
-			if (grid_in_square(side, new)) widen[new.y][new.x] = true;
-		}
-	}
+	int i, count = 1;
 
 	/* Find the biggest label */
 	for (grid.y = 0; grid.y < side; grid.y++) {
@@ -1488,20 +1461,50 @@ static int widen_river_course(int side, uint16_t **course, enum direction dir)
 		}
 	}
 
-	/* Add the widening grids */
-	for (grid.y = 0; grid.y < side; grid.y++) {
-		for (grid.x = 0; grid.x < side; grid.x++) {
-			if (!course[grid.y][grid.x] && widen[grid.y][grid.x]) {
-				course[grid.y][grid.x] = count++;
+	/* Widen the correct number of times */
+	for (i = 0; i < width; i++) {
+		/* Allocate widen array */
+		bool **widen = mem_zalloc(side * sizeof(bool*));
+		int y;
+		for (y = 0; y < side; y++) {
+			widen[y] = mem_zalloc(side * sizeof(bool));
+		}
+
+		/* Pick widening grids */
+		assert((dir != DIR_NONE) && (dir % 2));
+		for (grid.y = 0; grid.y < side; grid.y++) {
+			for (grid.x = 0; grid.x < side; grid.x++) {
+				if (!course[grid.y][grid.x]) continue;
+
+				/* Add diagonal */
+				new = loc_sum(grid, ddgrid[dir]);
+				if (grid_in_square(side, new)) widen[new.y][new.x] = true;
+
+				/* Add cardinal anti-clockwise */
+				new = loc_sum(grid, ddgrid[cycle[chome[dir] + 1]]);
+				if (grid_in_square(side, new)) widen[new.y][new.x] = true;
+
+				/* Add cardinal clockwise */
+				new = loc_sum(grid, ddgrid[cycle[chome[dir] - 1]]);
+				if (grid_in_square(side, new)) widen[new.y][new.x] = true;
 			}
 		}
-	}
 
-	/* Free the widen array */
-	for (y = 0; y < side; y++) {
-		mem_free(widen[y]);
+		/* Add the widening grids */
+		for (grid.y = 0; grid.y < side; grid.y++) {
+			for (grid.x = 0; grid.x < side; grid.x++) {
+				if (!course[grid.y][grid.x] && widen[grid.y][grid.x]) {
+					course[grid.y][grid.x] = count++;
+				}
+			}
+		}
+
+		/* Free the widen array */
+		for (y = 0; y < side; y++) {
+			mem_free(widen[y]);
+		}
+		mem_free(widen);
 	}
-	mem_free(widen);
 	return count;
 }
 
@@ -1754,7 +1757,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			}
 
 			/* Widen */
-			widen_river_course(CHUNK_SIDE, course1, widen_dir);
+			widen_river_course(CHUNK_SIDE, course1, widen_dir, width);
 
 			/* Get the location, confirming it hasn't been written before */
 			reload = gen_loc_find(start_adj.x, start_adj.y, 0, &lower, &upper);
@@ -1875,7 +1878,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			}
 
 			/* Widen */
-			widen_river_course(CHUNK_SIDE, course1, widen_dir);
+			widen_river_course(CHUNK_SIDE, course1, widen_dir, width);
 
 			/* Get the location, confirming it hasn't been written before */
 			reload = gen_loc_find(finish_adj.x, finish_adj.y, 0, &lower,
@@ -1936,7 +1939,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 		in_grid = loc_sum(out_grid, ddgrid[out_dir]);
 
 		/* Widen */
-		widen_river_course(CHUNK_SIDE, course1, widen_dir);
+		widen_river_course(CHUNK_SIDE, course1, widen_dir, width);
 
 		/* Get the location, confirming it hasn't been written before */
 		reload = gen_loc_find(current_chunk.x, current_chunk.y, 0, &lower,
