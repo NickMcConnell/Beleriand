@@ -1584,7 +1584,7 @@ int rd_locations(void)
 		uint16_t tmp16u;
 		uint32_t tmp32u;
 		struct gen_loc *loc = NULL;
-		uint16_t num_changes = 0, num_joins = 0, num_river_grids = 0;
+		uint16_t num_changes = 0, num_joins = 0;
 
 		/* Increase the array size if necessary */
 		if (((i % GEN_LOC_INCR) == 0) && (i > 0)) {
@@ -1644,10 +1644,11 @@ int rd_locations(void)
 		}
 
 		/* Read the river piece */
-		rd_u16b(&num_river_grids);
-		if (num_river_grids) {
+		rd_u16b(&tmp16u);
+		if (tmp16u) {
 			loc->river_piece = mem_zalloc(sizeof(struct river_piece));
-			for (j = 0; j < num_river_grids; j++) {
+			loc->river_piece->num_grids = tmp16u;
+			for (j = 0; j < tmp16u; j++) {
 				struct river_grid *rgrid = mem_zalloc(sizeof(*rgrid));
 				rd_byte(&tmp8u);
 				rgrid->grid.y = tmp8u;

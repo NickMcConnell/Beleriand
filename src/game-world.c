@@ -223,6 +223,12 @@ bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *below, int *above)
 		return true;
 	}
 
+	/* Check above */
+	if (gen_loc_cmp(gen_loc_list[*above], gen_loc) == 0) {
+		*below = *above;
+		return true;
+	}
+
 	/* Needs to go after the last element */
 	if (gen_loc_cmp(gen_loc_list[*above], gen_loc) == -1) {
 		*above = gen_loc_cnt;
