@@ -269,8 +269,9 @@ struct vault {
 #define CHUNK_SIDE 44
 #define ARENA_CHUNKS 3
 #define ARENA_SIDE (CHUNK_SIDE * ARENA_CHUNKS)
-#define CPM 20						/* Chunks per mile */
-#define MPS 49						/* Square miles per map square */
+#define CPM 20					/* Chunks per mile */
+#define MPS 49					/* Square miles per map square */
+#define WIDEN_RATIO 25			/* River miles length per extra grid width */
 #define MAX_CHUNKS 256
 #define CHUNK_TEMP -2
 #define CHUNK_CUR -1
