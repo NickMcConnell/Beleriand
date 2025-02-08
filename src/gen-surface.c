@@ -1421,12 +1421,17 @@ static bool grid_outside(struct loc grid, enum direction dir, int side)
 }
 
 /**
- *
+ * Get the river width at a particular river mile.
  */
 static int get_river_width(struct river_mile *r_mile)
 {
-	//TODO calculate this
-	return 3;
+	struct river_mile *upstream = next_river_mile(r_mile, true, false);
+	int count = 0;
+	while (upstream) {
+		count++;
+		upstream = next_river_mile(upstream, true, false);
+	}
+	return 1 + (count / WIDEN_RATIO);
 }
 
 /**
@@ -1439,7 +1444,8 @@ static bool grid_in_square(int side, struct loc grid)
 }
 
 /**
- * Widen the course of a river in the given diagonal direction by one.
+ * Widen the course of a river in the given diagonal direction to the given
+ * width.
  *
  * This algorithm adds the diagonal grid and the two adjacent cardinal grids
  * for the given direction from each existing grid. This should result in a
@@ -1462,7 +1468,7 @@ static int widen_river_course(int side, uint16_t **course, enum direction dir,
 	}
 
 	/* Widen the correct number of times */
-	for (i = 0; i < width; i++) {
+	for (i = 1; i < width; i++) {
 		/* Allocate widen array */
 		bool **widen = mem_zalloc(side * sizeof(bool*));
 		int y;

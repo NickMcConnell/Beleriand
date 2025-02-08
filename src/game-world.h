@@ -128,33 +128,6 @@ struct map_square;
 struct square_mile;
 
 /**
- * Information about a piece of river at a chunk
- */
-//TODO DELETE?
-struct river_chunk {
-	int map_y;         /**< Map y coordinate of river chunk */
-	int map_x;         /**< Map x coordinate of river chunk */
-	uint16_t width;    /**< River width */
-};
-
-/**
- * Information about how a river crosses the border of a chunk
- *
- * Note that this structure holds information about one side only; rivers
- * crossing a corner will require two overlapping river_edges
- */
-//TODO DELETE?
-struct river_edge {
-	struct river_edge *next;
-
-	struct river *river;	/**< The river */
-	enum direction side;	/**< Side of the chunk crossed */
-	uint8_t start;			/**< Smallest crossing coordinate */
-	uint8_t finish;			/**< Largest crossing coordinate */
-	bool corner_addition;	/**< Cuts square mile for smoothing */
-};
-
-/**
  * Grid making up part of a river in a chunk
  *
  * Note that the actual terrain (shallow or deep water) is calculated after
@@ -349,9 +322,7 @@ struct gen_loc {
 	uint32_t seed;			/**< RNG seed for generating the chunk repeatably */
     struct terrain_change *change;	/**< Changes made since generation */
     struct connector *join;	/**< Information for generating adjoining chunks */
-	//struct river_edge *river_edge;	/**< River edge crossing data */
 	struct river_piece *river_piece;	/**< Piece of river in the location */
-	//struct river_grid *river_grids;	/**< River grids in the location */
 	struct road_edge *road_edge;	/**< Road edge crossing data */
 };
 
