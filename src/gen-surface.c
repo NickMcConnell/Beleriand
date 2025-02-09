@@ -1138,7 +1138,7 @@ static void find_river_chunk(struct square_mile *sq_mile, struct loc *int_chunk,
 					*ext_chunk = loc(tl_x + i, use_y);
 
 					/* Chunk in the current square mile */
-					use_y = (dir == DIR_N) ? tl_y : tl_y + CPM -1;
+					use_y = (dir == DIR_N) ? tl_y : tl_y + CPM - 1;
 					*int_chunk = loc(tl_x + i, use_y);
 				}
 			}
@@ -1454,6 +1454,7 @@ static bool grid_in_square(int side, struct loc grid)
  *
  * This also has the problem of being truncated at the edge of the square.
  */
+//TODO RIVER Both these issues need addressing
 static int widen_river_course(int side, uint16_t **course, enum direction dir,
 							  int width)
 {
@@ -1935,7 +1936,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			out_grid = exit_grid;
 		}
 
-		//TODO handle sources and sinks
+		//TODO RIVER handle sources and sinks
 
 		/* Map a course across the chunk */
 		(void) map_course(CHUNK_SIDE, in_dir, &in_grid, out_dir, &out_grid,
@@ -2215,7 +2216,7 @@ static void make_piece(struct chunk *c, enum biome_type terrain,
 	}
 }
 
-//TODO CURRENT
+//TODO RIVER Add current
 static void make_river_piece(struct chunk *c, struct loc top_left,
 							 struct river_piece *piece)
 {
@@ -2235,7 +2236,9 @@ static void make_river_piece(struct chunk *c, struct loc top_left,
 			if (!square_iswater(c, grid)) continue;
 
 			/* Surrounded by all or all but one grid means deep */
-			if (count_neighbors(NULL, c, grid, square_iswater, false) > 6) {
+			//TODO RIVER This needs to be adjusted for chunk edges
+			if (count_neighbors(NULL, c, grid, square_iswater, false) >
+				count_neighbors(NULL, c, grid, square_in_bounds, false) - 2) {
 				square_set_feat(c, grid, FEAT_D_WATER);
 			}
 		}
