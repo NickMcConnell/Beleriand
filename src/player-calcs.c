@@ -999,10 +999,12 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	state->skill_stat_mod[SKILL_ARCHERY] = state->stat_use[STAT_DEX];
 	state->skill_stat_mod[SKILL_EVASION] = state->stat_use[STAT_DEX];
 	state->skill_stat_mod[SKILL_STEALTH] = state->stat_use[STAT_DEX];
+	state->skill_stat_mod[SKILL_SURVIVAL] = state->stat_use[STAT_DEX];
 	state->skill_stat_mod[SKILL_PERCEPTION] = state->stat_use[STAT_GRA];
 	state->skill_stat_mod[SKILL_WILL] = state->stat_use[STAT_GRA];
 	state->skill_stat_mod[SKILL_SMITHING] = state->stat_use[STAT_GRA];
 	state->skill_stat_mod[SKILL_SONG] = state->stat_use[STAT_GRA];
+	state->skill_stat_mod[SKILL_SPEECH] = state->stat_use[STAT_GRA];
 
 	/* Finalise song skill first as it modifies some other skills... */
 	state->skill_use[SKILL_SONG] = p->skill_base[SKILL_SONG]

@@ -123,6 +123,10 @@ smith-cat:skill
 smith-difficulty:4
 smith-cost:EXP:100
 
+name:survival
+type:skill
+code:SURVIVAL
+
 name:perception
 type:skill
 code:PERCEPTION
@@ -143,6 +147,10 @@ code:SMITHING
 smith-cat:skill
 smith-difficulty:4
 smith-cost:EXP:100
+
+name:speech
+type:skill
+code:SPEECH
 
 name:song
 type:skill
