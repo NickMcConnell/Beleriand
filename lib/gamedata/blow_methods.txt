@@ -47,6 +47,15 @@ msg:MON_BITE
 act:bites {target}
 desc:bite
 
+name:KICK
+cut:0
+stun:1
+miss:1
+prt:1
+msg:MON_KICK
+act:kicks {target}
+desc:kick
+
 name:PECK
 cut:1
 stun:0

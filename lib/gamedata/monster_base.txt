@@ -57,6 +57,15 @@ warning:4
 flags:WOLF
 desc:Wolf
 
+# - q   (quadrupeds)
+#     - animals
+#     - attack and evasion vary
+#     - drop meat and skins
+#     - mostly in vegetated environments
+name:quadruped
+glyph:q
+desc:Mammal
+
 # - b   (bats and birds)
 #     - very quick
 #     - very high melee
