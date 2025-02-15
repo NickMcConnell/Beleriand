@@ -82,36 +82,35 @@ struct angband_constants
 	uint16_t tunn_grid_max;		/**< Maximum number of tunnel grids */
 
 	/* World shape constants, read from constants.txt */
-	uint16_t dun_depth;	/* Maximum dungeon level */
-	uint16_t max_depth;	/* Maximum generation level */
-	uint16_t day_length;	/* Number of turns from dawn to dawn */
+	uint16_t dun_depth;	/**< Maximum dungeon level */
+	uint16_t max_depth;	/**< Maximum generation level */
+	uint16_t day_length;	/**< Number of turns from dawn to dawn */
 	uint16_t dungeon_hgt;	/**< Maximum number of vertical grids on a level */
 	uint16_t dungeon_wid;	/**< Maximum number of horizontical grids on a level */
-	uint16_t move_energy;	/* Energy the player or monster needs to move */
-	uint16_t flow_max;		/* Maximum distance measured in a flow */
-	uint16_t max_zoom;	/**< Maximum level of zoom out on the surface map */
+	uint16_t move_energy;	/**< Energy the player or monster needs to move */
+	uint16_t flow_max;		/**< Maximum distance measured in a flow */
 
 	/* Carrying capacity constants, read from constants.txt */
 	uint16_t pack_size;		/**< Maximum number of pack slots */
 	uint16_t floor_size;		/**< Maximum number of items per floor grid */
 
 	/* Object creation constants, read from constants.txt */
-	uint16_t max_obj_depth;	/* Maximum depth used in object allocation */
-	uint16_t great_obj;	/* 1/chance of inflating the requested object level */
-	uint16_t great_ego;	/* 1/chance of inflating the requested ego item level */
-	uint16_t default_torch;	/* Default amount of fuel in a torch  */
-	uint16_t fuel_torch;	/* Maximum amount of fuel in a torch */
-	uint16_t default_lamp;	/* Default amount of fuel in a lantern  */
-	uint16_t fuel_lamp;		/* Maximum amount of fuel in a lantern */
-	uint16_t self_arts_max;	/* Maximum number of self-made artefacts */
+	uint16_t max_obj_depth;	/**< Maximum depth used in object allocation */
+	uint16_t great_obj;	/**< 1/chance of inflating the requested object level */
+	uint16_t great_ego;	/**< 1/chance of inflating the requested ego item level */
+	uint16_t default_torch;	/**< Default amount of fuel in a torch  */
+	uint16_t fuel_torch;	/**< Maximum amount of fuel in a torch */
+	uint16_t default_lamp;	/**< Default amount of fuel in a lantern  */
+	uint16_t fuel_lamp;		/**< Maximum amount of fuel in a lantern */
+	uint16_t self_arts_max;	/**< Maximum number of self-made artefacts */
 
 	/* Player constants, read from constants.txt */
-	uint16_t max_sight;	/* Maximum visual range */
-	uint16_t max_range;	/* Maximum missile and spell range */
-	uint16_t start_exp;	/* Amount of experience the player starts with */
-	uint16_t ability_cost;	/* Base experience cost of an ability */
-	uint16_t stealth_bonus;	/* Bonus to stealth in stealth mode */
-	uint16_t player_regen_period;	/* Player turns for complete regeneration */
+	uint16_t max_sight;	/**< Maximum visual range */
+	uint16_t max_range;	/**< Maximum missile and spell range */
+	uint16_t start_exp;	/**< Amount of experience the player starts with */
+	uint16_t ability_cost;	/**< Base experience cost of an ability */
+	uint16_t stealth_bonus;	/**< Bonus to stealth in stealth mode */
+	uint16_t player_regen_period;	/**< Player turns for complete regeneration */
 };
 
 struct init_module {

@@ -481,8 +481,6 @@ static enum parser_error parse_constants_world(struct parser *p) {
 		z->dungeon_hgt = value;
 	else if (streq(label, "dungeon-wid"))
 		z->dungeon_wid = MAX(value, ARENA_SIDE);
-	else if (streq(label, "max-zoom"))
-		z->max_zoom = value;
 	else if (streq(label, "move-energy"))
 		z->move_energy = value;
 	else if (streq(label, "flow-max"))
