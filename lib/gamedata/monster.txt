@@ -244,23 +244,38 @@ color:w
 
 ##### 1 #####
 
+name:Pigeon
+base:flyer
+depth:1
+rarity:1
+color:W
+speed:3
+health:1d4
+sleep:5
+percept:6
+stealth:6
+will:0
+prot:5
+#TODO Make it flee
+desc:A plump bird which flees on sight.
+
 # Index 11
-name:Wolf
-plural:Wolves
+name:Fox
+plural:Foxes
 base:wolf
 depth:1
 rarity:1
-color:u
+color:o
 speed:3
-health:6d4
+health:2d4
 sleep:20
 percept:4
 stealth:3
 will:1
 prot:2:1d4
-blow:BITE:HURT:1:2d4
-flags:FRIENDS | RAND_25
-desc:This ragged wolf is part of the orcish packs.
+blow:BITE:HURT:1:1d4
+flags:RAND_25
+desc:A streak of orange fur and tail which can give you a nasty nip.
 
 
 # Index 12
@@ -283,6 +298,21 @@ desc: thorns, some hooked barbs that rent like knives.'
 
 
 ##### 2 #####
+
+name:Deer
+base:quadruped
+depth:2
+rarity:1
+color:U
+speed:3
+health:2d4
+sleep:8
+percept:6
+stealth:6
+will:0
+prot:5
+#TODO Make it flee
+desc:A wild, nervous creature.
 
 # Index 21
 name:Orc
@@ -343,6 +373,24 @@ spells:SHRIEK
 desc:He is one of Morgoth's grim mockeries of the firstborn.
 desc: The miserable creature tries to stay away from you and
 desc: attract attention. It has a crude spear.
+
+# Index 11
+name:Wolf
+plural:Wolves
+base:wolf
+depth:3
+rarity:1
+color:u
+speed:3
+health:6d4
+sleep:20
+percept:4
+stealth:3
+will:1
+prot:4:1d4
+blow:BITE:HURT:3:2d4
+flags:FRIENDS | RAND_25
+desc:This ragged wolf is part of the orcish packs.
 
 
 # Index 32
@@ -429,6 +477,22 @@ flags:FRIEND
 desc:Found most often in the depths of Taur-nu-Fuin,
 desc: it is more feared by travellers than wolves,
 desc: for the poison on its thorns can bring madness.
+
+name:Horse
+base:quadruped
+depth:2
+rarity:1
+color:u
+speed:3
+health:8d4
+sleep:10
+percept:4
+stealth:2
+will:2
+prot:5
+blow:KICK:HURT:3:2d4
+#TODO Make it flee sometimes
+desc:A horse.
 
 
 # Index 43
