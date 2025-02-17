@@ -29,6 +29,7 @@ EFFECT(BEAM,						true,	"dam",		2,		EFINFO_BOLT,	"casts a beam of %s dealing %s 
 EFFECT(TERRAIN_BEAM,					true,	NULL,
 1,		EFINFO_PROJ,	"casts a beam of %s",			"cast a beam of %s")
 EFFECT(NOURISH,						false,	NULL,		3,		EFINFO_FOOD,	"%s for %s turns (%s percent)",	"%s %s")
+EFFECT(FOOD_POISONING,				false,	NULL,		1,		EFINFO_CURE,	"can make you sick",	"make sick")
 EFFECT(CURE,						false,	NULL,		1,		EFINFO_CURE,	"cures %s",	"cure %s")
 EFFECT(TIMED_SET,					false,	NULL,		2,		EFINFO_TIMED,	"administers %s for %s turns",	"administer %s")
 EFFECT(TIMED_INC,					false,	"dur",		2,		EFINFO_TIMED,	"extends %s for %s turns",	"extend %s")

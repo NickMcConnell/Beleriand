@@ -2515,6 +2515,23 @@ desc:It reduces your constitution by one point.
 desc: Herbs provide nourishment for
 desc: about 250 turns under normal conditions. 
 
+##### Food #####
+
+
+name:& Raw Pigeon Breast~
+graphics:,:R
+type:food
+depth:0
+weight:10
+cost:2
+attack:0:0d0
+defence:0:0d0
+effect:NOURISH:INC_BY
+dice:500
+effect:FOOD_POISONING
+msg:It is slimy and bloody.
+desc:It provides nourishment for about 500 turns under normal conditions.  It
+desc: may make you sick.
 
 # Index 399
 name:& Piece~ of Dark Bread
