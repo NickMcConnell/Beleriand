@@ -285,6 +285,11 @@ static int32_t effect_value_base_player_will(void)
 	return will;
 }
 
+static int32_t effect_value_base_player_con(void)
+{
+	return player->state.stat_use[STAT_CON];
+}
+
 static int32_t effect_value_base_player_cut(void)
 {
 	return player->timed[TMD_CUT];
@@ -308,6 +313,7 @@ expression_base_value_f effect_value_base_by_name(const char *name)
 		{ "PLAYER_HP", effect_value_base_player_hp },
 		{ "PLAYER_MAX_HP", effect_value_base_player_max_hp },
 		{ "PLAYER_WILL", effect_value_base_player_will },
+		{ "PLAYER_CON", effect_value_base_player_con },
 		{ "PLAYER_CUT", effect_value_base_player_cut },
 		{ "PLAYER_POIS", effect_value_base_player_pois },
 		{ NULL, NULL },

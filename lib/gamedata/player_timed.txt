@@ -188,6 +188,12 @@ change-dec:5:You can feel the poison weakening.
 on-end:You recover from the poisoning.
 msgt:POISONED
 
+name:SICK
+desc:sick
+grade:u:1000:Sick:You feel sick.
+on-end:You no longer feel sick
+msgt:POISONED
+
 name:CUT
 desc:wounds
 change-grade:R:20:2:Bleeding

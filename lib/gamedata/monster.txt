@@ -257,6 +257,7 @@ stealth:6
 will:0
 prot:5
 #TODO Make it flee
+drop:food:Raw Pigeon Breast:50:1
 desc:A plump bird which flees on sight.
 
 # Index 11

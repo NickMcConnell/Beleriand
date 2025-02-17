@@ -191,6 +191,18 @@ bool effect_handler_NOURISH(effect_handler_context_t *context)
 }
 
 /**
+ * Make the player sick from eating dubious food.
+ */
+bool effect_handler_FOOD_POISONING(effect_handler_context_t *context)
+{
+	/* Pretty basic for now */
+	if (randint0(5) > player->state.stat_use[STAT_CON]) {
+		player_inc_timed(player, TMD_SICK, randint0(200), true, true, true);
+	}
+	return true;
+}
+
+/**
  * Cure a player status condition.
  */
 bool effect_handler_CURE(effect_handler_context_t *context)
