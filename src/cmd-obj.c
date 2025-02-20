@@ -1066,6 +1066,39 @@ void do_cmd_refuel(struct command *cmd)
 	player->previous_action[0] = ACTION_MISC;
 }
 
+/**
+ * Prepare food ingredients
+ */
+void do_cmd_prepare_food(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Process what food? ",
+			"You have no raw ingredients.",
+			obj_can_process,
+			USE_INVEN | USE_FLOOR) != CMD_OK) return;
+
+	/* Check for how it can be processed */
+	if (obj->kind->cooked.kind) {
+		if (obj->kind->preserved.kind) {
+			if (get_check("Do you want to preserve this food?")) {
+				inven_change(obj, obj->kind->preserved.kind);
+			}
+		} else {
+			inven_change(obj, obj->kind->cooked.kind);
+		}
+	} else {
+		inven_change(obj, obj->kind->preserved.kind);
+	}
+
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Store the action type */
+	player->previous_action[0] = ACTION_MISC;
+}
+
 /*
  * Destroy an item
  */

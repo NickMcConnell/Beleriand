@@ -166,6 +166,16 @@ struct object_base {
 
 extern struct object_base *kb_info;
 
+struct object_kind;
+/**
+ * Information about objects that can change kind.
+ */
+struct object_change {
+	char *name;
+	int tval;
+	struct object_kind *kind;
+};
+
 /**
  * Information about object kinds, including player knowledge.
  *
@@ -215,7 +225,9 @@ struct object_kind {
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	char *effect_msg;
 	struct effect *thrown_effect;/**< Effect for thrown potions */
-	struct ability *abilities;	    /* Abilities */
+	struct ability *abilities;	    /**< Abilities */
+	struct object_change cooked;		/**< Cooked version of the object */
+	struct object_change preserved;	/**< Preserved version of the object */
 
 	int level;				/**< Level (difficulty of activation) */
 

@@ -95,6 +95,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIELD, "wear or wield", do_cmd_wield, false, 0 },
 	{ CMD_TAKEOFF, "take off", do_cmd_takeoff, false, 0 },
 	{ CMD_DROP, "drop", do_cmd_drop, false, 0 },
+	{ CMD_PREPARE, "prepare", do_cmd_prepare_food, false, 0 },
 	{ CMD_DESTROY, "destroy", do_cmd_destroy, false, 0 },
 	{ CMD_UNINSCRIBE, "un-inscribe", do_cmd_uninscribe, false, 0 },
 	{ CMD_AUTOINSCRIBE, "autoinscribe", do_cmd_autoinscribe, false, 0 },
