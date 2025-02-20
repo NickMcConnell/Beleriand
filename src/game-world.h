@@ -45,18 +45,9 @@ enum {
  * Codes for the different surface biomes
  */
 enum biome_type {
-	BIOME_SNOW = 0x2a,			/**< * */
-	BIOME_FOREST = 0x2b,		/**< + */
-	BIOME_MOOR = 0x2c,			/**< , */
-	BIOME_LAKE = 0x2d,			/**< - */
-	BIOME_PLAIN = 0x2e,			/**< . */
-	BIOME_DESERT = 0x2f,		/**< / */
-	BIOME_TOWN = 0x3d,			/**< = */
-	BIOME_IMPASS = 0x58,		/**< X */
-	BIOME_MOUNTAIN = 0x5e,		/**< ^ */
-	BIOME_SWAMP = 0x5f,			/**< _ */
-	BIOME_DARK = 0x7c,			/**< | */
-	BIOME_OCEAN = 0x7e,			/**< ~ */
+	#define BIOME(a, b) BIOME_##a = b,
+	#include "list-biomes.h"
+	#undef BIOME
 };
 
 struct level {
