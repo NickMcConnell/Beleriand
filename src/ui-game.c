@@ -125,6 +125,7 @@ struct cmd_info cmd_item[] =
 	{ "Use a staff", { 'a', 'a', 'u', 'u' }, CMD_USE_STAFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Blow a horn", { 'p' }, CMD_BLOW_HORN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Eat some food", { 'E' }, CMD_EAT, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Prepare some food", { 'A' }, CMD_PREPARE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Quaff a potion", { 'q' }, CMD_QUAFF, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Fuel your light source", { KTRL('F') }, CMD_REFUEL, NULL, player_can_refuel_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Use an item", { 'u', KTRL('U'), 'U', KTRL('U') }, CMD_USE, NULL, NULL, 0, NULL, NULL, NULL, 0 },

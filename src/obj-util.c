@@ -556,6 +556,15 @@ bool obj_has_charges(const struct object *obj)
 }
 
 /**
+ * Check if an object is raw food that can be processed.
+ */
+bool obj_can_process(const struct object *obj)
+{
+	if (!tval_is_food(obj)) return false;
+	return (obj->kind->cooked.kind || obj->kind->preserved.kind); 
+}
+
+/**
  * Check if an object can be used to refuel other objects.
  */
 bool obj_can_refuel(const struct object *obj)

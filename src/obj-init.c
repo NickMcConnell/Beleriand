@@ -1407,6 +1407,38 @@ static enum parser_error parse_object_thrown_effect_expr(struct parser *p) {
 	return result;
 }
 
+static enum parser_error parse_object_cooked(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	const char *name;
+	int tval;
+
+	if (!k)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	k->cooked.tval = tval;
+	name = parser_getsym(p, "sval");
+	k->cooked.name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_preserved(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	const char *name;
+	int tval;
+
+	if (!k)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	k->preserved.tval = tval;
+	name = parser_getsym(p, "sval");
+	k->preserved.name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_object_msg(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 
@@ -1544,6 +1576,8 @@ struct parser *init_parse_object(void) {
 	parser_reg(p, "thrown-dice str dice", parse_object_thrown_effect_dice);
 	parser_reg(p, "thrown-expr sym name sym base str expr",
 			   parse_object_thrown_effect_expr);
+	parser_reg(p, "cooked sym tval sym sval", parse_object_cooked);
+	parser_reg(p, "preserved sym tval sym sval", parse_object_preserved);
 	parser_reg(p, "msg str text", parse_object_msg);
 	parser_reg(p, "values str values", parse_object_values);
 	parser_reg(p, "desc str text", parse_object_desc);
@@ -1631,6 +1665,33 @@ static errr finish_parse_object(struct parser *p) {
 	}
 	z_info->k_max += 1;
 	z_info->ordinary_kind_max = z_info->k_max;
+
+	/* Add kinds for cooked and preserved food */
+	for (kidx = 0; kidx < z_info->k_max; kidx++) {
+		int tval, sval;
+		tval = k_info[kidx].cooked.tval;
+		if (tval) {
+			sval = lookup_sval(tval, k_info[kidx].cooked.name);
+			if (sval < 0)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+			k = lookup_kind(tval, sval);
+			if (!k)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+			k_info[kidx].cooked.kind = k;
+			string_free(k_info[kidx].cooked.name);
+		}
+		tval = k_info[kidx].preserved.tval;
+		if (tval) {
+			sval = lookup_sval(tval, k_info[kidx].preserved.name);
+			if (sval < 0)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+			k = lookup_kind(tval, sval);
+			if (!k)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+			k_info[kidx].preserved.kind = k;
+			string_free(k_info[kidx].preserved.name);
+		}
+	}
 
 	parser_destroy(p);
 	return 0;

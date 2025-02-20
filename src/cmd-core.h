@@ -73,6 +73,7 @@ typedef enum cmd_code {
 	CMD_TAKEOFF,
 	CMD_WIELD,
 	CMD_DROP,
+	CMD_PREPARE,
 	CMD_DESTROY,
 	CMD_USE_STAFF,
 	CMD_BLOW_HORN,

@@ -1118,6 +1118,71 @@ void inven_drop(struct object *obj, int amt)
 
 
 /**
+ * Change a single object into another type of object.
+ *
+ * This is mainly for cooking/curing food.
+ */
+void inven_change(struct object *obj, struct object_kind *kind)
+{
+	struct object *changed;
+	bool none_left = false;
+	char name[80];
+	char label;
+	int num = obj->number;
+		struct object *first;
+		struct object *desc_target;
+		uint16_t total;
+
+	/* Check it is still held. */
+	if (!object_is_carried(player, obj)) return;
+
+	/* Get where the object is now */
+	label = gear_to_label(player, obj);
+
+	/* Describe the single object */
+	obj->number = 1;
+	object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL, player);
+	obj->number = num;
+
+	/* Get the object */
+	changed = gear_object_for_use(player, obj, 1, false, &none_left);
+
+	/* Describe what's left */
+	total = object_pack_total(player, obj, false, &first);
+	desc_target = (total) ? obj : changed;
+
+	object_desc(name, sizeof(name), desc_target,
+				ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM |
+				(total << 16), player);
+	if (!first) {
+		msg("You have %s (%c).", name, label);
+	} else {
+		label = gear_to_label(player, first);
+		if (total > first->number) {
+			msg("You have %s (1st %c).", name, label);
+		} else {
+			msg("You have %s (%c).", name, label);
+		}
+	}
+
+	/* Change the object */
+	changed->kind = kind;
+	changed->weight = kind->weight;
+
+	/* Carry or drop it */
+	if (inven_carry_okay(changed)) {
+		inven_carry(player, changed, true, true);
+	} else {
+		object_desc(name, sizeof(name), changed, ODESC_PREFIX | ODESC_FULL,
+					player);
+		msg("You drop %s.", name);
+		drop_near(cave, &changed, 0, player->grid, false, true);
+	}
+
+	event_signal(EVENT_INVENTORY);
+}
+
+/**
  * Destroy (some of) a non-cursed inventory/equipment item "near" the current
  * location
  *

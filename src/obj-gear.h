@@ -63,6 +63,7 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 void inven_wield(struct object *obj, int slot);
 void inven_takeoff(struct object *item);
 void inven_drop(struct object *obj, int amt);
+void inven_change(struct object *obj, struct object_kind *kind);
 bool inven_destroy(struct object *obj, int amt);
 void combine_pack(struct player *p);
 bool pack_is_full(void);

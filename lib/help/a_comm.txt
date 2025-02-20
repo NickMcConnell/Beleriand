@@ -35,7 +35,7 @@ press and release ^ and then press and release the letter key to activate
 the same command in case you system intercepts the control plus key
 combination and does not pass it on):
 
-  a    Change song                     A    -
+  a    Change song                     A    Prepare food
   b    -                               B    Bash a door
   c    Close a door                    C    Character description
   d    Drop an item                    D    Disarm a trap

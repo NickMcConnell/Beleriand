@@ -2518,20 +2518,18 @@ desc: about 250 turns under normal conditions.
 ##### Food #####
 
 
-name:& Raw Pigeon Breast~
-graphics:,:R
+name:& Pigeon Breast~
+graphics:,:u
 type:food
 depth:0
-weight:10
+weight:15
 cost:2
 attack:0:0d0
 defence:0:0d0
 effect:NOURISH:INC_BY
-dice:500
-effect:FOOD_POISONING
-msg:It is slimy and bloody.
-desc:It provides nourishment for about 500 turns under normal conditions.  It
-desc: may make you sick.
+dice:3000
+msg:It is moist and tasty.
+desc:It provides nourishment for about 3000 turns under normal conditions.
 
 # Index 399
 name:& Piece~ of Dark Bread
@@ -2555,7 +2553,7 @@ name:& Strip~ of Dried Meat
 graphics:,:u
 type:food
 depth:10
-weight:10
+weight:3
 cost:3
 attack:0:0d0
 defence:0:0d0
@@ -2563,7 +2561,7 @@ alloc:10:4
 alloc:16:1
 effect:NOURISH:INC_BY
 dice:2000
-msg:It tastes foul.
+msg:It is tough and chewy.
 desc:It provides nourishment for about 2,000 turns under normal conditions. 
 
 
@@ -2586,6 +2584,26 @@ msg:It fills you with renewed energy and spirit.
 desc:It restores a point of grace if it has been drained.  It provides
 desc: nourishment for about 3,000 turns under normal conditions. 
 
+
+##### Ingredients #####
+
+
+name:& Raw Pigeon Breast~
+graphics:,:R
+type:food
+depth:0
+weight:10
+cost:2
+attack:0:0d0
+defence:0:0d0
+effect:NOURISH:INC_BY
+dice:500
+effect:FOOD_POISONING
+cooked:food:Pigeon Breast
+preserved:food:Strip of Dried Meat
+msg:It is slimy and bloody.
+desc:It provides nourishment for about 500 turns under normal conditions.  It
+desc: may make you sick.
 
 ##### Various #####
 
