@@ -362,6 +362,15 @@ static enum parser_error parse_dungeon_name(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_dungeon_biome(struct parser *p) {
+	struct cave_profile *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->biome = parser_getchar(p, "biome");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_dungeon_params(struct parser *p) {
 	struct cave_profile *c = parser_priv(p);
 
@@ -447,6 +456,7 @@ static struct parser *init_parse_dungeon(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_dungeon_name);
+	parser_reg(p, "biome char biome", parse_dungeon_biome);
 	parser_reg(p, "params int block int rooms int unusual int rarity", parse_dungeon_params);
 	parser_reg(p, "tunnel int rnd int chg int con int pen int jct", parse_dungeon_tunnel);
 	parser_reg(p, "streamer int den int rng int qua", parse_dungeon_streamer);

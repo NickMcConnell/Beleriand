@@ -1295,9 +1295,9 @@ static void handle_level_stairs(struct chunk *c, struct player *p, int count)
 	}
 }
 
-/* ------------------ MODIFIED ---------------- */
+/* ------------------ ANGBAND ---------------- */
 /**
- * The main standard generation algorithm
+ * The main angband generation algorithm
  * \param p is the player, in case generation fails and the partially created
  * level needs to be cleaned up
  * \param depth is the chunk's native depth
@@ -1306,8 +1306,8 @@ static void handle_level_stairs(struct chunk *c, struct player *p, int count)
  * \param forge if true forces a forge on this level
  * \return a pointer to the generated chunk
  */
-static struct chunk *standard_chunk(struct player *p, int depth, int height,
-									int width, bool forge)
+static struct chunk *angband_chunk(struct player *p, int depth, int height,
+								   int width, bool forge)
 {
 	int i;
 	int key, rarity;
@@ -1462,7 +1462,7 @@ static struct chunk *standard_chunk(struct player *p, int depth, int height,
  *   interesting rooms, as well as to make general monster restrictions in
  *   areas or the whole dungeon
  */
-struct chunk *standard_gen(struct player *p) {
+struct chunk *angband_gen(struct player *p) {
 	int i;
 	int y_size = ARENA_SIDE, x_size = ARENA_SIDE;
 	struct chunk *c;
@@ -1480,8 +1480,8 @@ struct chunk *standard_gen(struct player *p) {
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-	c = standard_chunk(p, p->depth, MIN(z_info->dungeon_hgt, y_size),
-					   MIN(z_info->dungeon_wid, x_size), forge);
+	c = angband_chunk(p, p->depth, MIN(z_info->dungeon_hgt, y_size),
+					  MIN(z_info->dungeon_wid, x_size), forge);
 	if (!c) return NULL;
 
 	/* Generate permanent walls around the edge of the generated area */

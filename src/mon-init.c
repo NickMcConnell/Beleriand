@@ -70,6 +70,15 @@ static const char *obj_flags[] =
     ""
 };
 
+static const struct {
+	const char *name;
+	int code;
+} biomes[] = {
+	#define BIOME(a, b) { #a, b },
+	#include "list-biomes.h"
+	#undef BIOME
+};
+
 /**
  * Return the index of a flag from its name.
  */
@@ -1534,6 +1543,38 @@ static enum parser_error parse_monster_base(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_monster_cave(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	const char *name = parser_getstr(p, "name");
+	size_t i;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	for (i = 0; i < N_ELEMENTS(biomes); i++) {
+		if (streq(name, biomes[i].name)) {
+			break;
+		}
+	}
+	assert(i < N_ELEMENTS(biomes));
+	if (r->biomes) {
+		char *append = (char[2]){ (char)biomes[i].code, '\0' };
+		r->biomes = string_append(r->biomes, append);
+	} else {
+		r->biomes = string_make((char[2]){ (char)biomes[i].code, '\0' });
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_biomes(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	const char *biome = parser_getsym(p, "biomes");
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->biomes = string_append(r->biomes, biome);
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_monster_depth(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
@@ -1935,6 +1976,8 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "name str name", parse_monster_name);
 	parser_reg(p, "plural ?str plural", parse_monster_plural);
 	parser_reg(p, "base sym base", parse_monster_base);
+	parser_reg(p, "biomes sym biomes", parse_monster_biomes);
+	parser_reg(p, "cave str name", parse_monster_cave);
 	parser_reg(p, "depth int level", parse_monster_depth);
 	parser_reg(p, "rarity int rarity", parse_monster_rarity);
 	parser_reg(p, "glyph char glyph", parse_monster_glyph);
@@ -2074,6 +2117,7 @@ static void cleanup_monster(void)
 			mem_free(d);
 			d = dn;
 		}
+		string_free(r->biomes);
 		string_free(r->plural);
 		string_free(r->text);
 		string_free(r->name);
@@ -2272,6 +2316,8 @@ static struct parser *init_parse_lore(void) {
 	parser_reg(p, "name str name", parse_lore_name);
 	parser_reg(p, "plural ?str plural", ignored);
 	parser_reg(p, "base sym base", parse_lore_base);
+	parser_reg(p, "biomes sym biomes", ignored);//B DO
+	parser_reg(p, "cave str name", ignored);//B DO
 	parser_reg(p, "depth int level", ignored);
 	parser_reg(p, "rarity int rarity", ignored);
 	parser_reg(p, "glyph char glyph", ignored);
