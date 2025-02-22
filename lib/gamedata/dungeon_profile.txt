@@ -49,8 +49,9 @@
 # there are also restrictions in the code that make their generation fail
 # frequently.
 
-## Standard
-name:standard
+## Angband
+name:angband
+biome:!
 params:1:50:300:2
 tunnel:10:30:15:25:50
 streamer:5:2:4
@@ -77,6 +78,7 @@ room:staircase room:3:3:1:99:0
 
 ## Throne room
 name:throne
+biome:!
 alloc:-1
 
 room:Throne room:0:0:0:0:0

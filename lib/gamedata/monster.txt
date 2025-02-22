@@ -246,6 +246,7 @@ color:w
 
 name:Pigeon
 base:flyer
+biomes:+.
 depth:1
 rarity:1
 color:W
@@ -264,6 +265,7 @@ desc:A plump bird which flees on sight.
 name:Fox
 plural:Foxes
 base:wolf
+biomes:+.
 depth:1
 rarity:1
 color:o
@@ -282,6 +284,7 @@ desc:A streak of orange fur and tail which can give you a nasty nip.
 # Index 12
 name:Tanglethorn
 base:thorn
+cave:ANGBAND
 depth:1
 rarity:1
 color:s
@@ -302,6 +305,7 @@ desc: thorns, some hooked barbs that rent like knives.'
 
 name:Deer
 base:quadruped
+biomes:+.
 depth:2
 rarity:1
 color:U
@@ -318,6 +322,7 @@ desc:A wild, nervous creature.
 # Index 21
 name:Orc
 base:orc
+cave:ANGBAND
 depth:2
 rarity:1
 color:u
@@ -337,6 +342,7 @@ desc: He has little armour but carries a cruel blade.
 # Index 22
 name:Grimhawk
 base:flyer
+cave:ANGBAND
 depth:2
 rarity:2
 color:u
@@ -357,6 +363,7 @@ desc:A hunting bird, beloved of the orcs, with iron barbs on its talons.
 # Index 31
 name:Orc scout
 base:orc
+cave:ANGBAND
 depth:3
 rarity:1
 color:D
@@ -379,6 +386,7 @@ desc: attract attention. It has a crude spear.
 name:Wolf
 plural:Wolves
 base:wolf
+cave:ANGBAND
 depth:3
 rarity:1
 color:u
@@ -397,6 +405,7 @@ desc:This ragged wolf is part of the orcish packs.
 # Index 32
 name:Spider hatchling
 base:spider
+cave:ANGBAND
 depth:3
 rarity:1
 glyph:m
@@ -418,6 +427,7 @@ desc: venom in their bite...
 # Index 33
 name:Blue serpent
 base:serpent
+cave:ANGBAND
 depth:3
 rarity:2
 color:b
@@ -443,6 +453,7 @@ desc: There is a chill in the air around it.
 # Index 41
 name:Orc soldier
 base:orc
+cave:ANGBAND
 depth:4
 rarity:1
 color:s
@@ -463,6 +474,7 @@ desc: shield: a soldier in the dark hosts of Bauglir.
 # Index 42
 name:Madthorn
 base:thorn
+cave:ANGBAND
 depth:4
 rarity:1
 color:y
@@ -481,6 +493,7 @@ desc: for the poison on its thorns can bring madness.
 
 name:Horse
 base:quadruped
+cave:ANGBAND
 depth:2
 rarity:1
 color:u
@@ -499,6 +512,7 @@ desc:A horse.
 # Index 43
 name:Gorcrow
 base:flyer
+cave:ANGBAND
 depth:4
 rarity:2
 color:D
@@ -521,6 +535,7 @@ desc: especially the face and eyes.
 # Index 51
 name:Orc archer
 base:orc
+cave:ANGBAND
 depth:5
 rarity:3
 color:U
@@ -545,6 +560,7 @@ desc: He carries a crude sword and bow.
 name:White wolf
 plural:White wolves
 base:wolf
+cave:ANGBAND
 depth:5
 rarity:1
 color:w
@@ -563,6 +579,7 @@ desc:A large and fierce wolf from the northern wastes.
 # Index 53
 name:Red serpent
 base:serpent
+cave:ANGBAND
 depth:5
 rarity:2
 color:r
@@ -586,6 +603,7 @@ desc: The air around it shimmers with heat.
 # Index 54
 name:Gorgol, the Butcher
 base:orc
+cave:ANGBAND
 depth:5
 rarity:10
 color:G
@@ -609,6 +627,7 @@ desc: order with displays of violence.
 # Index 61
 name:Orc warrior
 base:orc
+cave:ANGBAND
 depth:6
 rarity:1
 color:W
@@ -628,6 +647,7 @@ desc: He wears hardened leathers and runs towards you with axe in hand.
 # Index 62
 name:Sword spider
 base:spider
+cave:ANGBAND
 depth:6
 rarity:2
 color:s
@@ -647,6 +667,7 @@ desc: It skitters back and forth.
 name:Crebain
 plural:Crebain
 base:flyer
+cave:ANGBAND
 depth:6
 rarity:2
 color:s
@@ -667,6 +688,7 @@ desc:A type of crow, specially bred by the forces of evil as spies.
 # Index 64
 name:Mewlip
 base:horror
+cave:ANGBAND
 depth:6
 rarity:3
 color:u
@@ -694,6 +716,7 @@ desc: of those who draw near.
 name:Orc thief
 plural:Orc thieves
 base:orc
+cave:ANGBAND
 depth:7
 rarity:3
 color:g
@@ -713,6 +736,7 @@ desc:He is one of Morgoth's grim mockeries of the firstborn.
 # Index 72
 name:Nightthorn
 base:thorn
+cave:ANGBAND
 depth:7
 rarity:1
 color:D
@@ -731,6 +755,7 @@ desc:This twisted plant drinks in the light from the air around.
 # Index 73
 name:Green serpent
 base:serpent
+cave:ANGBAND
 depth:7
 rarity:2
 color:g
@@ -753,6 +778,7 @@ desc: It smells of decay.
 # Index 74
 name:Mountain troll
 base:troll
+cave:ANGBAND
 depth:7
 rarity:1
 color:W
@@ -771,6 +797,7 @@ desc:A tall troll from the mountains of the north.
 # Index 75
 name:Tattered wight
 base:wraith
+cave:ANGBAND
 depth:7
 rarity:2
 color:m
@@ -793,6 +820,7 @@ desc: its treasure long since been plundered.
 # Index 76
 name:Boldog, the Merciless
 base:orc
+cave:ANGBAND
 depth:7
 rarity:20
 color:y
@@ -824,6 +852,7 @@ desc: lands of the elves.
 # Index 81
 name:Orc champion
 base:orc
+cave:ANGBAND
 depth:8
 rarity:2
 color:b
@@ -843,6 +872,7 @@ desc: wields a battle axe.
 # Index 82
 name:Easterling warrior
 base:person
+cave:ANGBAND
 depth:8
 rarity:2
 color:W
@@ -869,6 +899,7 @@ desc: Morgoth's sway.
 # Index 83
 name:Hummerhorn
 base:insect
+cave:ANGBAND
 depth:8
 rarity:3
 color:y
@@ -893,6 +924,7 @@ desc:A giant buzzing wasp, its stinger drips venom.
 # Index 91
 name:Orc captain
 base:orc
+cave:ANGBAND
 depth:9
 rarity:3
 color:r
@@ -913,6 +945,7 @@ desc: He leads a patrol of lesser orcs.
 # Index 92
 name:Warg
 base:wolf
+cave:ANGBAND
 depth:9
 rarity:1
 color:s
@@ -931,6 +964,7 @@ desc:It is a great wolf with eyes full of cunning.
 # Index 93
 name:Grave wight
 base:wraith
+cave:ANGBAND
 depth:9
 rarity:2
 color:U
@@ -953,6 +987,7 @@ desc: It protects that with which is was buried.
 # Index 94
 name:Dark serpent
 base:serpent
+cave:ANGBAND
 depth:9
 rarity:2
 color:v
@@ -975,6 +1010,7 @@ desc: reflect no light.
 # Index 95
 name:Orcobal, Champion of the Orcs
 base:orc
+cave:ANGBAND
 depth:9
 rarity:15
 color:B
@@ -997,6 +1033,7 @@ desc:The chief champion of the orcs of Morgoth.
 # Index 101
 name:Whispering shadow
 base:wraith
+cave:ANGBAND
 depth:10
 rarity:1
 glyph:w
@@ -1019,6 +1056,7 @@ desc: yearning, beckoning.
 # Index 102
 name:Distended spider
 base:spider
+cave:ANGBAND
 depth:10
 rarity:1
 color:u
@@ -1037,6 +1075,7 @@ desc:It is a vast spider whose bulbous body is bloated with poison.
 # Index 103
 name:Easterling archer
 base:person
+cave:ANGBAND
 depth:10
 rarity:3
 color:u
@@ -1066,6 +1105,7 @@ desc: Morgoth's sway.
 # Index 104
 name:Twisted bat
 base:flyer
+cave:ANGBAND
 depth:10
 rarity:4
 color:r
@@ -1086,6 +1126,7 @@ desc: fangs hanging from its mouth.
 # Index 105
 name:Othrod, the Orc Lord
 base:orc
+cave:ANGBAND
 depth:10
 rarity:10
 color:R
@@ -1111,6 +1152,7 @@ desc: of the black enemy for many years.
 # Index 111
 name:Snow troll
 base:troll
+cave:ANGBAND
 depth:11
 rarity:1
 color:w
@@ -1132,6 +1174,7 @@ desc:He is a white troll with powerfully clawed hands.
 # Index 112
 name:Barrow wight
 base:wraith
+cave:ANGBAND
 depth:11
 rarity:100
 color:W
@@ -1154,6 +1197,7 @@ desc: chamber, unable to find release.
 # Index 113
 name:Lurking horror
 base:horror
+cave:ANGBAND
 depth:11
 rarity:5
 color:D
@@ -1176,6 +1220,7 @@ desc: It seems to be made entirely of claws and of teeth.
 # Index 114
 name:Giant
 base:giant
+cave:ANGBAND
 depth:11
 rarity:1
 color:U
@@ -1199,6 +1244,7 @@ desc: armed with a great club.
 # Index 115
 name:Uldor, the Accursed
 base:person
+cave:ANGBAND
 depth:11
 rarity:10
 color:M
@@ -1228,6 +1274,7 @@ desc: the elves in the Battle of Unnumbered Tears.
 # Index 117
 name:Aldor, the Risen King
 base:wraith
+cave:ANGBAND
 depth:11
 rarity:100
 color:R
@@ -1258,6 +1305,7 @@ desc: finery and holds a long blade in ghostly fingers.
 name:Easterling spy
 plural:Easterling spies
 base:person
+cave:ANGBAND
 depth:12
 rarity:3
 color:D
@@ -1287,6 +1335,7 @@ desc: Morgoth's sway.
 # Index 122
 name:Shadow bat
 base:flyer
+cave:ANGBAND
 depth:12
 rarity:4
 color:m
@@ -1307,6 +1356,7 @@ desc:A screeching flutter of darkness.
 name:Sulrauko
 plural:Sulraukar
 base:rauko
+cave:ANGBAND
 depth:12
 rarity:2
 color:W
@@ -1326,6 +1376,7 @@ desc:A wind spirit, bent to Morgoth's will.
 # Index 124
 name:Fire-drake hatchling
 base:dragon
+cave:ANGBAND
 depth:12
 rarity:6
 color:R
@@ -1350,6 +1401,7 @@ desc: its fearsome breath.
 # Index 125
 name:Ulfang the Black
 base:person
+cave:ANGBAND
 depth:12
 rarity:10
 color:s
@@ -1378,6 +1430,7 @@ desc: to the High Elves, but were secretly in the pay of Morgoth.
 # Index 126
 name:Duruin, Least of the Balrogs
 base:rauko
+cave:ANGBAND
 depth:12
 rarity:30
 color:o
@@ -1408,6 +1461,7 @@ desc: and shadow. He wields fiery sword and whip.
 name:Werewolf
 plural:Werewolves
 base:wolf
+cave:ANGBAND
 depth:13
 rarity:1
 color:U
@@ -1429,6 +1483,7 @@ desc: those glowing eyes.
 # Index 132
 name:Shadow spider
 base:spider
+cave:ANGBAND
 depth:13
 rarity:1
 color:D
@@ -1448,6 +1503,7 @@ desc:It is a great black spider wreathed in shadow.
 # Index 133
 name:Shadow
 base:wraith
+cave:ANGBAND
 depth:13
 rarity:3
 color:d
@@ -1467,6 +1523,7 @@ desc: the room, and yet it stalks you.
 # Index 134
 name:Sapphire serpent
 base:serpent
+cave:ANGBAND
 depth:13
 rarity:3
 color:B
@@ -1490,6 +1547,7 @@ desc: An icy chill surrounds it.
 # Index 135
 name:Gilim, the Giant of Eruman
 base:giant
+cave:ANGBAND
 depth:13
 rarity:10
 color:w
@@ -1520,6 +1578,7 @@ desc: he is tall even among giants, and his name is cursed in many lands.
 # Index 141
 name:Ruby serpent
 base:serpent
+cave:ANGBAND
 depth:14
 rarity:3
 color:R
@@ -1543,6 +1602,7 @@ desc: An intense heat radiates from it.
 # Index 142
 name:Creeping horror
 base:horror
+cave:ANGBAND
 depth:14
 rarity:4
 color:g
@@ -1566,6 +1626,7 @@ desc: The thought of it catching you tears at your mind.
 name:Ringrauko
 plural:Ringraukar
 base:rauko
+cave:ANGBAND
 depth:14
 rarity:1
 color:B
@@ -1585,6 +1646,7 @@ desc: almost that of a person. A cold gleaming blade is in its hand.
 # Index 144
 name:Deathblade
 base:deathblade
+cave:ANGBAND
 depth:14
 rarity:8
 color:D
@@ -1605,6 +1667,7 @@ desc:A black blade, wreathed in shadow.
 # Index 145
 name:Delthaur, Balrog of Terror
 base:rauko
+cave:ANGBAND
 depth:14
 rarity:20
 color:g
@@ -1632,6 +1695,7 @@ desc: is filled with menace.
 # Index 146
 name:Nan, the Giant
 base:giant
+cave:ANGBAND
 depth:14
 rarity:30
 color:G
@@ -1660,6 +1724,7 @@ desc: sword you have ever beheld.
 # Index 151
 name:Cave troll
 base:troll
+cave:ANGBAND
 depth:15
 rarity:1
 color:u
@@ -1680,6 +1745,7 @@ desc: from the depths of the very earth.
 # Index 152
 name:Emerald serpent
 base:serpent
+cave:ANGBAND
 depth:15
 rarity:3
 color:G
@@ -1703,6 +1769,7 @@ desc: Noxious vapours surround it.
 # Index 153
 name:Oathwraith
 base:wraith
+cave:ANGBAND
 depth:15
 rarity:4
 color:D
@@ -1727,6 +1794,7 @@ desc: in shadow.  It reaches out at you.
 # Index 154
 name:Cat warrior
 base:cat
+cave:ANGBAND
 depth:15
 rarity:1
 color:U
@@ -1749,6 +1817,7 @@ desc: speed and agility.
 # Index 155
 name:The Deathblade 'Delmereth'
 base:deathblade
+cave:ANGBAND
 depth:15
 rarity:50
 color:D
@@ -1773,6 +1842,7 @@ desc: 'Horror-feast' is its name. You can feel its hunger.
 # Index 161
 name:Amethyst serpent
 base:serpent
+cave:ANGBAND
 depth:16
 rarity:3
 color:v
@@ -1798,6 +1868,7 @@ desc: Shadows darken as it approaches.
 name:Kemenrauko
 plural:Kemenraukar
 base:rauko
+cave:ANGBAND
 depth:16
 rarity:2
 color:s
@@ -1819,6 +1890,7 @@ desc: now opposes you.
 # Index 163
 name:Grotesque
 base:horror
+cave:ANGBAND
 depth:16
 rarity:5
 color:W
@@ -1848,6 +1920,7 @@ desc: in fitful glares that leaped and died.'
 # Index 164
 name:Young cold-drake
 base:dragon
+cave:ANGBAND
 depth:16
 rarity:6
 color:w
@@ -1872,6 +1945,7 @@ desc: teeth, and the mesmerising eyes...
 # Index 165
 name:Umuiyan, the Doorkeeper
 base:cat
+cave:ANGBAND
 depth:16
 rarity:15
 color:y
@@ -1898,6 +1972,7 @@ desc: He has long guarded the entrance to the fortress of Tevildo.
 # Index 166
 name:Belegwath, Balrog of Shadow
 base:rauko
+cave:ANGBAND
 depth:16
 rarity:20
 color:v
@@ -1928,6 +2003,7 @@ desc: final vision.
 name:Spider of Gorgoroth
 plural:Spiders of Gorgoroth
 base:spider
+cave:ANGBAND
 depth:17
 rarity:1
 color:r
@@ -1951,6 +2027,7 @@ desc: to the very darkest parts of the stronghold.
 name:Greater werewolf
 plural:Greater werewolves
 base:wolf
+cave:ANGBAND
 depth:17
 rarity:1
 color:s
@@ -1971,6 +2048,7 @@ desc:It is a huge wolf with eyes that glow with manly intelligence.
 # Index 173
 name:Adamant serpent
 base:serpent
+cave:ANGBAND
 depth:17
 rarity:3
 color:w
@@ -1994,6 +2072,7 @@ desc: It sparkles with prismatic hues.
 # Index 174
 name:Lesser vampire
 base:vampire
+cave:ANGBAND
 depth:17
 rarity:1
 color:s
@@ -2016,6 +2095,7 @@ desc: behind its eyes.
 # Index 175
 name:Cat assassin
 base:cat
+cave:ANGBAND
 depth:17
 rarity:3
 color:D
@@ -2040,6 +2120,7 @@ desc: to discern even as it fires its cruel bow.
 # Index 176
 name:Scatha the Worm
 base:dragon
+cave:ANGBAND
 depth:17
 rarity:30
 color:B
@@ -2066,6 +2147,7 @@ desc: treachery his hoard is large for a young worm.
 # Index 177
 name:Oikeroi, Guard of Tevildo
 base:cat
+cave:ANGBAND
 depth:17
 rarity:15
 color:o
@@ -2091,6 +2173,7 @@ desc: and ever at his side.
 # Index 181
 name:Young fire-drake
 base:dragon
+cave:ANGBAND
 depth:18
 rarity:6
 color:r
@@ -2120,6 +2203,7 @@ desc: his bones were ashes in the hot mire.
 # Index 182
 name:Darting horror
 base:horror
+cave:ANGBAND
 depth:18
 rarity:5
 color:r
@@ -2144,6 +2228,7 @@ desc: You would prefer not to see it any closer.
 name:Unmourned
 plural:Unmourned
 base:wraith
+cave:ANGBAND
 depth:18
 rarity:6
 color:v
@@ -2164,6 +2249,7 @@ desc: forgotten, in the deep dungeons of Angband.
 name:Ururauko
 plural:Ururaukar
 base:rauko
+cave:ANGBAND
 depth:18
 rarity:1
 color:R
@@ -2188,6 +2274,7 @@ desc: yet young.
 # Index 185
 name:Tevildo, Prince of Cats
 base:cat
+cave:ANGBAND
 depth:18
 rarity:10
 color:u
@@ -2212,6 +2299,7 @@ desc: warrior is royalty?
 # Index 186
 name:Turkano, Balrog of the Hosts
 base:rauko
+cave:ANGBAND
 depth:18
 rarity:20
 color:b
@@ -2243,6 +2331,7 @@ desc: glory after glory for his fell master.
 # Index 191
 name:Ancient sapphire serpent
 base:ancient serpent
+cave:ANGBAND
 depth:19
 rarity:6
 color:B
@@ -2267,6 +2356,7 @@ desc: Frost covers it from head to tail.
 # Index 192
 name:Troll guard
 base:troll
+cave:ANGBAND
 depth:19
 rarity:1
 color:s
@@ -2287,6 +2377,7 @@ desc: for war and given dark armour and great vicious weapons.
 # Index 193
 name:Vampire
 base:vampire
+cave:ANGBAND
 depth:19
 rarity:1
 color:W
@@ -2305,6 +2396,7 @@ desc:A nightmarish bat-like form, the size of a man.
 # Index 194
 name:Nameless thing
 base:nameless thing
+cave:ANGBAND
 depth:19
 rarity:1
 color:s
@@ -2324,6 +2416,7 @@ desc: eating its way through the roots of the earth.
 # Index 195
 name:Smaug the Golden
 base:dragon
+cave:ANGBAND
 depth:19
 rarity:30
 color:Y
@@ -2350,6 +2443,7 @@ desc: this one flies through the dark halls on great wings.
 # Index 196
 name:Maeglin, Betrayer of Gondolin
 base:person
+cave:ANGBAND
 depth:19
 rarity:100
 color:s
@@ -2382,6 +2476,7 @@ desc: to that dark king's deep halls?
 # Index 201
 name:Ancient ruby serpent
 base:ancient serpent
+cave:ANGBAND
 depth:20
 rarity:3
 color:R
@@ -2405,6 +2500,7 @@ desc: extreme heat surrounding it makes you gasp for breath.
 # Index 202
 name:Great cold-drake
 base:great dragon
+cave:ANGBAND
 depth:20
 rarity:6
 color:W
@@ -2430,6 +2526,7 @@ desc: the understanding of mortals.
 # Index 203
 name:Silent watcher
 base:horror
+cave:ANGBAND
 depth:20
 rarity:10
 color:s
@@ -2459,6 +2556,7 @@ desc: or his escape.
 # Index 204
 name:Gwathrauko
 base:rauko
+cave:ANGBAND
 depth:20
 rarity:1
 color:D
@@ -2479,6 +2577,7 @@ desc: side when his black banner was raised in defiance of Iluvatar.
 # Index 205
 name:Draugluin, Sire of Werewolves
 base:wolf
+cave:ANGBAND
 depth:20
 rarity:15
 color:W
@@ -2505,6 +2604,7 @@ desc: kind.
 # Index 206
 name:Vallach, Balrog of Sudden Flame
 base:rauko
+cave:ANGBAND
 depth:20
 rarity:20
 color:y
@@ -2533,6 +2633,7 @@ desc: such a being.
 # Index 211
 name:Ancient spider
 base:spider
+cave:ANGBAND
 depth:21
 rarity:3
 color:g
@@ -2553,6 +2654,7 @@ desc: drips with venom.
 # Index 212
 name:Ancient emerald serpent
 base:ancient serpent
+cave:ANGBAND
 depth:21
 rarity:3
 color:G
@@ -2575,6 +2677,7 @@ desc: It is enveloped in clouds of poisonous vapour.
 # Index 213
 name:Vampire lord
 base:vampire
+cave:ANGBAND
 depth:21
 rarity:2
 color:v
@@ -2596,6 +2699,7 @@ desc: everything around it as prey.
 # Index 214
 name:Dagorhir, the Elfbane
 base:troll
+cave:ANGBAND
 depth:21
 rarity:15
 color:r
@@ -2616,6 +2720,7 @@ desc: He leads a patrol of the feared Troll Guard.
 # Index 215
 name:Gostir, the Dread Glance
 base:great dragon
+cave:ANGBAND
 depth:21
 rarity:30
 color:B
@@ -2642,6 +2747,7 @@ desc: has he fire?
 # Index 221
 name:Ancient amethyst serpent
 base:ancient serpent
+cave:ANGBAND
 depth:22
 rarity:3
 color:v
@@ -2665,6 +2771,7 @@ desc: It is wreathed in shadow.
 # Index 222
 name:Great fire-drake
 base:great dragon
+cave:ANGBAND
 depth:22
 rarity:6
 color:r
@@ -2692,6 +2799,7 @@ desc: them, who could ever compare with the flames of a Dragon?
 name:Hithrauko
 plural:Hithraukar
 base:rauko
+cave:ANGBAND
 depth:22
 rarity:2
 color:Z
@@ -2713,6 +2821,7 @@ desc: do they move with such active malice...
 # Index 224
 name:Shelob, Spider of Darkness
 base:spider
+cave:ANGBAND
 depth:22
 rarity:30
 color:s
@@ -2738,6 +2847,7 @@ desc: of its light, that she takes to weave her deadly webs.
 # Index 225
 name:Lungorthin, Lord of Balrogs
 base:rauko
+cave:ANGBAND
 depth:22
 rarity:20
 color:w
@@ -2769,6 +2879,7 @@ desc: scorched by the heat of his body.
 # Index 231
 name:Ancient adamant serpent
 base:ancient serpent
+cave:ANGBAND
 depth:23
 rarity:3
 color:w
@@ -2791,6 +2902,7 @@ desc: Prismatic colours gleam in its scales. Few live to see another.
 # Index 232
 name:Unrelenting horror
 base:horror
+cave:ANGBAND
 depth:23
 rarity:2
 color:T
@@ -2815,6 +2927,7 @@ desc: clear how one could ever slay such a thing.
 # Index 233
 name:Ancalagon the Black
 base:dragon
+cave:ANGBAND
 depth:23
 rarity:6
 color:D
@@ -2844,6 +2957,7 @@ desc: with great thunder, and lightning, and a tempest of fire.
 # Index 234
 name:Thuringwethil, the Vampire Messenger
 base:vampire
+cave:ANGBAND
 depth:23
 rarity:3
 color:r
@@ -2872,6 +2986,7 @@ desc: her wings and eyes give away her true form.
 # Index 241
 name:Gothmog, High Captain of Balrogs
 base:rauko
+cave:ANGBAND
 depth:24
 rarity:3
 color:r
@@ -2901,6 +3016,7 @@ desc: Ungoliant's rage.
 # Index 242
 name:Ungoliant, the Gloomweaver
 base:spider
+cave:ANGBAND
 depth:24
 rarity:3
 color:D
@@ -2931,6 +3047,7 @@ desc: eat herself to avoid starvation.
 # Index 243
 name:Glaurung, the Deceiver
 base:great dragon
+cave:ANGBAND
 depth:24
 rarity:3
 color:Y
@@ -2961,6 +3078,7 @@ desc: hoard he has gathered around him.
 # Index 244
 name:Gorthaur, Servant of Morgoth
 base:wolf
+cave:ANGBAND
 depth:24
 rarity:3
 color:u
@@ -2997,6 +3115,7 @@ desc: eyes.
 # Index 251
 name:Morgoth, Lord of Darkness
 base:Morgoth
+cave:ANGBAND
 depth:25
 rarity:1
 color:D

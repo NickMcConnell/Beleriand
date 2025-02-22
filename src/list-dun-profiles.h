@@ -1,7 +1,8 @@
 /**
  * \file list-dun-profiles.h
- * \brief matches dungeon profile names to their building functions
+ * \brief matches dungeon profile names to building functions and cave types
+ *
+ * See lib/gamedata/dungeon_profiles.txt, src/generate.h and src/monster.h
  */
-
-DUN("standard", standard)
+DUN("angband", angband)
 DUN("throne", throne)

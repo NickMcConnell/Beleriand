@@ -196,6 +196,7 @@ struct cave_profile {
     struct cave_profile *next;
 
     const char *name;
+	char biome;
     cave_builder builder;	/*!< Function used to build the level */
     int block_size;			/*!< Default height and width of dungeon blocks */
     int dun_rooms;			/*!< Maximum number of rooms */
@@ -289,7 +290,7 @@ int get_level_profile_index_from_name(const char *name);
 const char *get_level_profile_name_from_index(int i);
 
 /* gen-cave.c */
-struct chunk *standard_gen(struct player *p);
+struct chunk *angband_gen(struct player *p);
 struct chunk *throne_gen(struct player *p);
 bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
 					int y_coord, int x_coord);
