@@ -3199,7 +3199,8 @@ bool multiply_monster(const struct monster *mon)
 	/* Pick an empty location. */
 	if (scatter_ext(cave, &grid, 1, mon->grid, 1, true,	square_isempty) > 0) {
 		/* Create a new monster (awake, no groups) */
-		return place_new_monster(cave, grid, mon->race, false, false,
+		enum biome_type biome = mon->race->biomes[0];
+		return place_new_monster(cave, biome, grid, mon->race, false, false,
 								 info, ORIGIN_DROP_BREED);
 	}
 
