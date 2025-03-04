@@ -1666,33 +1666,6 @@ static errr finish_parse_object(struct parser *p) {
 	z_info->k_max += 1;
 	z_info->ordinary_kind_max = z_info->k_max;
 
-	/* Add kinds for cooked and preserved food */
-	for (kidx = 0; kidx < z_info->k_max; kidx++) {
-		int tval, sval;
-		tval = k_info[kidx].cooked.tval;
-		if (tval) {
-			sval = lookup_sval(tval, k_info[kidx].cooked.name);
-			if (sval < 0)
-				return PARSE_ERROR_UNRECOGNISED_SVAL;
-			k = lookup_kind(tval, sval);
-			if (!k)
-				return PARSE_ERROR_UNRECOGNISED_SVAL;
-			k_info[kidx].cooked.kind = k;
-			string_free(k_info[kidx].cooked.name);
-		}
-		tval = k_info[kidx].preserved.tval;
-		if (tval) {
-			sval = lookup_sval(tval, k_info[kidx].preserved.name);
-			if (sval < 0)
-				return PARSE_ERROR_UNRECOGNISED_SVAL;
-			k = lookup_kind(tval, sval);
-			if (!k)
-				return PARSE_ERROR_UNRECOGNISED_SVAL;
-			k_info[kidx].preserved.kind = k;
-			string_free(k_info[kidx].preserved.name);
-		}
-	}
-
 	parser_destroy(p);
 	return 0;
 }
@@ -2661,7 +2634,7 @@ static errr run_parse_artifact(struct parser *p) {
 
 static errr finish_parse_artifact(struct parser *p) {
 	struct artifact *a, *n;
-	int none, aidx;
+	int none, aidx, kidx;
 
 	/* Scan the list for the max id */
 	z_info->a_max = 0;
@@ -2699,6 +2672,35 @@ static errr finish_parse_artifact(struct parser *p) {
 	/* Now we're done with object kinds, deal with object-like things */
 	none = tval_find_idx("none");
 	pile_kind = lookup_kind(none, lookup_sval(none, "<pile>"));
+
+	/* Add kinds for cooked and preserved food */
+	for (kidx = 0; kidx < z_info->k_max; kidx++) {
+		int tval, sval;
+		struct object_kind *k;
+		tval = k_info[kidx].cooked.tval;
+		if (tval) {
+			sval = lookup_sval(tval, k_info[kidx].cooked.name);
+			if (sval < 0)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+			k = lookup_kind(tval, sval);
+			if (!k)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+			k_info[kidx].cooked.kind = k;
+			string_free(k_info[kidx].cooked.name);
+		}
+		tval = k_info[kidx].preserved.tval;
+		if (tval) {
+			sval = lookup_sval(tval, k_info[kidx].preserved.name);
+			if (sval < 0)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+			k = lookup_kind(tval, sval);
+			if (!k)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+			k_info[kidx].preserved.kind = k;
+			string_free(k_info[kidx].preserved.name);
+		}
+	}
+
 	parser_destroy(p);
 	return 0;
 }

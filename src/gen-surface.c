@@ -2250,22 +2250,26 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 {
 	struct loc top_left = loc(x_coord * CHUNK_SIDE, y_coord * CHUNK_SIDE);
 	struct point_set *chunk = make_chunk_point_set(c, top_left);
-	enum biome_type standard;
+	struct world_region *region = &region_info[find_region(ref->y_pos,
+														   ref->x_pos)];
+	enum biome_type standard, mon_biome;
 	struct biome_tweak tweak = { DIR_NONE, 0, -1, DIR_NONE, 0, -1 };
 	struct gen_loc *location;
-	int lower, upper;
+	int lower, upper, i;
 	bool found;
 
 	/* Get the standard biome based on region.txt */
 	standard = square_miles[ref->y_pos / CPM][ref->x_pos / CPM].biome;
 	tweak.biome1 = standard;
 	tweak.biome2 = standard;
+	mon_biome = standard;
 
 	/* Check for tweaks, and generate accordingly */
 	if (get_biome_tweaks(ref->y_pos, ref->x_pos, &tweak)) {
 		if (tweak.dir1 == DIR_NONE) {
 			/* Whole chunk is the tweaked biome */
 			make_piece(c, tweak.biome1, chunk);
+			mon_biome = tweak.biome1;
 		} else if ((tweak.dir1 == DIR_NE) || (tweak.dir1 == DIR_SE) ||
 				   (tweak.dir1 == DIR_SW) || (tweak.dir1 == DIR_NW)) {
 			/* Corner effect */
@@ -2326,5 +2330,9 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 	}
 
 	//TODO generate monsters, perhaps objects
+	for (i = randint1(2); i > 0; i--) {
+		pick_and_place_distant_monster(c, player, mon_biome, true,
+									   region->danger);
+	}
 }
 

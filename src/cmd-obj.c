@@ -1085,9 +1085,9 @@ void do_cmd_prepare_food(struct command *cmd)
 		if (obj->kind->preserved.kind) {
 			if (get_check("Do you want to preserve this food?")) {
 				inven_change(obj, obj->kind->preserved.kind);
+			} else {
+				inven_change(obj, obj->kind->cooked.kind);
 			}
-		} else {
-			inven_change(obj, obj->kind->cooked.kind);
 		}
 	} else {
 		inven_change(obj, obj->kind->preserved.kind);

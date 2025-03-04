@@ -1289,7 +1289,7 @@ void prepare_next_level(struct player *p)
 	/* First turn */
 	if (turn == 1) {
 		/* Make an arena to build into */
-		chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
+		cave = chunk_new(ARENA_SIDE, ARENA_SIDE);
 
 		for (y = - ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
 			for (x = - ARENA_CHUNKS / 2; x <= ARENA_CHUNKS / 2; x++) {
@@ -1302,17 +1302,17 @@ void prepare_next_level(struct player *p)
 				chunk_offset_data(&ref, 0, y, x);
 
 				/* Generate a new chunk */
-				(void) chunk_fill(chunk, &ref, y + ARENA_CHUNKS / 2,
+				(void) chunk_fill(cave, &ref, y + ARENA_CHUNKS / 2,
 								  x + ARENA_CHUNKS / 2);
 			}
 		}
-		player_place(chunk, p, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+		player_place(cave, p, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
 
 		/* Allocate new known level */
-		p->cave = chunk_new(chunk->height, chunk->width);
-		p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
+		p->cave = chunk_new(cave->height, cave->width);
+		p->cave->objects = mem_realloc(p->cave->objects, (cave->obj_max + 1)
 									   * sizeof(struct object*));
-		p->cave->obj_max = chunk->obj_max;
+		p->cave->obj_max = cave->obj_max;
 		for (i = 0; i <= p->cave->obj_max; i++) {
 			p->cave->objects[i] = NULL;
 		}
@@ -1433,14 +1433,14 @@ void prepare_next_level(struct player *p)
 			}
 			player_place(chunk, p, p->grid);
 		}
+		cave = chunk;
 	}
 
 	/* Generate a new level */
-	cave = chunk;
 	event_signal_flag(EVENT_GEN_LEVEL_END, true);
 
 	/* Validate the dungeon (we could use more checks here) */
-	chunk_validate_objects(chunk);
+	chunk_validate_objects(cave);
 
 	/* Record details for where we came from, if possible */
 	if (chunk_list[p->place].adjacent[DIR_UP] == p->last_place) {
