@@ -273,6 +273,12 @@ void calc_stance(struct monster *mon)
 		stances[1] = STANCE_AGGRESSIVE;
 	}
 
+	/* Fleeing monsters just flee */
+	if (rf_has(race->flags, RF_FLEE)) {
+		stances[1] = STANCE_FLEEING;
+		stances[2] = STANCE_FLEEING;
+	}
+
 	/* Trolls are aggressive rather than confident */
 	if (rf_has(race->flags, RF_TROLL)) {
 		stances[1] = STANCE_AGGRESSIVE;

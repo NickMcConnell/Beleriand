@@ -1167,7 +1167,11 @@ void inven_change(struct object *obj, struct object_kind *kind)
 
 	/* Change the object */
 	changed->kind = kind;
+	changed->sval = kind->sval;
+	changed->known->kind = kind;
+	changed->known->sval = kind->sval;
 	changed->weight = kind->weight;
+	object_touch(player, changed);
 
 	/* Carry or drop it */
 	if (inven_carry_okay(changed)) {

@@ -257,7 +257,8 @@ percept:6
 stealth:6
 will:0
 prot:5
-#TODO Make it flee
+blow:PECK:HURT:1:1d1
+flags:FLEE
 drop:food:Raw Pigeon Breast:50:1
 desc:A plump bird which flees on sight.
 
@@ -316,7 +317,8 @@ percept:6
 stealth:6
 will:0
 prot:5
-#TODO Make it flee
+blow:KICK:HURT:1:1d1
+flags:FLEE
 desc:A wild, nervous creature.
 
 # Index 21
