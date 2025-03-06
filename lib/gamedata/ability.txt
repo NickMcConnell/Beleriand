@@ -396,7 +396,7 @@ desc:You gain a point of dexterity.
 
 skill:Survival
 
-name:Food Preservation
+name:Food Preparation
 level:1
 desc:Allows you to cook, cure or otherwise preserve raw food ingredients.
 

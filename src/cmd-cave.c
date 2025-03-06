@@ -1250,7 +1250,6 @@ static bool do_cmd_bash_aux(struct loc grid)
 	return more;
 }
 
-
 /**
  * Bash open a door, success based on character strength
  *
@@ -1311,6 +1310,32 @@ void do_cmd_bash(struct command *cmd)
 	if (!more) disturb(player, false);
 }
 
+
+/**
+ * Perform the basic "fish" command
+ *
+ * Assume there is no monster blocking the destination
+ *
+ * Returns true if repeated commands may continue
+ */
+static bool do_cmd_fish_aux(struct loc grid)
+{
+	int score, difficulty;
+	bool more = true;
+
+	/* Get the score in favour */
+	score = player->state.stat_use[STAT_DEX];
+
+	/* The base difficulty is 0 (NRM use current here?)  */
+	difficulty = 0;
+
+	if (skill_check(source_player(), score, difficulty, source_none()) > 0) {
+		more = false;
+		player_catch_fish(player);
+	}
+
+	return more;
+}
 
 /**
  * Manipulate an adjacent grid in some way
@@ -1384,6 +1409,10 @@ static void do_cmd_alter_aux(int dir)
 	} else if (square_isopendoor(cave, grid)) {
 		/* Close door */
 		more = do_cmd_close_aux(grid);
+	} else if (square_isswim(cave, grid) &&
+			   player_active_ability(player, "Fishing")) {
+		/* Catch fish */
+		more = do_cmd_fish_aux(grid);
 	} else if ((dir == DIR_NONE) && square_isupstairs(cave, grid)) {
 		/* Ascend */
 		if (get_check("Are you sure you wish to ascend? ")) {

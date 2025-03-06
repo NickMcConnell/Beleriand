@@ -297,6 +297,14 @@ bool feat_is_watery(int feat)
 }
 
 /**
+ * True if the feature requires swimming to cross.
+ */
+bool feat_is_swim(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_SWIM);
+}
+
+/**
  * True if the feature is icy.
  */
 bool feat_is_icy(int feat)
@@ -569,6 +577,14 @@ bool square_ischasm(struct chunk *c, struct loc grid)
 bool square_iswater(struct chunk *c, struct loc grid)
 {
 	return feat_is_watery(square(c, grid)->feat);
+}
+
+/**
+ * True if the square requires swimming.
+ */
+bool square_isswim(struct chunk *c, struct loc grid)
+{
+	return feat_is_swim(square(c, grid)->feat);
 }
 
 /**
