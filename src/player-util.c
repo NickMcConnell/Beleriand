@@ -34,6 +34,7 @@
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
+#include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -726,6 +727,21 @@ bool player_can_leap(struct player *p, struct loc grid, int dir)
 	}
 
 	return true;
+}
+
+/**
+ * Catches a fish - NRM add types of fish.
+ */
+void player_catch_fish(struct player *p)
+{
+	/* Make a fish by hand */
+	struct object *obj = mem_zalloc(sizeof(*obj));
+	int sval = lookup_sval(TV_FOOD, "Raw Fish");
+	struct object_kind *kind = lookup_kind(TV_FOOD, sval);
+	object_prep(obj, kind, p->depth, RANDOMISE);
+
+	/* Drop it near the player */
+	drop_near(cave, &obj, 0, p->grid, true, false);
 }
 
 /**

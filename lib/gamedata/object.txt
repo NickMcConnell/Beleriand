@@ -2531,6 +2531,19 @@ dice:3000
 msg:It is moist and tasty.
 desc:It provides nourishment for about 3000 turns under normal conditions.
 
+name:& Fish Fillet~
+graphics:,:w
+type:food
+depth:0
+weight:15
+cost:2
+attack:0:0d0
+defence:0:0d0
+effect:NOURISH:INC_BY
+dice:3000
+msg:It is moist and tasty.
+desc:It provides nourishment for about 3000 turns under normal conditions.
+
 # Index 399
 name:& Piece~ of Dark Bread
 graphics:,:s
@@ -2602,6 +2615,22 @@ effect:FOOD_POISONING
 cooked:food:Pigeon Breast
 preserved:food:Strip of Dried Meat
 msg:It is slimy and bloody.
+desc:It provides nourishment for about 500 turns under normal conditions.  It
+desc: may make you sick.
+
+name:& Raw Fish~
+graphics:,:S
+type:food
+depth:0
+weight:10
+cost:2
+attack:0:0d0
+defence:0:0d0
+effect:NOURISH:INC_BY
+dice:500
+effect:FOOD_POISONING
+cooked:food:Fish Fillet
+msg:It is wet and bony.
 desc:It provides nourishment for about 500 turns under normal conditions.  It
 desc: may make you sick.
 

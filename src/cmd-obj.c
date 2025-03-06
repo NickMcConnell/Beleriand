@@ -1073,6 +1073,12 @@ void do_cmd_prepare_food(struct command *cmd)
 {
 	struct object *obj;
 
+	/* Check the ability */
+	if (!player_active_ability(player, "Food Preparation")) {
+		msg("You cannot prepare food.");
+		return;
+	}
+
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
 			"Process what food? ",
@@ -1085,9 +1091,9 @@ void do_cmd_prepare_food(struct command *cmd)
 		if (obj->kind->preserved.kind) {
 			if (get_check("Do you want to preserve this food?")) {
 				inven_change(obj, obj->kind->preserved.kind);
-			} else {
-				inven_change(obj, obj->kind->cooked.kind);
 			}
+		} else {
+			inven_change(obj, obj->kind->cooked.kind);
 		}
 	} else {
 		inven_change(obj, obj->kind->preserved.kind);
