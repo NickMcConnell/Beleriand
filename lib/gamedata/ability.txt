@@ -404,9 +404,9 @@ name:Fishing
 level:2
 desc:Allows you to catch fish from rivers and lakes.
 
-name:Leather and Fur
+name:Leatherwork
 level:3
-desc:Enables creation of basic leather and fur garments from animal hides.
+desc:Enables creation of basic leather garments from animal hides.
 type:gloves
 
 name:Swimming

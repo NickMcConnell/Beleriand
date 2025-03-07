@@ -496,6 +496,16 @@ type:flag
 subtype:basic
 code:INDESTRUCTIBLE
 
+name:craft
+type:flag
+subtype:basic
+code:CRAFT
+
+name:woodcraft
+type:flag
+subtype:basic
+code:WOODCRAFT
+
 name:no smithing
 type:flag
 subtype:basic
