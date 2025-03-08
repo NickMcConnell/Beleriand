@@ -95,6 +95,7 @@ bool player_can_leap(struct player *p, struct loc grid, int dir);
 void player_catch_fish(struct player *p);
 bool player_break_web(struct player *p);
 bool player_escape_pit(struct player *p);
+bool player_leave_deep_water(struct player *p, struct loc grid);
 void player_blast_ceiling(struct player *p);
 bool player_can_fall_through_floor(struct player *p);
 void player_blast_floor(struct player *p);
