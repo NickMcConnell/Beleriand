@@ -1688,6 +1688,7 @@ void move_player(int dir, bool disarm)
 		/* Normal movement */
 		bool pit = square_ispit(cave, player->grid);
 		bool web = square_iswebbed(cave, player->grid);
+		bool swim = square_isswim(cave, player->grid);
 		bool step = true;
 
 		/* If not confused, allow check before moving into damaging terrain. */
@@ -1739,6 +1740,22 @@ void move_player(int dir, bool disarm)
 					step = false;
                 }
             }
+
+			/* Check for deep water if the player can't swim */
+			if (square_isswim(cave, grid) && !square_isswim(cave, player->grid)
+				&& !player_active_ability(player, "Swimming")) {
+                /* Disturb the player */
+				disturb(player, false);
+
+				/* Flush input */
+				event_signal(EVENT_MESSAGE_FLUSH);
+
+                if (!get_check("Do you really want to enter the deep water? ")){
+                    /* Don't take a turn... */
+                    player->upkeep->energy_use = 0;
+					step = false;
+                }
+			}
 		}
 
 		/* At this point attack any invisible monster that may be there */
@@ -1757,6 +1774,11 @@ void move_player(int dir, bool disarm)
 
 		/* It is hard to get out of a web */
 		if (web && !player_break_web(player)) {
+			step = false;
+		}
+
+		/* It is hard to get out of deep water */
+		if (swim && !player_leave_deep_water(player, grid)) {
 			step = false;
 		}
 

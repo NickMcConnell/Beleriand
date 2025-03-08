@@ -808,6 +808,43 @@ bool player_escape_pit(struct player *p)
 }
 
 /**
+ * Attempts to get out of deep water.
+ */
+bool player_leave_deep_water(struct player *p, struct loc grid)
+{
+	int difficulty = 9;
+	int score = MAX(p->state.stat_use[STAT_STR] * 2, 0);
+
+	/* Swimmers are fine */
+	if (player_active_ability(p, "Swimming")) return true;
+
+	/* Disturb the player */
+	disturb(p, false);
+
+	if (skill_check(source_player(), score, difficulty, source_none()) <= 0) {	
+		msg("You flail in the water.");
+
+		/* Take a full turn */
+		p->upkeep->energy_use = z_info->move_energy;
+
+		/* Store the action type */
+		p->previous_action[0] = ACTION_MISC;
+
+		/* Slowly drown */
+		take_hit(p, 3, "drowning");
+
+		return false;
+	}
+
+	if (!square_isswim(cave, grid)) {
+		msg("You regain your footing.");
+	} else {
+		msg("You flounder forwards in the water.");
+	}
+	return true;
+}
+
+/**
  * Aim a horn of blasting at the ceiling
  */
 void player_blast_ceiling(struct player *p)
