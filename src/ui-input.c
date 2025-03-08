@@ -1708,6 +1708,7 @@ void textui_input_init(void)
 	panel_contains_hook = textui_panel_contains;
 	map_is_visible_hook = textui_map_is_visible;
 	smith_object_hook = textui_smith_object;
+	craft_object_hook = textui_craft_object;
 	change_song_hook = textui_change_song;
 }
 

@@ -37,6 +37,7 @@ void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 bool (*map_is_visible_hook)(void);
 struct object *(*smith_object_hook)(struct smithing_cost *cost);
+void (*craft_object_hook)(void);
 void (*view_abilities_hook)(struct player_ability *ability_list,
 							int num_abilities);
 void (*change_song_hook)(void);
@@ -258,6 +259,16 @@ struct object *smith_object(struct smithing_cost *cost)
 		return smith_object_hook(cost);
 
 	return NULL;
+}
+
+/**
+ * Craft an object
+ */
+void craft_object(void)
+{
+	/* Ask the UI for it */
+	if (craft_object_hook)
+		craft_object_hook();
 }
 
 /**

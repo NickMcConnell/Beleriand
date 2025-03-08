@@ -396,6 +396,11 @@ desc:You gain a point of dexterity.
 
 skill:Survival
 
+name:Woodcraft
+level:1
+desc:Allows creation of basic wooden weapons.
+item:sword:Dagger
+
 name:Food Preparation
 level:1
 desc:Allows you to cook, cure or otherwise preserve raw food ingredients.
@@ -420,7 +425,7 @@ desc:Allows you to ride a tame horse.
 
 name:Boat Building
 level:6
-prerequisite:Smithing:Woodcraft
+prerequisite:Survival:Woodcraft
 desc:Allows building of basic wooden oar-powered craft.
 
 name:Sailing
@@ -591,11 +596,6 @@ desc:You gain a point of constitution.
 # Smithing ---------------------------------------------
 
 skill:Smithing
-
-name:Woodcraft
-level:1
-desc:Allows creation of basic wooden weapons.
-item:sword:Dagger
 
 name:Weaponsmith
 level:2

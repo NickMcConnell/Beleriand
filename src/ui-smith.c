@@ -25,6 +25,7 @@
 #include "obj-desc.h"
 #include "obj-info.h"
 #include "obj-knowledge.h"
+#include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-smith.h"
 #include "obj-tval.h"
@@ -1510,3 +1511,84 @@ struct object *textui_smith_object(struct smithing_cost *cost)
 	return create_smithed_item ? smith_obj : NULL;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Crafting menu functions
+ * ------------------------------------------------------------------------ */
+static struct object_kind **itemlist;
+static int get_crafting_items(void)
+{
+	bool wood = player_active_ability(player, "Woodcraft");
+	bool leather = player_active_ability(player, "Leatherwork");
+	int i, count = 0;
+	for (i = 0; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
+		if (wood && of_has(kind->flags, OF_WOODCRAFT)) itemlist[count++] = kind;
+		if (leather && of_has(kind->flags, OF_CRAFT)) itemlist[count++] = kind;
+	}
+	return count;
+}
+
+/**
+ * Display an entry in the crafting menu.
+ */
+static void craft_display(struct menu *menu, int oid, bool cursor, int row,
+						  int col, int width)
+{
+	struct object_kind **choice = menu->menu_data;
+	struct object_kind *kind = choice[oid];
+	char o_name[80];
+	uint8_t attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
+
+	object_kind_name(o_name, sizeof(o_name), kind, false);
+	c_put_str(attr, o_name, row, col);
+}
+
+/**
+ * Handle keypresses in the crafting menu - NRM Take time? .
+ */
+static bool craft_action(struct menu *menu, const ui_event *event, int oid)
+{
+	struct object_kind **choice = menu->menu_data;
+	struct object_kind *kind = choice[oid];
+	if (event->type == EVT_SELECT) {
+		/* Make the object by hand */
+		struct object *obj = mem_zalloc(sizeof(*obj));
+		object_prep(obj, kind, player->depth, RANDOMISE);
+
+		/* Drop it near the player */
+		drop_near(cave, &obj, 0, player->grid, true, false);
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Display the crafting menu.
+ */
+void textui_craft_object(void)
+{
+	struct menu menu;
+	menu_iter menu_f = { NULL, NULL, craft_display, craft_action, NULL };
+	region area = { 10, 2, 0, 0 };
+	int count;
+
+	itemlist = mem_zalloc(z_info->k_max * sizeof(struct object_kind*));
+	count = get_crafting_items();
+	if (!count) {
+		msg("You are not currently able to craft any items.");
+		mem_free(itemlist);
+		return;
+	}
+
+	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
+	menu.title = "Craftable Items";
+	menu.selections = all_letters_nohjkl;
+	menu.flags = MN_CASELESS_TAGS;
+
+	menu_setpriv(&menu, count, itemlist);
+	menu_layout(&menu, &area);
+	menu_select(&menu, 0, true);
+
+	mem_free(itemlist);
+}

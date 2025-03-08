@@ -52,6 +52,7 @@ extern void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 extern bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 extern bool (*map_is_visible_hook)(void);
 extern struct object *(*smith_object_hook)(struct smithing_cost *cost);
+extern void (*craft_object_hook)(void);
 extern void (*view_abilities_hook)(struct player_ability *ability_list,
 								   int num_abilities);
 extern void (*change_song_hook)(void);
@@ -71,6 +72,7 @@ bool confirm_debug(void);
 bool panel_contains(unsigned int y, unsigned int x);
 bool map_is_visible(void);
 struct object *smith_object(struct smithing_cost *cost);
+void craft_object(void);
 void view_ability_menu(struct player_ability *ability_list,
 						 int num_abilities);
 void change_song(void);
