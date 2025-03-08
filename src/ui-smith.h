@@ -17,3 +17,4 @@
  */
 
 struct object *textui_smith_object(struct smithing_cost *cost);
+void textui_craft_object(void);
