@@ -2755,6 +2755,15 @@ attack:0:0d0
 defence:0:0d0
 alloc:15:5
 
+name:& Dinghy~
+graphics:~:u
+type:boat
+depth:1
+weight:1000
+cost:100
+attack:0:0d0
+defence:0:0d0
+flags:WOODCRAFT
 
 ##### Notes #####
 

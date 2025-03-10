@@ -576,6 +576,7 @@ struct player {
 	struct chunk *cave;					/* Known version of current level */
 
 	struct monster *mount;				/* Monster being ridden */
+	struct object *boat;				/* Boat the player is in or dragging */
 
 	struct player_state state;			/* Calculatable state */
 	struct player_state known_state;	/* What the player can know of the above */

@@ -402,9 +402,9 @@ break:5
 # max-stack:10
 flags:EASY_KNOW
 
-name:easter:Easter Egg~
+name:boat:Boat~
 graphics:umber
-break:5
+break:0
 # max-stack:10
 flags:EASY_KNOW
 
