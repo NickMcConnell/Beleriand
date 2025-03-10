@@ -1520,11 +1520,13 @@ static int get_crafting_items(void)
 {
 	bool wood = player_active_ability(player, "Woodcraft");
 	bool leather = player_active_ability(player, "Leatherwork");
+	bool boat = player_active_ability(player, "Boat Building");
 	int i, count = 0;
 	for (i = 0; i < z_info->k_max; i++) {
 		struct object_kind *kind = &k_info[i];
 		if (wood && of_has(kind->flags, OF_WOODCRAFT)) itemlist[count++] = kind;
 		if (leather && of_has(kind->flags, OF_CRAFT)) itemlist[count++] = kind;
+		if (boat && of_has(kind->flags, OF_WOODCRAFT)) itemlist[count++] = kind;
 	}
 	return count;
 }

@@ -31,6 +31,11 @@ bool tval_is_note(const struct object *obj)
 	return obj->tval == TV_NOTE;
 }
 
+bool tval_is_boat(const struct object *obj)
+{
+	return obj->tval == TV_BOAT;
+}
+
 bool tval_is_horn(const struct object *obj)
 {
 	return obj->tval == TV_HORN;
