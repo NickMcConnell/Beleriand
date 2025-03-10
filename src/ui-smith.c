@@ -1520,7 +1520,8 @@ static int get_crafting_items(void)
 {
 	bool wood = player_active_ability(player, "Woodcraft");
 	bool leather = player_active_ability(player, "Leatherwork");
-	bool boat = player_active_ability(player, "Boat Building");
+	bool boat = player_active_ability(player, "Boat Building") &&
+		square_iswater(cave, player->grid);
 	int i, count = 0;
 	for (i = 0; i < z_info->k_max; i++) {
 		struct object_kind *kind = &k_info[i];

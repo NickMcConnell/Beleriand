@@ -24,6 +24,7 @@
 #include "mon-make.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player-abilities.h"
@@ -1146,6 +1147,20 @@ struct monster *square_monster(struct chunk *c, struct loc grid)
 struct object *square_object(struct chunk *c, struct loc grid) {
 	if (!square_in_bounds(c, grid)) return NULL;
 	return square(c, grid)->obj;
+}
+
+/**
+ * Get the boat, if any, in the grid.
+ */
+struct object *square_boat(struct chunk *c, struct loc grid) {
+	struct object *obj;
+	if (!square_in_bounds(c, grid)) return NULL;
+	obj = square(c, grid)->obj;
+	while (obj) {
+		if (tval_is_boat(obj)) return obj;
+		obj = obj->next;
+	}
+	return NULL;
 }
 
 /**

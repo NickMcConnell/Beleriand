@@ -1584,6 +1584,7 @@ void move_player(int dir, bool disarm)
 
 	int m_idx = square(cave, grid)->mon;
 	struct monster *mon = monster(m_idx);
+	struct object *boat = square_boat(cave, grid);
 	bool trap = square_isdisarmabletrap(cave, grid);
 	bool door = square_iscloseddoor(cave, grid) &&
 		!square_issecretdoor(cave, grid);
@@ -1795,11 +1796,16 @@ void move_player(int dir, bool disarm)
 
 		/* We can move */
 		if (step) {
+			struct monster *mount = player->mount;
+
 			/* Do flanking or controlled retreat attack if any */
 			player_flanking_or_retreat(player, grid);
 
 			/* Move player */
 			monster_swap(player->grid, grid);
+			if (player->boat) {
+				player->boat->grid = player->grid;
+			}
 			player_handle_post_move(player, true, false);
 
 			/* Spontaneous Searching */
@@ -1807,6 +1813,21 @@ void move_player(int dir, bool disarm)
 
 			/* Remember this direction of movement */
 			player->previous_action[0] = dir;
+
+			/* Check for a boat */
+			if (boat) {
+				player->boat = boat;
+				if (mount) {
+					square_set_mon(cave, mount->grid, mount->midx);
+					player->mount = NULL;
+				}
+			}
+
+			/* Check for no water if in a boat */
+			if ((player->boat) && !square_iswater(cave, grid)) {
+				msg("You leave the boat.");
+				player->boat = NULL;
+			}
 		}
 	}
 }
