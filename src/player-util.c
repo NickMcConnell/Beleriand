@@ -826,6 +826,41 @@ bool player_is_riding(struct player *p)
 }
 
 /**
+ * Player gets out of a boat.
+ */
+void player_disembark(struct player *p)
+{
+	int dir;
+	struct loc grid;
+
+	/* Get direction of disembarking */
+	if (!get_rep_dir(&dir, false)) {
+		return;
+	}
+
+	/* Check passability */
+	grid = loc_sum(player->grid, ddgrid[dir]);
+	if (!square_ispassable(cave, grid)) {
+		msg("You can't disembark there.");
+		return;
+	}
+
+	/* No longer riding */
+	player->boat = NULL;
+
+	/* Jump off */
+	monster_swap(player->grid, grid);
+}
+
+/**
+ * True if the player is in or dragging a boat
+ */
+bool player_is_boating(struct player *p)
+{
+	return (player->boat != NULL);
+}
+
+/**
  * Catches a fish - NRM add types of fish.
  */
 void player_catch_fish(struct player *p)

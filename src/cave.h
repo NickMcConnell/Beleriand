@@ -388,6 +388,7 @@ struct feature *square_feat(struct chunk *c, struct loc grid);
 int square_light(struct chunk *c, struct loc grid);
 struct monster *square_monster(struct chunk *c, struct loc grid);
 struct object *square_object(struct chunk *c, struct loc grid);
+struct object *square_boat(struct chunk *c, struct loc grid);
 struct trap *square_trap(struct chunk *c, struct loc grid);
 bool square_holds_object(struct chunk *c, struct loc grid, struct object *obj);
 void square_excise_object(struct chunk *c, struct loc grid, struct object *obj);
