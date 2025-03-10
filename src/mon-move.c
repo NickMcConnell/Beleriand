@@ -3696,6 +3696,9 @@ void process_monsters(int minimum_energy)
 		mon = monster(i);
 		if (!mon->race || monster_is_stored(mon)) continue;
 
+		/* Ignore monster if the player is riding it */
+		if (mon == player->mount) continue;
+
 		/* Ignore monsters that have already been handled */
 		if (mflag_has(mon->mflag, MFLAG_HANDLED)) continue;
 

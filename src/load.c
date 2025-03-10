@@ -72,6 +72,7 @@ static uint8_t slay_max;
  * Monster constants
  */
 static uint8_t mflag_size = 0;
+static uint16_t ridden_monster = 0;
 
 /**
  * Trap constants
@@ -859,6 +860,7 @@ int rd_player(void)
 	player->unique_forge_made = tmp8u ? true : false;
 	rd_byte(&tmp8u);
 	player->unique_forge_seen = tmp8u ? true : false;
+	rd_u16b(&ridden_monster);
 
 	return 0;
 }
@@ -1563,6 +1565,13 @@ int rd_monsters(void)
 		if (cave->objects[i] && player->cave->objects[i])
 			cave->objects[i]->known = player->cave->objects[i];
 #endif
+
+	/* Associate ridden monster */
+	if (ridden_monster) {
+		player->mount = monster(ridden_monster);
+		assert(player->mount->race);
+	}
+
 	return 0;
 }
 

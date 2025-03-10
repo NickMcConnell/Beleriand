@@ -92,6 +92,9 @@ void player_opportunist_or_zone(struct player *p, struct loc grid1,
 void player_polearm_passive_attack(struct player *p, struct loc grid_from,
 								   struct loc grid_to);
 bool player_can_leap(struct player *p, struct loc grid, int dir);
+void player_mount(struct player *p, struct monster *mon, int dir);
+void player_dismount(struct player *p);
+bool player_is_riding(struct player *p);
 void player_catch_fish(struct player *p);
 bool player_break_web(struct player *p);
 bool player_escape_pit(struct player *p);
