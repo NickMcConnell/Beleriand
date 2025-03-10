@@ -730,6 +730,102 @@ bool player_can_leap(struct player *p, struct loc grid, int dir)
 }
 
 /**
+ * Player mounts a horse.
+ *
+ * Note that this uses much of the code from monster_swap() as the player needs
+ * to be manually put on the same grid as the horse without it moving.
+ */
+void player_mount(struct player *p, struct monster *mon, int dir)
+{
+	int y_offset, x_offset;
+	int old_y_chunk = player->grid.y / CHUNK_SIDE;
+	int old_x_chunk = player->grid.x / CHUNK_SIDE;
+
+	/* Move player by hand */
+	player->grid = mon->grid;
+
+	/* Updates */
+	player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW | PU_DISTANCE);
+
+	/* Redraw monster list */
+	player->upkeep->redraw |= (PR_MONLIST);
+
+	/* Don't allow command repeat if moved away from item used. */
+	cmd_disable_repeat_floor_item();
+
+	/* Update grid */
+	square_set_mon(cave, player->grid, -1);
+
+	/* Redraw */
+	square_light_spot(cave, player->grid);
+
+	/* Deal with change of chunk */
+	y_offset = player->grid.y / CHUNK_SIDE - old_y_chunk;
+	x_offset = player->grid.x / CHUNK_SIDE - old_x_chunk;
+
+	/* On the surface, re-align */
+	if (player->depth == 0) {
+		if ((y_offset != 0) || (x_offset != 0))
+			chunk_change(player, 0, y_offset, x_offset);
+	} else {
+		/* In the dungeon, change place */
+		int adj_index = chunk_offset_to_adjacent(0, y_offset, x_offset);
+
+		if (adj_index != DIR_NONE) {
+			player->last_place = player->place;
+			player->place = chunk_list[player->place].adjacent[adj_index];
+		}
+	}
+
+	player_handle_post_move(player, true, false);
+
+	/* Spontaneous Searching */
+	perceive(player);
+
+	/* Remember this direction of movement */
+	player->previous_action[0] = dir;
+}
+
+/**
+ * Player gets off a horse.
+ */
+void player_dismount(struct player *p)
+{
+	int dir;
+	struct loc grid;
+	struct monster *mon = player->mount;
+
+	/* Get direction of dismount */
+	if (!get_rep_dir(&dir, false)) {
+		return;
+	}
+
+	/* Check passability */
+	grid = loc_sum(player->grid, ddgrid[dir]);
+	if (!square_ispassable(cave, grid)) {
+		msg("You can't dismount there.");
+		return;
+	}
+
+	/* No longer riding */
+	player->mount = NULL;
+
+	/* Jump off */
+	monster_swap(player->grid, grid);
+
+	/* Update monster grid */
+	square_set_mon(cave, mon->grid, mon->midx);
+}
+
+/**
+ * True if the player is riding a horse
+ */
+bool player_is_riding(struct player *p)
+{
+	return (player->mount != NULL);
+}
+
+/**
  * Catches a fish - NRM add types of fish.
  */
 void player_catch_fish(struct player *p)

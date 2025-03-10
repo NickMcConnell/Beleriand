@@ -424,9 +424,12 @@ void monster_swap(struct loc grid1, struct loc grid2)
     if (m1 > 0) monster_fall_in_chasm(grid2);
     if (m2 > 0) monster_fall_in_chasm(grid1);
 
-    /* Describe object you are standing on if any */
+    /* Describe object you are standing on if any, move mount */
     if ((m1 < 0) || (m2 < 0)) {
         event_signal(EVENT_SEEFLOOR);
+		if (player->mount) {
+			player->mount->grid = player->grid;
+		}
     }
 
 	/* Deal with change of chunk */

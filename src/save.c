@@ -555,6 +555,11 @@ void wr_player(void)
 	wr_s16b(player->smithing_leftover);
 	wr_byte(player->unique_forge_made);
 	wr_byte(player->unique_forge_seen);
+	if (player->mount) {
+		wr_u16b(player->mount->midx);
+	} else {
+		wr_u16b(0);
+	}
 }
 
 

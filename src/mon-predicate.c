@@ -80,6 +80,14 @@ bool monster_is_smart(const struct monster *mon)
 }
 
 /**
+ * Monster can be ridden
+ */
+bool monster_is_rideable(const struct monster *mon)
+{
+	return rf_has(mon->race->flags, RF_RIDEABLE);
+}
+
+/**
  * Monster has friends
  */
 bool monster_has_friends(const struct monster *mon)
@@ -135,4 +143,12 @@ bool monster_is_listened(const struct monster *mon)
 bool monster_is_stored(const struct monster *mon)
 {
 	return mon->place != CHUNK_CUR;
+}
+
+/**
+ * Monster is currently tame
+ */
+bool monster_is_tame(const struct monster *mon)
+{
+	return mflag_has(mon->mflag, MFLAG_TAME);
 }

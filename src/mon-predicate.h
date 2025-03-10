@@ -32,6 +32,7 @@ bool monster_is_living(const struct monster *mon);
 bool monster_is_invisible(const struct monster *mon);
 bool monster_is_unique(const struct monster *mon);
 bool monster_is_smart(const struct monster *mon);
+bool monster_is_rideable(const struct monster *mon);
 bool monster_has_friends(const struct monster *mon);
 bool monster_breathes(const struct monster *mon);
 
@@ -39,5 +40,6 @@ bool monster_is_in_view(const struct monster *mon);
 bool monster_is_visible(const struct monster *mon);
 bool monster_is_listened(const struct monster *mon);
 bool monster_is_stored(const struct monster *mon);
+bool monster_is_tame(const struct monster *mon);
 
 #endif /* !MON_PREDICATE_H */

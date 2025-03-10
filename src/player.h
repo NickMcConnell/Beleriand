@@ -575,6 +575,8 @@ struct player {
 	struct object *obj_k;				/* Object knowledge ("runes") */
 	struct chunk *cave;					/* Known version of current level */
 
+	struct monster *mount;				/* Monster being ridden */
+
 	struct player_state state;			/* Calculatable state */
 	struct player_state known_state;	/* What the player can know of the above */
 	struct player_upkeep *upkeep;		/* Temporary player-related values */

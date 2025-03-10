@@ -1413,6 +1413,8 @@ static void do_cmd_alter_aux(int dir)
 			   player_active_ability(player, "Fishing")) {
 		/* Catch fish */
 		more = do_cmd_fish_aux(grid);
+	} else if ((dir == DIR_NONE) && player_is_riding(player)) {
+		player_dismount(player);
 	} else if ((dir == DIR_NONE) && square_isupstairs(cave, grid)) {
 		/* Ascend */
 		if (get_check("Are you sure you wish to ascend? ")) {
@@ -1588,9 +1590,18 @@ void move_player(int dir, bool disarm)
 	bool confused = player->timed[TMD_CONFUSED] > 0;
 
 	/* Many things can happen on movement */
-	if (mon && monster_is_visible(mon)) {
-		/* Attack visible monsters */
-		py_attack(player, grid, ATT_MAIN);
+	if (mon) {
+		if (monster_is_tame(mon) && monster_is_rideable(mon)) {
+			/* Ride monster */
+			if (player_active_ability(player, "Horse Riding")) {
+				player_mount(player, mon, dir);
+			} else {
+				msg("You cannot ride!");
+			}
+		} else if (monster_is_visible(mon)) {
+			/* Attack visible monsters */
+			py_attack(player, grid, ATT_MAIN);
+		}
 	} else if (((trap && disarm) || door) && square_isknown(cave, grid)) {
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
