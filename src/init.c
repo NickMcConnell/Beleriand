@@ -95,6 +95,13 @@ char *ANGBAND_DIR_PANIC;
 char *ANGBAND_DIR_SCORES;
 char *ANGBAND_DIR_ARCHIVE;
 
+const char *list_realm_names[] = {
+	#define REALM(a, b) #a,
+	#include "list-realms.h"
+	#undef REALM
+	NULL
+};
+
 static const char *slots[] = {
 	#define EQUIP(a, b, c, d, e) #a,
 	#include "list-equip-slots.h"
@@ -650,6 +657,22 @@ static enum parser_error parse_region_name(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_region_realm(struct parser *p)
+{
+	struct world_region *region = parser_priv(p);
+	int n;
+
+	if (!region)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	n = lookup_flag(list_realm_names, parser_getsym(p, "realm"));
+	if (!n) {
+		return PARSE_ERROR_INVALID_FLAG;
+	}
+	region->realm = n;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_region_danger(struct parser *p)
 {
 	struct world_region *region = parser_priv(p);
@@ -715,6 +738,7 @@ struct parser *init_parse_region(void)
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_region_name);
+	parser_reg(p, "realm sym realm", parse_region_realm);
 	parser_reg(p, "danger uint danger", parse_region_danger);
 	parser_reg(p, "height uint height", parse_region_height);
 	parser_reg(p, "width uint width", parse_region_width);

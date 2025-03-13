@@ -10,6 +10,7 @@
 # called chunks.
 
 # name:region name
+# realm:realm it belongs to
 # danger:danger level of the region
 # height:height of the region map
 # width:width of the region map
@@ -30,6 +31,7 @@
 # ~ Ocean
 
 name:Helcaraxë
+realm:EMPTY
 danger:2
 height:24
 width:48
@@ -61,6 +63,7 @@ D:  ********         ***
 D:    ***                                         
 
 name:Lammoth
+realm:EMPTY
 danger:2
 height:107
 width:106
@@ -175,6 +178,7 @@ D:                                            ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 D:                                            ,,,                     ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,^^^^
 
 name:Losgar
+realm:EMPTY
 danger:2
 height:23
 width:70
@@ -205,6 +209,7 @@ D:                                                  ^^^^^
 D:                                                   ^^                 
 
 name:Nevrast
+realm:EMPTY
 danger:2
 height:70
 width:174
@@ -282,6 +287,7 @@ D:^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 D:  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                                                
 
 name:Hithlum
+realm:FINGON
 danger:2
 height:112
 width:217
@@ -401,6 +407,7 @@ D:                                                     ^^^^^^^^^^^^^^^^^^^^^^^^,
 D:                                                      ^^^^^^^^^^^^^^^^^^^^^^^,,,,,,,,                                                                                                                                    
 
 name:North Falas
+realm:FALAS
 danger:2
 height:98
 width:67
@@ -506,6 +513,7 @@ D:                     ..............................................
 D:                     ..............................................
 
 name:West Beleriand
+realm:NARGOTHROND
 danger:2
 height:105
 width:157
@@ -618,6 +626,7 @@ D:                                  ............................................
 D:                                   ........................................................................................                                  
 
 name:Dor-Lómin
+realm:FINGON
 danger:2
 height:77
 width:129
@@ -702,6 +711,7 @@ D:                                                                       XXXXXXX
 D:                                                                        XXXXXXXX                                                 
 
 name:Mithrim
+realm:FINGON
 danger:2
 height:49
 width:83
@@ -758,6 +768,7 @@ D:                                       ^^^^^^^^^^^^^^^^^^^
 D:                                         ^^^^^^^^^^^^^^                            
 
 name:North Beleriand
+realm:CONTEST
 danger:2
 height:63
 width:70
@@ -828,6 +839,7 @@ D:     ............
 D:    ..........                                                        
 
 name:Woods of Núath
+realm:EMPTY
 danger:2
 height:39
 width:84
@@ -874,6 +886,7 @@ D:            +++++++++++++++++++++++++++++++++++++++++++++++++++++
 D:             ++++++++++++++++++++++++++++++++++++++++++++++++++                     
 
 name:Tumhalad
+realm:NARGOTHROND
 danger:2
 height:63
 width:21
@@ -944,6 +957,7 @@ D:                   ..
 D:                    .
 
 name:Talath Dirnen
+realm:NARGOTHROND
 danger:2
 height:105
 width:69
@@ -1056,6 +1070,7 @@ D:                    ^^^^^^^^^^^^^^^^
 D:                    ^^^^^^^^^^^^^                                    
 
 name:Eglamar
+realm:FALAS
 danger:2
 height:63
 width:147
@@ -1126,6 +1141,7 @@ D:                                                               ...............
 D:                                                                   ...............                                                                 
 
 name:Dor-Cúarthol
+realm:NARGOTHROND
 danger:2
 height:105
 width:68
@@ -1238,6 +1254,7 @@ D:                                         .........
 D:                                            .......                 
 
 name:South Falas
+realm:FALAS
 danger:2
 height:70
 width:98
@@ -1315,6 +1332,7 @@ D:                                                                    ..........
 D:                                                                    ..............................
 
 name:Faroth
+realm:NARGOTHROND
 danger:2
 height:109
 width:45
@@ -1431,6 +1449,7 @@ D:                 ^^^^^^^^^
 D:                   ^^^^^                     
 
 name:Mid Beleriand
+realm:NARGOTHROND
 danger:2
 height:98
 width:70
@@ -1536,6 +1555,7 @@ D:^^^^^^^^^^^^^^^^^^^^^..............................................
 D:^^^^^^^^^^^^^^^^^^^^^................................................ 
 
 name:Arvernien
+realm:EMPTY
 danger:2
 height:82
 width:116
@@ -1625,6 +1645,7 @@ D:       ....
 D:        ..                                                                                                          
 
 name:Nan Tathren
+realm:EMPTY
 danger:2
 height:39
 width:39
@@ -1671,6 +1692,7 @@ D:                               ++++
 D:                                 ++    
 
 name:Lisgardh
+realm:EMPTY
 danger:2
 height:91
 width:53
@@ -1769,6 +1791,7 @@ D:                                              ....
 D:                                               ..    
 
 name:Fen Sirion
+realm:EMPTY
 danger:2
 height:42
 width:41
@@ -1818,6 +1841,7 @@ D:      ___________
 D:       ________                          
 
 name:Gates of Sirion
+realm:EMPTY
 danger:2
 height:41
 width:42
@@ -1866,6 +1890,7 @@ D:.............................     ........
 D:............................      ..  ....
 
 name:Andram
+realm:EMPTY
 danger:2
 height:50
 width:228
@@ -1923,6 +1948,7 @@ D:                                                                              
 D:                                                                                                                                                                                                                          ^^^^^^^^^^
 
 name:Amon Rûdh
+realm:NARGOTHROND
 danger:2
 height:5
 width:5
@@ -1935,6 +1961,7 @@ D: ^^^
 D:  ^  
 
 name:Brethil
+realm:HALADIN
 danger:2
 height:63
 width:77
@@ -2005,6 +2032,7 @@ D:                                                          +++++++++++     +++
 D:                                                           +               ++
 
 name:Dimbar
+realm:CONTEST
 danger:2
 height:45
 width:57
@@ -2057,6 +2085,7 @@ D:                                ++++
 D:                                 ++                      
 
 name:Sirion Vale
+realm:CONTEST
 danger:2
 height:76
 width:63
@@ -2140,6 +2169,7 @@ D:            ..
 D:            .                                                  
 
 name:Fen of Serech
+realm:MORGOTH
 danger:2
 height:5
 width:17
@@ -2152,6 +2182,7 @@ D:      _____
 D:        _        
 
 name:Anfauglith
+realm:MORGOTH
 danger:2
 height:85
 width:451
@@ -2244,6 +2275,7 @@ D:                                      ////////////////////////////////
 D:                                                         //                                                                                                                                                                                                                                                                                                                                                                                                        
 
 name:Crissaegrim
+realm:GONDOLIN
 danger:2
 height:48
 width:57
@@ -2299,6 +2331,7 @@ D:                           XXXXXX
 D:                            XXXX                         
 
 name:Tumladen
+realm:GONDOLIN
 danger:2
 height:17
 width:21
@@ -2323,6 +2356,7 @@ D:  .........
 D:  ......             
 
 name:Taur-Nu-Fuin
+realm:MORGOTH
 danger:2
 height:68
 width:149
@@ -2398,6 +2432,7 @@ D:                                            ||||||||
 D:                                            |||||||                                                                                                  
 
 name:Isle of Balar
+realm:EMPTY
 danger:2
 height:53
 width:85
@@ -2458,6 +2493,7 @@ D: ,,,,
 D: ,,                                                                                  
 
 name:Nan Dungortheb
+realm:MORGOTH
 danger:2
 height:36
 width:102
@@ -2501,6 +2537,7 @@ D:                                                    ||||||||||||||||||||||
 D:                                                             |||||||||||||                            
 
 name:Neldoreth
+realm:DORIATH
 danger:2
 height:55
 width:91
@@ -2563,6 +2600,7 @@ D:                ++++
 D:                 ++                                                                        
 
 name:Region
+realm:DORIATH
 danger:2
 height:105
 width:138
@@ -2675,6 +2713,7 @@ D:                 +++++++++++++++++++
 D:                      ++++++++                                                                                                            
 
 name:Nivrim
+realm:DORIATH
 danger:2
 height:52
 width:29
@@ -2734,6 +2773,7 @@ D:             +++++++
 D:                +++          
 
 name:East Beleriand
+realm:CONTEST
 danger:2
 height:105
 width:301
@@ -2846,6 +2886,7 @@ D:                                                                              
 D:                                                                                                                                                                                                                                  ........................................................                   
 
 name:Ered Wethrin
+realm:FINGON
 danger:2
 height:154
 width:80
@@ -3007,6 +3048,7 @@ D: XXXXXXXXXXXXXXX^^
 D:XXXXXXXXXXXXXX^^                                                                
 
 name:Taur-Im-Duinath
+realm:EMPTY
 danger:2
 height:203
 width:273
@@ -3217,6 +3259,7 @@ D: +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 D:+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++                                                      
 
 name:Ossiriand
+realm:GREEN
 danger:2
 height:283
 width:224
@@ -3507,6 +3550,7 @@ D:++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 D:++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 name:Amon Ereb
+realm:FEANOR
 danger:2
 height:10
 width:14
@@ -3524,6 +3568,7 @@ D:   ........
 D:     ....     
 
 name:Estolad
+realm:CONTEST
 danger:2
 height:84
 width:150
@@ -3615,6 +3660,7 @@ D:                                                                              
 D:                                                                                                         .............................................
 
 name:Reðrim
+realm:DORIATH
 danger:2
 height:68
 width:43
@@ -3690,6 +3736,7 @@ D:+++
 D:+                                          
 
 name:Ered Gorgoroth
+realm:MORGOTH
 danger:2
 height:34
 width:150
@@ -3731,6 +3778,7 @@ D: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 D:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                                                           
 
 name:Pass of Anach
+realm:CONTEST
 danger:2
 height:14
 width:18
@@ -3752,6 +3800,7 @@ D:++++++
 D:+++++             
 
 name:Nan Elmoth
+realm:EMPTY
 danger:2
 height:22
 width:32
@@ -3781,6 +3830,7 @@ D:     ++++++++++++++++++++++++++
 D:        ++                      
 
 name:Thargelion
+realm:MORGOTH
 danger:2
 height:160
 width:99
@@ -3948,6 +3998,7 @@ D:                                    .........
 D:                                    .......                                                        
 
 name:Dor Dinen
+realm:EMPTY
 danger:2
 height:34
 width:41
@@ -3989,6 +4040,7 @@ D:                     .......
 D:                         ....            
 
 name:Himlad
+realm:MAEDHROS
 danger:2
 height:64
 width:86
@@ -4060,6 +4112,7 @@ D:                                  ........
 D:                                   ..                                                 
 
 name:Himring
+realm:MAEDHROS
 danger:2
 height:29
 width:113
@@ -4096,6 +4149,7 @@ D:                            ^^^^^^^^^^++++++++++++++++++
 D:                                   ^^^^+++++++++++++                                                             
 
 name:Drûn
+realm:MORGOTH
 danger:2
 height:16
 width:44
@@ -4119,6 +4173,7 @@ D:      +++++++++++++++++++++++++++++++++
 D:       ++++++++++++++++++++++++++++++++     
 
 name:Ladros
+realm:MORGOTH
 danger:2
 height:67
 width:61
@@ -4193,6 +4248,7 @@ D:                                                       ......
 D:                                                           ..
 
 name:Pass of Aglon
+realm:MAEDHROS
 danger:2
 height:18
 width:28
@@ -4218,6 +4274,7 @@ D:         ......
 D:            ..              
 
 name:Maglor's Gap
+realm:MORGOTH
 danger:2
 height:49
 width:102
@@ -4274,6 +4331,7 @@ D:                   ..
 D:                    ..                                                                                
 
 name:March of Maedhros
+realm:MORGOTH
 danger:2
 height:49
 width:120
@@ -4330,6 +4388,7 @@ D:                                                                       .......
 D:                                                                                             ...........................
 
 name:Lothlann
+realm:MORGOTH
 danger:2
 height:118
 width:233
@@ -4455,6 +4514,7 @@ D:                                                                              
 D:                                                                                                                                       ............................^^^^^^^^^^^^^^^^^^^^^^^                                               
 
 name:Ered Engrin
+realm:MORGOTH
 danger:2
 height:21
 width:468
@@ -4483,6 +4543,7 @@ D:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 D:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 name:Thangorodrim
+realm:MORGOTH
 danger:2
 height:21
 width:77
@@ -4511,6 +4572,7 @@ D:                              XXXXXXXXXXXXXXXXX
 D:                                XXXXXXXXXXXXX                                
 
 name:Ered Luin
+realm:NAUGRIM
 danger:2
 height:390
 width:65
@@ -4908,6 +4970,7 @@ D:                                                          ^^^^^^^
 D:                                                          ^^^^^^^
 
 name:Tol Galen
+realm:GREEN
 danger:2
 height:77
 width:105
@@ -4995,6 +5058,7 @@ D:                                                                              
 
 
 name:South Beleriand
+realm:FEANOR
 danger:2
 height:132
 width:279
@@ -5134,6 +5198,7 @@ D:                .
 D:                .                                                                                                                                                                                                                                                                      
 
 name:South March
+realm:CONTEST
 danger:2
 height:58
 width:74
@@ -5199,6 +5264,7 @@ D:                      ........................................
 D:                        ......................................            
 
 name:Eriador
+realm:EAST
 danger:2
 height:354
 width:28
@@ -5560,6 +5626,7 @@ D:                           .
 D:                           .
 
 name:Belegaer
+realm:SEA
 danger:2
 height:567
 width:350

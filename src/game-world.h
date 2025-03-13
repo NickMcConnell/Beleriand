@@ -44,6 +44,15 @@ enum {
 /**
  * Codes for the different surface biomes
  */
+enum world_realm {
+	#define REALM(a, b) REALM_##a,
+	#include "list-realms.h"
+	#undef REALM
+};
+
+/**
+ * Codes for the different surface biomes
+ */
 enum biome_type {
 	#define BIOME(a, b) BIOME_##a = b,
 	#include "list-biomes.h"
@@ -91,6 +100,7 @@ struct world_region {
 	char *message;
 	char *text;
 
+	uint8_t realm;       	           /**< Realm region lies in */
 	uint8_t danger;       	           /**< Region danger */
 	uint16_t height;       	           /**< Region height */
 	uint16_t width;       	  	       /**< Region width */
