@@ -2,7 +2,7 @@
  * \file src/list-biomes.h
  * \brief biomes
  */
-BIOME(ANGBAND,	0x21)		/**< ! */
+BIOME(CAVE,		0x21)		/**< ! */
 BIOME(SNOW,		0x2a)		/**< * */
 BIOME(FOREST,	0x2b)		/**< + */
 BIOME(MOOR,		0x2c)		/**< , */

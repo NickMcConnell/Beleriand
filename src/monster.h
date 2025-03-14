@@ -26,6 +26,7 @@
 #include "target.h"
 #include "mon-timed.h"
 #include "mon-blows.h"
+#include "game-world.h"
 
 /*** Monster flags ***/
 
@@ -363,6 +364,7 @@ struct monster_race {
 	int level;				/* Level of creature */
 	int rarity;				/* Rarity of creature */
 	char *biomes;			/* Biomes the creature is native to */
+	bitflag realms[REALM_SIZE];         /* Realm flags */
 
 	uint8_t d_attr;			/* Default monster attribute */
 	wchar_t d_char;			/* Default monster character */

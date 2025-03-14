@@ -42,13 +42,34 @@ enum {
 #define MAX_X_REGION (15 * 49)
 
 /**
- * Codes for the different surface biomes
+ * Codes for the different realms
  */
-enum world_realm {
+enum {
 	#define REALM(a, b) REALM_##a,
 	#include "list-realms.h"
 	#undef REALM
+	REALM_MAX
 };
+
+#define REALM_SIZE                FLAG_SIZE(REALM_MAX)
+
+#define realm_has(f, flag)        flag_has_dbg(f, REALM_SIZE, flag, #f, #flag)
+#define realm_next(f, flag)       flag_next(f, REALM_SIZE, flag)
+#define realm_is_empty(f)         flag_is_empty(f, REALM_SIZE)
+#define realm_is_full(f)          flag_is_full(f, REALM_SIZE)
+#define realm_is_inter(f1, f2)    flag_is_inter(f1, f2, REALM_SIZE)
+#define realm_is_subset(f1, f2)   flag_is_subset(f1, f2, REALM_SIZE)
+#define realm_is_equal(f1, f2)    flag_is_equal(f1, f2, REALM_SIZE)
+#define realm_on(f, flag)         flag_on_dbg(f, REALM_SIZE, flag, #f, #flag)
+#define realm_off(f, flag)        flag_off(f, REALM_SIZE, flag)
+#define realm_wipe(f)             flag_wipe(f, REALM_SIZE)
+#define realm_setall(f)           flag_setall(f, REALM_SIZE)
+#define realm_negate(f)           flag_negate(f, REALM_SIZE)
+#define realm_copy(f1, f2)        flag_copy(f1, f2, REALM_SIZE)
+#define realm_union(f1, f2)       flag_union(f1, f2, REALM_SIZE)
+#define realm_inter(f1, f2)       flag_inter(f1, f2, REALM_SIZE)
+#define realm_diff(f1, f2)        flag_diff(f1, f2, REALM_SIZE)
+
 
 /**
  * Codes for the different surface biomes
@@ -57,18 +78,6 @@ enum biome_type {
 	#define BIOME(a, b) BIOME_##a = b,
 	#include "list-biomes.h"
 	#undef BIOME
-};
-
-struct level {
-	int depth;
-	char *name;
-	char *north;
-	char *east;
-	char *south;
-	char *west;
-	char *up;
-	char *down;
-	struct level *next;
 };
 
 #define SMELL_STRENGTH 80
