@@ -61,6 +61,13 @@ const char *r_info_spell_flags[] =
 	NULL
 };
 
+const char *realms[] = {
+	#define REALM(a, b) #a,
+	#include "list-realms.h"
+	#undef REALM
+	NULL
+};
+
 static const char *obj_flags[] =
 {
 	"NONE",
@@ -68,15 +75,6 @@ static const char *obj_flags[] =
 	#include "list-object-flags.h"
 	#undef OF
     ""
-};
-
-static const struct {
-	const char *name;
-	int code;
-} biomes[] = {
-	#define BIOME(a, b) { #a, b },
-	#include "list-biomes.h"
-	#undef BIOME
 };
 
 /**
@@ -1543,28 +1541,6 @@ static enum parser_error parse_monster_base(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_monster_cave(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	const char *name = parser_getstr(p, "name");
-	size_t i;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	for (i = 0; i < N_ELEMENTS(biomes); i++) {
-		if (streq(name, biomes[i].name)) {
-			break;
-		}
-	}
-	assert(i < N_ELEMENTS(biomes));
-	if (r->biomes) {
-		char *append = (char[2]){ (char)biomes[i].code, '\0' };
-		r->biomes = string_append(r->biomes, append);
-	} else {
-		r->biomes = string_make((char[2]){ (char)biomes[i].code, '\0' });
-	}
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_monster_biomes(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	const char *biome = parser_getsym(p, "biomes");
@@ -1572,6 +1548,30 @@ static enum parser_error parse_monster_biomes(struct parser *p) {
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->biomes = string_append(r->biomes, biome);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_realms(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "realms"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "realms"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(r->realms, REALM_SIZE, realms, s)) {
+			plog(format("bad realm flag: %s", s));
+			string_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+
+	string_free(flags);
 	return PARSE_ERROR_NONE;
 }
 
@@ -1977,7 +1977,7 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "plural ?str plural", parse_monster_plural);
 	parser_reg(p, "base sym base", parse_monster_base);
 	parser_reg(p, "biomes sym biomes", parse_monster_biomes);
-	parser_reg(p, "cave str name", parse_monster_cave);
+	parser_reg(p, "realms ?str realms", parse_monster_realms);
 	parser_reg(p, "depth int level", parse_monster_depth);
 	parser_reg(p, "rarity int rarity", parse_monster_rarity);
 	parser_reg(p, "glyph char glyph", parse_monster_glyph);
@@ -2016,7 +2016,7 @@ static errr finish_parse_monster(struct parser *p) {
 	size_t i;
 	int ridx;
 
-	/* Scan the list for the max id and max blows */
+	/* Scan the list for the max blows, set realms if needed */
 	z_info->r_max = 0;
 	z_info->mon_blows_max = 0;
 	r = parser_priv(p);
@@ -2030,6 +2030,7 @@ static errr finish_parse_monster(struct parser *p) {
 		}
 		if (max_blows > z_info->mon_blows_max)
 			z_info->mon_blows_max = max_blows;
+		if (realm_is_empty(r->realms)) realm_setall(r->realms);
 		r = r->next;
 	}
 
@@ -2317,7 +2318,7 @@ static struct parser *init_parse_lore(void) {
 	parser_reg(p, "plural ?str plural", ignored);
 	parser_reg(p, "base sym base", parse_lore_base);
 	parser_reg(p, "biomes sym biomes", ignored);//B DO
-	parser_reg(p, "cave str name", ignored);//B DO
+	parser_reg(p, "realms ?str realms", ignored);//B DO
 	parser_reg(p, "depth int level", ignored);
 	parser_reg(p, "rarity int rarity", ignored);
 	parser_reg(p, "glyph char glyph", ignored);
