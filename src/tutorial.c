@@ -278,7 +278,7 @@ static void tutorial_section_place_monster(struct chunk *c, struct loc grid,
 	assert(val->kind == SECTION_SYM_MONSTER);
 	assert(square_in_bounds_fully(c, grid));
 	square_set_feat(c, grid, FEAT_FLOOR);
-	place_new_monster(c, '!', grid, val->v.monster.race, false, false, gi,
+	place_new_monster(c, '!', 0, grid, val->v.monster.race, false, false, gi,
 		ORIGIN_DROP);
 	mon = square_monster(c, grid);
 	if (mon && val->v.monster.note) {

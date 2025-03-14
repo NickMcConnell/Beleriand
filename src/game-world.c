@@ -779,6 +779,7 @@ void process_world(struct chunk *c)
 	}
 
 	/* Check for creature generation */
+	//B This only handles monsters in caves currently
 	if (silmarils_possessed(player) >= 2) {
 		/* Vastly more wandering monsters during the endgame when you have
 		 * 2 or 3 Silmarils */
@@ -786,20 +787,20 @@ void process_world(struct chunk *c)
 		//int percent = (c->height * c->width)
 		//	/ (z_info->block_hgt * z_info->block_wid);
 		if (percent_chance(percent)) {
-			(void)pick_and_place_monster_on_stairs(c, player, '!', true,
+			(void)pick_and_place_monster_on_stairs(c, player, '$', 0, true,
 												   c->depth, false);
 		}
 	} else if (one_in_(z_info->alloc_monster_chance)) {
 		/* Normal wandering monster generation */
-		(void)pick_and_place_monster_on_stairs(c, player, '!', true, c->depth,
-											   false);
+		(void)pick_and_place_monster_on_stairs(c, player, '$', 0, true,
+											   c->depth, false);
 	}
 
 	/* Players with the haunted curse attract wraiths */
 	if (percent_chance(player->state.flags[OF_HAUNTED])) {
 		/* Make a new wraith */
-		(void)pick_and_place_monster_on_stairs(c, player, '!', true, c->depth,
-											   true);
+		(void)pick_and_place_monster_on_stairs(c, player, '$', 0, true,
+											   c->depth, true);
 	}
 
 	/* Process light */

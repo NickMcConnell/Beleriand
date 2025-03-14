@@ -978,29 +978,33 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 			{
 				/* A monster from 1 level deeper */
 				case '1': {
-					pick_and_place_monster(c, '!', grid, c->depth + 1, true, true,
-											   ORIGIN_DROP_VAULT);
+					pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
+										   c->depth + 1, true, true,
+										   ORIGIN_DROP_VAULT);
 					break;
 				}
 
 				/* A monster from 2 levels deeper */
 				case '2': {
-					pick_and_place_monster(c, '!', grid, c->depth + 2, true, true,
-											   ORIGIN_DROP_VAULT);
+					pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
+										   c->depth + 2, true, true,
+										   ORIGIN_DROP_VAULT);
 					break;
 				}
 
 				/* A monster from 3 levels deeper */
 				case '3': {
-					pick_and_place_monster(c, '!', grid, c->depth + 3, true, true,
-											   ORIGIN_DROP_VAULT);
+					pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
+										   c->depth + 3, true, true,
+										   ORIGIN_DROP_VAULT);
 					break;
 				}
 
 				/* A monster from 4 levels deeper */
 				case '4': {
-					pick_and_place_monster(c, '!', grid, c->depth + 4, true, true,
-											   ORIGIN_DROP_VAULT);
+					pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
+										   c->depth + 4, true, true,
+										   ORIGIN_DROP_VAULT);
 					break;
 				}
 
@@ -1055,7 +1059,8 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 					int r = randint1(3);
 					
 					if (r <= 2) {
-						pick_and_place_monster(c, '!', grid, c->depth + 1, true,
+						pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
+											   c->depth + 1, true,
 											   true, ORIGIN_DROP_VAULT);
 					}
 					if (r >= 2) {
@@ -1142,7 +1147,8 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				
 				/* dragon */
 				case 'd': {
-					place_monster_by_flag(c, '!', grid, RF_DRAGON, -1, true,
+					place_monster_by_flag(c, '$', REALM_MORGOTH, grid,
+										  RF_DRAGON, -1, true,
 										  c->depth + 4, false);
 					break;
 				}
@@ -1166,42 +1172,47 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 					
 				/* Spider */
 				case 'M': {
-					place_monster_by_flag(c, '!', grid, RF_SPIDER, -1, true,
+					place_monster_by_flag(c, '$', REALM_MORGOTH, grid,
+										  RF_SPIDER, -1, true,
 										  c->depth + rand_range(1, 4), false);
 					break;
 				}
 				
 				/* Vampire */
 				case 'v': {
-					place_monster_by_letter(c, '!', grid, 'v', true,
-											c->depth + rand_range(1, 4));
+					place_monster_by_letter(c, '$', REALM_MORGOTH, grid, 'v',
+											true, c->depth + rand_range(1, 4));
 					break;
 				}
 
                 /* Archer */
 				case 'a': {
-					place_monster_by_flag(c, '!', grid, RSF_ARROW1, RSF_ARROW2,
-										  true, c->depth + 1, true);
+					place_monster_by_flag(c, '$', REALM_MORGOTH, grid,
+										  RSF_ARROW1, RSF_ARROW2, true,
+										  c->depth + 1, true);
 					break;
 				}
 
                 /* Flier */
 				case 'b': {
-					place_monster_by_flag(c, '!', grid, RF_FLYING, -1, true,
+					place_monster_by_flag(c, '$', REALM_MORGOTH, grid,
+										  RF_FLYING, -1, true,
 										  c->depth + 1, false);
 					break;
 				}
 
 				/* Wolf */
 				case 'c': {
-					place_monster_by_flag(c, '!', grid, RF_WOLF, -1, true,
+					place_monster_by_flag(c, '$', REALM_MORGOTH, grid, RF_WOLF,
+										  -1, true,
 										  c->depth + rand_range(1, 4), false);
 					break;
 				}
 					
 				/* Rauko */
 				case 'r': {
-					place_monster_by_flag(c, '!', grid, RF_RAUKO, -1, true,
+					place_monster_by_flag(c, '$', REALM_MORGOTH, grid, RF_RAUKO,
+										  -1, true,
 										  c->depth + rand_range(1, 4), false);
 					break;
 				}
