@@ -226,11 +226,22 @@ static struct monster_race *get_mon_race_aux(long total,
  * same table, which is then used to choose an appropriate monster, in
  * a relatively efficient manner.
  *
+ * Note that monsters can only appear in a biome for which they are appropriate,
+ * unless the biome argument is BIOME_ALL; and in a realm for which they are
+ * appropriate, unless the realm argument is zero.
+ *
+ * There is a small chance (1/25) of boosting the given depth by
+ * a small amount (up to four levels).
+ *
+ * It is (slightly) more likely to acquire a monster of the given level
+ * than one of a lower level.  This is done by choosing several monsters
+ * appropriate to the given level and keeping the deepest one.
+ *
  * Note that if no monsters are appropriate, then this function will
  * fail, and return NULL, but this should *almost* never happen.
  */
-struct monster_race *get_mon_num(int level, enum biome_type biome, bool special,
-								 bool allow_non_smart, bool vault)
+struct monster_race *get_mon_num(int level, enum biome_type biome, int realm,
+								 bool special, bool allow_non_smart, bool vault)
 {
 	int i;
 	long total = 0L;
@@ -307,7 +318,10 @@ struct monster_race *get_mon_num(int level, enum biome_type biome, bool special,
 		if (special && (table[i].level <= generation_level / 2)) continue;
 
 		/* Monster must fit the biome */
-		if (!strchr(race->biomes, biome)) continue;
+		if ((biome != BIOME_ALL) && !strchr(race->biomes, biome)) continue;
+
+		/* Monster must fit the realm */
+		if (realm && !realm_has(race->realms, realm)) continue;
 
 		/* Only one copy of a unique must be around at the same time */
 		if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
@@ -1125,7 +1139,7 @@ static bool place_new_monster_group(struct chunk *c, struct loc grid,
  * Helper function to place monsters that appear as friends or escorts
  */
 static void place_monster_escort(struct chunk *c, enum biome_type biome,
-								 struct loc grid,
+								 int realm, struct loc grid,
 								 struct monster_race *race, bool sleep,
 								 struct monster_group_info group_info,
 								 uint8_t origin)
@@ -1166,8 +1180,8 @@ static void place_monster_escort(struct chunk *c, enum biome_type biome,
 			escort_races[i] = escort_races[i - 1];
 			extras--;
 		} else {
-			escort_races[i] = get_mon_num(race->level, biome, true, false,
-										  false);
+			escort_races[i] = get_mon_num(race->level, biome, realm, true,
+										  false, false);
 
 			/* Skip this creature if get_mon_num failed (paranoia) */
 			if (escort_races[i] == NULL) continue;
@@ -1233,9 +1247,10 @@ static void place_monster_escort(struct chunk *c, enum biome_type biome,
  * `origin` is the item origin to use for any monster drops (e.g. ORIGIN_DROP,
  * ORIGIN_DROP_PIT, etc.)
  */
-bool place_new_monster(struct chunk *c, enum biome_type biome, struct loc grid,
-					   struct monster_race *race, bool sleep, bool group_ok,
-					   struct monster_group_info group_info, uint8_t origin)
+bool place_new_monster(struct chunk *c, enum biome_type biome, int realm,
+					   struct loc grid, struct monster_race *race, bool sleep,
+					   bool group_ok, struct monster_group_info group_info,
+					   uint8_t origin)
 {
 	assert(c);
 	assert(race);
@@ -1285,7 +1300,8 @@ bool place_new_monster(struct chunk *c, enum biome_type biome, struct loc grid,
 	} else if (rf_has(race->flags, RF_ESCORT) ||
 			   rf_has(race->flags, RF_ESCORTS)) {
 		group_info.role = MON_GROUP_SERVANT;
-		place_monster_escort(c, biome, grid, race, sleep, group_info, origin);
+		place_monster_escort(c, biome, realm, grid, race, sleep, group_info,
+							 origin);
 	}
 
 	/* Success */
@@ -1309,18 +1325,18 @@ bool place_new_monster(struct chunk *c, enum biome_type biome, struct loc grid,
  *
  * Returns true if we successfully place a monster.
  */
-bool pick_and_place_monster(struct chunk *c, enum biome_type biome,
+bool pick_and_place_monster(struct chunk *c, enum biome_type biome, int realm,
 							struct loc grid, int depth,	bool sleep,
 							bool group_okay, uint8_t origin)
 {
 	/* Pick a monster race, no specified group */
-	struct monster_race *race = get_mon_num(depth, biome, false, sleep,
+	struct monster_race *race = get_mon_num(depth, biome, realm, false, sleep,
 											origin == ORIGIN_DROP_VAULT);
 	struct monster_group_info info = { 0, 0 };
 
 	if (race) {
-		return place_new_monster(c, biome, grid, race, sleep, group_okay, info,
-								 origin);
+		return place_new_monster(c, biome, realm, grid, race, sleep, group_okay,
+								 info, origin);
 	} else {
 		return false;
 	}
@@ -1332,7 +1348,7 @@ bool pick_and_place_monster(struct chunk *c, enum biome_type biome,
  * (eg RF_DRAGON) at grid. It is governed by a maximum depth and tries
  * 100 times at this depth and each shallower depth.
  */
-void place_monster_by_flag(struct chunk *c, enum biome_type biome,
+void place_monster_by_flag(struct chunk *c, enum biome_type biome, int realm,
 						   struct loc grid, int flg1, int flg2,
 						   bool allow_unique, int max_depth, bool spell)
 {
@@ -1343,7 +1359,7 @@ void place_monster_by_flag(struct chunk *c, enum biome_type biome,
 	struct monster_group_info info = { 0, 0 };
 		
 	while (!got_race && (depth > 0)) {		
-		race = get_mon_num(depth, biome, false, true, true);
+		race = get_mon_num(depth, biome, realm, false, true, true);
         if (race && (allow_unique || !rf_has(race->flags, RF_UNIQUE))) {
             if (rf_has(race->flags, flg1)) {
                 got_race = true;
@@ -1374,7 +1390,7 @@ void place_monster_by_flag(struct chunk *c, enum biome_type biome,
  * glyph (eg 'v' for vampire) at grid. It is governed by a maximum depth and
  * tries 100 times at this depth and each shallower depth.
  */
-void place_monster_by_letter(struct chunk *c, enum biome_type biome,
+void place_monster_by_letter(struct chunk *c, enum biome_type biome, int realm,
 							 struct loc grid, char ch, bool allow_unique,
 							 int max_depth)
 {
@@ -1392,7 +1408,7 @@ void place_monster_by_letter(struct chunk *c, enum biome_type biome,
 		return;
 	}
 	while (!got_race && (depth > 0)) {		
-		race = get_mon_num(depth, biome, false, true, true);
+		race = get_mon_num(depth, biome, realm, false, true, true);
 		if (race->d_char == wtmp[0] &&
 			(allow_unique || !rf_has(race->flags, RF_UNIQUE))) {
 			got_race = true;
@@ -1424,8 +1440,9 @@ void place_monster_by_letter(struct chunk *c, enum biome_type biome,
  * Returns true if we successfully place a monster.
  */
 bool pick_and_place_monster_on_stairs(struct chunk *c, struct player *p,
-									  enum biome_type biome, bool sleep,
-									  int depth, bool force_undead)
+									  enum biome_type biome, int realm,
+									  bool sleep, int depth,
+									  bool force_undead)
 {
 	struct loc stair, grid;
 	struct monster *mon;
@@ -1512,13 +1529,14 @@ bool pick_and_place_monster_on_stairs(struct chunk *c, struct player *p,
 
 		/* Sometimes only wraiths are allowed */
 		if (force_undead) {
-			place_monster_by_flag(c, '!', stair, RF_UNDEAD, -1, true,
-								  MAX(monster_level + 3, 13), false);
+			place_monster_by_flag(c, '!', REALM_MORGOTH, stair, RF_UNDEAD, -1,
+								  true, MAX(monster_level + 3, 13), false);
 			placed = true;
 		} else {
 			/* But usually allow most monsters */
-			placed = pick_and_place_monster(c, biome, stair, monster_level,
-											false, true, ORIGIN_DROP);
+			placed = pick_and_place_monster(c, biome, realm, stair,
+											monster_level, false, true,
+											ORIGIN_DROP);
 		}
 
 		tries++;
@@ -1579,8 +1597,8 @@ bool pick_and_place_monster_on_stairs(struct chunk *c, struct player *p,
  * Returns true if we successfully place a monster.
  */
 bool pick_and_place_distant_monster(struct chunk *c, struct player *p,
-									enum biome_type biome, bool sleep,
-									int depth)
+									enum biome_type biome, int realm,
+									bool sleep, int depth)
 {
 	struct loc grid;
 	int	attempts_left = 1000;
@@ -1607,8 +1625,10 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p,
 	}
 
 	/* Attempt to place the monster, allow groups */
-	if (pick_and_place_monster(c, biome, grid, depth, sleep, true, ORIGIN_DROP))
+	if (pick_and_place_monster(c, biome, realm, grid, depth, sleep, true,
+							   ORIGIN_DROP)) {
 		return true;
+	}
 
 	/* Nope */
 	return false;

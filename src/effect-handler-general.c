@@ -821,7 +821,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	if (stairs) {
 		int i;
 		for (i = 0; i < summon_max; i++) {
-			if (pick_and_place_monster_on_stairs(cave, player, '!', false,
+			if (pick_and_place_monster_on_stairs(cave, player, '$',
+												 REALM_MORGOTH, false,
 												 player->depth, false))
 				context->ident = true;
 		}

@@ -2331,8 +2331,8 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 
 	//TODO generate monsters, perhaps objects
 	for (i = randint1(2); i > 0; i--) {
-		pick_and_place_distant_monster(c, player, mon_biome, true,
-									   region->danger);
+		pick_and_place_distant_monster(c, player, mon_biome, region->realm,
+									   true, region->danger);
 	}
 }
 

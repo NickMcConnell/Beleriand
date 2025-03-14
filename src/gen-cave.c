@@ -1561,7 +1561,8 @@ struct chunk *angband_gen(struct player *p) {
 		mon_gen = (dun->cent_n + randint1(dun->cent_n)) / 2;
 	}
 	for (i = mon_gen; i > 0; i--)
-		pick_and_place_distant_monster(c, p, '!', true, p->depth);
+		pick_and_place_distant_monster(c, p, '$', REALM_MORGOTH, true,
+									   p->depth);
 
 	/* Put some objects in rooms */
 	obj_room_gen = 3 * mon_gen / 4;

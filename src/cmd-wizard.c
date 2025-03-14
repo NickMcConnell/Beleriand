@@ -2491,7 +2491,7 @@ void do_cmd_wiz_summon_named(struct command *cmd)
 		}
 
 		/* Try to place. */
-		if (place_new_monster(cave, r->biomes[0], grid, r, true, true,
+		if (place_new_monster(cave, BIOME_ALL, 0, grid, r, true, true,
 				info, ORIGIN_DROP_WIZARD)) {
 			player->upkeep->redraw |= PR_MAP | PR_MONLIST;
 			break;

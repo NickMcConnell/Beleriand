@@ -345,7 +345,7 @@ int summon_specific(struct loc grid, int lev, int type)
 	get_mon_num_prep(summon_specific_okay);
 
 	/* Pick a monster, using the level calculation (assuming Angband) */
-	race = get_mon_num(lev, '!', false, true, false);
+	race = get_mon_num(lev, '!', 0, false, true, false);
 
 	/* Prepare allocation table */
 	get_mon_num_prep(NULL);
@@ -354,7 +354,7 @@ int summon_specific(struct loc grid, int lev, int type)
 	if (!race) return 0;
 
 	/* Attempt to place the monster (awake, don't allow groups) */
-	if (!place_new_monster(cave, '!', near, race, false, false, info,
+	if (!place_new_monster(cave, '!', 0, near, race, false, false, info,
 						   ORIGIN_DROP_SUMMON)) {
 		return 0;
 	}
