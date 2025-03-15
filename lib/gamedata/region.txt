@@ -769,7 +769,7 @@ D:                                         ^^^^^^^^^^^^^^
 
 name:North Beleriand
 realm:CONTEST
-danger:2
+danger:3
 height:63
 width:70
 y-offset:147
@@ -2033,7 +2033,7 @@ D:                                                           +               ++
 
 name:Dimbar
 realm:CONTEST
-danger:2
+danger:3
 height:45
 width:57
 y-offset:165
@@ -2086,7 +2086,7 @@ D:                                 ++
 
 name:Sirion Vale
 realm:CONTEST
-danger:2
+danger:4
 height:76
 width:63
 y-offset:106
@@ -2170,7 +2170,7 @@ D:            .
 
 name:Fen of Serech
 realm:MORGOTH
-danger:2
+danger:5
 height:5
 width:17
 y-offset:105
@@ -2183,7 +2183,7 @@ D:        _
 
 name:Anfauglith
 realm:MORGOTH
-danger:2
+danger:7
 height:85
 width:451
 y-offset:21
@@ -2357,7 +2357,7 @@ D:  ......
 
 name:Taur-Nu-Fuin
 realm:MORGOTH
-danger:2
+danger:8
 height:68
 width:149
 y-offset:93
@@ -2494,7 +2494,7 @@ D: ,,
 
 name:Nan Dungortheb
 realm:MORGOTH
-danger:2
+danger:9
 height:36
 width:102
 y-offset:167
@@ -2774,7 +2774,7 @@ D:                +++
 
 name:East Beleriand
 realm:CONTEST
-danger:2
+danger:3
 height:105
 width:301
 y-offset:273
@@ -3569,7 +3569,7 @@ D:     ....
 
 name:Estolad
 realm:CONTEST
-danger:2
+danger:3
 height:84
 width:150
 y-offset:224
@@ -3659,7 +3659,7 @@ D:                                                                              
 D:                                                                                                      ................................................
 D:                                                                                                         .............................................
 
-name:Reðrim
+name:Raðrim
 realm:DORIATH
 danger:2
 height:68
@@ -3737,7 +3737,7 @@ D:+
 
 name:Ered Gorgoroth
 realm:MORGOTH
-danger:2
+danger:7
 height:34
 width:150
 y-offset:133
@@ -3779,7 +3779,7 @@ D:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 name:Pass of Anach
 realm:CONTEST
-danger:2
+danger:4
 height:14
 width:18
 y-offset:161
@@ -3831,7 +3831,7 @@ D:        ++
 
 name:Thargelion
 realm:MORGOTH
-danger:2
+danger:4
 height:160
 width:99
 y-offset:166
@@ -4150,7 +4150,7 @@ D:                                   ^^^^+++++++++++++
 
 name:Drûn
 realm:MORGOTH
-danger:2
+danger:5
 height:16
 width:44
 y-offset:89
@@ -4174,7 +4174,7 @@ D:       ++++++++++++++++++++++++++++++++
 
 name:Ladros
 realm:MORGOTH
-danger:2
+danger:5
 height:67
 width:61
 y-offset:84
@@ -4275,7 +4275,7 @@ D:            ..
 
 name:Maglor's Gap
 realm:MORGOTH
-danger:2
+danger:4
 height:49
 width:102
 y-offset:161
@@ -4332,7 +4332,7 @@ D:                    ..
 
 name:March of Maedhros
 realm:MORGOTH
-danger:2
+danger:4
 height:49
 width:120
 y-offset:112
@@ -4389,7 +4389,7 @@ D:                                                                              
 
 name:Lothlann
 realm:MORGOTH
-danger:2
+danger:4
 height:118
 width:233
 y-offset:43
@@ -4515,7 +4515,7 @@ D:                                                                              
 
 name:Ered Engrin
 realm:MORGOTH
-danger:2
+danger:9
 height:21
 width:468
 y-offset:0
@@ -4544,7 +4544,7 @@ D:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 name:Thangorodrim
 realm:MORGOTH
-danger:2
+danger:10
 height:21
 width:77
 y-offset:21
@@ -5199,7 +5199,7 @@ D:                .
 
 name:South March
 realm:CONTEST
-danger:2
+danger:3
 height:58
 width:74
 y-offset:173

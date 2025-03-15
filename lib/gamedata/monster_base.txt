@@ -136,7 +136,20 @@ warning:5
 flags:NO_FEAR
 desc:Horror
 
-# - @   (men and elves)
+# - e   (elves)
+#     - groups
+#     - intelligent
+#     - drop items
+#
+name:elf
+glyph:e
+pain:6
+pursuit:1
+warning:1
+flags:MALE | OPEN_DOOR | SMART | ELF
+desc:Elf
+
+# - p   (men)
 #     - groups
 #     - intelligent
 #     - drop items
@@ -146,8 +159,21 @@ glyph:@
 pain:6
 pursuit:1
 warning:1
-flags:MALE | OPEN_DOOR | SMART
-desc:Man/Elf
+flags:MALE | OPEN_DOOR | SMART | HUMAN
+desc:Man
+
+# - k   (dwarf)
+#     - groups
+#     - intelligent
+#     - drop items
+#
+name:dwarf
+glyph:k
+pain:6
+pursuit:1
+warning:1
+flags:MALE | OPEN_DOOR | SMART | DWARF
+desc:Dwarf
 
 # - W   (wights and wraiths)
 #     - intelligent
