@@ -342,6 +342,202 @@ flags:FRIEND | DROP_33
 desc:He is one of Morgoth's grim mockeries of the firstborn.
 desc: He has little armour but carries a cruel blade.
 
+name:Man of Hador
+base:person
+biomes:!
+realms:FINGON | CONTEST
+depth:2
+rarity:2
+color:W
+speed:2
+health:8d4
+light:1
+sleep:15
+percept:4
+stealth:2
+will:3
+prot:4:1d4
+blow:HIT:HURT:3:2d6
+flags:DROP_33 | BASH_DOOR | FRIENDS
+desc:The people of Hador were the friends of the Noldor, and lived in Dor-Lómin
+desc: in the land of Fingon the High King.  Their valour in battle was famous.
+
+
+name:Man of Bëor
+base:person
+biomes:|
+realms:MORGOTH
+depth:2
+rarity:2
+color:W
+speed:2
+health:8d4
+light:1
+sleep:15
+percept:4
+stealth:3
+will:3
+prot:4:1d4
+blow:HIT:HURT:3:2d6
+flags:DROP_33 | BASH_DOOR
+desc:The people of Bëor lived in Ladros and Drûn, and were hard hit in the
+desc: Dagor Bragollach.  A few hardy men remained in the highalands to fight
+desc: against Morgoth's hordes.
+
+
+name:Man of Haleth
+base:person
+biomes:!
+realms:HALADIN | CONTEST
+depth:2
+rarity:2
+color:W
+speed:2
+health:8d4
+light:1
+sleep:15
+percept:4
+stealth:2
+will:3
+prot:4:1d4
+blow:HIT:HURT:3:2d6
+flags:DROP_33 | BASH_DOOR | FRIENDS
+desc:An independent and proud people, the folk of Haleth arrived after much
+desc: tribulation in the forest of Brethil, where they kept guard against
+desc: incursions of orcs from the North.
+
+
+name:Nogrod Dwarf
+base:dwarf
+biomes:$^
+realms:NAUGRIM
+depth:2
+rarity:2
+color:W
+speed:2
+health:8d4
+light:1
+sleep:15
+percept:4
+stealth:1
+will:6
+prot:4:1d4
+blow:HIT:HURT:3:2d6
+flags:DROP_33 | BASH_DOOR | FRIENDS
+desc:The dwarves of Nogrod were mighty smiths, hardy and quarrelsome.
+
+
+name:Belegost Dwarf
+base:dwarf
+biomes:$^
+realms:NAUGRIM
+depth:2
+rarity:2
+color:W
+speed:2
+health:8d4
+light:1
+sleep:15
+percept:4
+stealth:1
+will:6
+prot:4:1d4
+blow:HIT:HURT:3:2d6
+flags:DROP_33 | BASH_DOOR | FRIENDS
+desc:The dwarves of Belegost were only less in smithcraft and strength to their
+desc: brethren of Nogrod, but were wiser and slower to anger.
+
+
+name:Noldorin Elf
+base:elf
+biomes:!
+realms:FINGON | NARGOTHROND | GONDOLIN | MAEDHROS | FEANOR | CONTEST
+depth:2
+rarity:2
+color:W
+speed:2
+health:8d4
+light:1
+sleep:15
+percept:4
+stealth:4
+will:5
+prot:4:1d4
+blow:HIT:HURT:3:2d6
+flags:DROP_33 | BASH_DOOR | FRIENDS
+desc:The Noldor were the exiles of Valinor, who followed Morgoth into Middle
+desc: Earth seeking vengeance.  They were proud, fair and quick to anger.
+
+
+name:Sindarin Elf
+base:elf
+biomes:!
+realms:FINGON | NARGOTHROND | GONDOLIN | DORIATH | FALAS | CONTEST
+depth:2
+rarity:2
+color:W
+speed:2
+health:8d4
+light:1
+sleep:15
+percept:4
+stealth:5
+will:3
+prot:4:1d4
+blow:HIT:HURT:3:2d6
+flags:DROP_33 | BASH_DOOR | FRIENDS
+desc:The Sindar or Grey Elves were the people of Thingol.  When the great
+desc: journey from Cuivienen to Valinor reached Beleriand, they waited while
+desc: their king tarried and never saw the light of the Trees.
+
+
+name:Nandorin Elf
+base:elf
+biomes:^+
+realms:GREEN
+depth:2
+rarity:2
+color:W
+speed:2
+health:8d4
+light:1
+sleep:15
+percept:4
+stealth:7
+will:3
+prot:3:1d4
+blow:HIT:HURT:2:2d4
+spell-power:6
+spells:ARROW1
+drop:arrow:Arrow:37:2d8
+flags:DROP_33 | BASH_DOOR | FRIENDS
+desc:The Nandor or Green Elves abandoned the great journey in Eriador, and only
+desc: later did some (the Laiquendi) cross the Ered Luin into Beleriand.
+desc: After the death of their king Denethor in the first battle with Morgoth,
+desc: the Nandor retreated to Ossiriand and lived hidden and secret lives.
+
+
+name:Avarin Elf
+base:elf
+biomes:!
+realms:EMPTY | EAST
+depth:2
+rarity:8
+color:W
+speed:2
+health:8d4
+light:1
+sleep:15
+percept:4
+stealth:7
+will:3
+prot:4:1d4
+blow:HIT:HURT:3:2d4
+flags:DROP_33 | BASH_DOOR
+desc:The Avari or Unwilling were the elves who refused the great journey.  They
+desc: lived a solitary and quiet existence in Middle Earth and were mostly
+desc: uninvolved in the wars of Beleriand.
+
 
 # Index 22
 name:Grimhawk
