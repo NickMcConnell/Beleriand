@@ -38,6 +38,16 @@ enum {
 };
 
 /**
+ * Codes for the different languages
+ */
+enum {
+	#define LANG(a, b) LANGUAGE_##a,
+	#include "list-languages.h"
+	#undef LANG
+	LANGUAGE_MAX
+};
+
+/**
  * Player race and class flags
  */
 enum
@@ -271,6 +281,7 @@ struct player_house {
 
 	int stat_adj[STAT_MAX];		/**< Stat modifiers */
 	int skill_adj[SKILL_MAX];	/**< Skill modifiers */
+	bool languages[LANGUAGE_MAX];	/**< Languages */
 
 	bitflag pflags[PF_SIZE];	/**< House (player) flags */
 };
@@ -500,6 +511,8 @@ struct player {
 
 	struct ability *abilities;		/* Player innate abilities */
 	struct ability *item_abilities;	/* Player item abilities */
+
+	bool languages[LANGUAGE_MAX];	/* Languages known */
 
 	int16_t last_attack_m_idx;	/* Index of the monster attacked last round */
 	int16_t consecutive_attacks;/* Rounds spent attacking this monster */

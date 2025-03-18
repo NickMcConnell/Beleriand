@@ -752,6 +752,12 @@ int rd_player(void)
 		player->body.slots[i].name = string_make(buf);
 	}
 
+	/* Languages */
+	rd_byte(&tmp8u);
+	for (i = 0; i < LANGUAGE_MAX; i++) {
+		if (tmp8u & (1 << i)) player->languages[i] = true;
+	}
+
 	rd_s32b(&player->new_exp);
 	rd_s32b(&player->exp);
 	rd_s32b(&player->encounter_exp);

@@ -752,11 +752,6 @@ desc:You gain a point of grace.
 
 skill:Speech
 
-name:Adûnaic
-level:1
-desc:The speech of the Edain, the people of the three houses of the Fathers of
-desc: Men, it is used as a common speech also by Easterlings and Dwarves.
-
 name:Tame Creature
 level:2
 desc:Allows the possibility of taming the creatures of Beleriand.
@@ -776,11 +771,24 @@ level:5
 desc:Opens the possibility of negotiating passage in the territory of other
 desc: peoples of Beleriand.
 
+name:Adûnaic
+level:6
+desc:The speech of the people of the houses of Bëor and Hador.
+
 name:Quenya
 level:7
 desc:The speech of the High Elves of Valinor, spoken by the Noldor among
 desc: themselves.
 
+name:Speech of the Haladin
+level:8
+desc:The speech of the men of Brethil among themselves.
+
 name:Nandorin
 level:9
+prerequisite:Speech:Sindarin
 desc:The speech of the secretive Green Elves of Ossiriand.
+
+name:Khuzdul
+level:20
+desc:The secret tongue of the Dwarves.
