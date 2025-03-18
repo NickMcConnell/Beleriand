@@ -294,6 +294,17 @@ static void player_embody(struct player *p)
 	}
 }
 
+/**
+ * Gives the player the right languages
+ */
+static void player_languages(struct player *p)
+{
+	int i;
+	for (i = 0; i < LANGUAGE_MAX; i++) {
+		if (p->house->languages[i]) p->languages[i] = true;
+	}
+}
+
 void player_init(struct player *p)
 {
 	int i;
@@ -921,6 +932,9 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Embody */
 	player_embody(player);
+
+	/* Languages */
+	player_languages(player);
 
 	/* Record final starting stats and skills */
 	finalise_stats(player);
