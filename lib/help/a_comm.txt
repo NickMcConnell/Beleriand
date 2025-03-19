@@ -61,7 +61,7 @@ combination and does not pass it on):
   x    -                               X    Exchange places
   y    -                               Y    -
   z    -                               Z    -
-  !    -                               ^a   (special - debug command)
+  !    Speak                           ^a   (special - debug command)
   @    Center map                      ^b   (hjkl - bash a door)
   #    Check time                      ^c   (special - break)
   $    -                               ^d   Forge an item

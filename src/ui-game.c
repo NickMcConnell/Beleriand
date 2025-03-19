@@ -152,6 +152,7 @@ struct cmd_info cmd_action[] =
 	{ "Throw an item", { 't', 't', 'v', 'v' }, CMD_THROW, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Throw automatically", { KTRL('T') }, CMD_NULL, do_cmd_automatic_throw, player_has_throwable_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Change song", { 's', 's', 'a', 'a' }, CMD_SING, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Speak", { '!' }, CMD_SPEAK, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Toggle stealth mode", { 'S' }, CMD_TOGGLE_STEALTH, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Walk into a trap", { '_' }, CMD_JUMP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Exchange places", { 'X' }, CMD_EXCHANGE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
