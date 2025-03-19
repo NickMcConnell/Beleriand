@@ -94,6 +94,7 @@ typedef enum cmd_code {
 	CMD_CLOSE,
 	CMD_BASH,
 	CMD_SING,
+	CMD_SPEAK,
 	CMD_EXCHANGE,
 	CMD_RUN,
 	CMD_LEAP,

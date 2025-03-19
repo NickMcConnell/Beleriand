@@ -61,7 +61,7 @@ combination and does not pass it on):
   x    Examine an item                 X    Exchange places
   y    -                               Y    -
   z    Stay still                      Z    Rest for a period
-  !    -                               ^a   (special - debug command)
+  !    Speak                           ^a   (special - debug command)
   @    Character description           ^b   (hjkl - bash a door)
   #    Check time                      ^c   (special - break)
   $    -                               ^d   -
