@@ -2093,13 +2093,14 @@ void do_cmd_change_song(struct command *cmd)
 void do_cmd_speak(struct command *cmd)
 {
 	int dir, range = 2;//B Maybe have an ability to speak louder
+	int language;
 
 	if (!cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK) {
 		return;
 	}
 
 	/* Choose a language */
-	
+	language = choose_language();
 }
 
 

@@ -277,6 +277,7 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/ui-skills.c
         src/ui-smith.c
         src/ui-songs.c
+        src/ui-speech.c
         src/ui-spoil.c
         src/ui-target.c
         src/ui-term.c

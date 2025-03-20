@@ -46,6 +46,7 @@
 #include "ui-signals.h"
 #include "ui-smith.h"
 #include "ui-songs.h"
+#include "ui-speech.h"
 #include "ui-target.h"
 
 static bool inkey_xtra;
@@ -1710,6 +1711,7 @@ void textui_input_init(void)
 	smith_object_hook = textui_smith_object;
 	craft_object_hook = textui_craft_object;
 	change_song_hook = textui_change_song;
+	choose_language_hook = textui_choose_language;
 }
 
 
