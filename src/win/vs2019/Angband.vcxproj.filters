@@ -431,6 +431,9 @@
     <ClCompile Include="src\ui-songs.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui-speech.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\ui-spoil.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -956,6 +959,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-songs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui-speech.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui-spoil.h">

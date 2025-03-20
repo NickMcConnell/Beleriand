@@ -224,6 +224,7 @@ ANGFILES0 = \
 	ui-skills.o \
 	ui-smith.o \
 	ui-songs.o \
+	ui-speech.o \
 	ui-spoil.o \
 	ui-target.o \
 	ui-term.o \

@@ -56,6 +56,8 @@ extern void (*craft_object_hook)(void);
 extern void (*view_abilities_hook)(struct player_ability *ability_list,
 								   int num_abilities);
 extern void (*change_song_hook)(void);
+extern int (*choose_language_hook)(void);
+
 
 bool get_string(const char *prompt, char *buf, size_t len);
 int get_quantity(const char *prompt, int max);
@@ -76,5 +78,6 @@ void craft_object(void);
 void view_ability_menu(struct player_ability *ability_list,
 						 int num_abilities);
 void change_song(void);
+int choose_language(void);
 
 #endif /* INCLUDED_GAME_INPUT_H */

@@ -41,6 +41,7 @@ void (*craft_object_hook)(void);
 void (*view_abilities_hook)(struct player_ability *ability_list,
 							int num_abilities);
 void (*change_song_hook)(void);
+int (*choose_language_hook)(void);
 
 /**
  * Prompt for a string from the user.
@@ -290,5 +291,17 @@ void change_song(void)
 	/* Ask the UI for it */
 	if (change_song_hook)
 		change_song_hook();
+}
+
+/**
+ * Choose a language
+ */
+int choose_language(void)
+{
+	/* Ask the UI for it */
+	if (choose_language_hook)
+		return choose_language_hook();
+
+	return -1;
 }
 
