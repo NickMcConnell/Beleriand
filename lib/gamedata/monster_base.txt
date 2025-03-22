@@ -146,7 +146,7 @@ glyph:e
 pain:6
 pursuit:1
 warning:1
-flags:MALE | OPEN_DOOR | SMART | ELF
+flags:MALE | OPEN_DOOR | SMART | FREE | ELF
 desc:Elf
 
 # - p   (men)
@@ -155,11 +155,11 @@ desc:Elf
 #     - drop items
 #
 name:person
-glyph:@
+glyph:p
 pain:6
 pursuit:1
 warning:1
-flags:MALE | OPEN_DOOR | SMART | HUMAN
+flags:MALE | OPEN_DOOR | SMART | FREE | HUMAN
 desc:Man
 
 # - k   (dwarf)
@@ -172,7 +172,7 @@ glyph:k
 pain:6
 pursuit:1
 warning:1
-flags:MALE | OPEN_DOOR | SMART | DWARF
+flags:MALE | OPEN_DOOR | SMART | FREE | DWARF
 desc:Dwarf
 
 # - W   (wights and wraiths)

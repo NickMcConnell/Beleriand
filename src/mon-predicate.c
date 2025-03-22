@@ -80,6 +80,14 @@ bool monster_is_smart(const struct monster *mon)
 }
 
 /**
+ * Monster is free (ie not bound to Morgoth)
+ */
+bool monster_is_free(const struct monster *mon)
+{
+	return rf_has(mon->race->flags, RF_FREE);
+}
+
+/**
  * Monster can be ridden
  */
 bool monster_is_rideable(const struct monster *mon)
@@ -151,4 +159,32 @@ bool monster_is_stored(const struct monster *mon)
 bool monster_is_tame(const struct monster *mon)
 {
 	return mflag_has(mon->mflag, MFLAG_TAME);
+}
+
+/**
+ * Monster is currently hostile
+ */
+bool monster_is_hostile(const struct monster *mon)
+{
+	if (!monster_is_free(mon)) return true;
+	return mflag_has(mon->mflag, MFLAG_HOSTILE);
+}
+
+/**
+ * Monster is currently friendly
+ */
+bool monster_is_friendly(const struct monster *mon)
+{
+	return mflag_has(mon->mflag, MFLAG_FRIENDLY);
+}
+
+/**
+ * Monster is currently neutral
+ */
+bool monster_is_neutral(const struct monster *mon)
+{
+	if (!monster_is_free(mon)) return false;
+	return !(mflag_has(mon->mflag, MFLAG_FRIENDLY) ||
+			 mflag_has(mon->mflag, MFLAG_TAME) ||
+			 mflag_has(mon->mflag, MFLAG_HOSTILE));
 }

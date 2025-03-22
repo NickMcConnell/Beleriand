@@ -687,8 +687,11 @@ void project_m(struct source origin, int r, struct loc grid, int dd, int ds,
 	/* Monster goes active */
 	mflag_on(mon->mflag, MFLAG_ACTIVE);
 
-	/* Mark the monster as attacked by the player */
-	if (origin.what == SRC_PLAYER) mflag_on(mon->mflag, MFLAG_HIT_BY_RANGED);
+	/* Mark the monster as attacked by the player and hostile */
+	if (origin.what == SRC_PLAYER) {
+		mflag_on(mon->mflag, MFLAG_HIT_BY_RANGED);
+		mflag_on(mon->mflag, MFLAG_HOSTILE);
+	}
 
 	if (monster_handler != NULL)
 		monster_handler(&context);

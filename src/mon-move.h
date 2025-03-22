@@ -41,6 +41,10 @@ enum monster_alertness {
  * Monster stances
  */
 enum monster_stance {
+	STANCE_ALLIED = -3,
+	STANCE_FRIENDLY = -2,
+	STANCE_CAUTIOUS = -1,
+	STANCE_NEUTRAL = 0,
 	STANCE_FLEEING = 1,
 	STANCE_CONFIDENT = 2,
 	STANCE_AGGRESSIVE = 3
