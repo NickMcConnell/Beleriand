@@ -122,51 +122,60 @@ void calc_morale(struct monster *mon)
 	/* Starting morale is 60 */
 	morale = 60;
 
-	/* Monsters have boosted morale during the endgame */
-	if (player->on_the_run) {
-		morale += 20;
-	} else {
-		/* Monsters have higher morale if they are usually found deeper than
-		 * this and vice versa */
-		morale += (race->level - player->depth) * 10;
-		
-		/* Make sure orcs etc in throne room don't have too low morale */
-		if (player->depth == z_info->dun_depth) {
-			morale = MAX(morale, 20);
-		}
-	}
-		
-	/* Take player's conditions into account */
-	if (player->timed[TMD_IMAGE]) {
-		morale += 20;
-	}
-	if (player->timed[TMD_BLIND]) {
-		morale += 20;
-	}
-	if (player->timed[TMD_CONFUSED]) {
-		morale += 40;
-	}
-	if (player->timed[TMD_SLOW]) {
-		morale += 40;
-	}
-	if (player->timed[TMD_AFRAID]) {
-		morale += 40;
-	}
-	if (player->timed[TMD_ENTRANCED]) {
-		morale += 80;
-	} else if (player->timed[TMD_STUN] > 100) {
-		morale += 80;
-	} else if (player->timed[TMD_STUN] > 50) {
-		morale += 40;
-	} else if (player->timed[TMD_STUN] > 0) {
-		morale += 20;
-	}
+	/* Hostile monsters consider the player's strengths and weaknesses */
+	if (monster_is_hostile(mon)) {
+		/* Monsters have boosted morale if player has taken on Morgoth */
+		if (player->on_the_run) {
+			morale += 20;
+		} else {
+			/* Monsters have higher morale if they are usually found deeper
+			 * than this and vice versa */
+			morale += (race->level - player->depth) * 10;
 
-	/* Take player's health into account */
-	switch (health_level(player->chp, player->mhp)) {
-		case  HEALTH_WOUNDED:		morale += 20;	break;  /* <= 75% health */
-		case  HEALTH_BADLY_WOUNDED:	morale += 40;	break;  /* <= 50% health */
-		case  HEALTH_ALMOST_DEAD:	morale += 80;	break;  /* <= 25% health */
+			/* Make sure orcs etc in throne room don't have too low morale*/
+			if (player->depth == z_info->dun_depth) {
+				morale = MAX(morale, 20);
+			}
+		}
+
+		/* Take player's conditions into account */
+		if (player->timed[TMD_IMAGE]) {
+			morale += 20;
+		}
+		if (player->timed[TMD_BLIND]) {
+			morale += 20;
+		}
+		if (player->timed[TMD_CONFUSED]) {
+			morale += 40;
+		}
+		if (player->timed[TMD_SLOW]) {
+			morale += 40;
+		}
+		if (player->timed[TMD_AFRAID]) {
+			morale += 40;
+		}
+		if (player->timed[TMD_ENTRANCED]) {
+			morale += 80;
+		} else if (player->timed[TMD_STUN] > 100) {
+			morale += 80;
+		} else if (player->timed[TMD_STUN] > 50) {
+			morale += 40;
+		} else if (player->timed[TMD_STUN] > 0) {
+			morale += 20;
+		}
+
+		/* Take player's health into account */
+		switch (health_level(player->chp, player->mhp)) {
+			/* <= 75% health */
+			case  HEALTH_WOUNDED:		morale += 20;	break;
+			/* <= 50% health */
+			case  HEALTH_BADLY_WOUNDED:	morale += 40;	break;
+			/* <= 25% health */
+			case  HEALTH_ALMOST_DEAD:	morale += 80;	break;
+		}
+	} else {
+		//TODO Add player-related stuff for friendly monsters, neutrals
+		//probably unaffected
 	}
 
 	/* Take monster's conditions into account */
@@ -242,16 +251,14 @@ void calc_morale(struct monster *mon)
  * Stance
  * ------------------------------------------------------------------------ */
 /**
- * Calculate the stance for a monster.
- *
- * Based on the monster's morale, type, and other effects.
+ * Calculate the stance for a hostile monster.
  *
  * Can be:
  *    STANCE_FLEEING
  *    STANCE_CONFIDENT
  *    STANCE_AGGRESSIVE
  */
-void calc_stance(struct monster *mon)
+static void calc_stance_hostile(struct monster *mon)
 {
 	struct monster_race *race = mon->race;
 	int stance;
@@ -351,6 +358,47 @@ void calc_stance(struct monster *mon)
 
 	/* Update the monster's stance */
 	mon->stance = stance;
+}
+
+/**
+ * Calculate the stance for a friendly monster.
+ *
+ * Can be:
+ *    STANCE_CAUTIOUS
+ *    STANCE_FRIENDLY
+ *    STANCE_ALLIED
+ */
+static void calc_stance_friendly(struct monster *mon)
+{
+}
+
+/**
+ * Calculate the stance for a neutral monster.
+ *
+ * Can be:
+ *    STANCE_CAUTIOUS
+ *    STANCE_NEUTRAL
+ *    STANCE_FLEEING
+ */
+static void calc_stance_neutral(struct monster *mon)
+{
+}
+
+/**
+ * Calculate the stance for a monster.
+ *
+ * Based on the monster's morale, type, and other effects.
+ */
+void calc_stance(struct monster *mon)
+{
+	if (monster_is_hostile(mon)) {
+		calc_stance_hostile(mon);
+	} else if (monster_is_friendly(mon)) {
+		calc_stance_friendly(mon);
+	} else {
+		assert(monster_is_neutral(mon));
+		calc_stance_neutral(mon);
+	}
 }
 
 /**

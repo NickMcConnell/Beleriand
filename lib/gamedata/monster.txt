@@ -258,7 +258,7 @@ stealth:6
 will:0
 prot:5
 blow:PECK:HURT:1:1d1
-flags:FLEE
+flags:FLEE | FREE
 drop:food:Raw Pigeon Breast:50:1
 desc:A plump bird which flees on sight.
 
@@ -278,7 +278,7 @@ stealth:3
 will:1
 prot:2:1d4
 blow:BITE:HURT:1:1d4
-flags:RAND_25
+flags:RAND_25 | FREE
 desc:A streak of orange fur and tail which can give you a nasty nip.
 
 
@@ -319,7 +319,7 @@ stealth:6
 will:0
 prot:5
 blow:KICK:HURT:1:1d1
-flags:FLEE
+flags:FLEE | FREE
 desc:A wild, nervous creature.
 
 # Index 21
@@ -713,6 +713,7 @@ stealth:2
 will:2
 prot:5
 blow:KICK:HURT:3:2d4
+flags:FREE | RIDEABLE
 #TODO Make it flee sometimes
 desc:A horse.
 
@@ -2730,7 +2731,7 @@ desc: this one flies through the dark halls on great wings.
 
 # Index 196
 name:Maeglin, Betrayer of Gondolin
-base:person
+base:elf
 biomes:$
 realms:MORGOTH
 depth:19

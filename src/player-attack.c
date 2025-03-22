@@ -477,6 +477,9 @@ void py_attack_real(struct player *p, struct loc grid, int attack_type)
 			/* Mark the monster as attacked */
 			mflag_on(mon->mflag, MFLAG_HIT_BY_MELEE);
 
+			/* Mark the monster as hostile */
+			mflag_on(mon->mflag, MFLAG_HOSTILE);
+
 			/* Mark the monster as charged */
 			if (charge) mflag_on(mon->mflag, MFLAG_CHARGED);
 
@@ -1333,6 +1336,9 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 
 					/* Mark the monster as attacked by the player */
 					mflag_on(mon->mflag, MFLAG_HIT_BY_RANGED);
+
+					/* Mark the monster as hostile */
+					mflag_on(mon->mflag, MFLAG_HOSTILE);
 
 					/* Describe the object (have up-to-date knowledge now) */
 					object_desc(o_name, sizeof(o_name), obj,
