@@ -973,6 +973,7 @@ static bool get_move_find_safety(struct monster *mon, struct loc *tgrid)
  *
  * Return true if the monster did actually want to do anything.
  */
+//TODO This whole function is dubious for non-hostile monsters
 static bool get_move_retreat(struct monster *mon, struct loc *tgrid)
 {
 	struct monster_race *race = mon->race;
@@ -1016,6 +1017,7 @@ static bool get_move_retreat(struct monster *mon, struct loc *tgrid)
 
 	/* Monsters that like ranged attacks a lot (e.g. archers) try to stay
 	 * in good shooting locations */
+	//TODO Needed for non-hostile monsters??
 	if (race->freq_ranged >= 50) {
 		int start = randint0(8);
 		bool acceptable = false;
@@ -1203,7 +1205,8 @@ static bool get_move_retreat(struct monster *mon, struct loc *tgrid)
 		if (square_isview(cave, mon->grid) &&
 		    ((mon->cdis < z_info->turn_range) ||
 			 (mon->mspeed < player->state.speed)) &&
-			!player->truce && (race->freq_ranged < 50)) {			
+			!player->truce && (race->freq_ranged < 50) &&
+			!monster_is_friendly(mon)) {
 			/* Message if visible */
 			if (monster_is_visible(mon)) {
 				/* Dump a message */
@@ -1276,6 +1279,8 @@ static void get_move_advance(struct monster *mon, struct loc *tgrid)
 		*tgrid = mon->target.grid;
 		return;
 	}
+
+	//TODO Should the monster be advancing if it isn't hostile?
 
 	/* If we can't hear noises */
 	if (flow_dist(mon->flow, mon->grid) >= z_info->flow_max) {
@@ -1566,6 +1571,9 @@ static bool get_move(struct monster *mon, struct loc *tgrid, bool *fear,
 		*tgrid = mon->target.grid;
 		return true;
 	}
+
+	/* Monster is friendly */
+	if (monster_is_friendly(mon)) return false;//TODO See how this goes
 
 	/* Is the monster scared? */
 	*fear = ((mon->min_range >= z_info->flee_range) || (mon->stance == STANCE_FLEEING));
@@ -2180,7 +2188,7 @@ static bool make_move(struct monster *mon, struct loc *tgrid, bool fear,
 	/* If the monster wants to stay still... */
 	if (loc_eq(*tgrid, mon->grid)) {
 		/* If it is adjacent to the player, then just attack */
-		if (mon->cdis == 1) {
+		if ((mon->cdis == 1) && monster_is_hostile(mon)){
 			*tgrid = player->grid;
 		} else {
 			/* Otherwise just do nothing */
@@ -2271,7 +2279,7 @@ static bool make_move(struct monster *mon, struct loc *tgrid, bool fear,
 				} else if (i >= 3) {
 					/* We can't get to our hiding place.  We're in line of fire.
 					 * The only thing left to do is go down fighting. */
-					if (monster_is_visible(mon) &&
+					if (monster_is_visible(mon) && monster_is_hostile(mon) &&
 						(square_isfire(cave, current)) &&
 						!player->truce && (mon->race->freq_ranged < 50)) {
 						/* Dump a message */
@@ -2445,6 +2453,8 @@ static bool make_move(struct monster *mon, struct loc *tgrid, bool fear,
  * ------------------------------------------------------------------------ */
 /**
  * Deal with the monster Ability: exchange places
+ *
+ * Note this is only called for hostile monsters
  */
 static void process_move_exchange_places(struct monster *mon)
 {
@@ -2665,7 +2675,7 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
 
 			/* We must unset this flag to avoid the monster missing *2* turns */
 			mon->skip_next_turn = false;
-		} else if (!player->truce) {
+		} else if (!player->truce && monster_is_hostile(mon)) {
 			/* Otherwise attack if possible */
             if (rf_has(race->flags, RF_EXCHANGE) && one_in_(4) &&
                 (adj_mon_count(mon->grid) >= adj_mon_count(player->grid))) {
@@ -2882,7 +2892,7 @@ static void process_move(struct monster *mon, struct loc tgrid, bool bash)
 			(distance(next, player->grid) == 1) &&
             (mon->alertness >= ALERTNESS_ALERT) &&
 			(mon->stance != STANCE_FLEEING) && !mon->m_timed[MON_TMD_CONF] &&
-			!did_swap) {
+			monster_is_hostile(mon) && !did_swap) {
 			add_monster_message(mon, MON_MSG_FLANK, false);
             make_attack_normal(mon, player);
 
@@ -3299,7 +3309,7 @@ static void monster_turn(struct monster *mon)
     mon->skip_this_turn = false;
 
 	/* First work out if the song of mastery stops the monster's turn */
-	if (player_is_singing(player, mastery)) {
+	if (player_is_singing(player, mastery) && monster_is_hostile(mon)) {
 		int pskill = song_bonus(player, player->state.skill_use[SKILL_SONG],
 								mastery);
 		int mskill = monster_skill(mon, SKILL_WILL) + 5
@@ -3383,7 +3393,7 @@ static void monster_turn(struct monster *mon)
 	 * sometimes shout a warning */
 	if (one_in_(2) && rf_has(mon->race->flags, RF_SMART) &&
 	    square_isview(cave, mon->grid) && monster_has_sleeping_kin(mon) &&
-		monster_talks_to_friends(mon)) {
+		monster_talks_to_friends(mon) && !monster_is_friendly(mon)) {
 		tell_allies(mon, MFLAG_ACTIVE);
 		calc_monster_speed(mon);
 	}
@@ -3522,7 +3532,8 @@ static void monster_turn(struct monster *mon)
 		/* If the square is non-adjacent to the player,
 		 * then allow a ranged attack instead of a move */
 		if ((mon->cdis > 1) && mon->race->freq_ranged) {
-			make_ranged_attack(mon);
+			if (monster_is_hostile(mon)) //TODO should neutral/friendly act?
+				make_ranged_attack(mon);
 		}
 
 		/* Nothing left to do */
