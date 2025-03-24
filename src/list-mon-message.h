@@ -66,6 +66,7 @@ MON_MSG(NOT_COMMAND,		MSG_GENERIC,    false,  "is no longer under your control."
 MON_MSG(SHAPE_FAIL,			MSG_GENERIC,    false,  "shimmers for a moment.")
 MON_MSG(MORIA_DEATH,		MSG_KILL,		true,	"You hear [a|several] scream[|s] of agony!")
 MON_MSG(DISINTEGRATES,		MSG_KILL,		false,	"disintegrate[s]!")
+MON_MSG(DROWNS,				MSG_KILL,		false,	"drown[s]!")
 MON_MSG(FREEZE_SHATTER,		MSG_KILL,		false,	"freeze[s] and shatter[s]!")
 MON_MSG(MANA_DRAIN,			MSG_GENERIC,	false,	"lose[s] some mana!")
 MON_MSG(BRIEF_PUZZLE,		MSG_GENERIC,	false,	"look[s] briefly puzzled.")

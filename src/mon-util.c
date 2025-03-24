@@ -1177,18 +1177,22 @@ void scare_onlooking_friends(const struct monster *mon, int amount)
  */
 void monster_take_terrain_damage(struct monster *mon)
 {
-	int dd = 4;
-	int ds = 4;
+	int dd = square_isfiery(cave, mon->grid) ? 4 : 3;
+	int ds = square_isfiery(cave, mon->grid) ? 4 : 1;
 
 	if (!mon->race) return;
 
-	/* Flyers take less damage */
-	if (rf_has(mon->race->flags, RF_FLYING)) dd = 1;
-
 	/* Damage the monster */
 	if (square_isfiery(cave, mon->grid)) {
+		/* Flyers take less damage */
+		if (rf_has(mon->race->flags, RF_FLYING)) dd = 1;
+
 		if (!rf_has(mon->race->flags, RF_RES_FIRE)) {
 			mon_take_nonplayer_hit(damroll(dd, ds), mon, MON_MSG_DISINTEGRATES);
+		}
+	} else if (square_isswim(cave, mon->grid)) {
+		if (!rf_has(mon->race->flags, RF_FLYING)) {
+			mon_take_nonplayer_hit(damroll(dd, ds), mon, MON_MSG_DROWNS);
 		}
 	}
 }

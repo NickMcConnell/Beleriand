@@ -510,6 +510,15 @@ static int prt_health_aux(int row, int col)
 			} else if (mon->stance == STANCE_AGGRESSIVE) {
 				my_strcpy(tmp, "Aggress", sizeof(tmp));
 				attr = COLOUR_L_WHITE;
+			} else if (mon->stance == STANCE_NEUTRAL) {
+				my_strcpy(tmp, "Neutral", sizeof(tmp));
+				attr = COLOUR_SLATE;
+			} else if (mon->stance == STANCE_FRIENDLY) {
+				my_strcpy(tmp, "Friendly", sizeof(tmp));
+				attr = COLOUR_GREEN;
+			} else if (mon->stance == STANCE_ALLIED) {
+				my_strcpy(tmp, "Allied", sizeof(tmp));
+				attr = COLOUR_L_GREEN;
 			} else {
                 /* Sometimes (only in debugging?) we are looking at a monster
 				 * before it has a stance in this case just exit and don't do
