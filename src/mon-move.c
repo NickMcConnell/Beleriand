@@ -447,6 +447,11 @@ static void monster_find_range(struct monster *mon)
 		mon->min_range = 1;
 	}
 
+	/* Neutral monsters don't really care */
+	if (monster_is_neutral(mon)) {
+		mon->min_range = randint1(z_info->wander_range);
+	}
+
 	/* Now find preferred range */
 	mon->best_range = mon->min_range;
 

@@ -898,11 +898,11 @@ bool square_islit(struct chunk *c, struct loc grid) {
 }
 
 /**
- * True if the cave square can damage the inhabitant - only lava so far
+ * True if the cave square can damage the inhabitant - lava, deep water so far
  */
 bool square_isdamaging(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
-	return feat_is_fiery(square(c, grid)->feat);
+	return square_isfiery(c, grid) || square_isswim(c, grid);
 }
 
 /**

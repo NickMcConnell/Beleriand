@@ -364,24 +364,62 @@ static void calc_stance_hostile(struct monster *mon)
  * Calculate the stance for a friendly monster.
  *
  * Can be:
- *    STANCE_CAUTIOUS
  *    STANCE_FRIENDLY
  *    STANCE_ALLIED
+ *
+ * Currently there is only one grade of friendliness, this may change
  */
 static void calc_stance_friendly(struct monster *mon)
 {
+	int stance;
+	int stances[2];
+
+	/* Set the default stances */
+	stances[0] = STANCE_FRIENDLY;
+	stances[1] = STANCE_ALLIED;
+
+	/* No allied monsters for now */
+	stance = stances[0];
+	mon->stance = stance;
 }
 
 /**
  * Calculate the stance for a neutral monster.
  *
  * Can be:
- *    STANCE_CAUTIOUS
  *    STANCE_NEUTRAL
  *    STANCE_FLEEING
  */
 static void calc_stance_neutral(struct monster *mon)
 {
+	struct monster_race *race = mon->race;
+	int stance;
+	int stances[2];
+
+	/* Set the default stances */
+	stances[0] = STANCE_FLEEING;
+	stances[1] = STANCE_NEUTRAL;
+
+	/* Alert fleeing monsters just flee */
+	if (rf_has(race->flags, RF_FLEE) && (mon->alertness >= ALERTNESS_ALERT)) {
+		stances[1] = STANCE_FLEEING;
+	}
+
+	/* Determine the stance */
+	if (mon->morale > 0) {
+		stance = stances[1];
+	} else {
+		stance = stances[0];
+	}
+
+	/* React to changes in stance */
+	if (stance != mon->stance) {
+		/* Force recalculation of range if stance changes */
+		mon->min_range = 0;
+ 	}
+
+	/* Update the monster's stance */
+	mon->stance = stance;
 }
 
 /**
