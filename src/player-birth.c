@@ -299,10 +299,7 @@ static void player_embody(struct player *p)
  */
 static void player_languages(struct player *p)
 {
-	int i;
-	for (i = 0; i < LANGUAGE_MAX; i++) {
-		if (p->house->languages[i]) p->languages[i] = true;
-	}
+	language_copy(p->languages, p->house->languages);
 }
 
 void player_init(struct player *p)

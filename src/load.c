@@ -67,6 +67,7 @@ static uint8_t of_size = 0;
 static uint8_t elem_max = 0;
 static uint8_t brand_max;
 static uint8_t slay_max;
+static uint8_t language_size;
 
 /**
  * Monster constants
@@ -753,9 +754,14 @@ int rd_player(void)
 	}
 
 	/* Languages */
-	rd_byte(&tmp8u);
-	for (i = 0; i < LANGUAGE_MAX; i++) {
-		if (tmp8u & (1 << i)) player->languages[i] = true;
+	rd_byte(&language_size);
+	if (language_size > LANGUAGE_SIZE) {
+		note(format("Too many (%u) languages allowed!", language_size));
+		return (-1);
+	}
+
+	for (i = 0; i < language_size; i++) {
+		rd_byte(&player->languages[i]);
 	}
 
 	rd_s32b(&player->new_exp);

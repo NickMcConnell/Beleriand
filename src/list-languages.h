@@ -6,6 +6,7 @@
  * below start from 0 on line 9, so a language's sequence number is its line
  * number minus 9.
  */
+LANG(NONE,		"None")
 LANG(ANIMAL,	"Speech to animals")
 LANG(ADUNAIC,	"Adûnaic")
 LANG(SINDARIN,	"Sindarin")
