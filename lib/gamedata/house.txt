@@ -37,8 +37,7 @@ name:House of Feanor
 alt-name:Feanor's House
 short-name:Feanor
 race:Noldor
-language:QUENYA
-language:SINDARIN
+language:QUENYA | SINDARIN
 stats:0:1:0:0
 skills:0:0:0:0:0:0:1:0
 desc:Feanor was the greatest of the Noldor, though proud and
@@ -51,8 +50,7 @@ name:House of Fingolfin
 alt-name:Fingolfin's House
 short-name:Fingolfin
 race:Noldor
-language:QUENYA
-language:SINDARIN
+language:QUENYA | SINDARIN
 stats:0:0:1:0
 skills:0:0:0:0:0:1:0:0
 desc:Fingolfin led his house into Beleriand to protect its
@@ -65,8 +63,7 @@ name:House of Finarfin
 alt-name:Finarfin's House
 short-name:Finarfin
 race:Noldor
-language:QUENYA
-language:SINDARIN
+language:QUENYA | SINDARIN
 stats:0:0:0:1
 skills:0:0:0:0:1:0:0:0
 desc:Finarfin himself did not come to Beleriand, but many of his house

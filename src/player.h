@@ -47,6 +47,25 @@ enum {
 	LANGUAGE_MAX
 };
 
+#define LANGUAGE_SIZE                FLAG_SIZE(LANGUAGE_MAX)
+
+#define language_has(f, flag)        flag_has_dbg(f, LANGUAGE_SIZE, flag, #f, #flag)
+#define language_next(f, flag)       flag_next(f, LANGUAGE_SIZE, flag)
+#define language_is_empty(f)         flag_is_empty(f, LANGUAGE_SIZE)
+#define language_is_full(f)          flag_is_full(f, LANGUAGE_SIZE)
+#define language_is_inter(f1, f2)    flag_is_inter(f1, f2, LANGUAGE_SIZE)
+#define language_is_subset(f1, f2)   flag_is_subset(f1, f2, LANGUAGE_SIZE)
+#define language_is_equal(f1, f2)    flag_is_equal(f1, f2, LANGUAGE_SIZE)
+#define language_on(f, flag)         flag_on_dbg(f, LANGUAGE_SIZE, flag, #f, #flag)
+#define language_off(f, flag)        flag_off(f, LANGUAGE_SIZE, flag)
+#define language_wipe(f)             flag_wipe(f, LANGUAGE_SIZE)
+#define language_setall(f)           flag_setall(f, LANGUAGE_SIZE)
+#define language_negate(f)           flag_negate(f, LANGUAGE_SIZE)
+#define language_copy(f1, f2)        flag_copy(f1, f2, LANGUAGE_SIZE)
+#define language_union(f1, f2)       flag_union(f1, f2, LANGUAGE_SIZE)
+#define language_inter(f1, f2)       flag_inter(f1, f2, LANGUAGE_SIZE)
+#define language_diff(f1, f2)        flag_diff(f1, f2, LANGUAGE_SIZE)
+
 /**
  * Player race and class flags
  */
@@ -281,7 +300,7 @@ struct player_house {
 
 	int stat_adj[STAT_MAX];		/**< Stat modifiers */
 	int skill_adj[SKILL_MAX];	/**< Skill modifiers */
-	bool languages[LANGUAGE_MAX];	/**< Languages */
+	bitflag languages[LANGUAGE_SIZE];	/**< Languages */
 
 	bitflag pflags[PF_SIZE];	/**< House (player) flags */
 };
@@ -511,7 +530,7 @@ struct player {
 	struct ability *abilities;		/* Player innate abilities */
 	struct ability *item_abilities;	/* Player item abilities */
 
-	bool languages[LANGUAGE_MAX];	/* Languages known */
+	bitflag languages[LANGUAGE_SIZE];	/* Languages known */
 
 	int16_t last_attack_m_idx;	/* Index of the monster attacked last round */
 	int16_t consecutive_attacks;/* Rounds spent attacking this monster */

@@ -2417,18 +2417,22 @@ static enum parser_error parse_house_race(struct parser *p) {
 static enum parser_error parse_house_language(struct parser *p)
 {
 	struct player_house *h = parser_priv(p);
-	int n;
+	char *flags;
+	char *s;
 
 	if (!h)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	n = lookup_flag(languages, parser_getsym(p, "language"));
-	if (!n) {
-		return PARSE_ERROR_INVALID_FLAG;
+	if (!parser_hasval(p, "language"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "language"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(h->languages, LANGUAGE_SIZE, languages, s))
+			break;
+		s = strtok(NULL, " |");
 	}
-	assert(n < LANGUAGE_MAX);
-	h->languages[n] = true;
-	return PARSE_ERROR_NONE;
+	string_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_house_stats(struct parser *p) {
@@ -2498,7 +2502,7 @@ static struct parser *init_parse_house(void) {
 	parser_reg(p, "alt-name str name", parse_house_alt_name);
 	parser_reg(p, "short-name str name", parse_house_short_name);
 	parser_reg(p, "race str name", parse_house_race);
-	parser_reg(p, "language sym language", parse_house_language);
+	parser_reg(p, "language ?str language", parse_house_language);
 	parser_reg(p, "stats int str int dex int con int gra", parse_house_stats);
 	parser_reg(p, "skills int mel int arc int evn int stl int per int wil int smt int sng", parse_house_skills);
 	parser_reg(p, "player-flags ?str flags", parse_house_play_flags);

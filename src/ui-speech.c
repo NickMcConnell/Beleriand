@@ -49,7 +49,7 @@ static int get_languages(void)
 {
 	int i, count = 0;
 	for (i = 0; i < LANGUAGE_MAX; i++) {
-		if (player->languages[i]) {
+		if (language_has(player->languages, i)) {
 			player_languages[count++] = i;
 		}
 	}

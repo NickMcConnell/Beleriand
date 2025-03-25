@@ -421,8 +421,7 @@ void wr_object_memory(void)
 
 void wr_player(void)
 {
-	int i;
-	uint8_t languages = 0;
+	size_t i;
 	struct ability *ability;
 
 	wr_string(player->full_name);
@@ -489,10 +488,10 @@ void wr_player(void)
 	}
 
 	/* Languages */
-	for (i = 0; i < LANGUAGE_MAX; i++) {
-		if (player->languages[i]) languages |= (1 << i);
+	wr_byte(LANGUAGE_SIZE);
+	for (i = 0; i < LANGUAGE_SIZE; i++) {
+		wr_byte(player->languages[i]);
 	}
-	wr_byte(languages);
 
 	wr_s32b(player->new_exp);
 	wr_s32b(player->exp);
