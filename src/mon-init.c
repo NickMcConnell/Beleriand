@@ -45,6 +45,13 @@ struct monster_race *r_info;
 const struct monster_race *ref_race = NULL;
 struct monster_lore *l_list;
 
+static const char *languages[] = {
+	#define LANG(a, b) #a,
+	#include "list-languages.h"
+	#undef LANG
+	NULL
+};
+
 const char *r_info_flags[] =
 {
 	#define RF(a, b, c) #a,
@@ -1541,6 +1548,27 @@ static enum parser_error parse_monster_base(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_monster_language(struct parser *p)
+{
+	struct monster_race *r = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "language"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "language"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(r->languages, LANGUAGE_SIZE, languages, s))
+			break;
+		s = strtok(NULL, " |");
+	}
+	string_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_monster_biomes(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	const char *biome = parser_getsym(p, "biomes");
@@ -1976,6 +2004,7 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "name str name", parse_monster_name);
 	parser_reg(p, "plural ?str plural", parse_monster_plural);
 	parser_reg(p, "base sym base", parse_monster_base);
+	parser_reg(p, "language ?str language", parse_monster_language);
 	parser_reg(p, "biomes sym biomes", parse_monster_biomes);
 	parser_reg(p, "realms ?str realms", parse_monster_realms);
 	parser_reg(p, "depth int level", parse_monster_depth);
@@ -2317,6 +2346,7 @@ static struct parser *init_parse_lore(void) {
 	parser_reg(p, "name str name", parse_lore_name);
 	parser_reg(p, "plural ?str plural", ignored);
 	parser_reg(p, "base sym base", parse_lore_base);
+	parser_reg(p, "language ?str language", ignored);//B DO
 	parser_reg(p, "biomes sym biomes", ignored);//B DO
 	parser_reg(p, "realms ?str realms", ignored);//B DO
 	parser_reg(p, "depth int level", ignored);

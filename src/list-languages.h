@@ -8,9 +8,10 @@
  */
 LANG(NONE,		"None")
 LANG(ANIMAL,	"Speech to animals")
-LANG(ADUNAIC,	"Adûnaic")
+LANG(TALISKAN,	"Taliskan")
 LANG(SINDARIN,	"Sindarin")
 LANG(QUENYA,	"Quenya")
 LANG(NANDORIN,	"Nandorin")
 LANG(HALETHIAN,	"Speech of the Haladin")
 LANG(KHUZDUL,	"Khuzdul")
+LANG(AVARIN,	"Avarin")

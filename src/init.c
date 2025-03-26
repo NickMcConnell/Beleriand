@@ -102,7 +102,7 @@ const char *list_realm_names[] = {
 	NULL
 };
 
-const char *languages[] = {
+static const char *languages[] = {
 	#define LANG(a, b) #a,
 	#include "list-languages.h"
 	#undef LANG

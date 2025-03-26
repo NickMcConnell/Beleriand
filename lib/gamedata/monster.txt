@@ -344,6 +344,7 @@ desc: He has little armour but carries a cruel blade.
 
 name:Man of Hador
 base:person
+language:TALISKAN
 biomes:!
 realms:FINGON | CONTEST
 depth:2
@@ -365,6 +366,7 @@ desc: in the land of Fingon the High King.  Their valour in battle was famous.
 
 name:Man of Bëor
 base:person
+language:TALISKAN
 biomes:|
 realms:MORGOTH
 depth:2
@@ -387,6 +389,7 @@ desc: against Morgoth's hordes.
 
 name:Man of Haleth
 base:person
+language:HALETHIAN
 biomes:!
 realms:HALADIN | CONTEST
 depth:2
@@ -409,6 +412,7 @@ desc: incursions of orcs from the North.
 
 name:Nogrod Dwarf
 base:dwarf
+language:KHUZDUL
 biomes:$^
 realms:NAUGRIM
 depth:2
@@ -429,6 +433,7 @@ desc:The dwarves of Nogrod were mighty smiths, hardy and quarrelsome.
 
 name:Belegost Dwarf
 base:dwarf
+language:KHUZDUL
 biomes:$^
 realms:NAUGRIM
 depth:2
@@ -450,6 +455,7 @@ desc: brethren of Nogrod, but were wiser and slower to anger.
 
 name:Noldorin Elf
 base:elf
+language:QUENYA | SINDARIN
 biomes:!
 realms:FINGON | NARGOTHROND | GONDOLIN | MAEDHROS | FEANOR | CONTEST
 depth:2
@@ -471,6 +477,7 @@ desc: Earth seeking vengeance.  They were proud, fair and quick to anger.
 
 name:Sindarin Elf
 base:elf
+language:SINDARIN
 biomes:!
 realms:FINGON | NARGOTHROND | GONDOLIN | DORIATH | FALAS | CONTEST
 depth:2
@@ -493,6 +500,7 @@ desc: their king tarried and never saw the light of the Trees.
 
 name:Nandorin Elf
 base:elf
+language:NANDORIN
 biomes:^+
 realms:GREEN
 depth:2
@@ -519,6 +527,7 @@ desc: the Nandor retreated to Ossiriand and lived hidden and secret lives.
 
 name:Avarin Elf
 base:elf
+language:AVARIN
 biomes:!
 realms:EMPTY | EAST
 depth:2
@@ -700,6 +709,7 @@ desc: for the poison on its thorns can bring madness.
 
 name:Horse
 base:quadruped
+language:ANIMAL
 biomes:$
 realms:MORGOTH
 depth:2
