@@ -766,6 +766,52 @@ void set_monster_place_current(void)
 }
 
 /**
+ * Give a monster the Sindarin language if warranted.
+ */
+static void add_sindarin(struct monster *mon)
+{
+	/* Hack */
+	int region = chunk_list[player->place].region;
+	bool add = false;
+
+	if (language_is_empty(mon->languages)) return;
+	if (language_has(mon->languages, LANGUAGE_ANIMAL)) return;
+	switch (region_info[region].realm) {
+		case REALM_DORIATH:
+		case REALM_FALAS: {
+			add = true;
+			break;
+		}
+		case REALM_FINGON:
+		case REALM_NARGOTHROND:
+		case REALM_GONDOLIN: {
+			if (one_in_(2)) add = true;
+			break;
+		}
+		case REALM_CONTEST: {
+			if (one_in_(4)) add = true;
+			break;
+		}
+		case REALM_FEANOR:
+		case REALM_MAEDHROS:
+		case REALM_HALADIN:
+		case REALM_GREEN:
+		case REALM_EMPTY: {
+			if (one_in_(10)) add = true;
+			break;
+		}
+		case REALM_NAUGRIM:
+		case REALM_EAST:
+		case REALM_MORGOTH: {
+			if (one_in_(20)) add = true;
+			break;
+		}
+		default: break;
+	}
+	if (add) language_on(mon->languages, LANGUAGE_SINDARIN);
+}
+
+/**
  * ------------------------------------------------------------------------
  * Placement of a single monster
  * These are the functions that actually put the monster into the world
@@ -975,6 +1021,10 @@ bool place_new_monster_one(struct chunk *c, struct loc grid,
 
 	/* Initialize song */
 	mon->song = NULL;
+
+	/* Initialize speech */
+	language_copy(mon->languages, race->languages);
+	add_sindarin(mon);
 
 	/* And start out fully healthy */
 	mon->hp = mon->maxhp;

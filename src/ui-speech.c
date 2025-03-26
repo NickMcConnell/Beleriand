@@ -100,7 +100,7 @@ int textui_choose_language(void)
 	/* Select an entry */
 	evt = menu_select(&menu, 0, false);
 	if (evt.type & EVT_SELECT) {
-		selection = menu.cursor;
+		selection = menu.cursor + 1;
 	} else {
 		selection = -1;
 	}

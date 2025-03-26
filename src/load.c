@@ -498,6 +498,13 @@ int rd_monster_memory(void)
 		return (-1);
 	}
 
+	/* Languages */
+	rd_byte(&language_size);
+	if (language_size > LANGUAGE_SIZE) {
+		note(format("Too many (%u) languages allowed!", language_size));
+		return (-1);
+	}
+
 	/* Reset maximum numbers per level */
 	for (i = 1; z_info && i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
@@ -754,12 +761,6 @@ int rd_player(void)
 	}
 
 	/* Languages */
-	rd_byte(&language_size);
-	if (language_size > LANGUAGE_SIZE) {
-		note(format("Too many (%u) languages allowed!", language_size));
-		return (-1);
-	}
-
 	for (i = 0; i < language_size; i++) {
 		rd_byte(&player->languages[i]);
 	}

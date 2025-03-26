@@ -2093,14 +2093,34 @@ void do_cmd_change_song(struct command *cmd)
 void do_cmd_speak(struct command *cmd)
 {
 	int dir, range = 2;//B Maybe have an ability to speak louder
+	struct monster *mon = NULL;
 	int language;
+	char m_name[80];
 
 	if (!cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK) {
 		return;
 	}
 
+	/* Get monster, fail if no monster targeted */
+	mon = target_get_monster();
+	if (!mon) {
+		msg("You need to target a monster to speak to.");
+		return;
+	} else {
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+	}
+
 	/* Choose a language */
 	language = choose_language();
+	if (language <= 0) return;
+
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* See if the monster understands */
+	if (!language_has(mon->languages, language)) {
+		msg("%s stares blankly at you.", m_name);
+		return;
+	}
 }
 
 

@@ -413,6 +413,7 @@ struct monster {
 	uint8_t cdis;				/* Current dis from player */
 
 	bitflag mflag[MFLAG_SIZE];		/* Temporary monster flags */
+	bitflag languages[LANGUAGE_SIZE];       /* Languages */
 
 	uint8_t noise;			/* amount of noise monster made this turn */
 

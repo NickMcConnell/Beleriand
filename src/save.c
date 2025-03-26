@@ -376,6 +376,7 @@ void wr_monster_memory(void)
 	int r_idx;
 
 	wr_byte(MFLAG_SIZE);
+	wr_byte(LANGUAGE_SIZE);
 
 	for (r_idx = 0; r_idx < z_info->r_max; r_idx++) {
 		struct monster_race *race = &r_info[r_idx];
@@ -488,7 +489,6 @@ void wr_player(void)
 	}
 
 	/* Languages */
-	wr_byte(LANGUAGE_SIZE);
 	for (i = 0; i < LANGUAGE_SIZE; i++) {
 		wr_byte(player->languages[i]);
 	}
