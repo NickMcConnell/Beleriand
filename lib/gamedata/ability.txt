@@ -771,7 +771,7 @@ level:5
 desc:Opens the possibility of negotiating passage in the territory of other
 desc: peoples of Beleriand.
 
-name:Adûnaic
+name:Taliskan
 level:6
 desc:The speech of the people of the houses of Bëor and Hador.
 

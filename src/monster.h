@@ -358,6 +358,7 @@ struct monster_race {
 
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
+	bitflag languages[LANGUAGE_SIZE];       /* Languages */
 
 	struct monster_blow *blow; /* Melee blows */
 
