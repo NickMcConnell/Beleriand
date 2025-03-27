@@ -762,14 +762,9 @@ level:3
 desc:The speech of the Grey Elves, the people of Thingol who lived mainly
 desc: in Doriath and the Falas, spoken also by the Noldor and many of the Edain.
 
-name:Trade
-level:4
-desc:Gives the ability to trade goods with other speaking people.
-
-name:Safe Passage
+name:Greeting
 level:5
-desc:Opens the possibility of negotiating passage in the territory of other
-desc: peoples of Beleriand.
+desc:You gain the ability to establish trust with other peoples of Beleriand.
 
 name:Taliskan
 level:6

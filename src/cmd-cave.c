@@ -2094,9 +2094,10 @@ void do_cmd_change_song(struct command *cmd)
  */
 void do_cmd_speak(struct command *cmd)
 {
-	int dir, range = 2;//B Maybe have an ability to speak louder
+	int dir, range = z_info->max_sight;
 	struct monster *mon = NULL;
-	int language;
+	int resistance, language, result;
+    int skill = player->state.skill_use[SKILL_SPEECH];
 	char m_name[80];
 
 	if (!cmd_get_target(cmd, "target", &dir, range, false) == CMD_OK) {
@@ -2110,11 +2111,15 @@ void do_cmd_speak(struct command *cmd)
 		return;
 	} else {
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+		resistance = monster_skill(mon, SKILL_WILL);
 	}
 
 	/* Choose a language */
 	language = choose_language();
 	if (language <= 0) return;
+
+	/* Stop singing */
+	player_change_song(player, NULL, false);
 
 	player->upkeep->energy_use = z_info->move_energy;
 
@@ -2123,6 +2128,50 @@ void do_cmd_speak(struct command *cmd)
 		msg("%s stares blankly at you.", m_name);
 		return;
 	}
+
+	/* Animal or speaking */
+	if (language == LANGUAGE_ANIMAL) {
+		/* There is only one option */
+		assert(player_active_ability(player, "Tame Creature"));
+
+		/* Check speech skill against monster will */
+		result = skill_check(source_player(), skill, resistance,
+							 source_monster(mon->midx));
+		if (result > 0) {
+			/* Success */
+			msg("%s is tamed.", m_name);
+			mflag_on(mon->mflag, MFLAG_TAME);
+		} else if (result > -8) {
+			/* Failure */
+			msg("%s is unmoved.", m_name);
+		} else {
+			/* Disastrous failure */
+			msg("%s becomes hostile.", m_name);
+			mflag_on(mon->mflag, MFLAG_HOSTILE);
+		}
+	} else {
+		/* There is only one option for now */
+		assert(player_active_ability(player, "Greeting"));
+
+		/* Check speech skill against monster will */
+		result = skill_check(source_player(), skill, resistance,
+							 source_monster(mon->midx));
+		if (result > 0) {
+			/* Success */
+			msg("%s becomes friendly.", m_name);
+			mflag_on(mon->mflag, MFLAG_FRIENDLY);
+		} else if (result > -8) {
+			/* Failure */
+			msg("%s is unmoved.", m_name);
+		} else {
+			/* Disastrous failure */
+			msg("%s becomes hostile.", m_name);
+			mflag_on(mon->mflag, MFLAG_HOSTILE);
+		}
+	}
+
+	/* Store the action type */
+	player->previous_action[0] = ACTION_MISC;
 }
 
 

@@ -431,7 +431,7 @@ void calc_stance(struct monster *mon)
 {
 	if (monster_is_hostile(mon)) {
 		calc_stance_hostile(mon);
-	} else if (monster_is_friendly(mon)) {
+	} else if (monster_is_friendly(mon) || monster_is_tame(mon)) {
 		calc_stance_friendly(mon);
 	} else {
 		assert(monster_is_neutral(mon));
