@@ -763,26 +763,31 @@ desc:The speech of the Grey Elves, the people of Thingol who lived mainly
 desc: in Doriath and the Falas, spoken also by the Noldor and many of the Edain.
 
 name:Greeting
-level:5
+level:4
 desc:You gain the ability to establish trust with other peoples of Beleriand.
 
 name:Taliskan
-level:6
+level:5
 desc:The speech of the people of the houses of Bëor and Hador.
 
 name:Quenya
-level:7
+level:6
 desc:The speech of the High Elves of Valinor, spoken by the Noldor among
 desc: themselves.
 
 name:Speech of the Haladin
-level:8
+level:7
 desc:The speech of the men of Brethil among themselves.
 
 name:Nandorin
-level:9
+level:8
 prerequisite:Speech:Sindarin
 desc:The speech of the secretive Green Elves of Ossiriand.
+
+name:Avarin
+level:9
+prerequisite:Speech:Sindarin
+desc:The speech of the Avari, the elves who refused the Great Journey.
 
 name:Khuzdul
 level:20
