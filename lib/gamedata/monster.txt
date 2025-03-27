@@ -710,8 +710,7 @@ desc: for the poison on its thorns can bring madness.
 name:Horse
 base:quadruped
 language:ANIMAL
-biomes:$
-realms:MORGOTH
+biomes:+.
 depth:2
 rarity:1
 color:u
