@@ -2121,6 +2121,9 @@ void do_cmd_speak(struct command *cmd)
 
 	player->upkeep->energy_use = z_info->move_energy;
 
+	/* Store the action type */
+	player->previous_action[0] = ACTION_MISC;
+
 	/* See if the monster understands */
 	if (!language_has(mon->languages, language)) {
 		msg("%s stares blankly at you.", m_name);
@@ -2149,7 +2152,9 @@ void do_cmd_speak(struct command *cmd)
 		}
 	} else {
 		/* There is only one option for now */
-		assert(player_active_ability(player, "Greeting"));
+		if (!player_active_ability(player, "Greeting")) {
+			msg("You need to learn the correct form of greeting.");
+		}
 
 		/* Check speech skill against monster will */
 		result = skill_check(source_player(), skill, resistance,
@@ -2167,9 +2172,6 @@ void do_cmd_speak(struct command *cmd)
 			mflag_on(mon->mflag, MFLAG_HOSTILE);
 		}
 	}
-
-	/* Store the action type */
-	player->previous_action[0] = ACTION_MISC;
 }
 
 

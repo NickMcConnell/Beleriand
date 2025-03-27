@@ -479,6 +479,11 @@ bool player_can_gain_ability(struct player *p, struct ability *ability)
 
 bool player_gain_ability(struct player *p, struct ability *ability)
 {
+	const char *language_names[] = {
+		#define LANG(a, b) b,
+		#include "list-languages.h"
+		#undef LANG
+	};
 	struct ability *new;
 	int cost = player_ability_cost(p, ability);
 	if (cost > p->new_exp) {
@@ -492,6 +497,18 @@ bool player_gain_ability(struct player *p, struct ability *ability)
 	add_ability(&p->abilities, ability);
 	new = locate_ability(p->abilities, ability);
 	new->active = true;
+
+	/* Add languages (these persist even if the ability is turned off) */
+	if (ability->skill == SKILL_SPEECH) {
+		size_t i;
+		for (i = 0; i < N_ELEMENTS(language_names); i++) {
+			if (streq(ability->name, language_names[i])) {
+				language_on(p->languages, i);
+				break;
+			}
+		}
+	}
+
 	/*
 	 * For some abilities, updating the bonuses is necessary; for some it
 	 * is not.  Having that indicated in ability.txt seems like overkill
