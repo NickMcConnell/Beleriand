@@ -33,6 +33,7 @@ typedef enum {
 	OLIST_WEIGHT = 0x02,	/* Show item weight */
 	OLIST_SEMPTY = 0x04,
 	OLIST_DEATH  = 0x08,
+	OLIST_CARRY  = 0x10,
 } olist_detail_t;
 
 

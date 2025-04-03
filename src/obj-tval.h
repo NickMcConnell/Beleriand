@@ -63,6 +63,7 @@ bool tval_is_sharp(const struct object *obj);
 bool tval_is_staff(const struct object *obj);
 bool tval_is_note(const struct object *obj);
 bool tval_is_boat(const struct object *obj);
+bool tval_is_boat_k(const struct object_kind *kind);
 bool tval_is_useable(const struct object *obj);
 bool tval_is_weapon(const struct object *obj);
 bool tval_has_variable_power(const struct object *obj);

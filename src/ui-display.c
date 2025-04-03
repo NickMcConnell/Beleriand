@@ -2599,6 +2599,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 
 	const char *p = "see";
 	bool can_pickup = false;
+	bool no_carry = false;
 	int i;
 
 	/* Scan all visible, sensed objects in the grid */
@@ -2610,9 +2611,14 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 	}
 
 	/* Can we pick any up? */
-	for (i = 0; i < floor_num; i++)
+	for (i = 0; i < floor_num; i++) {
 	    if (inven_carry_okay(floor_list[i]))
 			can_pickup = true;
+		if (of_has(floor_list[i]->flags, OF_NO_CARRY)) {
+			no_carry = true;
+			p = "are in";
+		}
+	}
 
 	/* One object */
 	if (floor_num == 1) {
@@ -2620,7 +2626,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 		struct object *obj = floor_list[0];
 		char o_name[80];
 
-		if (!can_pickup)
+		if (!(can_pickup || no_carry))
 			p = "have no room for";
 		else if (blind)
 			p = "feel";
@@ -2661,7 +2667,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 
 		/* Display objects on the floor */
 		screen_save();
-		show_floor(floor_list, floor_num, OLIST_WEIGHT, NULL);
+		show_floor(floor_list, floor_num, OLIST_WEIGHT | OLIST_CARRY, NULL);
 		prt(format("You %s: ", p), 0, 0);
 
 		/* Wait for it.  Use key as next command. */

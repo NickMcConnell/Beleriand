@@ -97,6 +97,7 @@ void player_dismount(struct player *p);
 bool player_is_riding(struct player *p);
 void player_disembark(struct player *p);
 bool player_is_boating(struct player *p);
+bool player_can_craft(struct player *p);
 void player_catch_fish(struct player *p);
 bool player_break_web(struct player *p);
 bool player_escape_pit(struct player *p);

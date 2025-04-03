@@ -636,8 +636,8 @@ int inven_carry_num(const struct player *p, const struct object *obj)
 	int max_weight = (weight_limit(p->state) * 3) / 2;
 	int num_lim, num_to_quiver, num_left, i;
 
-	/* No boats */
-	if (tval_is_boat(obj)) return 0;
+	/* No carrying */
+	if (of_has(obj->flags, OF_NO_CARRY)) return 0;
 
 	/* Check how many can be carried without going over the weight limit. */
 	if (p->upkeep->total_weight > max_weight) {

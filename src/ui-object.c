@@ -233,6 +233,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 	int i;
 	bool in_term = (mode & OLIST_WINDOW) ? true : false;
 	bool show_empty = (mode & OLIST_SEMPTY) ? true : false;
+	bool carry = (mode & OLIST_CARRY) ? true : false;
 	bool equip = list ? false : true;
 
 	/* Build the object list */
@@ -240,8 +241,11 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 		char buf[80];
 		struct object *obj = equip ? slot_object(player, i) : list[i];
 
+		/* Some items can't be carried */
+		if (carry && of_has(obj->flags, OF_NO_CARRY)) continue;
+
 		/* Acceptable items get a label */
-		if (object_test(tester, obj))
+		else if (object_test(tester, obj))
 			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
 				all_letters_nohjkl[i]);
 

@@ -36,6 +36,11 @@ bool tval_is_boat(const struct object *obj)
 	return obj->tval == TV_BOAT;
 }
 
+bool tval_is_boat_k(const struct object_kind *kind)
+{
+	return kind->tval == TV_BOAT;
+}
+
 bool tval_is_horn(const struct object *obj)
 {
 	return obj->tval == TV_HORN;

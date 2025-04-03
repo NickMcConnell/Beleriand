@@ -1584,7 +1584,6 @@ void move_player(int dir, bool disarm)
 
 	int m_idx = square(cave, grid)->mon;
 	struct monster *mon = monster(m_idx);
-	struct object *boat = square_boat(cave, grid);
 	bool trap = square_isdisarmabletrap(cave, grid);
 	bool door = square_iscloseddoor(cave, grid) &&
 		!square_issecretdoor(cave, grid);
@@ -1714,7 +1713,7 @@ void move_player(int dir, bool disarm)
 					player->upkeep->running = 0;
 					step = false;
 				}
-			} else {
+			} else if (!(swim && square_isswim(cave, grid))) {
 				if (dam_taken > player->chp / 3) {
 					step = get_check(feat->walk_msg);
 				}
@@ -1752,22 +1751,6 @@ void move_player(int dir, bool disarm)
 					step = false;
                 }
             }
-
-			/* Check for deep water if the player can't swim */
-			if (square_isswim(cave, grid) && !square_isswim(cave, player->grid)
-				&& !player_active_ability(player, "Swimming")) {
-                /* Disturb the player */
-				disturb(player, false);
-
-				/* Flush input */
-				event_signal(EVENT_MESSAGE_FLUSH);
-
-                if (!get_check("Do you really want to enter the deep water? ")){
-                    /* Don't take a turn... */
-                    player->upkeep->energy_use = 0;
-					step = false;
-                }
-			}
 		}
 
 		/* At this point attack any invisible monster that may be there */
@@ -1796,16 +1779,18 @@ void move_player(int dir, bool disarm)
 
 		/* We can move */
 		if (step) {
-			struct monster *mount = player->mount;
-
 			/* Do flanking or controlled retreat attack if any */
 			player_flanking_or_retreat(player, grid);
 
+			/* Check for no water if in a boat */
+			if (player_is_boating(player) && !square_iswater(cave, grid)) {
+				msg("You leave the boat.");
+				drop_near(cave, &player->boat, 0, player->grid, true, false);
+				player->boat = NULL;
+			}
+
 			/* Move player */
 			monster_swap(player->grid, grid);
-			if (player->boat) {
-				player->boat->grid = player->grid;
-			}
 			player_handle_post_move(player, true, false);
 
 			/* Spontaneous Searching */
@@ -1813,21 +1798,6 @@ void move_player(int dir, bool disarm)
 
 			/* Remember this direction of movement */
 			player->previous_action[0] = dir;
-
-			/* Check for a boat */
-			if (boat) {
-				player->boat = boat;
-				if (mount) {
-					square_set_mon(cave, mount->grid, mount->midx);
-					player->mount = NULL;
-				}
-			}
-
-			/* Check for no water if in a boat */
-			if ((player->boat) && !square_iswater(cave, grid)) {
-				msg("You leave the boat.");
-				player->boat = NULL;
-			}
 		}
 	}
 }
