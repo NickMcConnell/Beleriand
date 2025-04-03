@@ -366,10 +366,11 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 {
 	struct loc grid;
 	int count = 0, extra = 0;
+	int max_y = dest_top_left.y + height, max_x = dest_top_left.x + width;
 
 	/* Count floor objects */
-	for (grid.y = dest_top_left.y; grid.y < height; grid.y++) {
-		for (grid.x = dest_top_left.x; grid.x < width; grid.x++) {
+	for (grid.y = dest_top_left.y; grid.y < max_y; grid.y++) {
+		for (grid.x = dest_top_left.x; grid.x < max_x; grid.x++) {
 			struct object *obj = square_object(dest, grid);
 			while (obj) {
 				count++;
@@ -387,8 +388,8 @@ static void chunk_copy_objects_split(struct player *p, struct chunk *source,
 
 	/* List/delist objects, keeping actual and known versions aligned */
 	count = 0;
-	for (grid.y = dest_top_left.y; grid.y < height; grid.y++) {
-		for (grid.x = dest_top_left.x; grid.x < width; grid.x++) {
+	for (grid.y = dest_top_left.y; grid.y < max_y; grid.y++) {
+		for (grid.x = dest_top_left.x; grid.x < max_x; grid.x++) {
 			struct object *obj = square_object(dest, grid);
 			struct object *p_obj = square_object(p_dest, grid);
 			struct monster *mon = square_monster(dest, grid);
