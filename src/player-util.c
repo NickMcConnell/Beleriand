@@ -375,7 +375,9 @@ int player_check_terrain_damage(struct player *p, struct loc grid, bool actual)
 
 		/* Fire damage */
 		dam_taken = adjust_dam(p, dd, ds, ELEM_FIRE);
-
+	} else if (square_isswim(cave, grid)) {
+		bool ok = player_active_ability(player, "Swimming") || !!player->boat;
+		dam_taken = ok ? 0 : 3;
 	}
 
 	return dam_taken;
@@ -387,19 +389,15 @@ int player_check_terrain_damage(struct player *p, struct loc grid, bool actual)
 void player_take_terrain_damage(struct player *p, struct loc grid)
 {
 	int dam_taken = player_check_terrain_damage(p, grid, true);
-	int res = p->state.el_info[ELEM_FIRE].res_level;
 
-	if (!dam_taken) {
-		return;
-	}
+	if (!dam_taken) return;
 
 	/* Damage the player and inventory. */
 	if (square_isfiery(cave, grid)) {
-		char dam_text[32] = "";
-
-		msg("%s%s", square_feat(cave, grid)->hurt_msg, dam_text);
+		int res = p->state.el_info[ELEM_FIRE].res_level;
 		inven_damage(p, ELEM_FIRE, MIN((dam_taken / 10) + 1, 3), res);
 	}
+	msg("%s", square_feat(cave, grid)->hurt_msg);
 	take_hit(p, dam_taken, square_feat(cave, grid)->die_msg);
 }
 
@@ -738,52 +736,52 @@ bool player_can_leap(struct player *p, struct loc grid, int dir)
 void player_mount(struct player *p, struct monster *mon, int dir)
 {
 	int y_offset, x_offset;
-	int old_y_chunk = player->grid.y / CHUNK_SIDE;
-	int old_x_chunk = player->grid.x / CHUNK_SIDE;
+	int old_y_chunk = p->grid.y / CHUNK_SIDE;
+	int old_x_chunk = p->grid.x / CHUNK_SIDE;
 
 	/* Move player by hand */
-	player->grid = mon->grid;
+	p->grid = mon->grid;
 
 	/* Updates */
-	player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW | PU_DISTANCE);
+	p->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW | PU_DISTANCE);
 
 	/* Redraw monster list */
-	player->upkeep->redraw |= (PR_MONLIST);
+	p->upkeep->redraw |= (PR_MONLIST);
 
 	/* Don't allow command repeat if moved away from item used. */
 	cmd_disable_repeat_floor_item();
 
 	/* Update grid */
-	square_set_mon(cave, player->grid, -1);
+	square_set_mon(cave, p->grid, -1);
 
 	/* Redraw */
-	square_light_spot(cave, player->grid);
+	square_light_spot(cave, p->grid);
 
 	/* Deal with change of chunk */
-	y_offset = player->grid.y / CHUNK_SIDE - old_y_chunk;
-	x_offset = player->grid.x / CHUNK_SIDE - old_x_chunk;
+	y_offset = p->grid.y / CHUNK_SIDE - old_y_chunk;
+	x_offset = p->grid.x / CHUNK_SIDE - old_x_chunk;
 
 	/* On the surface, re-align */
-	if (player->depth == 0) {
+	if (p->depth == 0) {
 		if ((y_offset != 0) || (x_offset != 0))
-			chunk_change(player, 0, y_offset, x_offset);
+			chunk_change(p, 0, y_offset, x_offset);
 	} else {
 		/* In the dungeon, change place */
 		int adj_index = chunk_offset_to_adjacent(0, y_offset, x_offset);
 
 		if (adj_index != DIR_NONE) {
-			player->last_place = player->place;
-			player->place = chunk_list[player->place].adjacent[adj_index];
+			p->last_place = p->place;
+			p->place = chunk_list[p->place].adjacent[adj_index];
 		}
 	}
 
-	player_handle_post_move(player, true, false);
+	player_handle_post_move(p, true, false);
 
 	/* Spontaneous Searching */
-	perceive(player);
+	perceive(p);
 
 	/* Remember this direction of movement */
-	player->previous_action[0] = dir;
+	p->previous_action[0] = dir;
 }
 
 /**
@@ -793,7 +791,7 @@ void player_dismount(struct player *p)
 {
 	int dir;
 	struct loc grid;
-	struct monster *mon = player->mount;
+	struct monster *mon = p->mount;
 
 	/* Get direction of dismount */
 	if (!get_rep_dir(&dir, false)) {
@@ -801,17 +799,17 @@ void player_dismount(struct player *p)
 	}
 
 	/* Check passability */
-	grid = loc_sum(player->grid, ddgrid[dir]);
+	grid = loc_sum(p->grid, ddgrid[dir]);
 	if (!square_ispassable(cave, grid)) {
 		msg("You can't dismount there.");
 		return;
 	}
 
 	/* No longer riding */
-	player->mount = NULL;
+	p->mount = NULL;
 
 	/* Jump off */
-	monster_swap(player->grid, grid);
+	monster_swap(p->grid, grid);
 
 	/* Update monster grid */
 	square_set_mon(cave, mon->grid, mon->midx);
@@ -822,7 +820,7 @@ void player_dismount(struct player *p)
  */
 bool player_is_riding(struct player *p)
 {
-	return (player->mount != NULL);
+	return (p->mount != NULL);
 }
 
 /**
@@ -839,16 +837,17 @@ void player_disembark(struct player *p)
 	}
 
 	/* Check passability */
-	grid = loc_sum(player->grid, ddgrid[dir]);
+	grid = loc_sum(p->grid, ddgrid[dir]);
 	if (!square_ispassable(cave, grid)) {
 		msg("You can't disembark there.");
 		return;
 	}
 
-	/* No longer riding */
+	/* No longer boating */
+	drop_near(cave, &player->boat, 0, p->grid, true, false);
 	player->boat = NULL;
 
-	/* Jump off */
+	/* Get out */
 	monster_swap(player->grid, grid);
 }
 
@@ -857,7 +856,23 @@ void player_disembark(struct player *p)
  */
 bool player_is_boating(struct player *p)
 {
-	return (player->boat != NULL);
+	return (p->boat != NULL);
+}
+
+
+/**
+ * Player is able to craft items
+ */
+bool player_can_craft(struct player *p)
+{
+	bool wood = player_active_ability(p, "Woodcraft");
+	bool leather = player_active_ability(p, "Leatherwork");
+	bool boat = player_active_ability(p, "Boat Building");
+	if (!(wood || leather || boat)) return false;
+	if (square_isdamaging(cave, p->grid)) return false;
+	if (player_is_riding(p)) return false;
+	if (player_is_boating(p)) return false;
+	return true;
 }
 
 /**
@@ -946,8 +961,9 @@ bool player_leave_deep_water(struct player *p, struct loc grid)
 	int difficulty = 9;
 	int score = MAX(p->state.stat_use[STAT_STR] * 2, 0);
 
-	/* Swimmers are fine */
+	/* Swimmers or those in boats are fine */
 	if (player_active_ability(p, "Swimming")) return true;
+	if (player_is_boating(p)) return true;
 
 	/* Disturb the player */
 	disturb(p, false);
@@ -962,7 +978,7 @@ bool player_leave_deep_water(struct player *p, struct loc grid)
 		p->previous_action[0] = ACTION_MISC;
 
 		/* Slowly drown */
-		take_hit(p, 3, "drowning");
+		player_take_terrain_damage(p, grid);
 
 		return false;
 	}
@@ -1666,6 +1682,22 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 	/* Flush command queue for involuntary moves */
 	if (is_involuntary) {
 		cmdq_flush();
+	}
+
+	/* Handle boat */
+	if (square_boat(cave, p->grid)) {
+		struct object *boat = square_boat(cave, p->grid);
+		square_excise_object(cave, p->grid, boat);
+		p->boat = boat;
+		boat->grid = loc(0, 0);
+		boat->floor = false;
+		boat->known->grid = loc(0, 0);
+		boat->known->floor = false;
+		assert(square_iswater(cave, p->grid));
+		if (p->mount) {
+			square_set_mon(cave, p->mount->grid, p->mount->midx);
+			p->mount = NULL;
+		}
 	}
 
 	/* Notice objects */

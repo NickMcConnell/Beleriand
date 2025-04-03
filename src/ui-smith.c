@@ -1525,9 +1525,13 @@ static int get_crafting_items(void)
 	int i, count = 0;
 	for (i = 0; i < z_info->k_max; i++) {
 		struct object_kind *kind = &k_info[i];
-		if (wood && of_has(kind->flags, OF_WOODCRAFT)) itemlist[count++] = kind;
+		if (wood && of_has(kind->flags, OF_WOODCRAFT) && !tval_is_boat_k(kind)){
+			itemlist[count++] = kind;
+		}
 		if (leather && of_has(kind->flags, OF_CRAFT)) itemlist[count++] = kind;
-		if (boat && of_has(kind->flags, OF_WOODCRAFT)) itemlist[count++] = kind;
+		if (boat && of_has(kind->flags, OF_WOODCRAFT) && tval_is_boat_k(kind)) {
+			itemlist[count++] = kind;
+		}
 	}
 	return count;
 }
@@ -1560,7 +1564,13 @@ static bool craft_action(struct menu *menu, const ui_event *event, int oid)
 		object_prep(obj, kind, player->depth, RANDOMISE);
 
 		/* Drop it near the player */
-		drop_near(cave, &obj, 0, player->grid, true, false);
+		if (tval_is_boat(obj)) {
+			player->boat = obj;
+			list_object(cave, obj);
+			msg("You get in the boat.");
+		} else {
+			drop_near(cave, &obj, 0, player->grid, true, false);
+		}
 		return false;
 	}
 	return true;

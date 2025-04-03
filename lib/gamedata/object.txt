@@ -2763,7 +2763,7 @@ weight:1000
 cost:100
 attack:0:0d0
 defence:0:0d0
-flags:WOODCRAFT
+flags:WOODCRAFT | NO_CARRY
 
 ##### Notes #####
 

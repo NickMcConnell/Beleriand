@@ -848,6 +848,12 @@ static struct object *floor_get_oldest_ignored(const struct player *p,
 	return ignore;
 }
 
+static bool square_holds_this_object(struct chunk *c, struct loc grid,
+									 struct object *obj)
+{
+	if (square_iswater(c, grid) && tval_is_boat(obj)) return true;
+	return square_isobjectholding(c, grid);
+}
 
 /**
  * Let the floor carry an object, deleting old ignored items if necessary.
@@ -862,7 +868,7 @@ bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 	struct object *obj, *ignore = floor_get_oldest_ignored(player, c, grid);
 
 	/* Fail if the square can't hold objects */
-	if (!square_isobjectholding(c, grid))
+	if (!square_holds_this_object(c, grid, drop))
 		return false;
 
 	/* Scan objects in that grid for combination */
@@ -1000,7 +1006,7 @@ static void drop_find_grid(const struct player *p, struct chunk *c,
 			if ((dist > 10) ||
 				!square_in_bounds_fully(c, try) ||
 				!los(c, start, try) ||
-				!square_isfloor(c, try) ||
+				!square_holds_this_object(c, try, drop) ||
 				square_istrap(c, try))
 				continue;
 
@@ -1084,7 +1090,8 @@ void drop_near(struct chunk *c, struct object **dropped, int chance,
 {
 	char o_name[80];
 	struct loc best = grid;
-	bool dont_ignore = verbose && !ignore_item_ok(player, *dropped);
+	bool dont_ignore = verbose && !ignore_item_ok(player, *dropped) &&
+		!tval_is_boat(*dropped);
 
 	/* Describe object */
 	object_desc(o_name, sizeof(o_name), *dropped, ODESC_BASE, player);

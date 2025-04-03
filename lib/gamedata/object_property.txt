@@ -506,6 +506,11 @@ type:flag
 subtype:basic
 code:WOODCRAFT
 
+name:no carry
+type:flag
+subtype:basic
+code:NO_CARRY
+
 name:no smithing
 type:flag
 subtype:basic

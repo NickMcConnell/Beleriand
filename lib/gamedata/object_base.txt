@@ -405,6 +405,6 @@ flags:EASY_KNOW
 name:boat:Boat~
 graphics:umber
 break:0
-# max-stack:10
+max-stack:1
 flags:EASY_KNOW
 

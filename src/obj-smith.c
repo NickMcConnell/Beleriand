@@ -1640,9 +1640,7 @@ void do_cmd_smith_aux(bool flush)
  */
 void do_cmd_smith(struct command *cmd)
 {
-	bool wood = player_active_ability(player, "Woodcraft");
-	bool leather = player_active_ability(player, "Leatherwork");
-	if (wood || leather) {
+	if (player_can_craft(player)) {
 		if (!get_check("Do you want to look at smithing options? ")) {
 			craft_object();
 			return;

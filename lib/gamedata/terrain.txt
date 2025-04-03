@@ -336,6 +336,10 @@ desc: across.  You and your enemies are easier to hit when in water, and most
 desc: spells (especially water-based ones) gain in strength.  It is hard to
 desc: dodge in water.  However, fire-based spells become much less powerful,
 desc: so find a lake if you battle Smaug.
+walk-msg:The water is deep!  Really step in?
+run-msg:Deep water blocks your path.  Step into it?
+hurt-msg:You are drowning!
+die-msg:drowning
 
 code:L_TREE
 name:lowland trees
