@@ -833,26 +833,13 @@ static const struct cave_profile *choose_profile(struct player *p)
 	const struct cave_profile *profile = NULL;
 
 	/* Make the profile choice */
-	if (p->depth == 0) {
-		profile = find_cave_profile("gates");
-	} else if (p->depth == z_info->dun_depth) {
+	if (p->depth == z_info->dun_depth) {
 		profile = find_cave_profile("throne");
 	} else {
 		int total_alloc = 0;
 		size_t i;
 
 		/*
-		 * Use PowerWyrm's selection algorithm from
-		 * get_random_monster_object() so the selection can be done in
-		 * one pass and without auxiliary storage (at the cost of more
-		 * calls to randint0()).  The mth valid profile out of n valid
-		 * profiles appears with probability, alloc(m) /
-		 * sum(i = 0 to m, alloc(i)) * product(j = m + 1 to n - 1,
-		 * 1 - alloc(j) / sum(k = 0 to j, alloc(k))) which is equal to
-		 * alloc(m) / sum(i = 0 to m, alloc(i)) * product(j = m + 1 to
-		 * n - 1, sum(k = 0 to j - 1, alloc(k)) / sum(l = 0 to j,
-		 * alloc(l))) which, by the canceling of successive numerators
-		 * and denominators is alloc(m) / sum(l = 0 to n - 1, alloc(l)).
 		 */
 		for (i = 0; i < z_info->dungeon_max; i++) {
 			struct cave_profile *test_profile = &cave_profiles[i];
@@ -863,7 +850,7 @@ static const struct cave_profile *choose_profile(struct player *p)
 			}
 		}
 		if (!profile) {
-			profile = find_cave_profile("cave");
+			profile = find_cave_profile("angband");
 		}
 	}
 
