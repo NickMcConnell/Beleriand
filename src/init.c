@@ -1379,9 +1379,18 @@ static enum parser_error parse_landmark_name(struct parser *p)
 	struct landmark *l = mem_zalloc(sizeof *l);
 
 	l->name = string_make(parser_getstr(p, "name"));
-	l->map_z = 0;
 	l->next = h;
 	parser_setpriv(p, l);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_landmark_profile(struct parser *p)
+{
+	struct landmark *l = parser_priv(p);
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	l->profile = string_make(parser_getstr(p, "profile"));
 	return PARSE_ERROR_NONE;
 }
 
@@ -1440,6 +1449,7 @@ struct parser *init_parse_landmark(void)
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_landmark_name);
+	parser_reg(p, "profile str profile", parse_landmark_profile);
 	parser_reg(p, "map-y uint map-y", parse_landmark_map_y);
 	parser_reg(p, "map-x uint map-x", parse_landmark_map_x);
 	parser_reg(p, "height uint height", parse_landmark_height);
@@ -1488,6 +1498,7 @@ static void cleanup_landmark(void)
 	int idx;
 	for (idx = 0; idx < z_info->landmark_max; idx++) {
 		mem_free(landmark_info[idx].name);
+		mem_free(landmark_info[idx].profile);
 		mem_free(landmark_info[idx].text);
 		mem_free(landmark_info[idx].message);
 	}

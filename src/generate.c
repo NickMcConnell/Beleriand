@@ -836,20 +836,14 @@ static const struct cave_profile *choose_profile(struct player *p)
 	if (p->depth == z_info->dun_depth) {
 		profile = find_cave_profile("throne");
 	} else {
-		int total_alloc = 0;
-		size_t i;
-
-		/*
-		 */
-		for (i = 0; i < z_info->dungeon_max; i++) {
-			struct cave_profile *test_profile = &cave_profiles[i];
-			if (test_profile->alloc <= 0) continue;
-			total_alloc += test_profile->alloc;
-			if (randint0(total_alloc) < test_profile->alloc) {
-				profile = test_profile;
+		struct chunk_ref pref = chunk_list[player->place];
+		struct landmark *landmark = find_landmark(pref.x_pos, pref.y_pos, 3);
+		if (landmark) {
+			profile = find_cave_profile(landmark->profile);
+			if (!profile) {
+				quit_fmt("Failed to find cave profile for %s!", landmark->name);
 			}
-		}
-		if (!profile) {
+		} else {//TODO replace with "natural" for random caves
 			profile = find_cave_profile("angband");
 		}
 	}
