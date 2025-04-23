@@ -89,10 +89,10 @@ struct landmark {
 	struct landmark *next;
 	unsigned int lidx;
 	char *name;
+	char *profile;
 	char *message;
 	char *text;
 
-	int map_z;         /**< Map z coordinate of landmark */
 	int map_y;         /**< Map y coordinate of landmark */
 	int map_x;         /**< Map x coordinate of landmark */
 	int height;        /**< Number of chunks high */

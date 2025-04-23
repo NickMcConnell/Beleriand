@@ -1060,6 +1060,33 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 
 
 /**
+ * Check if we're in or beneath a landmark, give or take tolerance
+ */
+struct landmark *find_landmark(int x_pos, int y_pos, int tolerance)
+{
+	int n;
+
+	/* Check each landmark */
+	for (n = 0; n < z_info->landmark_max; n++) {
+		struct landmark *landmark = &landmark_info[n];
+
+		/* Must satisfy all the conditions */
+		if (landmark->map_y > y_pos + tolerance)
+			continue;
+		if (landmark->map_y + landmark->height <= y_pos - tolerance)
+			continue;
+		if (landmark->map_x > x_pos + tolerance)
+			continue;
+		if (landmark->map_x + landmark->width <= x_pos - tolerance)
+			continue;
+
+		return landmark;
+	}
+
+	return NULL;
+}
+
+/**
  * Dump the given level for post-mortem analysis; handle all I/O.
  * \param basefilename Is the base name (no directory or extension) for the
  * file to use.  If NULL, "dumpedlevel" will be used.
@@ -1084,7 +1111,6 @@ void dump_level_simple(const char *basefilename, const char *title,
 		}
 	}
 }
-
 
 /**
  * Dump the given level to a file for post-mortem analysis.

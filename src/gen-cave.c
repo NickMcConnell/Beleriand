@@ -1647,14 +1647,13 @@ struct chunk *throne_gen(struct player *p)
 /**
  * Load the appropriate bit of a landmark from the text file
  */
-bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
-					int y_coord, int x_coord)
+bool build_landmark(struct chunk *c, struct landmark *landmark, int map_y,
+					int map_x, int y_coord, int x_coord)
 {
 	/* Where in the arena the chunk is going */
 	struct loc target = loc(x_coord * CHUNK_SIDE, y_coord * CHUNK_SIDE);
 
 	/* Set all the chunk reading data */
-	struct landmark *landmark = &landmark_info[index];
 	struct loc top_left = loc((map_x - landmark->map_x) * CHUNK_SIDE,
 							  (map_y - landmark->map_y) * CHUNK_SIDE);
 	struct loc bottom_right = loc_sum(top_left, loc(CHUNK_SIDE, CHUNK_SIDE));

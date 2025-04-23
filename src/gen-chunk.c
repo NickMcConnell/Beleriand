@@ -1090,30 +1090,12 @@ static void chunk_generate(struct chunk *c, struct gen_loc *loc,
 						   struct chunk_ref *ref, int y_coord, int x_coord,
 						   struct connector *first)
 {
-	int n, z_pos = ref->z_pos, y_pos = ref->y_pos, x_pos = ref->x_pos;
-
-	/* Check for landmarks */
-	for (n = 0; n < z_info->landmark_max; n++) {
-		struct landmark *landmark = &landmark_info[n];
-
-		/* Must satisfy all the conditions */
-		if (landmark->map_z != z_pos)
-			continue;
-		if (landmark->map_y > y_pos)
-			continue;
-		if (landmark->map_y + landmark->height <= y_pos)
-			continue;
-		if (landmark->map_x > x_pos)
-			continue;
-		if (landmark->map_x + landmark->width <= x_pos)
-			continue;
-
-		break;
-	}
+	int y_pos = ref->y_pos, x_pos = ref->x_pos;
+	struct landmark *landmark = find_landmark(x_pos, y_pos, 0);
 
 	/* Build the landmark... */
-	if (n < z_info->landmark_max) {
-		build_landmark(c, n, y_pos, x_pos, y_coord, x_coord);
+	if (landmark) {
+		build_landmark(c, landmark, y_pos, x_pos, y_coord, x_coord);
 	} else {
 		/* or set the RNG to give reproducible results... */
 		while (!loc->seed) {

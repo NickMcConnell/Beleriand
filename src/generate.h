@@ -292,8 +292,8 @@ const char *get_level_profile_name_from_index(int i);
 /* gen-cave.c */
 struct chunk *angband_gen(struct player *p);
 struct chunk *throne_gen(struct player *p);
-bool build_landmark(struct chunk *c, int index, int map_y, int map_x,
-					int y_coord, int x_coord);
+bool build_landmark(struct chunk *c, struct landmark *landmark, int map_y,
+					int map_x, int y_coord, int x_coord);
 
 /* gen-surface.c */
 void map_river_miles(struct square_mile *sq_mile);
@@ -395,6 +395,7 @@ void get_terrain(struct chunk *c, struct loc top_left, struct loc bottom_right,
 				 struct loc place, int height, int width, int rotate,
 				 bool reflect, bitflag *flags, bool floor, const char *data,
 				 bool landmark);
+struct landmark *find_landmark(int x_pos, int y_pos, int tolerance);
 void dump_level_simple(const char *basefilename, const char *title,
 	struct chunk *c);
 void dump_level(ang_file *fo, const char *title, struct chunk *c, int **dist);
