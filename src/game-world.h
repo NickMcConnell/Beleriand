@@ -36,10 +36,16 @@ enum {
 #define GEN_LOC_INCR 128
 
 /**
- * Maximum x and y values for square miles
+ * Constants for the map, based on the second map of Beleriand in Volume 11
+ * of The History of Middle Earth.  Each grid represents a square of side
+ * two yards, so a mile is 44x20x2=1760 yards, and the map squares intended to
+ * be 50x50 miles are 49x49 for (game) historical reasons.
  */
-#define MAX_Y_REGION (12 * 49)
-#define MAX_X_REGION (15 * 49)
+#define CHUNK_SIDE 44
+#define CPM 20					/* Chunks per mile */
+#define MPS 49					/* Square miles per map square */
+#define MAX_Y_REGION (12 * MPS)
+#define MAX_X_REGION (15 * MPS)
 
 /**
  * Codes for the different realms
