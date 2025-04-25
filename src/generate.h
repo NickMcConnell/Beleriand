@@ -17,6 +17,18 @@
 #endif
 
 /**
+ * Constants for generation.  Note that MAX_CHUNKS needs to be at least three
+ * times ARENA_CHUNKS squared to allow proper saving off and reloading of
+ * chunks from the chunk_list.
+ */
+#define ARENA_CHUNKS 3
+#define ARENA_SIDE (CHUNK_SIDE * ARENA_CHUNKS)
+#define WIDEN_RATIO 25			/* River miles length per extra grid width */
+#define MAX_CHUNKS 256
+#define CHUNK_TEMP -2
+#define CHUNK_CUR -1
+
+/**
  * Dungeon allocation places and types, used with alloc_object().
  */
 enum
@@ -261,21 +273,6 @@ struct vault {
 #define SYMTR_FLAG_NO_REF (2)
 #define SYMTR_FLAG_FORCE_REF (4)
 #define SYMTR_MAX_WEIGHT (32768)
-
-/**
- * Constants for the map.  Note that MAX_CHUNKS needs to be at least three times
- * ARENA_CHUNKS squared to allow proper saving off and reloading of chunks from
- * the chunk_list
- */
-#define CHUNK_SIDE 44
-#define ARENA_CHUNKS 3
-#define ARENA_SIDE (CHUNK_SIDE * ARENA_CHUNKS)
-#define CPM 20					/* Chunks per mile */
-#define MPS 49					/* Square miles per map square */
-#define WIDEN_RATIO 25			/* River miles length per extra grid width */
-#define MAX_CHUNKS 256
-#define CHUNK_TEMP -2
-#define CHUNK_CUR -1
 
 extern struct dun_data *dun;
 extern struct vault *vaults;
