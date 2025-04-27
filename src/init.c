@@ -2425,6 +2425,17 @@ static enum parser_error parse_house_race(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_house_start(struct parser *p) {
+	struct player_house *h = parser_priv(p);
+
+	if (!h)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	h->start_x = parser_getint(p, "x");
+	h->start_y = parser_getint(p, "y");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_house_language(struct parser *p)
 {
 	struct player_house *h = parser_priv(p);
@@ -2513,6 +2524,7 @@ static struct parser *init_parse_house(void) {
 	parser_reg(p, "alt-name str name", parse_house_alt_name);
 	parser_reg(p, "short-name str name", parse_house_short_name);
 	parser_reg(p, "race str name", parse_house_race);
+	parser_reg(p, "start int x int y", parse_house_start);
 	parser_reg(p, "language ?str language", parse_house_language);
 	parser_reg(p, "stats int str int dex int con int gra", parse_house_stats);
 	parser_reg(p, "skills int mel int arc int evn int stl int per int wil int smt int sng", parse_house_skills);

@@ -37,6 +37,8 @@ name:House of Feanor
 alt-name:Feanor's House
 short-name:Feanor
 race:Noldor
+# Southern Himring
+start:11250:3530
 language:QUENYA | SINDARIN
 stats:0:1:0:0
 skills:0:0:0:0:0:0:1:0
@@ -50,6 +52,8 @@ name:House of Fingolfin
 alt-name:Fingolfin's House
 short-name:Fingolfin
 race:Noldor
+# Eastern Mithrim
+start:6110:2190
 language:QUENYA | SINDARIN
 stats:0:0:1:0
 skills:0:0:0:0:0:1:0:0
@@ -63,6 +67,8 @@ name:House of Finarfin
 alt-name:Finarfin's House
 short-name:Finarfin
 race:Noldor
+# Nargothrond
+start:5930:6899
 language:QUENYA | SINDARIN
 stats:0:0:0:1
 skills:0:0:0:0:1:0:0:0
@@ -75,6 +81,8 @@ name:Of Doriath
 alt-name:Doriath
 short-name:Doriath
 race:Sindar
+# Menegroth
+start:9570:5710
 language:SINDARIN
 stats:0:0:0:1
 skills:0:0:0:0:0:0:0:1
@@ -87,6 +95,8 @@ name:Of the Falas
 alt-name:the Falas
 short-name:Falathrim
 race:Sindar
+# Eglarest
+start:3050:6490
 language:SINDARIN
 stats:0:1:0:0
 skills:0:1:0:0:0:0:0:0
@@ -99,6 +109,8 @@ name:House of Nogrod
 alt-name:Nogrod
 short-name:Nogrod
 race:Naugrim
+# Nogrod
+start:14250:6010
 language:KHUZDUL
 stats:0:1:0:0
 skills:0:0:0:0:0:0:1:0
@@ -110,6 +122,8 @@ name:House of Belegost
 alt-name:Belegost
 short-name:Belegost
 race:Naugrim
+# Belegost
+start:14130:5650
 language:KHUZDUL
 stats:1:0:0:0
 skills:0:0:0:0:0:1:0:0
@@ -122,6 +136,8 @@ name:House of Beor
 alt-name:Beor's House
 short-name:Beor
 race:Edain
+# Drûn
+start:8570:1950
 language:TALISKAN
 stats:0:0:0:1
 skills:0:0:1:0:0:0:0:0
@@ -134,6 +150,8 @@ name:People of Haleth
 alt-name:Haleth's People
 short-name:Haleth
 race:Edain
+# Brethil
+start:6030:4150
 language:HALETHIAN
 stats:0:1:0:0
 skills:0:0:0:1:0:0:0:0
@@ -146,6 +164,8 @@ name:House of Hador
 alt-name:Hador's House
 short-name:Hador
 race:Edain
+# Dor-Lómin
+start:5050:2810
 language:TALISKAN
 stats:1:0:0:0
 skills:1:0:0:0:0:0:0:0
