@@ -902,16 +902,22 @@ void do_cmd_accept_character(struct command *cmd)
 
 	player->place = player->home;
 
-	/* Dummy chunk (stairs to Angband), for now */
-	player->place = 0; //TEMP
+	/* Starting data for intial chunk */
+	player->place = 0;
+	player->depth = 0;
 	chunk_list[0].z_pos = 0;
+	chunk_list[0].y_pos = player->house->start_y;
+	chunk_list[0].x_pos = player->house->start_x;
+	chunk_list[0].region = find_region(chunk_list[0].y_pos,chunk_list[0].x_pos);
+
+	// Stairs to Angband
 	//chunk_list[0].y_pos = 839;
 	//chunk_list[0].x_pos = 7926;
 	//chunk_list[0].region = find_region(839, 7926);
-	chunk_list[0].y_pos = 4910;
-	chunk_list[0].x_pos = 3230;
-	chunk_list[0].region = find_region(4910, 3230);
-	player->depth = 0;
+	// Square mile with a river
+	//chunk_list[0].y_pos = 4910;
+	//chunk_list[0].x_pos = 3230;
+	//chunk_list[0].region = find_region(4910, 3230);
 
 	/* No locations generated yet */
 	gen_loc_cnt = 0;

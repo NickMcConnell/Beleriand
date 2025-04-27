@@ -298,6 +298,8 @@ struct player_house {
 	const char *desc;
 	unsigned int hidx;
 
+	int start_x;		/**< Starting location */
+	int start_y;		/**< Starting location */
 	int stat_adj[STAT_MAX];		/**< Stat modifiers */
 	int skill_adj[SKILL_MAX];	/**< Skill modifiers */
 	bitflag languages[LANGUAGE_SIZE];	/**< Languages */
