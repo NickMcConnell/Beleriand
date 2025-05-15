@@ -83,13 +83,10 @@ alloc:-1
 
 room:Throne room:0:0:0:0:0
 
-## Nargothrond
-#name:nargothrond
-#biome:!
-
-## Menegroth
-#name:menegroth
-#biome:!
+## Elven - TODO just enough here to make it basically run
+name:elven
+biome:!
+params:44:50:300:2
 
 ## Dwarven
 #name:dwarven
