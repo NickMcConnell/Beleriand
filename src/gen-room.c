@@ -276,6 +276,32 @@ static void fill_circle(struct chunk *c, int y0, int x0, int radius, int border,
 }
 
 /**
+ * Fill an ellipse with the given feature/info.
+ * \param c the current chunk
+ * \param y0 the ellipse centre
+ * \param x0 the ellipse centre
+ * \param y_radius the half-axis in the y direction
+ * \param x_radius the half-axis in the x direction
+ * \param feat the terrain feature
+ * \param flag the SQUARE_* flag we are marking with
+ * \param light lit or not
+ */
+void fill_ellipse(struct chunk *c, int y0, int x0, int y_radius, int x_radius,
+				  int feat, int flag, bool light)
+{
+	int y;
+	for (y = -y_radius; y <= y_radius; y++) {
+		int x = 0;
+		while (x * x * y_radius * y_radius + y * y * x_radius * x_radius <=
+			   y_radius * y_radius * x_radius * x_radius) {
+			x++;
+		}
+
+		fill_xrange(c, y0 + y, x0 - x, x0 + x, feat, flag, light);
+	}
+}
+
+/**
  * Fill the lines of a cross/plus with a feature.
  *
  * \param c the current chunk
@@ -1474,6 +1500,55 @@ bool build_circular(struct chunk *c, struct loc centre)
 
 	/* Especially large circular rooms will have a middle chamber */
 	if (radius - 4 > 0 && randint0(4) < radius - 4) {
+		struct loc offset;
+
+		event_signal_string(EVENT_GEN_ROOM_CHOOSE_SUBTYPE, "middle chamber");
+
+		/* choose a random direction */
+		rand_dir(&offset);
+
+		/* draw a room with a closed door on a random side */
+		draw_rectangle(c, centre.y - 2, centre.x - 2, centre.y + 2,
+			centre.x + 2, FEAT_GRANITE, SQUARE_WALL_INNER, false);
+		place_closed_door(c, loc(centre.x + offset.x * 2,
+								 centre.y + offset.y * 2));
+	}
+
+	return true;
+}
+
+/**
+ * Build an elliptical room (interior radius 4-7).
+ * \param c the chunk the room is being built in
+ * \param centre the room centre; out of chunk centre invokes find_space()
+ * \return success
+ */
+bool build_elliptical(struct chunk *c, struct loc centre)
+{
+	/* Pick a room size */
+	int y_radius = 2 + randint1(2) + randint1(5);
+	int x_radius = 2 + randint1(2) + randint1(5);
+
+	/* Occasional light */
+	bool light = player->depth <= randint1(25) ? true : false;
+
+	/* Find and reserve lots of space in the dungeon.  Get center of room. */
+	event_signal_size(EVENT_GEN_ROOM_CHOOSE_SIZE,
+		2 * y_radius + 10, 2 * x_radius + 10);
+	if (!find_space(&centre, 2 * y_radius + 10, 2 * x_radius + 10))
+		return (false);
+
+	/* Mark as a room. */
+	fill_ellipse(c, centre.y, centre.x, y_radius + 1, x_radius + 1,
+				 FEAT_FLOOR, SQUARE_NONE, light);
+
+	/* Convert some floors to be the outer walls. */
+	set_bordering_walls(c, centre.y - y_radius - 2, centre.x - x_radius - 2,
+		centre.y + y_radius + 2, centre.x + x_radius + 2);
+
+	/* Especially large elliptical rooms will have pillars at the foci */
+	//TODO actually do this
+	if (y_radius - 5 > 0 && randint0(4) < x_radius - 4) {//WRONG
 		struct loc offset;
 
 		event_signal_string(EVENT_GEN_ROOM_CHOOSE_SUBTYPE, "middle chamber");

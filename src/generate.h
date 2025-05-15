@@ -288,6 +288,7 @@ const char *get_level_profile_name_from_index(int i);
 
 /* gen-cave.c */
 struct chunk *angband_gen(struct player *p);
+struct chunk *elven_gen(struct player *p);
 struct chunk *throne_gen(struct player *p);
 bool build_landmark(struct chunk *c, struct landmark *landmark, int map_y,
 					int map_x, int y_coord, int x_coord);
@@ -329,6 +330,8 @@ void chunk_change(struct player *p, int z_offset, int y_offset, int x_offset);
 struct vault *random_vault(int depth, const char *typ, bool forge);
 void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag);
+void fill_ellipse(struct chunk *c, int y0, int x0, int y_radius, int x_radius,
+				  int feat, int flag, bool light);
 void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag);
 void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat, 
 					int flag, bool overwrite_perm);
@@ -341,6 +344,7 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 bool build_staircase(struct chunk *c, struct loc centre);
 bool build_simple(struct chunk *c, struct loc centre);
 bool build_circular(struct chunk *c, struct loc centre);
+bool build_elliptical(struct chunk *c, struct loc centre);
 bool build_overlap(struct chunk *c, struct loc centre);
 bool build_crossed(struct chunk *c, struct loc centre);
 bool build_room_of_chambers(struct chunk *c, struct loc centre);
