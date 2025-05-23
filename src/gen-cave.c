@@ -1587,8 +1587,74 @@ struct chunk *angband_gen(struct player *p) {
 /**
  * Create a level for Menegroth or Nargothrond
  * TODO make this more than just a room, current plan is overlapping ellipses
+ * and maybe some column rooms
  */
 struct chunk *elven_gen(struct player *p)
+{
+	int i;
+	struct chunk *c;
+	struct connector *join;
+	struct loc pgrid = player->grid;
+
+	/* Set the block height and width */
+	dun->block_hgt = dun->profile->block_size;
+	dun->block_wid = dun->profile->block_size;
+
+	/* Restrict to single-screen size */
+	c = chunk_new(ARENA_SIDE, ARENA_SIDE);
+	c->depth = p->depth;
+
+	/* Fill cave area with basic granite */
+	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_GRANITE,
+				   SQUARE_WALL_SOLID);
+
+	/* Actual maximum number of blocks on this level */
+	dun->row_blocks = c->height / dun->block_hgt;
+	dun->col_blocks = c->width / dun->block_wid;
+
+	/* Initialize the room table */
+	dun->room_map = mem_zalloc(dun->row_blocks * sizeof(bool*));
+	for (i = 0; i < dun->row_blocks; i++)
+		dun->room_map[i] = mem_zalloc(dun->col_blocks * sizeof(bool));
+
+	/* Generate permanent walls around the edge of the generated area */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM, SQUARE_NONE,
+				   true);
+
+	/* Build a simple ellipse as a placeholder for now */
+	fill_ellipse(c, (c->height - 1) / 2, (c->width - 1) / 2,
+				 CHUNK_SIDE / 2, CHUNK_SIDE / 4, FEAT_FLOOR, SQUARE_NONE, true);
+
+	/* Place staircases */
+	for (join = dun->join; join; join = join->next) {
+		if (!(feat_is_stair(join->feat) || feat_is_shaft(join->feat))) continue;
+
+		/* Place the correct stair or shaft */
+		square_set_feat(c, join->grid, join->feat);
+	}
+
+	if (!square_isupstairs(c, pgrid)) {
+		msg("Failed to place player on an up staircase (elven prototype)");
+	}
+
+	/* Delete any monster on the starting square */
+	delete_monster(pgrid);
+
+	/* Place the player */
+	player_place(c, p, pgrid);
+
+	return c;
+}
+
+
+/* ----------------- DWARVEN --------------- */
+
+/**
+ * Create a level for Belegost or Nogrod
+ * TODO make this more than just a room, current plan is long mining tunnels,
+ * column rooms, etc
+ */
+struct chunk *dwarven_gen(struct player *p)
 {
 	int i;
 	struct chunk *c;

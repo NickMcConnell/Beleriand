@@ -389,6 +389,15 @@ flags:TORCH | SUN
 desc:An open road.  Can be walked across by anything, and can
 desc: hold traps or items.  Does not break line of sight.
 
+code:ROCKY_GROUND
+name:rocky ground
+graphics:.:W
+priority:13
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | RUN1 | TRAP | MTRAP
+flags:TORCH | SUN
+desc:Open rocky ground.  Can be walked across by anything, and can
+desc: hold traps or items.  Does not break line of sight.
+
 code:SAND
 name:sand
 graphics:.:Y

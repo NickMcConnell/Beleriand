@@ -280,6 +280,7 @@ void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx)
 	gen_loc_list[idx].x_pos = x_pos;
 	gen_loc_list[idx].y_pos = y_pos;
 	gen_loc_list[idx].z_pos = z_pos;
+	gen_loc_list[idx].seed = 0;
 	gen_loc_list[idx].change = NULL;
 	gen_loc_list[idx].join = NULL;
 	gen_loc_list[idx].river_piece = NULL;

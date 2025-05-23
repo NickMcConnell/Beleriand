@@ -289,6 +289,7 @@ const char *get_level_profile_name_from_index(int i);
 /* gen-cave.c */
 struct chunk *angband_gen(struct player *p);
 struct chunk *elven_gen(struct player *p);
+struct chunk *dwarven_gen(struct player *p);
 struct chunk *throne_gen(struct player *p);
 bool build_landmark(struct chunk *c, struct landmark *landmark, int map_y,
 					int map_x, int y_coord, int x_coord);
