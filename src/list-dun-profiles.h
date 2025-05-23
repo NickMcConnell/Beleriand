@@ -6,4 +6,5 @@
  */
 DUN("angband", angband)
 DUN("elven", elven)
+DUN("dwarven", dwarven)
 DUN("throne", throne)

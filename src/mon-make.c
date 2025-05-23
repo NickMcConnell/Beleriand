@@ -1166,6 +1166,9 @@ static bool place_new_monster_group(struct chunk *c, struct loc grid,
 		for (i = start; (i < 8) && (loc_num < total); i++) {
 			struct loc try = loc_sum(loc_list[n], ddgrid_ddd[i % 8]);
 
+			/* Check bounds */
+			if (!square_in_bounds(c, try)) continue;
+
 			/* Walls and Monsters block flow */
 			if (!square_isempty(c, try)) continue;
 

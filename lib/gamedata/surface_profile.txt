@@ -21,7 +21,7 @@ feat:highland trees
 feat:pile of passable rubble
 feat:granite wall
 feat:quartz vein
-proportion:24
+proportion:20
 size:4+d5
 
 ## Forest
@@ -45,7 +45,7 @@ feat:grass
 feat:pile of passable rubble
 feat:granite wall
 feat:quartz vein
-proportion:48
+proportion:20
 size:4+d5
 
 ## Lake
@@ -73,12 +73,7 @@ size:4+d5
 ## Mountain
 name:mountain
 code:^
-feat:mountain
-area:plateau
-frequency:240
-attempts:2
-feat:grass
-size:1+d5
+feat:rocky ground
 area:pond
 frequency:90
 feat:shallow water
@@ -87,9 +82,13 @@ area:snow
 frequency:90
 feat:snow
 size:1+d2
+formation:mountain
+feat:mountain
+proportion:40
+size:4+d5
 formation:basic
 feat:pile of passable rubble
-feat:road
+feat:rocky ground
 feat:grass
 feat:sand
 feat:highland trees
@@ -107,11 +106,11 @@ feat:pile of passable rubble
 feat:granite wall
 feat:quartz vein
 feat:sand
-proportion:50
+proportion:10
 size:4+d5
 formation:clump
 feat:reeds
-proportion:10
+proportion:30
 size:4+d5
 
 ## Dark forest
@@ -134,13 +133,17 @@ feat:grass
 feat:pile of passable rubble
 feat:granite wall
 feat:quartz vein
-proportion:48
+proportion:10
 size:4+d5
 
 ## Impassable mountain
 name:impassable mountain
 code:X
+feat:rocky ground
+formation:mountain
 feat:mountain
+proportion:80
+size:4+d5
 
 ## Desert
 name:desert
@@ -159,7 +162,7 @@ feat:grass
 feat:pile of passable rubble
 feat:granite wall
 feat:quartz vein
-proportion:16
+proportion:50
 size:4+d5
 
 ## Snow
@@ -172,7 +175,7 @@ attempts:2
 feat:ice
 size:1+d4
 formation:basic
-proportion:48
+proportion:20
 size:4+d5
 
 ## Town

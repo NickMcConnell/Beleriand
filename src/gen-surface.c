@@ -2200,11 +2200,11 @@ static void make_piece(struct chunk *c, enum biome_type terrain,
 			form = form->next;
 			continue;
 		}
-		form_grids = size / form->proportion;
+		form_grids = (size * form->proportion) / 100;
 		if (one_in_(2)) {
-			form_grids -= randint0(form_grids / 2);
+			form_grids -= randint0(form_grids / 4);
 		} else {
-			form_grids += randint0(form_grids / 2);
+			form_grids += randint0(form_grids / 4);
 		}
 		while (form_grids > 0) {
 			form_grids -= make_formation(c, piece, s->base_feats,
