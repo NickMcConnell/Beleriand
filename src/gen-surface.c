@@ -27,6 +27,7 @@
 #include "init.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "player-history.h"
 #include "player-util.h"
 #include "project.h"
 
@@ -2257,6 +2258,19 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 	struct gen_loc *location;
 	int lower, upper, i;
 	bool found;
+
+	/* Player now counts as having visited this region */
+	if (!player->region_visit[region->index]) {
+		char buf[120];
+		int new_exp = 200;
+		player->region_visit[region->index] = true;
+		if (turn != 1) {
+			player_exp_gain(player, new_exp);
+			player->explore_exp += new_exp;
+			strnfmt(buf, sizeof(buf), "Visited %s.", region->name);
+			history_add(player, buf, HIST_VISIT_REGION);
+		}
+	}
 
 	/* Get the standard biome based on region.txt */
 	standard = square_miles[ref->y_pos / CPM][ref->x_pos / CPM].biome;

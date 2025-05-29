@@ -504,6 +504,7 @@ struct player {
 
 	int16_t max_depth;	/* Max depth */
 	int16_t depth;		/* Cur depth */
+	bool region_visit[100];
 
 	int16_t home;		/* Home */
 	int16_t place;		/* Cur place */
@@ -515,7 +516,7 @@ struct player {
 
 	int32_t encounter_exp;	/* Total experience from ecountering monsters */
 	int32_t kill_exp;		/* Total experience from killing monsters */
-	int32_t descent_exp;	/* Total experience from descending to new levels */
+	int32_t explore_exp;	/* Total experience from visiting level/regions */
 	int32_t ident_exp;		/* Total experience from identifying objects */
 
 	int16_t mhp;		/* Max hit pts */
