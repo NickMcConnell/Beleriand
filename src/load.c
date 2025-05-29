@@ -769,7 +769,7 @@ int rd_player(void)
 	rd_s32b(&player->exp);
 	rd_s32b(&player->encounter_exp);
 	rd_s32b(&player->kill_exp);
-	rd_s32b(&player->descent_exp);
+	rd_s32b(&player->explore_exp);
 	rd_s32b(&player->ident_exp);
 	rd_s32b(&player->turn);
 
@@ -780,6 +780,14 @@ int rd_player(void)
 	rd_s16b(&player->csp);
 
 	rd_s16b(&player->max_depth);
+	for (i = 0; i < z_info->region_max; i++) {
+		rd_byte(&tmp8u);
+		if (tmp8u) {
+			player->region_visit[i] = true;
+		} else {
+			player->region_visit[i] = false;
+		}
+	}
 
 	/* Hack -- Repair maximum dungeon level */
 	if (player->max_depth < 0) player->max_depth = 1;

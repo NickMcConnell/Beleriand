@@ -497,7 +497,7 @@ void wr_player(void)
 	wr_s32b(player->exp);
 	wr_s32b(player->encounter_exp);
 	wr_s32b(player->kill_exp);
-	wr_s32b(player->descent_exp);
+	wr_s32b(player->explore_exp);
 	wr_s32b(player->ident_exp);
 	wr_s32b(player->turn);
 
@@ -507,8 +507,15 @@ void wr_player(void)
 	wr_s16b(player->msp);
 	wr_s16b(player->csp);
 
-	/* Max Dungeon Level */
+	/* Max Dungeon Level, regions visited */
 	wr_s16b(player->max_depth);
+	for (i = 0; i < z_info->region_max; i++) {
+		if (player->region_visit[i]) {
+			wr_byte(1);
+		} else {
+			wr_byte(0);
+		}
+	}
 
 	/* Location info */
 	wr_s16b(player->home);

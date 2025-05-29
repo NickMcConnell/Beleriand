@@ -1174,7 +1174,7 @@ void on_new_level(void)
 			if (i > 1) {
 				int new_exp = i * 50;
 				player_exp_gain(player, new_exp);
-				player->descent_exp += new_exp;
+				player->explore_exp += new_exp;
 			}
 		}
 		player->max_depth = player->depth;
