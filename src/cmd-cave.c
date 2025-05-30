@@ -97,11 +97,11 @@ static void do_cmd_go_up_aux(void)
 	player->previous_action[0] = ACTION_MISC;
 
 	/* Cannot flee Morgoth's throne room without a Silmaril */
-	if ((player->max_depth == z_info->dun_depth) &&
-		(silmarils_possessed(player) == 0)) {
-		msg("You enter a maze of staircases, but cannot find your way.");
-		return;
-	}
+	//if ((player->max_depth == z_info->dun_depth) &&
+	//	(silmarils_possessed(player) == 0)) {
+	//	msg("You enter a maze of staircases, but cannot find your way.");
+	//	return;
+	//}
 
 	/* Monsters may get opportunist or zone of control attacks */
 	monster_opportunist_or_zone(player, player->grid);
@@ -110,15 +110,16 @@ static void do_cmd_go_up_aux(void)
 	if (player->chp < 0) return;
 
 	/* Deal with cases where you can find your way */
-	msgt(MSG_STAIRS_UP, "You enter a maze of up staircases.");
+	msgt(MSG_STAIRS_UP, "You climb the stairs.");
 
 	/* Escaping */
-	if (silmarils_possessed(player) > 0) {
-		msgt(MSG_STAIRS_UP, "The divine light reveals the way.");
-	}
+	//if (silmarils_possessed(player) > 0) {
+	//	msgt(MSG_STAIRS_UP, "The divine light reveals the way.");
+	//}
 
 	/* Flee Morgoth's throne room */
-	if (player->depth == z_info->dun_depth) {
+	if ((player->depth == z_info->dun_depth) &&
+		(silmarils_possessed(player) > 0)) {
 		if (!player->morgoth_slain) {
 			msg("As you climb the stair, a great cry of rage and anguish comes from below.");
 			msg("Make quick your escape: it shall be hard-won.");
@@ -195,14 +196,14 @@ static void do_cmd_go_down_aux(void)
 	if (player->chp < 0) return;
 
 	/* Success */
-	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
+	msgt(MSG_STAIRS_DOWN, "You descend the stairs.");
 
 	/* Can never return to the throne room... */
-	if ((player->on_the_run) && (player->depth + change >= z_info->dun_depth)) {
-		msgt(MSG_STAIRS_DOWN, "Try though you might, you cannot find your way back to Morgoth's throne.");
-		msgt(MSG_STAIRS_DOWN, "You emerge near where you began.");
-		change = 0;
-	}
+	//if ((player->on_the_run) && (player->depth + change >= z_info->dun_depth)) {
+	//	msgt(MSG_STAIRS_DOWN, "Try though you might, you cannot find your way back to Morgoth's throne.");
+	//	msgt(MSG_STAIRS_DOWN, "You emerge near where you began.");
+	//	change = 0;
+	//}
 
 	/* Change level */
 	chunk_change(player, change, 0, 0);
