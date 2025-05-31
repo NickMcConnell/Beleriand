@@ -143,9 +143,6 @@ feat:SPIKED_PIT:*:0x8A:0x96
 # glyph of warding
 trap:glyph of warding:*:0x8B:0x86
 
-# false floor
-trap:false floor:*:0x8A:0x9C
-
 # pit
 trap:pit:*:0x80:0x91
 

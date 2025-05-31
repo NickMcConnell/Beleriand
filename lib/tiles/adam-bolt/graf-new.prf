@@ -163,12 +163,6 @@ trap:glyph of warding:los:0x8D:0x97
 trap:glyph of warding:lit:0x8D:0x95
 trap:glyph of warding:dark:0x8D:0x96
 
-# visible trap -- false floor (3 tiles)
-trap:false floor:torch:0x81:0x8E
-trap:false floor:los:0x81:0x8E
-trap:false floor:lit:0x81:0x8C
-trap:false floor:dark:0x81:0x8D
-
 # visible trap -- pit (3 tiles)
 trap:pit:torch:0x81:0x8B
 trap:pit:los:0x81:0x8B

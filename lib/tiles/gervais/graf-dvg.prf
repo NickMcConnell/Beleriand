@@ -181,9 +181,6 @@ trap:glyph of warding:los:0x96:0xB4
 trap:glyph of warding:lit:0x96:0xB5
 trap:glyph of warding:dark:0x96:0xB6
 
-# false floor
-trap:false floor:*:0x87:0xA6
-
 # pit
 trap:pit:*:0x87:0xA4
 
