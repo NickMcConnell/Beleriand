@@ -294,6 +294,19 @@ struct square_mile *square_mile(wchar_t letter, int number, int y, int x)
 }
 
 /**
+ * Return which realm a chunk from the chunk_list is in
+ */
+int chunk_realm(int chunk_idx)
+{
+	struct chunk_ref *ref;
+	if ((chunk_idx < 0) || (chunk_idx >= MAX_CHUNKS)) return REALM_NONE;
+	ref = &chunk_list[chunk_idx];
+	assert(ref);
+	if (!ref->turn) return REALM_NONE;
+	return region_info[ref->region].realm;
+}
+
+/**
  * ------------------------------------------------------------------------
  * Functions for handling turn-based events
  * ------------------------------------------------------------------------ */

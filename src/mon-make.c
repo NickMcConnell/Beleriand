@@ -264,15 +264,11 @@ struct monster_race *get_mon_num(int level, enum biome_type biome, int realm,
 
 		/* Various additional modifications when not created in a vault */
 		if (!vault) {
-			/* If on the run from Morgoth, then levels 17--23 used for all
-			 * forced smart monsters and half of others */
-			if (player->on_the_run && (one_in_(2) || !allow_non_smart)) {
-				pursuing_monster = true;
-				generation_level = rand_range(17, 23);
-			}
-
-			/* The surface generates monsters as levels 17--23 */
-			if (level == 0) {
+			/* If on the run from Morgoth in Angband, then levels 17--23 used
+			 * for all forced smart monsters and half of others */
+			if (player->on_the_run && (one_in_(2) || !allow_non_smart) &&
+				(chunk_realm(player->place) == REALM_MORGOTH) &&
+				(biome == BIOME_CAVE)) {
 				pursuing_monster = true;
 				generation_level = rand_range(17, 23);
 			}
@@ -993,15 +989,12 @@ bool place_new_monster_one(struct chunk *c, struct loc grid,
 		/* If there is a lead monster, copy its value */
 		if (leader) {
 			amount = ALERTNESS_ALERT - leader->alertness;
-		} else if (player->on_the_run) {
-			/* Many monsters are more alert during the player's escape */
-			if ((player->depth == 0) && (amount > 0)) {
-				/* including all monsters on the Gates level */
-				amount = damroll(1, 3);
-			} else if ((race->level > player->depth + 2) &&
-					   !square_isvault(c, grid) && (amount > 0)) { 
-				/* and dangerous monsters out of vaults (which are assumed
-				 * to be in direct pursuit) */
+		} else if (player->on_the_run &&
+				   (chunk_realm(player->place) == REALM_MORGOTH)) {
+			/* Dangerous monsters out of vaults (which are assumed to be in
+			 * direct pursuit) are more alert during the player's escape */
+			if ((race->level > player->depth + 2) &&
+				!square_isvault(c, grid) && (amount > 0)) {
 				amount = damroll(1, 3);
 			}
 		}

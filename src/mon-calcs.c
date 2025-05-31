@@ -125,7 +125,8 @@ void calc_morale(struct monster *mon)
 	/* Hostile monsters consider the player's strengths and weaknesses */
 	if (monster_is_hostile(mon)) {
 		/* Monsters have boosted morale if player has taken on Morgoth */
-		if (player->on_the_run) {
+		if (player->on_the_run &&
+			(chunk_realm(player->place) == REALM_MORGOTH)) {
 			morale += 20;
 		} else {
 			/* Monsters have higher morale if they are usually found deeper

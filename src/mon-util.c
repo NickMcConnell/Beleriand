@@ -566,7 +566,8 @@ void monsters_hear(bool player_centered, bool main_roll, int difficulty)
 		m_perception += monster_elf_bane_bonus(mon, player);
 
 		/* Monsters are looking more carefully during the escape */
-		if (player->on_the_run) {
+		if (player->on_the_run &&
+			(chunk_realm(player->place) == REALM_MORGOTH)) {
 			m_perception += 5;
 		}
 
