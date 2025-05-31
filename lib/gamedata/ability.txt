@@ -274,8 +274,7 @@ type:gloves
 
 name:Leaping
 level:6
-desc:You can leap over a chasm, pit, or false floor if you moved
-desc: towards it the previous turn.
+desc:You can leap over a chasm or pit if you moved towards it the previous turn.
 type:boots
 
 name:Sprinting

@@ -136,12 +136,6 @@ feat:SPIKED_PIT:dark:0x81:0x8A
 # glyph of warding
 trap:glyph of warding:*:0x80:0x9A
 
-# visible trap -- false floor(3 tiles)
-trap:false floor:torch:0x81:0x8E
-trap:false floor:los:0x81:0x8E
-trap:false floor:lit:0x81:0x8C
-trap:false floor:dark:0x81:0x8D
-
 # visible trap -- open pit (3 tiles)
 trap:pit:torch:0x81:0x8B
 trap:pit:los:0x81:0x8B

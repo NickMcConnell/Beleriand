@@ -83,22 +83,6 @@ desc:An obstruction which makes a closed door harder to open.
 
 ## Player traps ###
 
-# false floor
-
-name:false floor:false floor
-graphics:^:w
-rarity:2
-min-depth:5
-max-depth:18
-power:6
-flags:TRAP | FLOOR | DOWN
-effect:DAMAGE
-dice:3d4
-desc:It looks like floor, but step incautiously and you will fall through.
-msg:The floor crumbles beneath you!
-msg2:You fall through...
-msg3:...and land somewhere deeper in the Iron Hells.
-
 # open pit
 
 name:pit:pit

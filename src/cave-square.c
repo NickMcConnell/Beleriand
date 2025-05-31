@@ -798,14 +798,9 @@ bool square_iswebbable(struct chunk *c, struct loc grid) {
 }
 
 /**
- * True if the square is a chasm or a known pit or false floor
+ * True if the square is a chasm or a known pit
  */
 bool square_isleapable(struct chunk *c, struct loc grid) {
-	struct trap_kind *false_floor = lookup_trap("false floor");
-	if (square_istrap(c, grid) &&
-		square_trap_specific(c, grid, false_floor->tidx)) {
-		return true;
-	}
 	if (square_ispit(c, grid)) return true;
 	return square_ischasm(c, grid);
 }

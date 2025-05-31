@@ -133,7 +133,7 @@ Crowd Fighting
   * Halves the bonus to melee that opponents get for surrounding you.
 
 Leaping
-  * You can leap over a square of a chasm, a false floor, or a pit.
+  * You can leap over a square of a chasm or a pit.
 
     - You must have moved roughly towards it on the previous turn.
     - It takes the usual two turns to reach your destination, one of which is spent in the air and you can’t do anything in this turn, but can be attacked.
