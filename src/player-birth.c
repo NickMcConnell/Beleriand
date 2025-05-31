@@ -741,7 +741,7 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev_local)
 	player_generate(player, NULL, NULL, NULL,
 					use_quickstart && quickstart_prev_local);
 
-	player->depth = 1;
+	player->depth = 0;
 
 	/* Update stats with bonuses, etc. */
 	get_bonuses(player);

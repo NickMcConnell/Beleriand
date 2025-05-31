@@ -112,11 +112,11 @@ static bool history_add_with_flags(struct player *p,
 		const struct artifact *artifact)
 {
 	return history_add_full(p,
-		flags,
-		artifact ? artifact->aidx : 0,
-		p->depth,
-		p->turn,
-		text);
+							flags,
+							artifact ? artifact->aidx : 0,
+							p->depth,//TODO needs more detail here
+							p->turn,
+							text);
 }
 
 /**

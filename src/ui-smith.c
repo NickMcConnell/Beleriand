@@ -33,6 +33,7 @@
 #include "object.h"
 #include "player-abilities.h"
 #include "player-calcs.h"
+#include "player-util.h"
 #include "trap.h"
 #include "ui-input.h"
 #include "ui-menu.h"
@@ -1561,7 +1562,7 @@ static bool craft_action(struct menu *menu, const ui_event *event, int oid)
 	if (event->type == EVT_SELECT) {
 		/* Make the object by hand */
 		struct object *obj = mem_zalloc(sizeof(*obj));
-		object_prep(obj, kind, player->depth, RANDOMISE);
+		object_prep(obj, kind, player_danger_level(player), RANDOMISE);
 
 		/* Drop it near the player */
 		if (tval_is_boat(obj)) {

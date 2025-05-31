@@ -37,6 +37,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-util.h"
 #include "ui-command.h"
 #include "wizard.h"
 #include <math.h>
@@ -974,8 +975,8 @@ static bool stats_monster(struct monster *mon, int i)
 	}
 
 	/* Is it mostly dangerous (10 levels ood or less?)*/
-	if ((mon->race->level > player->depth) && 
-		(mon->race->level <= player->depth + 10)) {
+	if ((mon->race->level > player_danger_level(player)) && 
+		(mon->race->level <= player_danger_level(player) + 10)) {
 
 			mon_ood[lvl] += addval;
 
@@ -986,7 +987,7 @@ static bool stats_monster(struct monster *mon, int i)
 
 
 	/* Is it deadly? */
-	if (mon->race->level > player->depth + 10){
+	if (mon->race->level > player_danger_level(player) + 10){
 
 		mon_deadly[lvl] += addval;
 

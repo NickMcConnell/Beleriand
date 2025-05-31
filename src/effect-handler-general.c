@@ -823,14 +823,16 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 		for (i = 0; i < summon_max; i++) {
 			if (pick_and_place_monster_on_stairs(cave, player, '$',
 												 REALM_MORGOTH, false,
-												 player->depth, false))
+												 player_danger_level(player),
+												 false))
 				context->ident = true;
 		}
 	} else {
 		/* Summon some monsters */
 		int itry = 0;
 		while (count < summon_max && itry < 1000) {
-			count += summon_specific(player->grid, player->depth + level_boost,
+			count += summon_specific(player->grid,
+									 player_danger_level(player) + level_boost,
 									 summon_type);
 			++itry;
 		}
@@ -1032,7 +1034,7 @@ bool effect_handler_SONG_OF_LORIEN(effect_handler_context_t *context)
  */
 bool effect_handler_SONG_OF_FREEDOM(effect_handler_context_t *context)
 {
-	int base_diff = player->depth ? player->depth / 2 : 10;
+	int base_diff = player_danger_level(player) / 2;
 	int score = song_bonus(player, player->state.skill_use[SKILL_SONG],
 						   lookup_song("Freedom"));
 	struct loc grid;

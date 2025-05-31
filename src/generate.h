@@ -378,8 +378,6 @@ void rand_dir(struct loc *offset);
 enum direction opposite_dir(enum direction dir);
 int trap_placement_chance(struct chunk *c, struct loc grid);
 void place_traps(struct chunk *c);
-void place_item_near_player(struct chunk *c, struct player *p, int tval,
-							const char *name);
 void place_object(struct chunk *c, struct loc grid, int level, bool good,
 	bool great, uint8_t origin, struct drop *drop);
 void place_secret_door(struct chunk *c, struct loc grid);

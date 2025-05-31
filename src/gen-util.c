@@ -357,15 +357,13 @@ enum direction opposite_dir(enum direction dir)
 
 
 /**
- * Place rubble at a given location, provided we are deep enough.
+ * Place rubble at a given location.
  * \param c current chunk
  * \param grid location
  */
 static void place_rubble(struct chunk *c, struct loc grid)
 {
-	if (c->depth >= 4) {
-		square_set_feat(c, grid, FEAT_RUBBLE);
-	}
+	square_set_feat(c, grid, FEAT_RUBBLE);
 }
 
 
@@ -415,46 +413,6 @@ static void place_stairs(struct chunk *c, struct loc grid, bool first, int feat,
 
 
 /**
- * Generate the chosen item at a random spot near the player.
- */
-void place_item_near_player(struct chunk *c, struct player *p, int tval,
-							const char *name)
-{
-	struct loc grid;
-	int count = 100;
-	struct object *obj;
-	struct object_kind *kind;
-
-	/* Find a possible place */
-	while (find_nearby_grid(c, &grid, p->grid, 5, 5) && count--) {
-		/* Must be empty, in a room and in view of the player */
-		if (square_isempty(c, grid) && square_isroom(c, grid) &&
-			los(c, p->grid, grid)) {
-			break;
-		}
-	}
-
-	/* Get local object */
-	obj = object_new();
-
-	/* Get the object_kind */
-	kind = lookup_kind(tval, lookup_sval(tval, name));
-
-	/* Valid item? */
-	if (!kind) return;
-
-	/* Prepare the item */
-	object_prep(obj, kind, c->depth, RANDOMISE);
-
-	if (tval == TV_ARROW) {
-		obj->number = 24;
-	} else {
-		obj->number = 1;
-	}
-	drop_near(c, &obj, 0, grid, false, false);	
-}
-
-/**
  * Place a random object at a given location.
  * \param c current chunk
  * \param grid location
@@ -478,7 +436,7 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
 	new_obj = make_object(c, level, good, great, drop);
 	if (!new_obj) return;
 	new_obj->origin = origin;
-	new_obj->origin_depth = convert_depth_to_origin(c->depth);
+	new_obj->origin_depth = player_danger_level(player);
 
 	/* Give it to the floor */
 	if (!floor_carry(c, grid, new_obj, &dummy)) {
@@ -514,7 +472,7 @@ void place_closed_door(struct chunk *c, struct loc grid)
 	int value = randint0(100);
 	square_set_feat(c, grid, FEAT_CLOSED);
 	if (square_isvault(c, grid)) {
-		int power = (10 + c->depth + randint1(15)) / 5;
+		int power = (20 + c->depth + randint1(15)) / 5;
 		power = MIN(7, power);
 		if (value < 4) {
 			/* Locked doors (8%) */
@@ -524,7 +482,7 @@ void place_closed_door(struct chunk *c, struct loc grid)
 			square_set_door_jam(c, grid, power);
 		}
 	} else {
-		int power = (c->depth + randint1(15)) / 5;
+		int power = (10 + c->depth + randint1(15)) / 5;
 		power = MIN(7, power);
 		if (value < 24) {
 			/* Locked doors (24%) */
@@ -545,7 +503,7 @@ void place_closed_door(struct chunk *c, struct loc grid)
  */
 void place_random_door(struct chunk *c, struct loc grid)
 {
-	int tmp = randint0(60 + c->depth);
+	int tmp = randint0(70 + c->depth);
 
 	if (tmp < 20) {
 		square_set_feat(c, grid, FEAT_OPEN);
@@ -564,7 +522,7 @@ void place_random_door(struct chunk *c, struct loc grid)
 void place_forge(struct chunk *c, struct loc grid)
 {
 	int i;
-	int effective_depth = c->depth;
+	int effective_depth = c->depth + 10;
 	int power = 1;
 	int uses = damroll(2, 2);
 

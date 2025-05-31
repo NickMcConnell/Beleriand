@@ -44,6 +44,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-util.h"
 #include "trap.h"
 #include "z-queue.h"
 #include "z-type.h"
@@ -948,12 +949,12 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 	/* Check that the vault doesn't contain invalid things for its depth */
 	for (t = data, y = 0; y < v->hgt; y++) {	
 		for (x = 0; x < v->wid; x++, t++) {
-			/* Barrow wights can't be deeper than level 12 */
-			if ((*t == 'W') && (c->depth > 12)) {
+			/* Barrow wights can't be deeper than level 2 */
+			if ((*t == 'W') && (c->depth > 2)) {
 				return false;
 			}
 
-			/* Chasms can't occur at 950 ft */
+            /* Chasms can't occur at 450 ft */
 			if ((*t == '7') && (c->depth >= z_info->dun_depth - 1)) {
 				return false;
 			}
@@ -1005,52 +1006,56 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				/* A monster from 1 level deeper */
 				case '1': {
 					pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
-										   c->depth + 1, true, true,
-										   ORIGIN_DROP_VAULT);
+										   player_danger_level(player) + 1,
+										   true, true, ORIGIN_DROP_VAULT);
 					break;
 				}
 
 				/* A monster from 2 levels deeper */
 				case '2': {
 					pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
-										   c->depth + 2, true, true,
-										   ORIGIN_DROP_VAULT);
+										   player_danger_level(player) + 2,
+										   true, true, ORIGIN_DROP_VAULT);
 					break;
 				}
 
 				/* A monster from 3 levels deeper */
 				case '3': {
 					pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
-										   c->depth + 3, true, true,
-										   ORIGIN_DROP_VAULT);
+										   player_danger_level(player) + 3,
+										   true, true, ORIGIN_DROP_VAULT);
 					break;
 				}
 
 				/* A monster from 4 levels deeper */
 				case '4': {
 					pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
-										   c->depth + 4, true, true,
-										   ORIGIN_DROP_VAULT);
+										   player_danger_level(player) + 4,
+										   true, true, ORIGIN_DROP_VAULT);
 					break;
 				}
 
 				/* An object from 1-4 levels deeper */
 				case '*': {
-					place_object(c, grid, c->depth + randint1(4), false, false,
-								 ORIGIN_VAULT, lookup_drop("not useless"));
+					place_object(c, grid,
+								 player_danger_level(player) + randint1(4),
+								 false, false, ORIGIN_VAULT,
+								 lookup_drop("not useless"));
 					break;
 				}
 
 				/* A good object from 1-4 levels deeper */
 				case '&': {
-					place_object(c, grid, c->depth + randint1(4), true, false,
-								 ORIGIN_VAULT, lookup_drop("not useless"));
+					place_object(c, grid,
+								 player_danger_level(player) + randint1(4),
+								 true, false, ORIGIN_VAULT,
+								 lookup_drop("not useless"));
 					break;
 				}
 
 				/* A chest from 4 levels deeper */
 				case '~': {
-					int depth = c->depth ? c->depth + 4 : z_info->dun_depth;
+					int depth = player_danger_level(player) + 4;
 					place_object(c, grid, depth, false, false,
 								 ORIGIN_VAULT, lookup_drop("chest"));
 					break;
@@ -1072,7 +1077,8 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 						kind = lookup_kind(TV_USELESS, sval);
 
 						/* Prepare the item */
-						object_prep(obj, kind, c->depth, RANDOMISE);
+						object_prep(obj, kind, player_danger_level(player),
+									RANDOMISE);
 
 						/* Drop it in the dungeon */
 						drop_near(c, &obj, 0, grid, false, false);
@@ -1086,12 +1092,12 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 					
 					if (r <= 2) {
 						pick_and_place_monster(c, '$', REALM_MORGOTH, grid,
-											   c->depth + 1, true,
-											   true, ORIGIN_DROP_VAULT);
+											   player_danger_level(player) + 1,
+											   true, true, ORIGIN_DROP_VAULT);
 					}
 					if (r >= 2) {
-						place_object(c, grid, c->depth + 1, false, false,
-									 ORIGIN_VAULT, NULL);
+						place_object(c, grid, player_danger_level(player) + 1,
+									 false, false, ORIGIN_VAULT, NULL);
 					}
 					break;
 				}
@@ -1175,7 +1181,8 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				case 'd': {
 					place_monster_by_flag(c, '$', REALM_MORGOTH, grid,
 										  RF_DRAGON, -1, true,
-										  c->depth + 4, false);
+										  player_danger_level(player) + 4,
+										  false);
 					break;
 				}
 
@@ -1200,14 +1207,16 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				case 'M': {
 					place_monster_by_flag(c, '$', REALM_MORGOTH, grid,
 										  RF_SPIDER, -1, true,
-										  c->depth + rand_range(1, 4), false);
+										  player_danger_level(player)
+										  + rand_range(1, 4), false);
 					break;
 				}
 				
 				/* Vampire */
 				case 'v': {
 					place_monster_by_letter(c, '$', REALM_MORGOTH, grid, 'v',
-											true, c->depth + rand_range(1, 4));
+											true, player_danger_level(player)
+											+ rand_range(1, 4));
 					break;
 				}
 
@@ -1215,7 +1224,8 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				case 'a': {
 					place_monster_by_flag(c, '$', REALM_MORGOTH, grid,
 										  RSF_ARROW1, RSF_ARROW2, true,
-										  c->depth + 1, true);
+										  player_danger_level(player) + 1,
+										  true);
 					break;
 				}
 
@@ -1223,7 +1233,8 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				case 'b': {
 					place_monster_by_flag(c, '$', REALM_MORGOTH, grid,
 										  RF_FLYING, -1, true,
-										  c->depth + 1, false);
+										  player_danger_level(player) + 1,
+										  false);
 					break;
 				}
 
@@ -1231,7 +1242,8 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				case 'c': {
 					place_monster_by_flag(c, '$', REALM_MORGOTH, grid, RF_WOLF,
 										  -1, true,
-										  c->depth + rand_range(1, 4), false);
+										  player_danger_level(player)
+										  + rand_range(1, 4), false);
 					break;
 				}
 					
@@ -1239,7 +1251,8 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				case 'r': {
 					place_monster_by_flag(c, '$', REALM_MORGOTH, grid, RF_RAUKO,
 										  -1, true,
-										  c->depth + rand_range(1, 4), false);
+										  player_danger_level(player)
+										  + rand_range(1, 4), false);
 					break;
 				}
 					
@@ -1482,7 +1495,7 @@ bool build_circular(struct chunk *c, struct loc centre)
 	int radius = 2 + randint1(2) + randint1(3);
 
 	/* Occasional light */
-	bool light = player->depth <= randint1(25) ? true : false;
+	bool light = player->depth <= randint1(8) ? true : false;
 
 	/* Find and reserve lots of space in the dungeon.  Get center of room. */
 	event_signal_size(EVENT_GEN_ROOM_CHOOSE_SIZE,
@@ -1530,7 +1543,7 @@ bool build_elliptical(struct chunk *c, struct loc centre)
 	int x_radius = 2 + randint1(2) + randint1(5);
 
 	/* Occasional light */
-	bool light = player->depth <= randint1(25) ? true : false;
+	bool light = player->depth <= randint1(8) ? true : false;
 
 	/* Find and reserve lots of space in the dungeon.  Get center of room. */
 	event_signal_size(EVENT_GEN_ROOM_CHOOSE_SIZE,
@@ -1589,7 +1602,7 @@ bool build_simple(struct chunk *c, struct loc centre)
 	}
 
 	/* Occasional light - chance of darkness starts very small and
-	 * increases quadratically until always dark at 950 ft */
+	 * increases quadratically until always dark at 450 ft */
 	if ((c->depth < randint1(z_info->dun_depth - 1)) ||
 		(c->depth < randint1(z_info->dun_depth - 1))) {
 		light = true;
@@ -1784,8 +1797,8 @@ bool build_crossed(struct chunk *c, struct loc centre)
 						set_marked_granite(c, loc(x, y), SQUARE_WALL_INNER);
 					}
 				}
-				place_object(c, centre, c->depth, false, false, ORIGIN_SPECIAL,
-							 lookup_drop("chest"));
+				place_object(c, centre, player_danger_level(player), false,
+							 false, ORIGIN_SPECIAL, lookup_drop("chest"));
 			}
 			break;
 		}

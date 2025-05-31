@@ -488,9 +488,9 @@ static bool monster_check_active(struct monster *mon)
 	} else if (rf_has(mon->race->flags, RF_QUESTOR) && player->on_the_run) {
 		/* Morgoth is always active during the escape */
 		return true;
-	} else if ((mon->race->level > 17) && (player->depth == 0)) {
+		//} else if ((mon->race->level > 17) && (player->depth == 0)) {
 		/* Pursuing creatures are always active at the Gates */
-		return true;
+		//return true;
 	} else if (rf_has(mon->race->flags, RF_SHORT_SIGHTED)) {
 		/* Short sighted monsters are active when the player is *very* close */
 		if (mon->cdis <= 2) return true;
@@ -562,11 +562,6 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 				group_furthest = mon1->wandering_dist;
 			}
 			list_entry = list_entry->next;
-		}
-
-		/* No wandering on the Gates level */
-		if (player->depth == 0) {
-			return false;
 		}
 
 		/* No wandering in the throne room during the truce */

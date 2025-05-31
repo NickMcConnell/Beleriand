@@ -39,6 +39,7 @@
 #include "player-calcs.h"
 #include "player-history.h"
 #include "player-quest.h"
+#include "player-util.h"
 #include "project.h"
 
 /**
@@ -74,7 +75,7 @@ void drop_iron_crown(struct monster *mon, const char *message)
 
 		/* Set origin details */
 		obj->origin = ORIGIN_DROP;
-		obj->origin_depth = convert_depth_to_origin(cave->depth);
+		obj->origin_depth = player_danger_level(player);//TODO origins
 		obj->origin_race = race;
 		obj->number = 1;
 

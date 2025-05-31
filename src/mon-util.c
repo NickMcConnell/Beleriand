@@ -759,7 +759,8 @@ static int mon_create_drop(struct chunk *c, struct monster *mon,
 				obj->number = randcalc(drop->dice, 0, RANDOMISE);
 				/* Deathblades only */
 				if (streq(mon->race->base->name, "deathblade")) {
-					apply_magic(obj, c->depth, false, false, false);
+					apply_magic(obj, player_danger_level(player), false, false,
+								false);
 				}
 			} else {
 				/* Artifact */
@@ -780,7 +781,7 @@ static int mon_create_drop(struct chunk *c, struct monster *mon,
 
 			/* Set origin details */
 			obj->origin = visible || stats ? mon->origin : ORIGIN_DROP_UNKNOWN;
-			obj->origin_depth = convert_depth_to_origin(c->depth);
+			obj->origin_depth = player_danger_level(player);
 			obj->origin_race = mon->race;
 			number--;
 			count++;
@@ -797,7 +798,7 @@ static int mon_create_drop(struct chunk *c, struct monster *mon,
 
 		/* Set origin details */
 		obj->origin = visible || stats ? mon->origin : ORIGIN_DROP_UNKNOWN;
-		obj->origin_depth = convert_depth_to_origin(c->depth);
+		obj->origin_depth = player_danger_level(player);
 		obj->origin_race = mon->race;
 		count++;
 

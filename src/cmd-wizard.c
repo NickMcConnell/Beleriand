@@ -171,10 +171,10 @@ static struct object *wiz_create_object_from_kind(struct object_kind *kind)
 	struct object *obj;
 
 	obj = object_new();
-	object_prep(obj, kind, player->depth, RANDOMISE);
+	object_prep(obj, kind, player_danger_level(player), RANDOMISE);
 
 	/* Apply magic (no messages, no artifacts) */
-	apply_magic(obj, player->depth, false, false, false);
+	apply_magic(obj, player_danger_level(player), false, false, false);
 
 	return obj;
 }
@@ -285,7 +285,7 @@ static void wiz_drop_object(struct object *obj)
 
 	/* Mark as cheat and where it was created */
 	obj->origin = ORIGIN_CHEAT;
-	obj->origin_depth = convert_depth_to_origin(player->depth);
+	obj->origin_depth = convert_depth_to_origin(player_danger_level(player));
 
 	/* Drop the object from heaven. */
 	drop_near(cave, &obj, 0, player->grid, true, true);
@@ -397,11 +397,11 @@ void do_cmd_wiz_acquire(struct command *cmd)
 	/* Acquirement */
 	while (n--) {
 		/* Make a good (or great) object (if possible) */
-		nice_obj = make_object(cave, player->depth, true, great, NULL);
+		nice_obj = make_object(cave, player_danger_level(player), true, great, NULL);
 		if (!nice_obj) continue;
 
 		nice_obj->origin = ORIGIN_ACQUIRE;
-		nice_obj->origin_depth = convert_depth_to_origin(player->depth);
+		nice_obj->origin_depth = convert_depth_to_origin(player_danger_level(player));
 
 		/* Drop the object */
 		drop_near(cave, &nice_obj, 0, player->grid, true, false);
@@ -2180,8 +2180,8 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 	new = object_new();
 
 	/* Reroll based on old kind and player's depth.  Then apply magic. */
-	object_prep(new, obj->kind, player->depth, RANDOMISE);
-	apply_magic(new, player->depth, false, good, great);
+	object_prep(new, obj->kind, player_danger_level(player), RANDOMISE);
+	apply_magic(new, player_danger_level(player), false, good, great);
 
 	/* Copy over changes to the original. */
 	{
@@ -2258,7 +2258,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 {
 	const char *repfmt =
 		"Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
-	int level = player->depth;
+	int level = player_danger_level(player);
 	int treasure_choice = 0;
 	bool good = false, great = false;
 	long matches = 0, better = 0, worse = 0, other = 0;
@@ -2323,7 +2323,7 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 			z_info->max_depth - 1);
 
 		/* Set default. */
-		strnfmt(s, sizeof(s), "%d", player->depth);
+		strnfmt(s, sizeof(s), "%d", player_danger_level(player));
 
 		if (!get_string(prompt, s, sizeof(s)) ||
 				!get_int_from_string(s, &level) || level < 0 ||
@@ -2626,7 +2626,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		struct loc grid = obj->grid;
 		bitflag notice = obj->notice;
 
-		object_prep(obj, obj->kind, player->depth, RANDOMISE);
+		object_prep(obj, obj->kind, player_danger_level(player), RANDOMISE);
 		obj->ego = e;
 		obj->prev = prev;
 		obj->next = next;
@@ -2634,7 +2634,7 @@ void do_cmd_wiz_tweak_item(struct command *cmd)
 		obj->oidx = oidx;
 		obj->grid = grid;
 		obj->notice = notice;
-		ego_apply_magic(obj, player->depth);
+		ego_apply_magic(obj, player_danger_level(player));
 	}
 	wiz_display_item(obj, true, player);
 

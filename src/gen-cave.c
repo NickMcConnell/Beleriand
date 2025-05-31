@@ -433,7 +433,7 @@ static void build_chasms(struct chunk *c)
 
     /* Determine whether to add chasms, and how many */
     if ((c->depth > 2) && (c->depth < z_info->dun_depth - 1) &&
-		percent_chance(c->depth + 30)) {
+		percent_chance(c->depth + 40)) {
         /* Add some chasms */
         chasms += damroll(1, blocks / 3);
 
@@ -1500,7 +1500,7 @@ struct chunk *angband_gen(struct player *p) {
 
 	/* Place some rubble, occasionally much more on deep levels */
 	rubble_gen = randint1(5);
-	if ((c->depth >= 10) && one_in_(10)) {
+	if ((c->depth >= 5) && one_in_(10)) {
 		rubble_gen += 30;
 	}
 	alloc_object(c, SET_BOTH, TYP_RUBBLE, rubble_gen, p->depth, ORIGIN_FLOOR);
@@ -1552,14 +1552,9 @@ struct chunk *angband_gen(struct player *p) {
 	/* If we've generated this level before, we're done now */
 	if (!dun->first_time) return c;
 
-	/* Put some monsters in the dungeon */
-	if (p->depth == 1) {
-		/* Smaller number of monsters at 50ft */
-		mon_gen = dun->cent_n / 2;
-	} else {
-		/* Pick some number of monsters (between 0.5 per room and 1 per room) */
-		mon_gen = (dun->cent_n + randint1(dun->cent_n)) / 2;
-	}
+	/* Pick some number of monsters (between 0.5 per room and 1 per room) */
+	mon_gen = (dun->cent_n + randint1(dun->cent_n)) / 2;
+
 	for (i = mon_gen; i > 0; i--)
 		pick_and_place_distant_monster(c, p, '$', REALM_MORGOTH, true,
 									   p->depth);
@@ -1573,11 +1568,6 @@ struct chunk *angband_gen(struct player *p) {
 
     /* Place the traps */
     place_traps(c);
-
-	/* Add a curved sword near the player if this is the start of the game */
-	if (p->turn == 0) {
-		place_item_near_player(c, p, TV_SWORD, "Curved Sword");
-	}
 
 	return c;
 }

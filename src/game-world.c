@@ -416,13 +416,13 @@ void play_ambient_sound(void)
 			sound(MSG_AMBIENT_DAY);
 		else 
 			sound(MSG_AMBIENT_NITE);
-	} else if (player->depth <= 20) {
+	} else if (player->depth <= 2) {
 		sound(MSG_AMBIENT_DNG1);
-	} else if (player->depth <= 40) {
+	} else if (player->depth <= 4) {
 		sound(MSG_AMBIENT_DNG2);
-	} else if (player->depth <= 60) {
+	} else if (player->depth <= 6) {
 		sound(MSG_AMBIENT_DNG3);
-	} else if (player->depth <= 80) {
+	} else if (player->depth <= 8) {
 		sound(MSG_AMBIENT_DNG4);
 	} else {
 		sound(MSG_AMBIENT_DNG5);
@@ -749,6 +749,8 @@ int get_scent(struct chunk *c, struct loc grid)
  */
 void process_world(struct chunk *c)
 {
+	int danger = player_danger_level(player);
+
 	/* Compact the monster list if we're approaching the limit */
 	if (mon_cnt + 32 > z_info->monster_max)
 		compact_monsters(64);
@@ -784,37 +786,35 @@ void process_world(struct chunk *c)
 		}
 	}
 
-	/* Handle  the "surface" */
-	if (!player->depth) {
-		//B NONE FOR NOWif (percent_chance(10)) {
-			/* Make a new monster */
-		//	(void)pick_and_place_monster_on_stairs(c, player, true, 0, false);
-		//}
-	}
-
 	/* Check for creature generation */
 	//B This only handles monsters in caves currently
-	if (silmarils_possessed(player) >= 2) {
-		/* Vastly more wandering monsters during the endgame when you have
+	if ((silmarils_possessed(player) >= 2) && player->depth &&
+		(chunk_realm(player->place) == REALM_MORGOTH)){
+		/* Vastly more wandering monsters in Angband when you have
 		 * 2 or 3 Silmarils */
-		int percent = 15; //Very rough - NRM
-		//int percent = (c->height * c->width)
-		//	/ (z_info->block_hgt * z_info->block_wid);
+		/* This was
+		 * int percent = (c->height * c->width)
+		 *               / (z_info->block_hgt * z_info->block_wid);
+		 * in NarSil, 15 is a very rough guess - NRM */
+		int percent = 15;
 		if (percent_chance(percent)) {
-			(void)pick_and_place_monster_on_stairs(c, player, '$', 0, true,
-												   c->depth, false);
+			(void)pick_and_place_monster_on_stairs(c, player, '$',
+												   REALM_MORGOTH, true,
+												   danger, false);
 		}
 	} else if (one_in_(z_info->alloc_monster_chance)) {
 		/* Normal wandering monster generation */
-		(void)pick_and_place_monster_on_stairs(c, player, '$', 0, true,
-											   c->depth, false);
+		(void)pick_and_place_monster_on_stairs(c, player, '$',
+											   chunk_realm(player->place), true,
+											   danger, false);
 	}
 
 	/* Players with the haunted curse attract wraiths */
-	if (percent_chance(player->state.flags[OF_HAUNTED])) {
+	if (percent_chance(player->state.flags[OF_HAUNTED]) &&
+		(chunk_realm(player->place) == REALM_MORGOTH)) {
 		/* Make a new wraith */
-		(void)pick_and_place_monster_on_stairs(c, player, '$', 0, true,
-											   c->depth, true);
+		(void)pick_and_place_monster_on_stairs(c, player, '$', REALM_MORGOTH,
+											   true, danger, true);
 	}
 
 	/* Process light */
@@ -895,8 +895,8 @@ static void process_player_cleanup(void)
 		strnfmt(note, sizeof(note), "Entered %s", cave->vault_name);
 		history_add(player, note, HIST_VAULT_ENTERED);
 
-		/* Give a message unless it is the Gates or the Throne Room */
-		if (player->depth > 0 && player->depth < 20) {
+		/* Give a message unless it is the Throne Room */
+		if (player->depth < z_info->dun_depth) {
 			msg("You have entered %s.", cave->vault_name);
 		}
 		string_free(cave->vault_name);

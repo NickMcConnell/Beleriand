@@ -131,7 +131,7 @@ void calc_morale(struct monster *mon)
 		} else {
 			/* Monsters have higher morale if they are usually found deeper
 			 * than this and vice versa */
-			morale += (race->level - player->depth) * 10;
+			morale += (race->level - player_danger_level(player)) * 10;
 
 			/* Make sure orcs etc in throne room don't have too low morale*/
 			if (player->depth == z_info->dun_depth) {

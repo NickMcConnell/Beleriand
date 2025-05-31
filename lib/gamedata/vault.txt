@@ -178,7 +178,7 @@ D: $$$$
 # Index 20
 name:Diamond 1
 type:Interesting room
-depth:4
+depth:1
 rarity:2
 D:  #$#  
 D: ##.## 
@@ -192,7 +192,7 @@ D:  #$#
 # Index 21
 name:Diamond 2
 type:Interesting room
-depth:5
+depth:1
 rarity:2
 D:   #$#   
 D:  ##.##  
@@ -208,7 +208,7 @@ D:   #$#
 # Index 22
 name:Diamond 2
 type:Interesting room
-depth:6
+depth:1
 rarity:4
 D:    #$#    
 D:   ##.##   
@@ -226,7 +226,7 @@ D:    #$#
 # Index 23
 name:Diamond Forge
 type:Interesting room
-depth:6
+depth:1
 rarity:8
 D:    #$#    
 D:   ##.##   
@@ -244,7 +244,7 @@ D:    #$#
 # Index 24
 name:Diamond
 type:Interesting room
-depth:6
+depth:1
 rarity:6
 D:     #$#     
 D:    ##.##    
@@ -264,7 +264,7 @@ D:     #$#
 # Index 30
 name:Hexagon
 type:Interesting room
-depth:2
+depth:1
 rarity:3
 flags:NO_ROTATION
 D:   #$$$$$#   
@@ -281,7 +281,7 @@ D:   #$$$$$#
 # Index 31
 name:Hexagon Forge
 type:Interesting room
-depth:2
+depth:1
 rarity:12
 flags:NO_ROTATION
 D:   #$$$$$#   
@@ -298,7 +298,7 @@ D:   #$$$$$#
 # Index 32
 name:Hexagon 3
 type:Interesting room
-depth:3
+depth:1
 rarity:6
 flags:NO_ROTATION
 D:   #$$$$$#   
@@ -315,7 +315,7 @@ D:   #$$$$$#
 # Index 33
 name:Hexagon 4
 type:Interesting room
-depth:4
+depth:1
 rarity:12
 flags:NO_ROTATION
 D:   #$$$$$#   
@@ -332,7 +332,7 @@ D:   #$$$$$#
 # Index 40
 name:T
 type:Interesting room
-depth:3
+depth:1
 rarity:6
 flags:NO_ROTATION
 D:$$$$$$$$$$$$$$$$$
@@ -349,7 +349,7 @@ D:     $$$$$$$
 # Index 41
 name:T 2
 type:Interesting room
-depth:3
+depth:1
 rarity:12
 flags:NO_ROTATION
 D:$$$$$$$$$$$$$$$$$
@@ -366,7 +366,7 @@ D:######$$$$$$
 # Index 45
 name:Thin Cross
 type:Interesting room
-depth:8
+depth:1
 rarity:4
 flags:NO_ROTATION 
 D:      $$$$$$      
@@ -386,7 +386,7 @@ D:      $$$$$$
 # Index 46
 name:Collapsed Cross
 type:Interesting room
-depth:12
+depth:3
 rarity:12
 flags:NO_ROTATION 
 D:      $$$$$$      
@@ -406,7 +406,7 @@ D:      $$$$$$
 # Index 50
 name:Corridor Cross
 type:Interesting room
-depth:2
+depth:1
 rarity:3
 flags:NO_ROTATION 
 D:     #$$$$$#     
@@ -426,7 +426,7 @@ D:     #$$$$$#
 # Index 55
 name:Hourglass
 type:Interesting room
-depth:3
+depth:1
 rarity:3
 flags:NO_ROTATION 
 D:$$$$$$$$$
@@ -445,7 +445,7 @@ D:$$$$$$$$$
 # Index 60
 name:Maze
 type:Interesting room
-depth:5
+depth:1
 rarity:1
 flags:NO_ROTATION 
 D:$$$$$$$$$$$$$$$
@@ -462,7 +462,7 @@ D:$$$$$$$$$$$$$$$
 # Index 61
 name:Maze 2
 type:Interesting room
-depth:5
+depth:1
 rarity:1
 flags:NO_ROTATION 
 D:$$$$$$$$$$$$$$$$$
@@ -480,7 +480,7 @@ D:$$$$$$$$$$$$$$$$$
 # Index 62
 name:Maze 3
 type:Interesting room
-depth:5
+depth:1
 rarity:3
 D:$$$$$$$$
 D:$.#?...$
@@ -494,7 +494,7 @@ D:$$$$$$$$
 # Index 63
 name:Maze 4
 type:Interesting room
-depth:5
+depth:1
 rarity:3
 D:$$$$$$$$
 D:$?..#?.$
@@ -508,7 +508,7 @@ D:$$$$$$$$
 # Index 64
 name:Cross Maze
 type:Interesting room
-depth:5
+depth:1
 rarity:3
 flags:NO_ROTATION
 D:    $$$$$$$$$    
@@ -530,7 +530,7 @@ D:    $$$$$$$$$
 # Index 65
 name:Large Round Maze
 type:Interesting room
-depth:10
+depth:2
 rarity:3
 flags:NO_ROTATION 
 D:       $$$$$$       
@@ -550,7 +550,7 @@ D:       $$$$$$
 # Index 66
 name:Large Round Maze 2
 type:Interesting room
-depth:10
+depth:2
 rarity:3
 flags:NO_ROTATION 
 D:       $$$#$$       
@@ -570,7 +570,7 @@ D:       $$$$$$
 # Index 67
 name:Forge Maze
 type:Interesting room
-depth:10
+depth:2
 rarity:6
 flags:NO_ROTATION 
 D:$$$$$$$$$$$$$$$$
@@ -588,7 +588,7 @@ D:$$$$$$$$$$$$$$$$
 # Index 70
 name:Labyrinth
 type:Interesting room
-depth:5
+depth:1
 rarity:2
 D:$$$$$$$$$$$
 D:$...#.#...$
@@ -604,7 +604,7 @@ D:$$$$$$$$$$$
 # Index 71
 name:Labyrinth with room
 type:Interesting room
-depth:5
+depth:1
 rarity:4
 D:$$$$$$$$$$$$
 D:$.#.#..#.#.$
@@ -622,7 +622,7 @@ D:$$$$$$$$$$$$
 # Index 80
 name:Courtyard Rooms
 type:Interesting room
-depth:3
+depth:1
 rarity:3
 flags:NO_ROTATION
 D:$$$$$$$$$$$$$$$$$$$$$$$
@@ -641,7 +641,7 @@ D:$$$$$$$$$$$$$$$$$$$$$$$
 # Index 81
 name:Courtyard Rooms 2
 type:Interesting room
-depth:3
+depth:1
 rarity:3
 flags:NO_ROTATION
 D:$$$$$$$$$$$$$$$$$$$$$$$
@@ -660,7 +660,7 @@ D:$$$$$$$$$$$$$$$$$$$$$$$
 # Index 82
 name:Courtyard Rooms 3
 type:Interesting room
-depth:3
+depth:1
 rarity:6
 flags:NO_ROTATION
 D:$$$$$$$$$$$$$$$$$$$
@@ -680,7 +680,7 @@ D:$$$$$$$$$$$$$$$$$$$
 # Index 83
 name:Courtyard Rooms 4
 type:Interesting room
-depth:3
+depth:1
 rarity:3
 flags:NO_ROTATION
 D:             $$$$$$$
@@ -700,7 +700,7 @@ D:         $$$$$
 # Index 84
 name:Hallway Rooms
 type:Interesting room
-depth:3
+depth:1
 rarity:6
 flags:NO_ROTATION
 D:$$$$$$$$$$$$$$$$$$$$$$$
@@ -718,7 +718,7 @@ D:$$$$$$$$$$$$$$$$$$$$$$$
 # Index 85
 name:Hallway Rooms 2
 type:Interesting room
-depth:3
+depth:1
 rarity:12
 flags:NO_ROTATION
 D:            ###########
@@ -741,7 +741,7 @@ D:$$$$$$$$$$$$$$$$$$$$$$$
 # Index 90
 name:Swirl
 type:Interesting room
-depth:3
+depth:1
 rarity:4
 flags:NO_ROTATION
 D:$$$$$$$$$#$$$$$$$
@@ -799,7 +799,7 @@ D:$$$$$$#$$$$$$
 # Index 100
 name:Cells 1
 type:Interesting room
-depth:5
+depth:1
 rarity:4
 D:#########
 D:#S#?#2#?#
@@ -813,7 +813,7 @@ D:$$$$$$$$$
 # Index 101
 name:Cells 2
 type:Interesting room
-depth:7
+depth:1
 rarity:3
 D:#########
 D:#S#2#?#2#
@@ -827,7 +827,7 @@ D:#########
 # Index 102
 name:Cells 3
 type:Interesting room
-depth:12
+depth:3
 rarity:6
 D:$$$$$$$$$$$
 D:$.........$
@@ -843,7 +843,7 @@ D:$$$$$$$$$$$
 # Index 103
 name:The starving yard
 type:Interesting room
-depth:13
+depth:3
 rarity:12
 D:  ###   ###  
 D:  #S#   #?#  
@@ -863,7 +863,7 @@ D:  ###   ###
 # Index 104
 name:Panopticon
 type:Interesting room
-depth:14
+depth:4
 rarity:20
 D: ###$### 
 D: #2#.#S# 
@@ -877,7 +877,7 @@ D: ###$###
 # Index 105
 name:Kennels
 type:Interesting room
-depth:4
+depth:1
 rarity:12
 D:####$$####
 D:#cc#..#cc#
@@ -891,7 +891,7 @@ D:####$$####
 # Index 107
 name:Archers
 type:Interesting room
-depth:5
+depth:1
 rarity:10
 D:   #####   
 D:   #&a&#   
@@ -971,7 +971,7 @@ D:  $$$$$
 # Index 120
 name:Large Round
 type:Interesting room
-depth:8
+depth:1
 rarity:5
 flags:NO_ROTATION
 D:      $$$$$$      
@@ -991,7 +991,7 @@ D:      $$$$$$
 # Index 121
 name:Large Round 2
 type:Interesting room
-depth:9
+depth:1
 rarity:5
 flags:NO_ROTATION
 D:      $$$$$      
@@ -1012,7 +1012,7 @@ D:      $$$$$
 # Index 122
 name:Large Round 3
 type:Interesting room
-depth:10
+depth:2
 rarity:10
 flags:NO_ROTATION
 D:      $$$$$      
@@ -1033,7 +1033,7 @@ D:      $$$$$
 # Index 130
 name:Keep
 type:Interesting room
-depth:5
+depth:1
 rarity:5
 flags:NO_ROTATION
 D:$$$$#$$$$$$$$$#$$$$
@@ -1050,7 +1050,7 @@ D:$$$$$$$$$$$$$$$$$$$
 # Index 131
 name:Keep 2
 type:Interesting room
-depth:5
+depth:1
 rarity:5
 flags:NO_ROTATION
 D:$$$$#$$$$$$$$$#$$$$
@@ -1067,7 +1067,7 @@ D:$$$$$$$$$$$$$$$$$$$
 # Index 132
 name:Collapsed Keep
 type:Interesting room
-depth:8
+depth:1
 rarity:10
 flags:NO_ROTATION
 D:$$$$######::###$$$$
@@ -1085,7 +1085,7 @@ D:$$$$$$$$$$$$$$$$$$$
 # Index 135
 name:Winding
 type:Interesting room
-depth:3
+depth:1
 rarity:10
 flags:NO_ROTATION
 D:$$$$$$$$$######
@@ -1135,7 +1135,7 @@ D:#$$$$$$$$$$$#
 # Index 142
 name:Hall 3
 type:Interesting room
-depth:3
+depth:1
 rarity:5
 D:$$$$$$$$$$$
 D:$.#.#.#?#.$
@@ -1151,7 +1151,7 @@ D:$$$$$$$$$$$
 # Index 150
 name:Densely Pillared Hall
 type:Interesting room
-depth:5
+depth:1
 rarity:15
 D:$$$$$$$
 D:$.#.#?$
@@ -1165,7 +1165,7 @@ D:$$$$$$$
 # Index 151
 name:Densely Pillared Hall 2
 type:Interesting room
-depth:5
+depth:1
 rarity:15
 D:##$#$##
 D:##?#.##
@@ -1179,7 +1179,7 @@ D:##$#$##
 # Index 160
 name:Brackets Column
 type:Interesting room
-depth:8
+depth:1
 rarity:10
 D:$$$$$$$$$
 D:$.......$
@@ -1195,7 +1195,7 @@ D:$$$$$$$$$
 # Index 161
 name:Brackets Chest
 type:Interesting room
-depth:8
+depth:1
 rarity:10
 D:$$$$$$$$$
 D:$.......$
@@ -1211,7 +1211,7 @@ D:$$$$$$$$$
 # Index 162
 name:Brackets Forge
 type:Interesting room
-depth:5
+depth:1
 rarity:10
 D:$$$$$$$$$
 D:$.......$
@@ -1227,7 +1227,7 @@ D:$$$$$$$$$
 # Index 170
 name:Ringway
 type:Interesting room
-depth:2
+depth:1
 rarity:10
 flags:NO_ROTATION
 D:$$$$$$$$$$$$
@@ -1245,7 +1245,7 @@ D:$$$$$$$$$$$$
 # Index 171
 name:Ringway 2
 type:Interesting room
-depth:5
+depth:1
 rarity:20
 flags:NO_ROTATION
 D:$$$$$$$$$$$$
@@ -1263,7 +1263,7 @@ D:$$$$$$$$$$$$
 # Index 172
 name:Ringway 3
 type:Interesting room
-depth:7
+depth:1
 rarity:20
 flags:NO_ROTATION
 D:$$$$$$$$$$$$
@@ -1281,7 +1281,7 @@ D:$$$$$$$$$$$$
 # Index 173
 name:Ringway 4
 type:Interesting room
-depth:10
+depth:2
 rarity:20
 flags:NO_ROTATION
 D:$$$$$$$$$$$$
@@ -1299,7 +1299,7 @@ D:$$$$$$$$$$$$
 # Index 180
 name:Blocks
 type:Interesting room
-depth:8
+depth:1
 rarity:15
 D:$$$$$$$$$$$$$
 D:$...........$
@@ -1319,7 +1319,7 @@ D:$$$$$$$$$$$$$
 # Index 181
 name:False Walls
 type:Interesting room
-depth:15
+depth:5
 rarity:20
 D:$$$$$$$
 D:$?s.s.$
@@ -1333,7 +1333,7 @@ D:$$$$$$$
 # Index 190
 name:Chi
 type:Interesting room
-depth:7
+depth:1
 rarity:5
 D:$$$# #$$$
 D:$?.#$#.?$
@@ -1349,7 +1349,7 @@ D:$$$# #$$$
 # Index 191
 name:Chi 2
 type:Interesting room
-depth:9
+depth:1
 rarity:5
 D:$$$$# #$$$$
 D:$...# #...$
@@ -1367,7 +1367,7 @@ D:$$$$# #$$$$
 # Index 200
 name:Special Cross
 type:Interesting room
-depth:13
+depth:3
 rarity:5
 D:  #$$$$$#  
 D:  $.....$  
@@ -1385,7 +1385,7 @@ D:  #$$$$$#
 # Index 201
 name:Special Cross 2
 type:Interesting room
-depth:13
+depth:3
 rarity:10
 D:  #$$$$$#  
 D:  $.....$  
@@ -1403,7 +1403,7 @@ D:  #$$$$$#
 # Index 202
 name:Special Cross 3
 type:Interesting room
-depth:13
+depth:3
 rarity:15
 D:  #$$$$$#  
 D:  $.....$  
@@ -1421,7 +1421,7 @@ D:  #$$$$$#
 # Index 203
 name:Hidden Oval Treasure
 type:Interesting room
-depth:9
+depth:1
 rarity:10
 D:  #$$$$$$$#  
 D: ##...+...## 
@@ -1438,7 +1438,7 @@ D:  #$$$$$$$#
 # Index 204
 name:Hidden Oval Forge
 type:Interesting room
-depth:9
+depth:1
 rarity:20
 D:  #$$$$$$$#  
 D: ##.?.+...## 
@@ -1456,7 +1456,7 @@ D:  #$$$$$$$#
 # Index 205
 name:Circular thing
 type:Interesting room
-depth:7
+depth:1
 rarity:3
 D:   #$$$#   
 D: #$#.1.#$# 
@@ -1474,7 +1474,7 @@ D:   #$$$#
 # Index 210
 name:Cave in
 type:Interesting room
-depth:12
+depth:3
 rarity:5
 flags:NO_ROTATION
 D:   #$$##$$$$$$#$$$$
@@ -1491,7 +1491,7 @@ D: #$$$$$$#:#:#$$$$$$
 # Index 211
 name:Gauntlet
 type:Interesting room
-depth:7
+depth:1
 rarity:4
 flags:TRAPS
 D:#####$#####
@@ -1513,7 +1513,7 @@ D:#####$#####
 # Index 220
 name:Dragon Lair 1
 type:Interesting room
-depth:12
+depth:3
 rarity:5
 D: #####
 D:##*.*#
@@ -1529,7 +1529,7 @@ D: #$$#
 # Index 221
 name:Dragon Lair 2
 type:Interesting room
-depth:13
+depth:3
 rarity:5
 flags:NO_ROTATION
 D:$$$$$$#####
@@ -1545,7 +1545,7 @@ D:$$$$$$#####
 # Index 230
 name:Barrow 1
 type:Interesting room
-depth:8
+depth:1
 rarity:5
 D: $$$$$$$ 
 D:$$.....$$
@@ -1561,7 +1561,7 @@ D: $$$$$$$
 # Index 231
 name:Barrow 2
 type:Interesting room
-depth:9
+depth:1
 rarity:5
 D: ##$## 
 D: #...# 
@@ -1577,7 +1577,7 @@ D: ##$##
 # Index 232
 name:Barrow 3
 type:Interesting room
-depth:9
+depth:1
 rarity:5
 D:#######
 D:#*#&#*#
@@ -1594,7 +1594,7 @@ D:$$$$$$$
 # Index 233
 name:Barrow 4
 type:Interesting room
-depth:10
+depth:2
 rarity:5
 D:  ##$##  
 D: ##...## 
@@ -1610,7 +1610,7 @@ D:  ##$##
 # Index 234
 name:Barrow chasm
 type:Interesting room
-depth:10
+depth:2
 rarity:5
 D:  #$$$#  
 D: ##...## 
@@ -1630,7 +1630,7 @@ D:  #$$$#
 # Index 240
 name:A path between
 type:Interesting room
-depth:2
+depth:1
 rarity:4
 D:$$$$$$$
 D:$.?...$
@@ -1646,7 +1646,7 @@ D:$$$$$$$
 # Index 245
 name:Trapped Foe
 type:Interesting room
-depth:6
+depth:1
 rarity:5
 flags:LIGHT
 D:  ########  
@@ -1663,7 +1663,7 @@ D:  $$$$$$$$
 # Index 247
 name:Hidden lair
 type:Interesting room
-depth:11
+depth:2
 rarity:20
 D:$$$$#####
 D:$...#d..#
@@ -1676,7 +1676,7 @@ D:$$$$####
 # Index 250
 name:Wide Chasm
 type:Interesting room
-depth:7
+depth:1
 rarity:5
 D:  $$$$$$$$$  
 D:  $.......$  
@@ -1693,7 +1693,7 @@ D:  $$$$$$$$$
 # Index 251
 name:Wide Chasm with Pillars
 type:Interesting room
-depth:8
+depth:1
 rarity:5
 flags:LIGHT
 D:  $$$$$$$$$$$$  
@@ -1740,7 +1740,7 @@ D:  $$$$
 # Index 257
 name:Bridges
 type:Interesting room
-depth:5
+depth:1
 rarity:10
 D:####$####
 D:#777.777#
@@ -1756,7 +1756,7 @@ D:####$####
 # Index 260
 name:Island
 type:Interesting room
-depth:10
+depth:2
 rarity:5
 flags:LIGHT
 D: $$$$$$$$$$$$ 
@@ -1774,7 +1774,7 @@ D: $$$$#$$$$$$$
 # Index 261
 name:Dragon Island
 type:Interesting room
-depth:11
+depth:2
 rarity:10
 flags:LIGHT
 D: $$$$$$$$$$$    
@@ -1794,7 +1794,7 @@ D:  $$$$$$$$$$$
 # Index 265
 name:Perilous path
 type:Interesting room
-depth:4
+depth:1
 rarity:7
 D:    #######    
 D:$$$$#77777#$$$$
@@ -1808,7 +1808,7 @@ D:    #######
 # Index 266
 name:Room Bridge
 type:Interesting room
-depth:3
+depth:1
 rarity:5
 D:    #####    
 D:$$$##777#$$$$
@@ -1824,7 +1824,7 @@ D:   ####
 # Index 267
 name:Cavern Bridge
 type:Interesting room
-depth:3
+depth:1
 rarity:10
 flags:NO_ROTATION | LIGHT
 D:   $$$$$$$$$$$      
@@ -1847,7 +1847,7 @@ D:  $$$$$$$$$$$$$$$
 # Index 268
 name:Chasm gauntlet
 type:Interesting room
-depth:6
+depth:1
 rarity:20
 D:#########
 D:#.aa>a.a#
@@ -1863,7 +1863,7 @@ D:#########
 # Index 269
 name:High Forge
 type:Interesting room
-depth:5
+depth:1
 rarity:5
 D:########  
 D:#777777## 
@@ -1880,7 +1880,7 @@ D:$$$$$$##
 # Index 270
 name:The Edge
 type:Interesting room
-depth:8
+depth:1
 rarity:5
 D:$$$$$$$$$$
 D:$?......?$
@@ -1895,7 +1895,7 @@ D:##########
 # Index 280
 name:Chasm Maze
 type:Interesting room
-depth:6
+depth:1
 rarity:7
 flags:NO_ROTATION
 D:    $$$$#$$$$    
@@ -1917,7 +1917,7 @@ D:    $$$$$$#$$
 # Index 281
 name:Maze with chasm
 type:Interesting room
-depth:5
+depth:1
 rarity:5
 flags:NO_ROTATION
 D:$$$$$$$$$$$$$$$
@@ -1934,7 +1934,7 @@ D:$$$$$$$$$$$$$$$
 # Index 285
 name:Stepping Stones
 type:Interesting room
-depth:13
+depth:3
 rarity:10
 flags:LIGHT
 D: ####$##### 
@@ -1952,7 +1952,7 @@ D: ##$#######
 # Index 286
 name:Crosshair Islands
 type:Interesting room
-depth:15
+depth:5
 rarity:10
 flags:LIGHT
 D:   ##$##   
@@ -1985,7 +1985,7 @@ D:   ##$##
 # Index 300
 name:Oval Chambers
 type:Lesser vault
-depth:0
+depth:1
 rarity:1
 D:     #####     
 D:    ##*&*##    
@@ -2003,7 +2003,7 @@ D:     #####
 # Index 301
 name:Diamond Chamber
 type:Lesser vault
-depth:0
+depth:1
 rarity:1
 D:######$######
 D:#.1.##.##.2.#
@@ -2021,7 +2021,7 @@ D:######$######
 # Index 305
 name:Cross
 type:Lesser vault
-depth:0
+depth:1
 rarity:1
 D:$$$$$$$$$$$$$
 D:$*..*#.#*..*$
@@ -2039,7 +2039,7 @@ D:$$$$$$$$$$$$$
 # Index 306
 name:Watched Ways
 type:Lesser vault
-depth:8
+depth:1
 rarity:2
 D:$$$$$$$$$$$$$
 D:$....+.#*...$
@@ -2057,7 +2057,7 @@ D:$$$$$$$$$$$$$
 # Index 307
 name:Hidden Horror
 type:Lesser vault
-depth:13
+depth:3
 rarity:5
 D:$$$$$$$$$$$
 D:$....+...?$
@@ -2075,7 +2075,7 @@ D:$$$$$$$$$$$
 # Index 310
 name:Four Corners
 type:Lesser vault
-depth:0
+depth:1
 rarity:1
 D:$$$$# #$$$$
 D:$...#$#..1$
@@ -2093,7 +2093,7 @@ D:$$$$# #$$$$
 # Index 320
 name:Throne Room
 type:Lesser vault
-depth:8
+depth:1
 rarity:3
 D:############
 D:#...#*3#...#
@@ -2115,7 +2115,7 @@ D:$$$$$$$$$$$$
 # Index 321
 name:Throne Room 2
 type:Lesser vault
-depth:10
+depth:2
 rarity:5
 D:###############
 D:#*?#..???..#*?#
@@ -2137,7 +2137,7 @@ D:$$$$$$$$$$$$$$$
 # Index 322
 name:Throne Room 3
 type:Lesser vault
-depth:13
+depth:3
 rarity:3
 D:#########    
 D:#&^^s&3&#    
@@ -2161,7 +2161,7 @@ D:$$$$$$$$$$$$$
 # Index 323
 name:Throne Room 4
 type:Lesser vault
-depth:14
+depth:4
 rarity:2
 D:#########       
 D:##*#*#*##       
@@ -2177,7 +2177,7 @@ D:#########
 # Index 324
 name:Collapsed Chamber
 type:Lesser vault
-depth:9
+depth:1
 rarity:5
 D:#########      
 D:#&#.....###$$$$
@@ -2192,7 +2192,7 @@ D:#########
 # Index 330
 name:Halled cells
 type:Lesser vault
-depth:12
+depth:3
 rarity:4
 D:#$$####$$$$$#####
 D:$..#*.#?....#*.2#
@@ -2208,7 +2208,7 @@ D:#$$####$$$$$#####
 # Index 331
 name:Fort
 type:Lesser vault
-depth:5
+depth:1
 rarity:2
 D:#####$$$$$#####
 D:#...#.....#...#
@@ -2228,7 +2228,7 @@ D:#####$$$$$#####
 # Index 340
 name:Diamond Hall
 type:Lesser vault
-depth:12
+depth:3
 rarity:5
 D:#######$$#######
 D:#&.*###..###.?*#
@@ -2254,7 +2254,7 @@ D:#######$$#######
 # Index 341
 name:Complex
 type:Lesser vault
-depth:10
+depth:2
 rarity:3
 flags:NO_ROTATION
 D:####################
@@ -2280,7 +2280,7 @@ D:$$$$$$$$$$$$$$$$$$$$
 # Index 342
 name:Complex 2
 type:Lesser vault
-depth:10
+depth:2
 rarity:3
 D:######################
 D:#1...##..?...##&?.#..#
@@ -2306,7 +2306,7 @@ D:######$$##############
 # Index 343
 name:Split hall
 type:Lesser vault
-depth:10
+depth:2
 rarity:3
 D:  ######$######  
 D:  #.?.##.##.?.#  
@@ -2327,7 +2327,7 @@ D:  ######$######
 # Index 344
 name:Circular Hall
 type:Lesser vault
-depth:12
+depth:3
 rarity:3
 D:#$$#$$$$$$$$$#$$#
 D:$*.#.........+..$
@@ -2349,7 +2349,7 @@ D:#$$#$$$$$$$$$#$$#
 # Index 345
 name:Circular Hall 2
 type:Lesser vault
-depth:10
+depth:2
 rarity:2
 flags:NO_ROTATION
 D:    $$$$$$$$$$$$    
@@ -2372,7 +2372,7 @@ D:    $$$$$$$$$$$$
 # Index 346
 name:Circular hall 3
 type:Lesser vault
-depth:10
+depth:2
 rarity:4
 flags:NO_ROTATION
 D:      ############      
@@ -2397,7 +2397,7 @@ D:      #####$$#####
 # Index 350
 name:Weird pillars
 type:Lesser vault
-depth:7
+depth:1
 rarity:10
 D:###$$$#$#$#$$$###
 D:###...#.#.#...###
@@ -2419,7 +2419,7 @@ D:###$$$#$#$#$$$###
 # Index 355
 name:Hidden Ways
 type:Lesser vault
-depth:12
+depth:3
 rarity:4
 D:$$$$$$$$$$$$$
 D:$.1.s....s..$
@@ -2437,7 +2437,7 @@ D:$$$$$$$$$$$$$
 # Index 356
 name:Hoarded Treasure
 type:Lesser vault
-depth:18
+depth:8
 rarity:10
 D:$$$$$#########
 D:$....##****###
@@ -2453,7 +2453,7 @@ D:$$$$$#########
 # Index 360
 name:Spiral 2
 type:Lesser vault
-depth:13
+depth:3
 rarity:10
 D:      #$$$$$## 
 D:      $.....## 
@@ -2479,7 +2479,7 @@ D:    ######
 # Index 361
 name:Keble
 type:Lesser vault
-depth:11
+depth:2
 rarity:10
 flags:NO_ROTATION
 D:########$$############$$########
@@ -2502,7 +2502,7 @@ D:########$$############$$########
 # Index 365
 name:Glittering Caves
 type:Lesser vault
-depth:13
+depth:3
 rarity:10
 flags:NO_ROTATION
 D:             #$$$$$$$%%%%%       
@@ -2525,7 +2525,7 @@ D:       %%%$$$$$$$%%%%%%%%%%%%%%%%
 # Index 366
 name:Glittering Caves 2
 type:Lesser vault
-depth:13
+depth:3
 rarity:10
 flags:NO_ROTATION
 D:    %%%$$$$$%%%$$$$$$$$%%%%    
@@ -2545,7 +2545,7 @@ D:                %%%%
 # Index 370
 name:Crypt
 type:Lesser vault
-depth:9
+depth:1
 rarity:4
 D:    ###########    
 D:    #..W.W.W..#    
@@ -2561,7 +2561,7 @@ D:    ###########
 # Index 380
 name:Draconic Cave 1
 type:Lesser vault
-depth:10
+depth:2
 rarity:5
 D:#####$$$$$$
 D:#&d.#.....$
@@ -2577,7 +2577,7 @@ D:$$$$$$#$$$$
 # Index 381
 name:Draconic Cave 2
 type:Lesser vault
-depth:12
+depth:3
 rarity:5
 D:#$$$#######$$#
 D:$...##..&##..$
@@ -2595,7 +2595,7 @@ D:$$$$$$$$$$$$##
 # Index 382
 name:Dragons' Run
 type:Lesser vault
-depth:14
+depth:4
 rarity:10
 D:$$$$$$$$$$$$$$$$$
 D:$...+.......+...$
@@ -2614,7 +2614,7 @@ D:$$$$$$$$$$$$$$$$$
 # Index 390
 name:Bracket Islands
 type:Lesser vault
-depth:8
+depth:1
 rarity:5
 flags:LIGHT
 D:$$$#$$$#$$$
@@ -2633,7 +2633,7 @@ D:$$$#$$$#$$$
 # Index 391
 name:Cross Islands
 type:Lesser vault
-depth:9
+depth:1
 rarity:10
 flags:LIGHT
 D:   ###$###   
@@ -2652,7 +2652,7 @@ D:   ###$###
 # Index 392
 name:Ring of Islands
 type:Lesser vault
-depth:13
+depth:3
 rarity:20
 flags:LIGHT
 D:  ##$#$##  
@@ -2672,7 +2672,7 @@ D:  ##$#$##
 ## Index 393
 #name:No return
 #type:Lesser vault
-#depth:10
+#depth:2
 #rarity:15
 #D:$$$$#######
 #D:$...#&1a*##
@@ -2694,7 +2694,7 @@ D:  ##$#$##
 # Index 400
 name:the Tomb of the King
 type:Greater vault
-depth:8
+depth:1
 rarity:1
 flags:NO_ROTATION
 D:  ###                           
@@ -2711,7 +2711,7 @@ D:  ###
 # Index 401
 name:the Cat Fortress
 type:Greater vault
-depth:10
+depth:2
 rarity:1
 flags:NO_ROTATION
 D:#######################################
@@ -2742,7 +2742,7 @@ D:#######################################
 # Index 402
 name:Gothmog's hall
 type:Greater vault
-depth:18
+depth:8
 rarity:1
 D:#########$$$$$#########
 D:#########T...T#########
@@ -2768,7 +2768,7 @@ D:#########$$$$$#########
 # Index 403
 name:Ungoliant's lair
 type:Greater vault
-depth:18
+depth:8
 rarity:1
 flags:WEBS
 D:#############$$$#######$$$$#
@@ -2800,7 +2800,7 @@ D:########################$$$#
 # Index 404
 name:the Hoard of the Worm of Greed
 type:Greater vault
-depth:18
+depth:8
 rarity:1
 D:$$$$###################
 D:$...###################
@@ -2826,7 +2826,7 @@ D:#########$$$$$$$$$#####
 # Index 405
 name:the Chambers of Thu
 type:Greater vault
-depth:18
+depth:8
 rarity:1
 D:#########%%%%%%%%%##########
 D:######.s.%%&.3.&%%&#S#&#S#&#
@@ -2856,7 +2856,7 @@ D:###########$$$$$$#$$$$######
 # Index 450
 name:Morgoth's throne room
 type:Throne room
-depth:20
+depth:10
 rarity:1
 flags:NO_ROTATION 
 D:###################################

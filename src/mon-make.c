@@ -37,6 +37,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
+#include "player-util.h"
 #include "target.h"
 #include "tutorial.h"
 
@@ -250,7 +251,7 @@ struct monster_race *get_mon_num(int level, enum biome_type biome, int realm,
 	bool pursuing_monster = false;
 
 	/* Level 24 monsters can only be generated if especially asked for */
-	bool allow_24 = (level == z_info->dun_depth + 4);
+	bool allow_24 = (level == z_info->dun_depth + 14);
 
 	/* Default level */
 	int generation_level = level;
@@ -276,7 +277,7 @@ struct monster_race *get_mon_num(int level, enum biome_type biome, int realm,
 			/* Most of the time use a small distribution */
 			if (pursuing_monster) {
 				/* Leave as is */
-			} else if (level == player->depth) {
+            } else if (level == player_danger_level(player)) {
 				/* Modify the effective level by a small random amount:
 				 * [1, 4, 6, 4, 1] */
 				generation_level += damroll(2, 2) - damroll(2, 2);
@@ -324,7 +325,8 @@ struct monster_race *get_mon_num(int level, enum biome_type biome, int realm,
 			continue;
 
 		/* Some monsters never appear out of depth */
-		if (rf_has(race->flags, RF_FORCE_DEPTH) && race->level > player->depth)
+		if (rf_has(race->flags, RF_FORCE_DEPTH) &&
+			(race->level > player_danger_level(player)))
 			continue;
 
 		/* Non-moving monsters can't appear as out-of-depth pursuing monsters */
@@ -925,7 +927,8 @@ bool place_new_monster_one(struct chunk *c, struct loc grid,
 	/* Check for depth issues except where we're ignoring that */
 	if (!ignore_depth) {
 		/* Force depth monsters may NOT normally be created out of depth */
-		if (rf_has(race->flags, RF_FORCE_DEPTH) && c->depth < race->level)
+		if (rf_has(race->flags, RF_FORCE_DEPTH) &&
+			(player_danger_level(player) < race->level))
 			return false;
 
 		/* Special generation may NOT normally be created */
@@ -935,7 +938,7 @@ bool place_new_monster_one(struct chunk *c, struct loc grid,
 
 	/* Check out-of-depth-ness */
 	if (OPT(player, cheat_hear)) {
-		if (race->level > c->depth) {
+		if (race->level > player_danger_level(player)) {
 			if (rf_has(race->flags, RF_UNIQUE)) {
 				/* OOD unique */
 				msg("Deep unique (%s).", race->name);
@@ -993,7 +996,7 @@ bool place_new_monster_one(struct chunk *c, struct loc grid,
 				   (chunk_realm(player->place) == REALM_MORGOTH)) {
 			/* Dangerous monsters out of vaults (which are assumed to be in
 			 * direct pursuit) are more alert during the player's escape */
-			if ((race->level > player->depth + 2) &&
+			if ((race->level > player_danger_level(player) + 2) &&
 				!square_isvault(c, grid) && (amount > 0)) {
 				amount = damroll(1, 3);
 			}
@@ -1326,7 +1329,8 @@ bool place_new_monster(struct chunk *c, enum biome_type biome, int realm,
 		/*              0  |    3                        */
 		/*             +1  |  3 / 4                      */
 		/*             +2  |    4                        */
-		int amount = (rand_range(6,7) + (c->depth - race->level)) / 2;
+		int amount = (rand_range(6,7) +
+					  (player_danger_level(player) - race->level)) / 2;
 		amount = MIN(MAX(amount, 2), 4);
 		group_info.role = MON_GROUP_MEMBER;
 		return place_new_monster_group(c, grid, race, sleep, group_info,
@@ -1339,7 +1343,9 @@ bool place_new_monster(struct chunk *c, enum biome_type biome, int realm,
 		/*             +1  |   75%                                   */
 		/*             +2  |  100%                                   */
 		int amount = 1;
-		if (randint1(4) <= c->depth - race->level + 2) amount++;
+		if (randint1(4) <= player_danger_level(player) - race->level + 2) {
+			amount++;
+		}
 		group_info.role = MON_GROUP_MEMBER;
 		return place_new_monster_group(c, grid, race, sleep, group_info,
 									   amount, origin);

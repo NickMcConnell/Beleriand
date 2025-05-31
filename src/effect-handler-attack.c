@@ -670,7 +670,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 					}
 
                     /* Change the feature (unless it would be making a chasm
-					 * at 950 or 1000 ft) */
+					 * at 450 or 500 ft) */
                     if ((feat != FEAT_CHASM) &&
 						(player->depth < z_info->dun_depth - 1)) {
                         square_unmark(cave, grid);
