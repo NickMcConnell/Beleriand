@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "game-world.h"
 #include "init.h"
 #include "player.h"
 #include "save-charoutput.h"
@@ -34,7 +35,7 @@ bool save_charoutput(void)
 		if (! file_put(fo, "{\n")) written = false;
 		if (! file_putf(fo, "race: \"%s\",\n", player->race->name)) written = false;
 		if (! file_putf(fo, "house: \"%s\",\n", player->house->name)) written = false;
-		if (! file_put(fo, "mapName: \"Angband\",\n")) written = false;
+		if (! file_putf(fo, "mapName: \"%s\",\n", region_info[chunk_list[player->place].region].name)) written = false;
 		if (! file_putf(fo, "dLvl: \"%i\",\n", player->depth)) written = false;
 		if (! file_putf(fo, "isDead: \"%i\",\n", (player->is_dead) ? 1 : 0)) written = false;
 		if (! file_putf(fo, "killedBy: \"%s\"\n", player->died_from)) written = false;

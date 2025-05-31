@@ -89,6 +89,7 @@ weight:155:10
 player-flags:AXE_PROFICIENCY
 equip:food:Piece of Dark Bread:5:5
 equip:light:Wooden Torch:3:4
+equip:polearm:Battle Axe:1:1
 desc:The dwarves are stone-hard and stubborn, fast in friendship
 desc: and in enmity. They live long, far beyond the span of Men
 desc: but not for ever. They are short in stature, deep-breasted

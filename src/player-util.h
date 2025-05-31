@@ -71,6 +71,7 @@ enum {
 #define REST_REQUIRED_FOR_REGEN 5
 
 int int_exp(int base, int power);
+uint8_t player_danger_level(struct player *p);
 void take_hit(struct player *p, int dam, const char *kb_str);
 void death_knowledge(struct player *p);
 int energy_per_move(struct player *p);

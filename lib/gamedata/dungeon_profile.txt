@@ -58,10 +58,10 @@ streamer:5:2:4
 alloc:100
 
 # Really big rooms only have rarity 0 but they have other checks
-room:Greater vault:44:66:35:0:0
+room:Greater vault:44:66:5:0:0
 
 # Very rare rooms (rarity = 2)
-room:Lesser vault:22:33:20:2:100
+room:Lesser vault:22:33:2:2:100
 
 # Unusual rooms (rarity = 1)
 room:Interesting room:44:55:0:1:10

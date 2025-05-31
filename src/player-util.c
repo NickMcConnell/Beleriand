@@ -75,6 +75,15 @@ int int_exp(int base, int power)
 }
 
 /**
+ * The danger level of the player's current location
+ */
+uint8_t player_danger_level(struct player *p)
+{
+	struct chunk_ref *ref = &chunk_list[p->place];
+	return p->depth + region_info[ref->region].danger;
+}
+
+/**
  * Decreases players hit points and sets death flag if necessary
  *
  * Hack -- this function allows the user to save (or quit) the game
@@ -884,7 +893,7 @@ void player_catch_fish(struct player *p)
 	struct object *obj = mem_zalloc(sizeof(*obj));
 	int sval = lookup_sval(TV_FOOD, "Raw Fish");
 	struct object_kind *kind = lookup_kind(TV_FOOD, sval);
-	object_prep(obj, kind, p->depth, RANDOMISE);
+	object_prep(obj, kind, player_danger_level(p), RANDOMISE);
 
 	/* Drop it near the player */
 	drop_near(cave, &obj, 0, p->grid, true, false);
@@ -1863,11 +1872,7 @@ static void search_square(struct player *p, struct loc grid, int dist,
 		if (obj) {
 			difficulty = chest_level / 2;
 		} else {
-			if (p->depth > 0) {
-				difficulty = p->depth / 2;
-			} else {
-				difficulty = 10;
-			}
+			difficulty = player_danger_level(p) / 2;
 		}
 
 		/* Penalise distance */

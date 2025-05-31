@@ -31,6 +31,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-abilities.h"
+#include "player-util.h"
 
 /**
  * ------------------------------------------------------------------------
@@ -237,7 +238,8 @@ static struct ego_item *ego_find_random(struct object *obj, int level,
 		if (table[i].level > level) continue;
 
 		/* Some special items can't be generated too deep */
-		if ((ego->alloc_max > 0) && (player->depth > ego->alloc_max)) continue;
+		if ((ego->alloc_max > 0) &&
+			(player_danger_level(player) > ego->alloc_max)) continue;
 
 		/* If we force fine/special, don't create cursed */
 		if (only_good && of_has(ego->flags, OF_CURSED)) continue;

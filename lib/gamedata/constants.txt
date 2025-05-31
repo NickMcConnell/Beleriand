@@ -69,7 +69,7 @@ dun-gen:tunn-max:900
 #---------------------------------------------------------------------
 
 # Maximum dungeon level.
-world:dun-depth:20
+world:dun-depth:10
 
 # Maximum level for calculations (can probably be reduced considerably).
 world:max-depth:128

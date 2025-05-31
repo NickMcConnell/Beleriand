@@ -552,7 +552,7 @@ bool melt_mithril_item(struct player *p, struct object *obj)
 		int16_t pieces_remaining = obj->weight;
 
 		/* Prepare the base object for the mithril */
-		object_prep(new, mithril_kind, p->depth, RANDOMISE);
+		object_prep(new, mithril_kind, player_danger_level(p), RANDOMISE);
 
 		/* Stop tracking item */
 		if (tracked_object_is(p->upkeep, obj))

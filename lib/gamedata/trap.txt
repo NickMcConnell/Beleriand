@@ -88,8 +88,8 @@ desc:An obstruction which makes a closed door harder to open.
 name:pit:pit
 graphics:^:s
 rarity:1
-min-depth:5
-max-depth:10
+min-depth:1
+max-depth:3
 power:-1
 flags:TRAP | FLOOR | PIT
 effect:PIT:NORMAL
@@ -100,8 +100,8 @@ desc:A hole dug to snare the unwary.
 name:spiked pit:spiked pit
 graphics:^:s
 rarity:1
-min-depth:11
-max-depth:17
+min-depth:2
+max-depth:7
 power:-1
 flags:TRAP | FLOOR | PIT | SURFACE
 effect:PIT:SPIKED
@@ -112,8 +112,8 @@ desc:A hole dug to snare the unwary, with spikes.
 name:dart trap:dart
 graphics:^:r
 rarity:1
-min-depth:8
-max-depth:15
+min-depth:2
+max-depth:6
 power:3
 flags:TRAP | FLOOR
 effect:DART:STR:15:1
@@ -128,7 +128,7 @@ name:gas trap:confusion gas trap
 graphics:^:g
 rarity:1
 min-depth:1
-max-depth:13
+max-depth:3
 power:5
 flags:TRAP | FLOOR
 effect:TIMED_INC:CONFUSED
@@ -146,7 +146,7 @@ name:alarm:bell
 graphics:^:R
 rarity:1
 min-depth:0
-max-depth:20
+max-depth:10
 power:2
 flags:TRAP | FLOOR
 effect:NOISE:PLAYER
@@ -161,7 +161,7 @@ name:flash trap:flash
 graphics:^:M
 rarity:1
 min-depth:1
-max-depth:20
+max-depth:10
 power:4
 flags:TRAP | FLOOR
 effect:TIMED_INC:BLIND
@@ -177,7 +177,7 @@ name:caltrop trap:caltrops
 graphics:^:r
 rarity:1
 min-depth:0
-max-depth:20
+max-depth:10
 power:1
 flags:TRAP | FLOOR | SAVE_SKILL
 effect:DAMAGE
@@ -198,8 +198,8 @@ msg-xtra:It pierces your foot.
 name:roost:roost
 graphics:^:B
 rarity:1
-min-depth:3
-max-depth:6
+min-depth:1
+max-depth:2
 power:-1
 flags:TRAP | FLOOR | ONETIME | SURFACE
 effect:SUMMON:BIRD_BAT
@@ -212,8 +212,8 @@ msg-xtra:There is a flutter of wings from high above.
 name:web:web
 graphics:^:B
 rarity:1
-min-depth:8
-max-depth:20
+min-depth:1
+max-depth:10
 power:-1
 flags:TRAP | FLOOR
 effect:SUMMON:SPIDER
@@ -227,8 +227,8 @@ msg-xtra:A spider descends from the gloom.
 name:ancient mechanism:deadfall trap
 graphics:^:U
 rarity:1
-min-depth:14
-max-depth:20
+min-depth:5
+max-depth:10
 power:7
 flags:TRAP | FLOOR | ONETIME | SURFACE
 effect:DEADFALL
@@ -243,7 +243,7 @@ name:discoloured spot:acid trap
 graphics:^:u
 rarity:1
 min-depth:1
-max-depth:0
+max-depth:10
 power:5
 flags:TRAP | FLOOR
 effect:SPOT:ACID:0
