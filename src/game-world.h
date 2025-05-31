@@ -365,6 +365,7 @@ void gen_loc_list_cleanup(void);
 bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *below, int *above);
 void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx);
 struct square_mile *square_mile(wchar_t letter, int number, int y, int x);
+int chunk_realm(int chunk_idx);
 bool is_daytime(void);
 bool outside(void);
 bool is_daylight(void);
