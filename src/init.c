@@ -690,6 +690,16 @@ static enum parser_error parse_region_danger(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_region_density(struct parser *p)
+{
+	struct world_region *region = parser_priv(p);
+
+	if (!region)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	region->density = parser_getuint(p, "density");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_region_height(struct parser *p)
 {
 	struct world_region *region = parser_priv(p);
@@ -747,6 +757,7 @@ struct parser *init_parse_region(void)
 	parser_reg(p, "name str name", parse_region_name);
 	parser_reg(p, "realm sym realm", parse_region_realm);
 	parser_reg(p, "danger uint danger", parse_region_danger);
+	parser_reg(p, "density uint density", parse_region_density);
 	parser_reg(p, "height uint height", parse_region_height);
 	parser_reg(p, "width uint width", parse_region_width);
 	parser_reg(p, "y-offset uint y-offset", parse_region_y_offset);
