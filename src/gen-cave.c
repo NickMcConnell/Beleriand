@@ -1318,7 +1318,7 @@ static struct chunk *angband_chunk(struct player *p, int depth, int height,
 
 	/* Make the cave */
 	struct chunk *c = chunk_new(height, width);
-	c->depth = p->depth;
+	c->depth = depth;
 
 	/* Set the intended number of floor grids based on cave floor area */
 	num_floors = c->height * c->width / 7;
@@ -1557,13 +1557,13 @@ struct chunk *angband_gen(struct player *p) {
 
 	for (i = mon_gen; i > 0; i--)
 		pick_and_place_distant_monster(c, p, '$', REALM_MORGOTH, true,
-									   p->depth);
+									   player_danger_level(p));
 
 	/* Put some objects in rooms */
 	obj_room_gen = 3 * mon_gen / 4;
 	if (obj_room_gen > 0) {
-		alloc_object(c, SET_ROOM, TYP_OBJECT, obj_room_gen, p->depth,
-			ORIGIN_FLOOR);
+		alloc_object(c, SET_ROOM, TYP_OBJECT, obj_room_gen,
+					 player_danger_level(p), ORIGIN_FLOOR);
 	}
 
     /* Place the traps */
