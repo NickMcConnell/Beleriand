@@ -162,7 +162,7 @@ feat:grass
 feat:pile of passable rubble
 feat:granite wall
 feat:quartz vein
-proportion:50
+proportion:10
 size:4+d5
 
 ## Snow
