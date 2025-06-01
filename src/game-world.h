@@ -117,6 +117,7 @@ struct world_region {
 
 	uint8_t realm;       	           /**< Realm region lies in */
 	uint8_t danger;       	           /**< Region danger */
+	uint8_t density;       	           /**< Region density */
 	uint16_t height;       	           /**< Region height */
 	uint16_t width;       	  	       /**< Region width */
 	uint16_t y_offset;                 /**< Region y location */

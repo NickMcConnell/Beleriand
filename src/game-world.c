@@ -294,6 +294,10 @@ struct square_mile *square_mile(wchar_t letter, int number, int y, int x)
 }
 
 /**
+ * ------------------------------------------------------------------------
+ * Functions for map-based data
+ * ------------------------------------------------------------------------ */
+/**
  * Return which realm a chunk from the chunk_list is in
  */
 int chunk_realm(int chunk_idx)
@@ -304,6 +308,15 @@ int chunk_realm(int chunk_idx)
 	assert(ref);
 	if (!ref->turn) return REALM_NONE;
 	return region_info[ref->region].realm;
+}
+
+/**
+ * Return the monster allocation chance per turn for the region the player is
+ */
+static int mon_alloc_chance(struct player *p)
+{
+	struct chunk_ref *ref = &chunk_list[p->place];
+	return region_info[ref->region].density * z_info->alloc_monster_chance;
 }
 
 /**
@@ -802,7 +815,7 @@ void process_world(struct chunk *c)
 												   REALM_MORGOTH, true,
 												   danger, false);
 		}
-	} else if (one_in_(z_info->alloc_monster_chance)) {
+	} else if (one_in_(mon_alloc_chance(player))) {
 		/* Normal wandering monster generation */
 		(void)pick_and_place_monster_on_stairs(c, player, '$',
 											   chunk_realm(player->place), true,
