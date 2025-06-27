@@ -1127,7 +1127,7 @@ void close_game(bool prompt_failed_save)
 	/* No suspending now */
 	signals_ignore_tstp();
 
-	/* Hack -- Increase "icky" depth */
+	/* Increase "icky" depth */
 	screen_save_depth++;
 
 	/* Deal with the randarts file */
@@ -1176,7 +1176,7 @@ void close_game(bool prompt_failed_save)
 	/* Wipe the monster list */
 	wipe_mon_list();
 
-	/* Hack -- Decrease "icky" depth */
+	/* Decrease "icky" depth */
 	screen_save_depth--;
 
 	/* Tell the UI we're done with the game state */

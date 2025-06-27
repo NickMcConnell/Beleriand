@@ -915,7 +915,7 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 					   grid.y >= y1 && grid.y <= y2);
 			}
 
-			/* Hack -- skip "non-grids" */
+			/* Skip "non-grids" */
 			if (*t == ' ') continue;
 
 			/* Analyze the symbol */

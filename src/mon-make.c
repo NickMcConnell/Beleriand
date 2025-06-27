@@ -398,18 +398,18 @@ void delete_monster_idx(int m_idx)
 	assert(square_in_bounds(c, mon->grid));
 	grid = mon->grid;
 
-	/* Hack -- Reduce the racial counter */
+	/* Reduce the racial counter */
 	mon->race->cur_num--;
 
 	/* Affect light? */
 	if (mon->race->light != 0)
 		player->upkeep->update |= PU_UPDATE_VIEW | PU_MONSTERS;
 
-	/* Hack -- remove target monster */
+	/* Remove target monster */
 	if (target_get_monster() == mon)
 		target_set_monster(NULL);
 
-	/* Hack -- remove tracked monster */
+	/* Remove tracked monster */
 	if (player->upkeep->health_who == mon)
 		health_track(player->upkeep, NULL);
 
@@ -643,10 +643,10 @@ void wipe_mon_list(void)
 	/* Reset "mon_cnt" */
 	mon_cnt = 0;
 
-	/* Hack -- no more target */
+	/* No more target */
 	target_set_monster(0);
 
-	/* Hack -- no more tracking */
+	/* No more tracking */
 	if (player)	health_track(player->upkeep, 0);
 
 	mem_free(monster_groups);

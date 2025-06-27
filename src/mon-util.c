@@ -1081,6 +1081,8 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 /**
  * Decreases a monster's hit points by `dam` and handle monster death.
  *
+ * We "delay" fear messages by passing around a "fear" flag.\\TODO??
+ *
  * We announce monster death (using an optional "death message" (`note`)
  * if given, and a otherwise a generic killed/destroyed message).
  *
