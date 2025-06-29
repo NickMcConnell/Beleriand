@@ -49,7 +49,7 @@ run : build
 $(TESTPROGS) : ../beleriand.a test-utils.o unit-test.o
 .o.exe :
 	@$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $< \
-		test-utils.o unit-test.o../beleriand.a  \
+		test-utils.o unit-test.o ../beleriand.a  \
 		$(LDFLAGS) $(LDADD) $(LIBS)
 	@echo "  CC $@"
 
