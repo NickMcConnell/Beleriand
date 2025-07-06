@@ -774,6 +774,10 @@ level:6
 desc:The speech of the High Elves of Valinor, spoken by the Noldor among
 desc: themselves.
 
+name:Speech of the East
+level:6
+desc:The rough speech of the Easterlings.
+
 name:Speech of the Haladin
 level:7
 desc:The speech of the men of Brethil among themselves.

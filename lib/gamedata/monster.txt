@@ -232,7 +232,6 @@
 
 ##### Non-race (contains the player picture) #####
 
-# Index 0
 name:<player>
 glyph:@
 color:w
@@ -262,7 +261,6 @@ flags:FLEE | FREE
 drop:food:Raw Pigeon Breast:50:1
 desc:A plump bird which flees on sight.
 
-# Index 11
 name:Fox
 plural:Foxes
 base:wolf
@@ -282,10 +280,9 @@ flags:RAND_25 | FREE
 desc:A streak of orange fur and tail which can give you a nasty nip.
 
 
-# Index 12
 name:Tanglethorn
 base:thorn
-biomes:$
+biomes:$+|
 realms:MORGOTH
 depth:1
 rarity:1
@@ -322,11 +319,10 @@ blow:KICK:HURT:1:1d1
 flags:FLEE | FREE
 desc:A wild, nervous creature.
 
-# Index 21
 name:Orc
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:2
 rarity:1
 color:u
@@ -414,7 +410,7 @@ name:Nogrod Dwarf
 base:dwarf
 language:KHUZDUL
 biomes:$^
-realms:NAUGRIM
+realms:NAUGRIM | CONTEST
 depth:2
 rarity:2
 color:W
@@ -435,7 +431,7 @@ name:Belegost Dwarf
 base:dwarf
 language:KHUZDUL
 biomes:$^
-realms:NAUGRIM
+realms:NAUGRIM | CONTEST
 depth:2
 rarity:2
 color:W
@@ -460,7 +456,7 @@ biomes:!
 realms:FINGON | NARGOTHROND | GONDOLIN | MAEDHROS | FEANOR | CONTEST
 depth:2
 rarity:2
-color:W
+color:w
 speed:2
 health:8d4
 light:1
@@ -502,10 +498,10 @@ name:Nandorin Elf
 base:elf
 language:NANDORIN
 biomes:^+
-realms:GREEN
+realms:GREEN | DORIATH
 depth:2
 rarity:2
-color:W
+color:g
 speed:2
 health:8d4
 light:1
@@ -532,7 +528,7 @@ biomes:!
 realms:EMPTY | EAST
 depth:2
 rarity:8
-color:W
+color:s
 speed:2
 health:8d4
 light:1
@@ -548,10 +544,9 @@ desc: lived a solitary and quiet existence in Middle Earth and were mostly
 desc: uninvolved in the wars of Beleriand.
 
 
-# Index 22
 name:Grimhawk
 base:flyer
-biomes:$
+biomes:!
 realms:MORGOTH
 depth:2
 rarity:2
@@ -568,13 +563,30 @@ flags:RAND_50 | TERRITORIAL
 desc:A hunting bird, beloved of the orcs, with iron barbs on its talons.
 
 
+name:Asp
+base:serpent
+biomes:$+./^_|
+depth:2
+rarity:2
+color:s
+speed:2
+health:2d4
+sleep:15
+percept:2
+stealth:3
+will:1
+prot:3:4d4
+blow:BITE:POISON:4:1d5
+flags:SERPENT | RAND_50
+desc:A snake with a poisonous bite.
+
+
 ##### 3 #####
 
-# Index 31
 name:Orc scout
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:3
 rarity:1
 color:D
@@ -593,12 +605,10 @@ desc:He is one of Morgoth's grim mockeries of the firstborn.
 desc: The miserable creature tries to stay away from you and
 desc: attract attention. It has a crude spear.
 
-# Index 11
 name:Wolf
 plural:Wolves
 base:wolf
-biomes:$
-realms:MORGOTH
+biomes:$+,.^|
 depth:3
 rarity:1
 color:u
@@ -614,11 +624,9 @@ flags:FRIENDS | RAND_25
 desc:This ragged wolf is part of the orcish packs.
 
 
-# Index 32
 name:Spider hatchling
 base:spider
-biomes:$
-realms:MORGOTH
+biomes:$|
 depth:3
 rarity:1
 glyph:m
@@ -637,11 +645,9 @@ desc: They would probably present little threat, but for the
 desc: venom in their bite...
 
 
-# Index 33
 name:Blue serpent
 base:serpent
-biomes:$
-realms:MORGOTH
+biomes:$/
 depth:3
 rarity:2
 color:b
@@ -664,11 +670,10 @@ desc: There is a chill in the air around it.
 
 ##### 4 #####
 
-# Index 41
 name:Orc soldier
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:4
 rarity:1
 color:s
@@ -686,10 +691,9 @@ desc: He is arrayed in black leathers with a crude sword and
 desc: shield: a soldier in the dark hosts of Bauglir.
 
 
-# Index 42
 name:Madthorn
 base:thorn
-biomes:$
+biomes:$+|
 realms:MORGOTH
 depth:4
 rarity:1
@@ -727,10 +731,9 @@ flags:FREE | RIDEABLE
 desc:A horse.
 
 
-# Index 43
 name:Gorcrow
 base:flyer
-biomes:$
+biomes:!
 realms:MORGOTH
 depth:4
 rarity:2
@@ -751,11 +754,10 @@ desc: especially the face and eyes.
 ##### 5 #####
 
 
-# Index 51
 name:Orc archer
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:5
 rarity:3
 color:U
@@ -776,11 +778,10 @@ desc:He is one of Morgoth's grim mockeries of the firstborn.
 desc: He carries a crude sword and bow.
 
 
-# Index 52
 name:White wolf
 plural:White wolves
 base:wolf
-biomes:$
+biomes:$*+,.^|
 realms:MORGOTH
 depth:5
 rarity:1
@@ -797,11 +798,9 @@ flags:FRIENDS | RAND_25 | RES_COLD
 desc:A large and fierce wolf from the northern wastes.
 
 
-# Index 53
 name:Red serpent
 base:serpent
-biomes:$
-realms:MORGOTH
+biomes:$/
 depth:5
 rarity:2
 color:r
@@ -822,11 +821,10 @@ desc:A snake the length of a man, with hard red scales.
 desc: The air around it shimmers with heat.
 
 
-# Index 54
 name:Gorgol, the Butcher
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:5
 rarity:10
 color:G
@@ -844,14 +842,31 @@ desc:A captain of a orcish band, Gorgol keeps his troop in
 desc: order with displays of violence.
 
 
+name:Brown bear
+base:quadruped
+biomes:$+^
+depth:5
+rarity:1
+color:u
+speed:2
+health:12d4
+sleep:15
+percept:2
+stealth:0
+will:2
+prot:3:2d4
+blow:CLAW:WOUND:6:3d3
+desc:It has heavy paws with sharp claws.
+
+
+
 ##### 6 #####
 
 
-# Index 61
 name:Orc warrior
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:6
 rarity:1
 color:W
@@ -868,11 +883,9 @@ desc:He is one of Morgoth's grim mockeries of the firstborn.
 desc: He wears hardened leathers and runs towards you with axe in hand.
 
 
-# Index 62
 name:Sword spider
 base:spider
-biomes:$
-realms:MORGOTH
+biomes:$|
 depth:6
 rarity:2
 color:s
@@ -888,11 +901,10 @@ desc:A giant black spider with sword-sharp mandibles.
 desc: It skitters back and forth.
 
 
-# Index 63
 name:Crebain
 plural:Crebain
 base:flyer
-biomes:$
+biomes:!
 realms:MORGOTH
 depth:6
 rarity:2
@@ -911,11 +923,9 @@ spells:SHRIEK
 desc:A type of crow, specially bred by the forces of evil as spies.
 
 
-# Index 64
 name:Mewlip
 base:horror
-biomes:$
-realms:MORGOTH
+biomes:$_|
 depth:6
 rarity:3
 color:u
@@ -935,16 +945,38 @@ message-invis:FORGET:{name} rings its bell.
 desc:An evil swamp dwelling creature that feeds on the bones
 desc: of those who draw near.
 
+name:Nandorin archer
+base:elf
+biomes:!
+realms:GREEN | DORIATH
+depth:5
+rarity:3
+color:u
+speed:2
+health:8d4
+sleep:15
+percept:5
+stealth:7
+will:4
+prot:3:1d4
+blow:HIT:HURT:5:2d4
+flags:FRIENDS | BASH_DOOR | DROP_33
+ranged-freq:75
+spell-power:9
+spells:ARROW1
+drop:arrow:Arrow:37:2d8
+desc:A Nandorin elf clad in brown and green with a longbow.
+
+
 
 ##### 7 #####
 
 
-# Index 71
 name:Orc thief
 plural:Orc thieves
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:7
 rarity:3
 color:g
@@ -961,10 +993,9 @@ flags:DROP_100 | BASH_DOOR | TAKE_ITEM | UNLOCK_DOOR
 desc:He is one of Morgoth's grim mockeries of the firstborn.
 
 
-# Index 72
 name:Nightthorn
 base:thorn
-biomes:$
+biomes:$+|
 realms:MORGOTH
 depth:7
 rarity:1
@@ -981,11 +1012,9 @@ blow:THORN:HURT:5:5d3
 desc:This twisted plant drinks in the light from the air around.
 
 
-# Index 73
 name:Green serpent
 base:serpent
-biomes:$
-realms:MORGOTH
+biomes:$/
 depth:7
 rarity:2
 color:g
@@ -1005,11 +1034,10 @@ desc:A snake the length of a man, with hard green scales.
 desc: It smells of decay.
 
 
-# Index 74
 name:Mountain troll
 base:troll
-biomes:$
-realms:MORGOTH
+biomes:$^
+realms:MORGOTH | CONTEST
 depth:7
 rarity:1
 color:W
@@ -1025,7 +1053,6 @@ flags:MALE | FRIEND | DROP_33
 desc:A tall troll from the mountains of the north.
 
 
-# Index 75
 name:Tattered wight
 base:wraith
 biomes:$
@@ -1049,11 +1076,10 @@ desc:It is a ghostly form, wrapped in a torn and faded shroud,
 desc: its treasure long since been plundered.
 
 
-# Index 76
 name:Boldog, the Merciless
 base:orc
 biomes:$
-realms:MORGOTH
+realms:MORGOTH | CONTEST
 depth:7
 rarity:20
 color:y
@@ -1077,16 +1103,30 @@ desc:A great captain of the orcs, who led many raids into the
 desc: lands of the elves.
 
 
+name:Black bear
+base:quadruped
+biomes:$+^
+depth:7
+rarity:1
+color:s
+speed:2
+health:12d4
+sleep:15
+percept:2
+stealth:0
+will:2
+prot:4:2d5
+blow:CLAW:WOUND:8:4d4
+desc:It is large and looks angry.
+
+
 ##### 8 #####
 
 
-# need to leave Orc champion at location 81
-
-# Index 81
 name:Orc champion
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:8
 rarity:2
 color:b
@@ -1103,11 +1143,11 @@ desc:A champion of the orc hordes. He wears well-fitting armour and
 desc: wields a battle axe.
 
 
-# Index 82
 name:Easterling warrior
 base:person
-biomes:$
-realms:MORGOTH
+language:EAST
+biomes:!
+realms:MORGOTH | CONTEST | EAST | MAEDHROS
 depth:8
 rarity:2
 color:W
@@ -1127,15 +1167,13 @@ drop:light:Wooden Torch:33:1d1
 desc:Yet neither by wolf, nor by Balrog, nor by Dragon, would
 desc: Morgoth have achieved his end, but for the treachery of Men.
 desc: He is of a people who have come recently to
-desc: Beleriand out of the far east, and have fallen under
+desc: Beleriand out of the far east, some of whom have fallen under
 desc: Morgoth's sway.
 
 
-# Index 83
 name:Hummerhorn
 base:insect
-biomes:$
-realms:MORGOTH
+biomes:$_/|
 depth:8
 rarity:3
 color:y
@@ -1155,13 +1193,10 @@ desc:A giant buzzing wasp, its stinger drips venom.
 ##### 9 #####
 
 
-# need to leave Orc captain at location 91
-
-# Index 91
 name:Orc captain
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:9
 rarity:3
 color:r
@@ -1179,11 +1214,10 @@ desc:An armoured orc with sword and whip.
 desc: He leads a patrol of lesser orcs.
 
 
-# Index 92
 name:Warg
 base:wolf
-biomes:$
-realms:MORGOTH
+biomes:$+./|
+realms:MORGOTH | CONTEST
 depth:9
 rarity:1
 color:s
@@ -1199,11 +1233,10 @@ flags:FRIENDS | RAND_25 | BASH_DOOR | SMART
 desc:It is a great wolf with eyes full of cunning.
 
 
-# Index 93
 name:Grave wight
 base:wraith
 biomes:$
-realms:MORGOTH
+realms:MORGOTH | CONTEST
 depth:9
 rarity:2
 color:U
@@ -1223,11 +1256,9 @@ desc:It is a ghostly form, wrapped in a stained shroud.
 desc: It protects that with which is was buried.
 
 
-# Index 94
 name:Dark serpent
 base:serpent
-biomes:$
-realms:MORGOTH
+biomes:$/
 depth:9
 rarity:2
 color:v
@@ -1247,11 +1278,10 @@ desc:A snake the length of a man, with hard scales that
 desc: reflect no light.
 
 
-# Index 95
 name:Orcobal, Champion of the Orcs
 base:orc
-biomes:$
-realms:MORGOTH
+biomes:!
+realms:MORGOTH | CONTEST
 depth:9
 rarity:15
 color:B
@@ -1271,7 +1301,6 @@ desc:The chief champion of the orcs of Morgoth.
 ##### 10 #####
 
 
-# Index 101
 name:Whispering shadow
 base:wraith
 biomes:$
@@ -1295,10 +1324,9 @@ desc: From its midst, you hear faint sounds (voices?)
 desc: yearning, beckoning.
 
 
-# Index 102
 name:Distended spider
 base:spider
-biomes:$
+biomes:$|
 realms:MORGOTH
 depth:10
 rarity:1
@@ -1315,11 +1343,11 @@ flags:RES_POIS
 desc:It is a vast spider whose bulbous body is bloated with poison.
 
 
-# Index 103
 name:Easterling archer
 base:person
+language:EAST
 biomes:$
-realms:MORGOTH
+realms:MORGOTH | CONTEST | EAST | MAEDHROS
 depth:10
 rarity:3
 color:u
@@ -1342,11 +1370,10 @@ drop:light:Wooden Torch:33:1d1
 desc:Yet neither by wolf, nor by Balrog, nor by Dragon, would
 desc: Morgoth have achieved his end, but for the treachery of Men.
 desc: He is of a people who have come recently to
-desc: Beleriand out of the far east, and have fallen under
+desc: Beleriand out of the far east, some of whom have fallen under
 desc: Morgoth's sway.
 
 
-# Index 104
 name:Twisted bat
 base:flyer
 biomes:$
@@ -1368,11 +1395,10 @@ desc: misshapen out of any natural proportion, with long curving
 desc: fangs hanging from its mouth.
 
 
-# Index 105
 name:Othrod, the Orc Lord
 base:orc
 biomes:$
-realms:MORGOTH
+realms:MORGOTH | CONTEST
 depth:10
 rarity:10
 color:R
@@ -1395,7 +1421,6 @@ desc: of the black enemy for many years.
 ##### 11 #####
 
 
-# Index 111
 name:Snow troll
 base:troll
 biomes:$
@@ -1416,9 +1441,7 @@ flags:MALE | FRIEND | DROP_33 | RES_COLD | HURT_FIRE
 desc:He is a white troll with powerfully clawed hands.
 
 
-# need to leave Barrow wight at location 112
 
-# Index 112
 name:Barrow wight
 base:wraith
 biomes:$
@@ -1442,7 +1465,6 @@ desc:This ghostly, shrouded form dwells within its burial
 desc: chamber, unable to find release.
 
 
-# Index 113
 name:Lurking horror
 base:horror
 biomes:$
@@ -1466,7 +1488,6 @@ desc:It waits for you in the ink-black of the dungeon.
 desc: It seems to be made entirely of claws and of teeth.
 
 
-# Index 114
 name:Giant
 base:giant
 biomes:$
@@ -1491,7 +1512,6 @@ desc:As tall as three men, this hulking opponent is crudely
 desc: armed with a great club.
 
 
-# Index 115
 name:Uldor, the Accursed
 base:person
 biomes:$
@@ -1520,9 +1540,7 @@ desc:Son of Ulfang, the Black, and the leader in the treason against
 desc: the elves in the Battle of Unnumbered Tears.
 
 
-# need to leave Aldor at location 117
 
-# Index 117
 name:Aldor, the Risen King
 base:wraith
 biomes:$
@@ -1551,9 +1569,7 @@ desc: finery and holds a long blade in ghostly fingers.
 
 ##### 12 #####
 
-# need to leave Easterling spy at location 121
 
-# Index 121
 name:Easterling spy
 plural:Easterling spies
 base:person
@@ -1585,7 +1601,6 @@ desc: Beleriand out of the far east, and have fallen under
 desc: Morgoth's sway.
 
 
-# Index 122
 name:Shadow bat
 base:flyer
 biomes:$
@@ -1606,7 +1621,6 @@ flags:RAND_50 | TERRITORIAL | HURT_LIGHT
 desc:A screeching flutter of darkness.
 
 
-# Index 123
 name:Sulrauko
 plural:Sulraukar
 base:rauko
@@ -1628,7 +1642,6 @@ flags:FLYING | RAND_50
 desc:A wind spirit, bent to Morgoth's will.
 
 
-# Index 124
 name:Fire-drake hatchling
 base:dragon
 biomes:$
@@ -1654,10 +1667,9 @@ desc: is already as big as a man, and has begun to use
 desc: its fearsome breath.
 
 
-# Index 125
 name:Ulfang the Black
 base:person
-biomes:$
+biomes:!
 realms:MORGOTH
 depth:12
 rarity:10
@@ -1684,7 +1696,6 @@ desc: to the High Elves, but were secretly in the pay of Morgoth.
 
 # (Duruin = red flame of the night)
 
-# Index 126
 name:Duruin, Least of the Balrogs
 base:rauko
 biomes:$
@@ -1715,7 +1726,6 @@ desc: and shadow. He wields fiery sword and whip.
 ##### 13 #####
 
 
-# Index 131
 name:Werewolf
 plural:Werewolves
 base:wolf
@@ -1739,7 +1749,6 @@ desc:No mere wolf, some malevolent spirit lurks behind
 desc: those glowing eyes.
 
 
-# Index 132
 name:Shadow spider
 base:spider
 biomes:$
@@ -1760,7 +1769,6 @@ flags:RES_POIS | HURT_LIGHT
 desc:It is a great black spider wreathed in shadow.
 
 
-# Index 133
 name:Shadow
 base:wraith
 biomes:$
@@ -1781,10 +1789,9 @@ desc:It seems nothing more than a patch of darkness in
 desc: the room, and yet it stalks you.
 
 
-# Index 134
 name:Sapphire serpent
 base:serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:13
 rarity:3
@@ -1806,7 +1813,6 @@ desc:A great serpent with scales of gleaming sapphire.
 desc: An icy chill surrounds it.
 
 
-# Index 135
 name:Gilim, the Giant of Eruman
 base:giant
 biomes:$
@@ -1838,10 +1844,9 @@ desc: he is tall even among giants, and his name is cursed in many lands.
 ##### 14 #####
 
 
-# Index 141
 name:Ruby serpent
 base:serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:14
 rarity:3
@@ -1863,7 +1868,6 @@ desc:A great serpent with scales of gleaming ruby.
 desc: An intense heat radiates from it.
 
 
-# Index 142
 name:Creeping horror
 base:horror
 biomes:$
@@ -1887,7 +1891,6 @@ desc:It slithers and crawls across the floor towards you.
 desc: The thought of it catching you tears at your mind.
 
 
-# Index 143
 name:Ringrauko
 plural:Ringraukar
 base:rauko
@@ -1909,7 +1912,6 @@ desc:A chill hangs in the air around this figure which is
 desc: almost that of a person. A cold gleaming blade is in its hand.
 
 
-# Index 144
 name:Deathblade
 base:deathblade
 biomes:$
@@ -1931,7 +1933,6 @@ desc:A black blade, wreathed in shadow.
 
 # (Delthaur = abominable horror)
 
-# Index 145
 name:Delthaur, Balrog of Terror
 base:rauko
 biomes:$
@@ -1960,7 +1961,6 @@ desc: inspires such fear as Delthaur. The very air around him
 desc: is filled with menace.
 
 
-# Index 146
 name:Nan, the Giant
 base:giant
 biomes:$
@@ -1990,7 +1990,6 @@ desc: sword you have ever beheld.
 
 ##### 15 #####
 
-# Index 151
 name:Cave troll
 base:troll
 biomes:$
@@ -2012,10 +2011,9 @@ desc:A great brute of a troll, it seems to have come
 desc: from the depths of the very earth.
 
 
-# Index 152
 name:Emerald serpent
 base:serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:15
 rarity:3
@@ -2037,7 +2035,6 @@ desc:A great serpent with scales of gleaming emerald.
 desc: Noxious vapours surround it.
 
 
-# Index 153
 name:Oathwraith
 base:wraith
 biomes:$
@@ -2061,9 +2058,7 @@ desc: in shadow.  It reaches out at you.
 
 
 
-# need to leave Cat warrior at location 154
 
-# Index 154
 name:Cat warrior
 base:cat
 biomes:$
@@ -2087,7 +2082,6 @@ desc: could be natural. It moves with astonishing
 desc: speed and agility.
 
 
-# Index 155
 name:The Deathblade 'Delmereth'
 base:deathblade
 biomes:$
@@ -2113,10 +2107,9 @@ desc: 'Horror-feast' is its name. You can feel its hunger.
 ##### 16 #####
 
 
-# Index 161
 name:Amethyst serpent
 base:serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:16
 rarity:3
@@ -2139,7 +2132,6 @@ desc:A great serpent with scales of darkly glinting amethyst.
 desc: Shadows darken as it approaches.
 
 
-# Index 162
 name:Kemenrauko
 plural:Kemenraukar
 base:rauko
@@ -2163,7 +2155,6 @@ desc:It seems the very stone from which Angband is hewn
 desc: now opposes you.
 
 
-# Index 163
 name:Grotesque
 base:horror
 biomes:$
@@ -2192,9 +2183,7 @@ desc: in fitful glares that leaped and died.'
 
 
 
-# need to leave Young cold-drake at location 164
 
-# Index 164
 name:Young cold-drake
 base:dragon
 biomes:$
@@ -2220,7 +2209,6 @@ desc: needed -- the lashing tail, the great claws, the sharp
 desc: teeth, and the mesmerising eyes...
 
 
-# Index 165
 name:Umuiyan, the Doorkeeper
 base:cat
 biomes:$
@@ -2248,7 +2236,6 @@ desc: He has long guarded the entrance to the fortress of Tevildo.
 
 # (Belegwath = mighty shadow)
 
-# Index 166
 name:Belegwath, Balrog of Shadow
 base:rauko
 biomes:$
@@ -2279,7 +2266,6 @@ desc: final vision.
 ##### 17 #####
 
 
-# Index 171
 name:Spider of Gorgoroth
 plural:Spiders of Gorgoroth
 base:spider
@@ -2304,7 +2290,6 @@ desc: Some have made their way North to Angband, and crept down
 desc: to the very darkest parts of the stronghold.
 
 
-# Index 172
 name:Greater werewolf
 plural:Greater werewolves
 base:wolf
@@ -2327,10 +2312,9 @@ flags:FRIEND | SMART
 desc:It is a huge wolf with eyes that glow with manly intelligence.
 
 
-# Index 173
 name:Adamant serpent
 base:serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:17
 rarity:3
@@ -2352,7 +2336,6 @@ desc:A great serpent with scales of gleaming diamond.
 desc: It sparkles with prismatic hues.
 
 
-# Index 174
 name:Lesser vampire
 base:vampire
 biomes:$
@@ -2374,9 +2357,7 @@ desc: although surely no bat could harbour so much malice
 desc: behind its eyes.
 
 
-# need to leave Cat assassin at location 175
 
-# Index 175
 name:Cat assassin
 base:cat
 biomes:$
@@ -2402,7 +2383,6 @@ desc:Slinking in the shadows, this jet-black cat is hard
 desc: to discern even as it fires its cruel bow.
 
 
-# Index 176
 name:Scatha the Worm
 base:dragon
 biomes:$
@@ -2430,7 +2410,6 @@ desc: treachery his hoard is large for a young worm.
 
 # only ever appears in the escort of Tevildo
 
-# Index 177
 name:Oikeroi, Guard of Tevildo
 base:cat
 biomes:$
@@ -2455,9 +2434,7 @@ desc: and ever at his side.
 ##### 18 #####
 
 
-# need to leave Young fire-drake at location 175
 
-# Index 181
 name:Young fire-drake
 base:dragon
 biomes:$
@@ -2488,7 +2465,6 @@ desc: and he died alone in the red fire;
 desc: his bones were ashes in the hot mire.
 
 
-# Index 182
 name:Darting horror
 base:horror
 biomes:$
@@ -2513,7 +2489,6 @@ desc: first brought this into the world.
 desc: You would prefer not to see it any closer.
 
 
-# Index 183
 name:Unmourned
 plural:Unmourned
 base:wraith
@@ -2535,7 +2510,6 @@ desc:The shades of elves and men who have rotted away,
 desc: forgotten, in the deep dungeons of Angband.
 
 
-# Index 184
 name:Ururauko
 plural:Ururaukar
 base:rauko
@@ -2562,7 +2536,6 @@ desc: yet young.
 
 
 
-# Index 185
 name:Tevildo, Prince of Cats
 base:cat
 biomes:$
@@ -2588,7 +2561,6 @@ desc: warrior is royalty?
 
 # (Turkano = powerful commander)
 
-# Index 186
 name:Turkano, Balrog of the Hosts
 base:rauko
 biomes:$
@@ -2621,10 +2593,9 @@ desc: glory after glory for his fell master.
 # made more 'rare' than other ancient serpents as they occur
 # natively before Morgoth's throne room and are seen much more
 
-# Index 191
 name:Ancient sapphire serpent
 base:ancient serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:19
 rarity:6
@@ -2645,9 +2616,7 @@ desc:A vast serpentine form encrusted with scales of sapphire.
 desc: Frost covers it from head to tail.
 
 
-# need to leave Troll guard at location 192
 
-# Index 192
 name:Troll guard
 base:troll
 biomes:$
@@ -2669,7 +2638,6 @@ desc: taken into the train of Gothmog. They are trained
 desc: for war and given dark armour and great vicious weapons.
 
 
-# Index 193
 name:Vampire
 base:vampire
 biomes:$
@@ -2689,7 +2657,6 @@ blow:BITE:LOSE_STR_CON:20:2d9
 desc:A nightmarish bat-like form, the size of a man.
 
 
-# Index 194
 name:Nameless thing
 base:nameless thing
 biomes:$
@@ -2710,7 +2677,6 @@ desc: gnawed by nameless things...' It is as a vast grub,
 desc: eating its way through the roots of the earth.
 
 
-# Index 195
 name:Smaug the Golden
 base:dragon
 biomes:$
@@ -2738,7 +2704,6 @@ desc: but a young dragon is a deadly foe still, and
 desc: this one flies through the dark halls on great wings.
 
 
-# Index 196
 name:Maeglin, Betrayer of Gondolin
 base:elf
 biomes:$
@@ -2772,10 +2737,9 @@ desc: to that dark king's deep halls?
 ##### 20 #####
 
 
-# Index 201
 name:Ancient ruby serpent
 base:ancient serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:20
 rarity:3
@@ -2797,7 +2761,6 @@ desc: Wisps of smoke rise from its nostrils and the
 desc: extreme heat surrounding it makes you gasp for breath.
 
 
-# Index 202
 name:Great cold-drake
 base:great dragon
 biomes:$
@@ -2822,9 +2785,7 @@ desc: The oldest of the dragons are both vast and cunning beyond
 desc: the understanding of mortals.
 
 
-# need to leave Silent watcher at location 203
 
-# Index 203
 name:Silent watcher
 base:horror
 biomes:$
@@ -2855,7 +2816,6 @@ desc: invisible none could pass unheeded. They would forbid his entry,
 desc: or his escape.
 
 
-# Index 204
 name:Gwathrauko
 base:rauko
 biomes:$
@@ -2877,7 +2837,6 @@ desc:A spirit of Darkness itself, it was easily swayed to Melkor's
 desc: side when his black banner was raised in defiance of Iluvatar.
 
 
-# Index 205
 name:Draugluin, Sire of Werewolves
 base:wolf
 biomes:$
@@ -2905,7 +2864,6 @@ desc: kind.
 
 # (Vallach = Powerful leaping flame)
 
-# Index 206
 name:Vallach, Balrog of Sudden Flame
 base:rauko
 biomes:$
@@ -2935,7 +2893,6 @@ desc: such a being.
 ##### 21 #####
 
 
-# Index 211
 name:Ancient spider
 base:spider
 biomes:$
@@ -2957,10 +2914,9 @@ desc:One of the oldest of brood of Ungoliant, its huge bloated body
 desc: drips with venom.
 
 
-# Index 212
 name:Ancient emerald serpent
 base:ancient serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:21
 rarity:3
@@ -2981,7 +2937,6 @@ desc:A vast serpentine form encrusted with scales of emerald.
 desc: It is enveloped in clouds of poisonous vapour.
 
 
-# Index 213
 name:Vampire lord
 base:vampire
 biomes:$
@@ -3004,7 +2959,6 @@ desc: everything around it as prey.
 
 
 
-# Index 214
 name:Dagorhir, the Elfbane
 base:troll
 biomes:$
@@ -3026,7 +2980,6 @@ desc: He leads a patrol of the feared Troll Guard.
 
 
 
-# Index 215
 name:Gostir, the Dread Glance
 base:great dragon
 biomes:$
@@ -3054,10 +3007,9 @@ desc: has he fire?
 ##### 22 #####
 
 
-# Index 221
 name:Ancient amethyst serpent
 base:ancient serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:22
 rarity:3
@@ -3079,7 +3031,6 @@ desc:A vast serpentine form encrusted with scales of amethyst.
 desc: It is wreathed in shadow.
 
 
-# Index 222
 name:Great fire-drake
 base:great dragon
 biomes:$
@@ -3107,7 +3058,6 @@ desc: the nightmarish teeth and claws might do not distinguish
 desc: them, who could ever compare with the flames of a Dragon?
 
 
-# Index 223
 name:Hithrauko
 plural:Hithraukar
 base:rauko
@@ -3131,7 +3081,6 @@ desc: of Angband, and not a few are unwholesome, but rarely
 desc: do they move with such active malice...
 
 
-# Index 224
 name:Shelob, Spider of Darkness
 base:spider
 biomes:$
@@ -3158,7 +3107,6 @@ desc: of its light, that she takes to weave her deadly webs.
 
 # The master of the guard in Angband
 
-# Index 225
 name:Lungorthin, Lord of Balrogs
 base:rauko
 biomes:$
@@ -3191,10 +3139,9 @@ desc: scorched by the heat of his body.
 ##### 23 #####
 
 
-# Index 231
 name:Ancient adamant serpent
 base:ancient serpent
-biomes:$
+biomes:$/
 realms:MORGOTH
 depth:23
 rarity:3
@@ -3215,7 +3162,6 @@ desc:A vast serpentine form encrusted with scales of adamant.
 desc: Prismatic colours gleam in its scales. Few live to see another.
 
 
-# Index 232
 name:Unrelenting horror
 base:horror
 biomes:$
@@ -3241,7 +3187,6 @@ desc: itself, and yet never growing any less. It is not
 desc: clear how one could ever slay such a thing.
 
 
-# Index 233
 name:Ancalagon the Black
 base:dragon
 biomes:$
@@ -3272,7 +3217,6 @@ desc: Valar was driven back, for the coming of the dragons was
 desc: with great thunder, and lightning, and a tempest of fire.
 
 
-# Index 234
 name:Thuringwethil, the Vampire Messenger
 base:vampire
 biomes:$
@@ -3300,9 +3244,7 @@ desc: her wings and eyes give away her true form.
 ##### 24 #####
 
 
-# need to leave Gothmog at location 241
 
-# Index 241
 name:Gothmog, High Captain of Balrogs
 base:rauko
 biomes:$
@@ -3331,9 +3273,7 @@ desc: of flame and awesome fiery breath he saved his master from
 desc: Ungoliant's rage.
 
 
-# need to leave Ungoliant at location 242
 
-# Index 242
 name:Ungoliant, the Gloomweaver
 base:spider
 biomes:$
@@ -3363,9 +3303,7 @@ desc: blackest of darkness.  She is always ravenously hungry and would even
 desc: eat herself to avoid starvation.
 
 
-# need to leave Glaurung at location 243
 
-# Index 243
 name:Glaurung, the Deceiver
 base:great dragon
 biomes:$
@@ -3394,10 +3332,8 @@ desc: now to an enormous size, matched only by the size of the
 desc: hoard he has gathered around him.
 
 
-# need to leave Gorthaur at location 244
 # Also known as Sauron and Thu
 
-# Index 244
 name:Gorthaur, Servant of Morgoth
 base:wolf
 biomes:$
@@ -3435,7 +3371,6 @@ desc: eyes.
 
 # Morgoth is a very special monster (thus the QUESTOR flag).
 
-# Index 251
 name:Morgoth, Lord of Darkness
 base:Morgoth
 biomes:$
@@ -3476,9 +3411,7 @@ desc: burning him. You need to get to that crown.
 ##### Surface monster #####
 
 
-# need to leave Carcharoth at location 253
 
-# Index 253
 name:Carcharoth, the Jaws of Thirst
 base:wolf
 depth:25
@@ -3516,7 +3449,6 @@ desc: seeking from Angband to escape.
 ##### Hallucinatory #####
 
 
-# Index 301
 name:Feanor, High King of the Noldor
 base:hallucinatory
 depth:30
@@ -3526,7 +3458,6 @@ color:Z
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 302
 name:Luthien Tinuviel
 base:hallucinatory
 depth:30
@@ -3536,7 +3467,6 @@ color:b
 flags:UNIQUE | FEMALE
 
 
-# Index 303
 name:Thingol, the Hidden King
 base:hallucinatory
 depth:30
@@ -3546,7 +3476,6 @@ color:s
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 304
 name:Beren, Son of Barahir
 base:hallucinatory
 depth:30
@@ -3556,7 +3485,6 @@ color:u
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 305
 name:Huan, Hound of Valinor
 base:hallucinatory
 depth:30
@@ -3566,7 +3494,6 @@ color:Y
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 306
 name:Eagle of Manwe
 plural:Eagles of Manwe
 base:hallucinatory
@@ -3576,7 +3503,6 @@ glyph:b
 color:y
 
 
-# Index 307
 name:Thorondor, King of Eagles
 base:hallucinatory
 depth:30
@@ -3586,7 +3512,6 @@ color:w
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 308
 name:Ent
 base:hallucinatory
 depth:30
@@ -3596,7 +3521,6 @@ color:g
 flags:MALE
 
 
-# Index 309
 name:Ent-wife
 plural:Ent-wives
 base:hallucinatory
@@ -3607,7 +3531,6 @@ color:g
 flags:FEMALE
 
 
-# Index 320
 name:Manwe, Lord of the Breath of Arda
 base:hallucinatory
 depth:30
@@ -3617,7 +3540,6 @@ color:v
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 321
 name:Varda, Lady of the Stars
 base:hallucinatory
 depth:30
@@ -3627,7 +3549,6 @@ color:w
 flags:UNIQUE | FEMALE | NAME_COMMA
 
 
-# Index 322
 name:Ulmo, Lord of Waters
 base:hallucinatory
 depth:30
@@ -3637,7 +3558,6 @@ color:b
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 324
 name:Yavanna, the Giver of Fruits
 base:hallucinatory
 depth:30
@@ -3647,7 +3567,6 @@ color:G
 flags:UNIQUE | FEMALE | NAME_COMMA
 
 
-# Index 325
 name:Mandos, Doomsman of the Valar
 base:hallucinatory
 depth:30
@@ -3657,7 +3576,6 @@ color:D
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 326
 name:Vaire, the Weaver
 base:hallucinatory
 depth:30
@@ -3667,7 +3585,6 @@ color:y
 flags:UNIQUE | FEMALE | NAME_COMMA
 
 
-# Index 327
 name:Lorien, Master of Dreams
 base:hallucinatory
 depth:30
@@ -3677,7 +3594,6 @@ color:r
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 328
 name:Este, the Healer
 base:hallucinatory
 depth:30
@@ -3687,7 +3603,6 @@ color:s
 flags:UNIQUE | FEMALE | NAME_COMMA
 
 
-# Index 329
 name:Nienna, Lady of Mourning
 base:hallucinatory
 depth:30
@@ -3697,7 +3612,6 @@ color:v
 flags:UNIQUE | FEMALE | NAME_COMMA
 
 
-# Index 330
 name:Tulkas, the Valiant
 base:hallucinatory
 depth:30
@@ -3707,7 +3621,6 @@ color:o
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 331
 name:Nessa, the Dancer
 base:hallucinatory
 depth:30
@@ -3717,7 +3630,6 @@ color:B
 flags:UNIQUE | FEMALE | NAME_COMMA
 
 
-# Index 332
 name:Orome, Lord of Forests
 base:hallucinatory
 depth:30
@@ -3727,7 +3639,6 @@ color:v
 flags:UNIQUE | MALE | NAME_COMMA
 
 
-# Index 333
 name:Vana, the Ever Young
 base:hallucinatory
 depth:30
@@ -3752,7 +3663,6 @@ flags:UNIQUE | FEMALE | NAME_COMMA
 # A    ***           Salmar, Horn-Maker
 
 
-# Index 401
 name:Melkor, Rightful Lord of Arda
 base:hallucinatory
 depth:40
