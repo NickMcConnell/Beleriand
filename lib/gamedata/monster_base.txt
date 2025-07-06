@@ -58,7 +58,7 @@ flags:WOLF
 desc:Wolf
 
 # - q   (quadrupeds)
-#     - animals
+#     - four-footed mammals
 #     - attack and evasion vary
 #     - drop meat and skins
 #     - mostly in vegetated environments
