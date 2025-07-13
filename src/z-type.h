@@ -60,5 +60,7 @@ void point_set_union(struct point_set *ps1, struct point_set *ps2);
 int point_set_size(struct point_set *ps);
 int point_set_contains(struct point_set *ps, struct loc grid);
 struct loc point_set_random(struct point_set *ps);
+struct point_set *point_set_subtract(struct point_set *big,
+									 struct point_set *small);
 
 #endif /* !INCLUDED_ZTYPE_H */
