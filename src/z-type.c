@@ -139,3 +139,20 @@ struct loc point_set_random(struct point_set *ps)
 			return ps->pts[i];
 	return ps->pts[ps->n - 1];
 }
+
+/**
+ * Return a point set of points a given point set that aren't in a smaller
+ * point set contained (maybe partially) in the larger one
+ */
+struct point_set *point_set_subtract(struct point_set *big,
+									 struct point_set *small)
+{
+	int i;
+	struct point_set *new = point_set_new(1);
+	for (i = 0; i < point_set_size(big); i++) {
+		if (!point_set_contains(small, big->pts[i])) {
+			add_to_point_set(new, big->pts[i]);
+		}
+	}
+	return new;
+}
