@@ -2528,7 +2528,7 @@ static void zoom_display_update(game_event_type type, game_event_data *data,
 static void new_level_display_update(game_event_type type,
 									 game_event_data *data, void *user)
 {
-	/* Hack -- enforce illegal panel */
+	/* Enforce illegal panel */
 	Term->offset_y = z_info->dungeon_hgt;
 	Term->offset_x = z_info->dungeon_wid;
 
@@ -2832,7 +2832,7 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	/* Record the player's death in glorious technicolour */
 	event_add_handler(EVENT_DEATH, mini_screenshot, NULL);
 
-	/* Hack -- Decrease "icky" depth */
+	/* Decrease "icky" depth */
 	screen_save_depth--;
 }
 
@@ -2911,7 +2911,7 @@ static void ui_leave_world(game_event_type type, game_event_data *data,
 	/* Record the player's death in glorious technicolour */
 	event_remove_handler(EVENT_DEATH, mini_screenshot, NULL);
 
-	/* Hack -- Increase "icky" depth */
+	/* Increase "icky" depth */
 	screen_save_depth++;
 }
 
