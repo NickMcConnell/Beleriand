@@ -1235,7 +1235,7 @@ static void build_staircase_rooms(struct chunk *c, const char *label)
 	for (join = dun->join; join; join = join->next) {
 		if (!(feat_is_stair(join->feat) || feat_is_shaft(join->feat))) continue;
 		dun->curr_join = join;
-		if (!room_build(c, profile)) {
+		if (!room_build(c, join->grid, profile)) {
 			dump_level_simple(NULL, format("%s:  Failed to Build "
 				"Staircase Room at Row=%d Column=%d in a "
 				"Cave with %d Rows and %d Columns", label,
@@ -1355,7 +1355,7 @@ static struct chunk *angband_chunk(struct player *p, int depth, int height,
 		p->upkeep->force_forge = true;
 
 		/* Failure (not clear why this would happen) */
-		if (!room_build(c, profile)) {
+		if (!room_build(c, loc(0, 0), profile)) {
 			p->upkeep->force_forge = false;
 			if (OPT(p, cheat_room)) msg("failed.");
 			uncreate_artifacts(c);
@@ -1421,7 +1421,7 @@ static struct chunk *angband_chunk(struct player *p, int depth, int height,
 			struct room_profile profile = dun->profile->room_profiles[i];
 			if (profile.rarity > rarity) continue;
 			if (profile.cutoff <= key) continue;
-			if (room_build(c, profile)) break;
+			if (room_build(c, loc(0, 0), profile)) break;
 		}
 	}
 
@@ -1733,7 +1733,7 @@ struct chunk *throne_gen(struct player *p)
 				   true);
 
 	/* Build it */
-	room_build(c, profile);
+	room_build(c, loc(0, 0), profile);
 
 	/* Find an up staircase */
 	for (y = 0; y < c->height; y++) {

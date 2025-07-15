@@ -94,42 +94,94 @@ struct vault *random_vault(int depth, const char *typ, bool forge)
  * Room build helper functions
  * ------------------------------------------------------------------------ */
 /**
- * Mark squares as being in a room, and optionally light them.
- * \param c the current chunk
- * \param y1 inclusive room boundaries
- * \param x1 inclusive room boundaries
- * \param y2 inclusive room boundaries
- * \param x2 inclusive room boundaries
- * \param light whether or not to light the room
+ * Make a point_set of all the squares in a rectangle.
+ * \param y1 inclusive rectangle boundaries
+ * \param x1 inclusive rectangle boundaries
+ * \param y2 inclusive rectangle boundaries
+ * \param x2 inclusive rectangle boundaries
  */
-static void generate_room(struct chunk *c, int y1, int x1, int y2, int x2,
-						  int light)
+static struct point_set *get_rectangle_point_set(int y1, int x1, int y2, int x2)
 {
 	struct loc grid;
-	for (grid.y = y1; grid.y <= y2; grid.y++)
+	struct point_set *new = point_set_new((y2 - y1 + 1) * (x2 - x1 + 1));
+	for (grid.y = y1; grid.y <= y2; grid.y++) {
 		for (grid.x = x1; grid.x <= x2; grid.x++) {
-			sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
-			if (light)
-				sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+			add_to_point_set(new, grid);
 		}
+	}
+	return new;
 }
 
 /**
- * Mark a rectangle with a sqinfo flag
+ * Make a point_set of all the squares in an ellipse .
+ * \param y0 the ellipse centre
+ * \param x0 the ellipse centre
+ * \param y_radius the half-axis in the y direction
+ * \param x_radius the half-axis in the x direction
+ */
+static struct point_set *get_ellipse_point_set(int y0, int x0, int y_radius,
+											   int x_radius)
+{
+	struct point_set *new = point_set_new(4 * y_radius * x_radius);
+	int y, x;
+	for (y = -y_radius; y <= y_radius; y++) {
+		for (x = -x_radius; x <= x_radius; x++) {
+			if (x * x * y_radius * y_radius + y * y * x_radius * x_radius <=
+				y_radius * y_radius * x_radius * x_radius) {
+				add_to_point_set(new, loc(x0 + x, y0 + y));
+			}
+		}
+	}
+	return new;
+}
+
+/**
+ * Mark squares as being in a room, and optionally light them.
  * \param c the current chunk
- * \param y1 inclusive room boundaries
- * \param x1 inclusive room boundaries
- * \param y2 inclusive room boundaries
- * \param x2 inclusive room boundaries
+ * \param room the point set of room grids
+ * \param light whether or not to light the room
+ */
+static void generate_room(struct chunk *c, struct point_set *room, bool light)
+{
+	int i, num = point_set_size(room);
+	for (i = 0; i < num; i++) {
+		struct loc grid = room->pts[i];
+		sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
+		if (light)
+			sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+	}
+}
+
+/**
+ * Mark squares with a sqinfo flag
+ * \param c the current chunk
+ * \param grids the point set of grids to mark
  * \param flag the SQUARE_* flag we are marking with
  */
-void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag)
+void generate_mark(struct chunk *c, struct point_set *grids, int flag)
 {
-	struct loc grid;
-	for (grid.y = y1; grid.y <= y2; grid.y++) {
-		for (grid.x = x1; grid.x <= x2; grid.x++) {
-			sqinfo_on(square(c, grid)->info, flag);
-		}
+	int i, num = point_set_size(grids);
+	for (i = 0; i < num; i++) {
+		struct loc grid = grids->pts[i];
+		sqinfo_on(square(c, grid)->info, flag);
+	}
+}
+
+/**
+ * Fill a point set with a feature.
+ * \param c the current chunk
+ * \param grids the point set of grids to mark
+ * \param feat the terrain feature
+ * \param flag the SQUARE_* flag we are marking with if any
+ */
+static void fill_point_set(struct chunk *c, struct point_set *grids, int feat,
+						   int flag)
+{
+	int i, num = point_set_size(grids);
+	for (i = 0; i < num; i++) {
+		struct loc grid = grids->pts[i];
+		square_set_feat(c, grid, feat);
+		if (flag) sqinfo_on(square(c, grid)->info, flag);
 	}
 }
 
@@ -146,11 +198,9 @@ void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag)
 void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag)
 {
-	int y, x;
-	for (y = y1; y <= y2; y++)
-		for (x = x1; x <= x2; x++)
-			square_set_feat(c, loc(x, y), feat);
-	if (flag) generate_mark(c, y1, x1, y2, x2, flag);
+	struct point_set *rectangle = get_rectangle_point_set(y1, x1, y2, x2);
+	fill_point_set(c, rectangle, feat, flag);
+	point_set_dispose(rectangle);
 }
 
 /**
@@ -168,80 +218,23 @@ void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag, bool overwrite_perm)
 {
-	int y, x;
-
-	for (y = y1; y <= y2; y++) {
-		if (overwrite_perm || !square_isperm(c, loc(x1, y))) {
-			square_set_feat(c, loc(x1, y), feat);
-		}
-		if (overwrite_perm || !square_isperm(c, loc(x2, y))) {
-			square_set_feat(c, loc(x2, y), feat);
-		}
-	}
-	if (flag) {
-		generate_mark(c, y1, x1, y2, x1, flag);
-		generate_mark(c, y1, x2, y2, x2, flag);
-	}
-	for (x = x1; x <= x2; x++) {
-		if (overwrite_perm || !square_isperm(c, loc(x, y1))) {
-			square_set_feat(c, loc(x, y1), feat);
-		}
-		if (overwrite_perm || !square_isperm(c, loc(x, y2))) {
-			square_set_feat(c, loc(x, y2), feat);
+	struct point_set *outer = get_rectangle_point_set(y1, x1, y2, x2);
+	struct point_set *inner = get_rectangle_point_set(y1 + 1, x1 + 1, y2 - 1,
+													 x2 - 1);
+	struct point_set *rectangle = point_set_subtract(outer, inner);
+	int i, num = point_set_size(rectangle);
+	for (i = 0; i < num; i++) {
+		struct loc grid = rectangle->pts[i];
+		if (overwrite_perm || !square_isperm(c, grid)) {
+			square_set_feat(c, grid, feat);
 		}
 	}
 	if (flag) {
-		generate_mark(c, y1, x1, y1, x2, flag);
-		generate_mark(c, y2, x1, y2, x2, flag);
+		generate_mark(c, rectangle, flag);
 	}
-}
-
-/**
- * Fill a horizontal range with the given feature/info.
- * \param c the current chunk
- * \param y inclusive room boundaries
- * \param x1 inclusive room boundaries
- * \param x2 inclusive range boundaries
- * \param feat the terrain feature
- * \param flag the SQUARE_* flag we are marking with
- * \param light lit or not
- */
-static void fill_xrange(struct chunk *c, int y, int x1, int x2, int feat, 
-						int flag, bool light)
-{
-	int x;
-	for (x = x1; x <= x2; x++) {
-		struct loc grid = loc(x, y);
-		square_set_feat(c, grid, feat);
-		sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
-		if (flag) sqinfo_on(square(c, grid)->info, flag);
-		if (light)
-			sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
-	}
-}
-
-/**
- * Fill a vertical range with the given feature/info.
- * \param c the current chunk
- * \param x inclusive room boundaries
- * \param y1 inclusive room boundaries
- * \param y2 inclusive range boundaries
- * \param feat the terrain feature
- * \param flag the SQUARE_* flag we are marking with
- * \param light lit or not
- */
-static void fill_yrange(struct chunk *c, int x, int y1, int y2, int feat, 
-						int flag, bool light)
-{
-	int y;
-	for (y = y1; y <= y2; y++) {
-		struct loc grid = loc(x, y);
-		square_set_feat(c, grid, feat);
-		sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
-		if (flag) sqinfo_on(square(c, grid)->info, flag);
-		if (light)
-			sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
-	}
+	point_set_dispose(outer);
+	point_set_dispose(inner);
+	point_set_dispose(rectangle);
 }
 
 /**
@@ -255,40 +248,13 @@ static void fill_yrange(struct chunk *c, int x, int y1, int y2, int feat,
  * \param flag the SQUARE_* flag we are marking with
  * \param light lit or not
  */
-static void fill_circle(struct chunk *c, int y0, int x0, int radius, int border,
-						int feat, int flag, bool light)
+static void fill_circle(struct chunk *c, int y0, int x0, int radius, int feat,
+						int flag, bool light)
 {
-	int i, last = 0;
-	/* r2i2k2 is radius * radius - i * i - k * k. */
-	int k, r2i2k2;
-	for (i = 0, k = radius, r2i2k2 = 0; i <= radius; i++) {
-		int b = border;
-		if (border && last > k) b++;
-		
-		fill_xrange(c, y0 - i, x0 - k - b, x0 + k + b, feat, flag, light);
-		fill_xrange(c, y0 + i, x0 - k - b, x0 + k + b, feat, flag, light);
-		fill_yrange(c, x0 - i, y0 - k - b, y0 + k + b, feat, flag, light);
-		fill_yrange(c, x0 + i, y0 - k - b, y0 + k + b, feat, flag, light);
-		last = k;
-
-		/* Update r2i2k2 and k for next i. */
-		if (i < radius) {
-			r2i2k2 -= 2 * i + 1;
-			while (1) {
-				/*
-				 * The change to r2i2k2 if k is decreased by
-				 * one.
-				 */
-				int adj = 2 * k - 1;
-
-				if (abs(r2i2k2 + adj) >= abs(r2i2k2)) {
-					break;
-				}
-				--k;
-				r2i2k2 += adj;
-			}
-		}
-	}
+	struct point_set *circle = get_ellipse_point_set(y0, x0, radius, radius);
+	fill_point_set(c, circle, feat, flag);
+	if (light) generate_mark(c, circle, SQUARE_GLOW);
+	point_set_dispose(circle);
 }
 
 /**
@@ -305,26 +271,21 @@ static void fill_circle(struct chunk *c, int y0, int x0, int radius, int border,
 void fill_ellipse(struct chunk *c, int y0, int x0, int y_radius, int x_radius,
 				  int feat, int flag, bool light)
 {
-	int y;
-	for (y = -y_radius; y <= y_radius; y++) {
-		int x = 0;
-		while (x * x * y_radius * y_radius + y * y * x_radius * x_radius <=
-			   y_radius * y_radius * x_radius * x_radius) {
-			x++;
-		}
-
-		fill_xrange(c, y0 + y, x0 - x, x0 + x, feat, flag, light);
-	}
+	struct point_set *ellipse = get_ellipse_point_set(y0, x0, y_radius,
+													  x_radius);
+	fill_point_set(c, ellipse, feat, flag);
+	if (light) generate_mark(c, ellipse, SQUARE_GLOW);
+	point_set_dispose(ellipse);
 }
 
 /**
  * Fill the lines of a cross/plus with a feature.
  *
  * \param c the current chunk
- * \param y1 inclusive room boundaries
- * \param x1 inclusive room boundaries
- * \param y2 inclusive room boundaries
- * \param x2 inclusive room boundaries
+ * \param y1 limit of plus
+ * \param x1 limit of plus
+ * \param y2 limit of plus
+ * \param x2 limit of plus
  * \param feat the terrain feature
  * \param flag the SQUARE_* flag we are marking with
  * When combined with draw_rectangle() this will generate a large rectangular 
@@ -338,13 +299,11 @@ static void generate_plus(struct chunk *c, int y1, int x1, int y2, int x2,
 	/* Find the center */
 	int y0 = (y1 + y2) / 2;
 	int x0 = (x1 + x2) / 2;
+	struct point_set *plus = point_set_new(y2 - y1 + 1 + x2 - x1 + 1);
 
-	assert(c);
-
-	for (y = y1; y <= y2; y++) square_set_feat(c, loc(x0, y), feat);
-	if (flag) generate_mark(c, y1, x0, y2, x0, flag);
-	for (x = x1; x <= x2; x++) square_set_feat(c, loc(x, y0), feat);
-	if (flag) generate_mark(c, y0, x1, y0, x2, flag);
+	for (y = y1; y <= y2; y++) add_to_point_set(plus, loc(x0, y));
+	for (x = x1; x <= x2; x++) add_to_point_set(plus, loc(x, y0));
+	fill_point_set(c, plus, feat, flag);
 }
 
 /**
@@ -356,7 +315,7 @@ static void generate_plus(struct chunk *c, int y1, int x1, int y2, int x2,
 void set_marked_granite(struct chunk *c, struct loc grid, int flag)
 {
 	square_set_feat(c, grid, FEAT_GRANITE);
-	if (flag) generate_mark(c, grid.y, grid.x, grid.y, grid.x, flag);
+	if (flag) sqinfo_on(square(c, grid)->info, flag);
 }
 
 /**
@@ -373,15 +332,14 @@ void set_marked_granite(struct chunk *c, struct loc grid, int flag)
  */
 static void set_bordering_walls(struct chunk *c, int y1, int x1, int y2, int x2)
 {
-	int nx;
+	int i;
 	struct loc grid;
-	bool *walls;
+	struct point_set *walls;
 
 	assert(x2 >= x1 && y2 >= y1);
 
 	/* Set up storage to track which grids to convert. */
-	nx = x2 - x1 + 1;
-	walls = mem_zalloc((x2 - x1 + 1) * (y2 - y1 + 1) * sizeof(*walls));
+	walls = point_set_new((y2 - y1 + 1) * (x2 - x1 + 1));
 
 	/* Find the grids to convert. */
 	y1 = MAX(0, y1);
@@ -399,42 +357,15 @@ static void set_bordering_walls(struct chunk *c, int y1, int x1, int y2, int x2)
 				assert(square_isroom(c, grid));
 
 				if (adjy2 - adjy1 != 2 || adjx2 - adjx1 != 2) {
-					/*
-					 * Adjacent grids are out of bounds.
-					 * Make it an outer wall.
-					 */
-					walls[grid.x - x1 + nx *
-						(grid.y - y1)] = true;
+					/* Adjacent grids are out of bounds.
+					 * Make it an outer wall. */
+					add_to_point_set(walls, grid);
 				} else {
-					int nfloor = 0;
-					struct loc adj;
-
-					for (adj.y = adjy1;
-							adj.y <= adjy2;
-							adj.y++) {
-						for (adj.x = adjx1;
-								adj.x <= adjx2;
-								adj.x++) {
-							bool floor =
-								square_isfloor(
-								c, adj);
-
-							assert(floor ==
-								square_isroom(
-								c, adj));
-							if (floor) {
-								++nfloor;
-							}
-						}
-					}
-					if (nfloor != 9) {
-						/*
-						 * At least one neighbor is not
-						 * in the room.  Make it an
-						 * outer wall.
-						 */
-						walls[grid.x - x1 + nx *
-							(grid.y - y1)] = true;
+					if (count_neighbors(NULL, c, grid, square_isfloor,
+										true) != 9) {
+						/* At least one neighbor is not in the room.
+						 * Make it an outer wall. */
+						add_to_point_set(walls, grid);
 					}
 				}
 			} else {
@@ -444,17 +375,15 @@ static void set_bordering_walls(struct chunk *c, int y1, int x1, int y2, int x2)
 	}
 
 	/* Perform the floor to wall conversions. */
-	for (grid.y = y1; grid.y <= y2; grid.y++) {
-		for (grid.x = x1; grid.x <= x2; grid.x++) {
-			if (walls[grid.x - x1 + nx * (grid.y - y1)]) {
-				assert(square_isfloor(c, grid) &&
-					square_isroom(c, grid));
-				set_marked_granite(c, grid, SQUARE_WALL_OUTER);
-			}
+	for (i = 0; i < point_set_size(walls); i++) {
+		grid = walls->pts[i];
+		if (!loc_eq(grid, loc(0, 0))) {
+			assert(square_isfloor(c, grid) && square_isroom(c, grid));
+			set_marked_granite(c, grid, SQUARE_WALL_OUTER);
 		}
 	}
 
-	mem_free(walls);
+	point_set_dispose(walls);
 }
 
 /**
@@ -894,21 +823,43 @@ static bool find_space(struct loc *centre, int height, int width)
 	int blocks_high = 1 + ((height - 1) / dun->block_hgt);
 	int blocks_wide = 1 + ((width - 1) / dun->block_wid);
 
-	/* We'll allow twenty-five guesses. */
-	for (i = 0; i < 25; i++) {
-		/* Pick a top left block at random */
-		by1 = randint0(dun->row_blocks);
-		bx1 = randint0(dun->col_blocks);
+	/* Check if we're actually given the location */
+	if (loc_eq(*centre, loc(0, 0))) {
+		/* We'll allow twenty-five guesses. */
+		for (i = 0; i < 25; i++) {
+			/* Pick a top left block at random */
+			by1 = randint0(dun->row_blocks);
+			bx1 = randint0(dun->col_blocks);
 
-		/* Extract bottom right corner block */
-		by2 = by1 + blocks_high - 1;
-		bx2 = bx1 + blocks_wide - 1;
+			/* Extract bottom right corner block */
+			by2 = by1 + blocks_high - 1;
+			bx2 = bx1 + blocks_wide - 1;
 
-		if (!check_for_unreserved_blocks(by1, bx1, by2, bx2)) continue;
+			if (!check_for_unreserved_blocks(by1, bx1, by2, bx2)) continue;
 
-		/* Get the location of the room */
-		centre->y = ((by1 + by2 + 1) * dun->block_hgt) / 2;
-		centre->x = ((bx1 + bx2 + 1) * dun->block_wid) / 2;
+			/* Get the location of the room */
+			centre->y = ((by1 + by2 + 1) * dun->block_hgt) / 2;
+			centre->x = ((bx1 + bx2 + 1) * dun->block_wid) / 2;
+
+			/* Save the room location */
+			if (dun->cent_n < z_info->level_room_max) {
+				dun->cent[dun->cent_n] = *centre;
+				dun->cent_n++;
+			}
+
+			reserve_blocks(by1, bx1, by2, bx2);
+
+			/* Success. */
+			return (true);
+		}
+	} else {
+		/* Get the blocks to reserve */
+		by1 = ((2 * centre->y) / dun->block_hgt) - (blocks_high / 2);
+		bx1 = ((2 * centre->x) / dun->block_wid) - (blocks_wide / 2);
+		by2 = ((2 * centre->y) / dun->block_hgt) - 1 + (blocks_high / 2);
+		bx2 = ((2 * centre->x) / dun->block_wid) - 1 + (blocks_wide / 2);
+
+		if (!check_for_unreserved_blocks(by1, bx1, by2, bx2)) return false;
 
 		/* Save the room location */
 		if (dun->cent_n < z_info->level_room_max) {
@@ -919,11 +870,11 @@ static bool find_space(struct loc *centre, int height, int width)
 		reserve_blocks(by1, bx1, by2, bx2);
 
 		/* Success. */
-		return (true);
+		return true;
 	}
 
 	/* Failure. */
-	return (false);
+	return false;
 }
 
 /**
@@ -944,7 +895,7 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 	const char *t;
 	int rotate, thgt, twid;
 	bool reflect;
-	bool transform = (centre->y >= c->height) || (centre->x >= c->width);
+	bool transform = (centre->y <= 0) || (centre->x <= 0);
 	bool floor = chunk_list[player->place].z_pos > 0;
 
 	assert(c);
@@ -1399,6 +1350,7 @@ static bool build_vault_type(struct chunk *c, const char *typ, bool forge)
 	/* Memorise and mark greater vaults */
 	if (streq(typ, "Greater vault")) {
 		int y1, x1, y2, x2;
+		struct point_set *grids;
 
 		if (rotated) {
 			/* Determine the coordinates with height/width flipped */
@@ -1415,9 +1367,11 @@ static bool build_vault_type(struct chunk *c, const char *typ, bool forge)
 		}
 
 		player->vaults[v->index] = true;
-		generate_mark(c, y1, x1, y2, x2, SQUARE_G_VAULT);
+		grids = get_rectangle_point_set(y1, x1, y2, x2);
+		generate_mark(c, grids, SQUARE_G_VAULT);
 		assert(!c->vault_name);
 		c->vault_name = string_make(v->name);
+		point_set_dispose(grids);
 	}
 
 	return true;
@@ -1428,6 +1382,9 @@ static bool build_vault_type(struct chunk *c, const char *typ, bool forge)
  * ------------------------------------------------------------------------
  * Room builders
  * ------------------------------------------------------------------------ */
+//TODO Allow for fixing random parameters for a "symmetry cycle", adjust
+//     room builders so height and width are treated the same
+
 /**
  * Build a staircase to connect with a previous staircase on the level one up
  * or (occasionally) one down
@@ -1437,6 +1394,7 @@ bool build_staircase(struct chunk *c, struct loc centre)
 	struct connector *join = dun->curr_join;
 	struct loc tl, br;
 	int by1, bx1, by2, bx2;
+	struct point_set *box;
 
 	if (!join) {
 		quit_fmt("build_staircase() called without dun->curr_join set");
@@ -1486,10 +1444,12 @@ bool build_staircase(struct chunk *c, struct loc centre)
 	}
 
 	/* Generate new room and outer walls */
-	generate_room(c, centre.y - 1, centre.x - 1, centre.y + 1, centre.x + 1,
-				  false);
+	box = get_rectangle_point_set(centre.y - 1, centre.x - 1, centre.y + 1,
+								  centre.x + 1);
+	generate_room(c, box, false);
 	draw_rectangle(c, centre.y - 1, centre.x - 1, centre.y + 1, centre.x + 1,
 		FEAT_GRANITE, SQUARE_WALL_OUTER, false);
+	point_set_dispose(box);
 
 	/* Place the correct stair or shaft */
 	square_set_feat(c, centre, join->feat);
@@ -1519,12 +1479,12 @@ bool build_circular(struct chunk *c, struct loc centre)
 		return (false);
 
 	/* Mark as a room. */
-	fill_circle(c, centre.y, centre.x, radius + 1, 0, FEAT_FLOOR,
-		SQUARE_NONE, light);
+	fill_circle(c, centre.y, centre.x, radius + 1, FEAT_FLOOR, SQUARE_NONE,
+				light);
 
 	/* Convert some floors to be the outer walls. */
 	set_bordering_walls(c, centre.y - radius - 2, centre.x - radius - 2,
-		centre.y + radius + 2, centre.x + radius + 2);
+						centre.y + radius + 2, centre.x + radius + 2);
 
 	/* Especially large circular rooms will have a middle chamber */
 	if (radius - 4 > 0 && randint0(4) < radius - 4) {
@@ -1537,7 +1497,7 @@ bool build_circular(struct chunk *c, struct loc centre)
 
 		/* draw a room with a closed door on a random side */
 		draw_rectangle(c, centre.y - 2, centre.x - 2, centre.y + 2,
-			centre.x + 2, FEAT_GRANITE, SQUARE_WALL_INNER, false);
+					   centre.x + 2, FEAT_GRANITE, SQUARE_WALL_INNER, false);
 		place_closed_door(c, loc(centre.x + offset.x * 2,
 								 centre.y + offset.y * 2));
 	}
@@ -1606,8 +1566,9 @@ bool build_simple(struct chunk *c, struct loc centre)
 	bool light = false;
 
 	/* Pick a room size */
-	int height = 1 + randint1(4) + randint1(3);
-	int width = 1 + randint1(11) + randint1(11);
+	int height = 1 + randint1(6) + randint1(5);
+	int width = 1 + randint1(6) + randint1(5);
+	struct point_set *rectangle;
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	event_signal_size(EVENT_GEN_ROOM_CHOOSE_SIZE, height + 2, width + 2);
@@ -1630,12 +1591,11 @@ bool build_simple(struct chunk *c, struct loc centre)
 	x2 = x1 + width - 1;
 
 	/* Generate new room */
-	generate_room(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, light);
-
-	/* Generate outer walls and inner floors */
-	draw_rectangle(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_GRANITE,
-				   SQUARE_WALL_OUTER, false);
-	fill_rectangle(c, y1, x1, y2, x2, FEAT_FLOOR, SQUARE_NONE);
+	rectangle = get_rectangle_point_set(y1 - 1, x1 - 1, y2 + 1, x2 + 1);
+	generate_room(c, rectangle, light);
+	fill_point_set(c, rectangle, FEAT_FLOOR, SQUARE_NONE);
+	set_bordering_walls(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1);
+	point_set_dispose(rectangle);
 
 	/* Sometimes make a pillar room */
 	if (one_in_(20) && ((x2 - x1) % 2 == 0) && ((y2 - y1) % 2 == 0)) {
@@ -1665,80 +1625,6 @@ bool build_simple(struct chunk *c, struct loc centre)
 
 
 /**
- * Builds an overlapping rectangular room.
- * \param c the chunk the room is being built in
- * \param centre the room centre; out of chunk centre invokes find_space()
- * \return success
- */
-bool build_overlap(struct chunk *c, struct loc centre)
-{
-	int y1a, x1a, y2a, x2a;
-	int y1b, x1b, y2b, x2b;
-	int height, width;
-
-	int light = false;
-
-	/* Occasional light - always at level 1 down to never at Morgoth's level */
-	if (c->depth <= randint1(z_info->dun_depth - 1)) light = true;
-
-	/* Determine extents of room (a) */
-	y1a = randint1(4);
-	x1a = randint1(11);
-	y2a = randint1(3);
-	x2a = randint1(10);
-
-	/* Determine extents of room (b) */
-	y1b = randint1(3);
-	x1b = randint1(10);
-	y2b = randint1(4);
-	x2b = randint1(11);
-
-	/* Calculate height and width */
-	height = 2 * MAX(MAX(y1a, y2a), MAX(y1b, y2b)) + 1;
-	width = 2 * MAX(MAX(x1a, x2a), MAX(x1b, x2b)) + 1;
-
-	/* Find and reserve some space in the dungeon.  Get center of room. */
-	event_signal_size(EVENT_GEN_ROOM_CHOOSE_SIZE, height + 2, width + 2);
-	if (!find_space(&centre, height + 2, width + 2))
-		return (false);
-
-	/* locate room (a) */
-	y1a = centre.y - y1a;
-	x1a = centre.x - x1a;
-	y2a = centre.y + y2a;
-	x2a = centre.x + x2a;
-
-	/* locate room (b) */
-	y1b = centre.y - y1b;
-	x1b = centre.x - x1b;
-	y2b = centre.y + y2b;
-	x2b = centre.x + x2b;
-
-	/* Generate new room (a) */
-	generate_room(c, y1a - 1, x1a - 1, y2a + 1, x2a + 1, light);
-
-	/* Generate new room (b) */
-	generate_room(c, y1b - 1, x1b - 1, y2b + 1, x2b + 1, light);
-
-	/* Generate outer walls (a) */
-	draw_rectangle(c, y1a - 1, x1a - 1, y2a + 1, x2a + 1, 
-		FEAT_GRANITE, SQUARE_WALL_OUTER, false);
-
-	/* Generate outer walls (b) */
-	draw_rectangle(c, y1b - 1, x1b - 1, y2b + 1, x2b + 1, 
-		FEAT_GRANITE, SQUARE_WALL_OUTER, false);
-
-	/* Generate inner floors (a) */
-	fill_rectangle(c, y1a, x1a, y2a, x2a, FEAT_FLOOR, SQUARE_NONE);
-
-	/* Generate inner floors (b) */
-	fill_rectangle(c, y1b, x1b, y2b, x2b, FEAT_FLOOR, SQUARE_NONE);
-
-	return true;
-}
-
-
-/**
  * Builds a cross-shaped room.
  * \param c the chunk the room is being built in
  * \param centre the room centre
@@ -1757,6 +1643,7 @@ bool build_crossed(struct chunk *c, struct loc centre)
 	int h_hgt, h_wid, v_hgt, v_wid;
 
 	int light = false;
+	struct point_set *room_h, *room_v;
 
 	/* Occasional light - always at level 1 down to never at Morgoth's level */
 	if (c->depth <= randint1(z_info->dun_depth - 1)) light = true;
@@ -1788,19 +1675,14 @@ bool build_crossed(struct chunk *c, struct loc centre)
 	y2v = centre.y + v_hgt;
 	x2v = centre.x + v_wid;
 
-	/* Generate new rooms */
-	generate_room(c, y1h - 1, x1h - 1, y2h + 1, x2h + 1, light);
-	generate_room(c, y1v - 1, x1v - 1, y2v + 1, x2v + 1, light);
-
-	/* Generate outer walls */
-	draw_rectangle(c, y1h - 1, x1h - 1, y2h + 1, x2h + 1, 
-				   FEAT_GRANITE, SQUARE_WALL_OUTER, false);
-	draw_rectangle(c, y1v - 1, x1v - 1, y2v + 1, x2v + 1,
-				   FEAT_GRANITE, SQUARE_WALL_OUTER, false);
-
-	/* Generate inner floors */
-	fill_rectangle(c, y1h, x1h, y2h, x2h, FEAT_FLOOR, SQUARE_NONE);
-	fill_rectangle(c, y1v, x1v, y2v, x2v, FEAT_FLOOR, SQUARE_NONE);
+	/* Generate new room */
+	room_h = get_rectangle_point_set(y1h - 1, x1h - 1, y2h + 1, x2h + 1);
+	room_v = get_rectangle_point_set(y1v - 1, x1v - 1, y2v + 1, x2v + 1);
+	point_set_union(room_h, room_v);
+	generate_room(c, room_h, light);
+	fill_point_set(c, room_h, FEAT_FLOOR, SQUARE_NONE);
+	set_bordering_walls(c, y1h - 1, x1h - 1, y2h + 1, x2h + 1);
+	point_set_dispose(room_h);
 
 	/* Special features */
 	switch (randint1(7)) {
@@ -1919,6 +1801,7 @@ bool build_throne(struct chunk *c, struct loc centre)
 	int y1, x1, y2, x2;
 	bool dummy = false;
 	struct vault *v = random_vault(c->depth, "Throne room", false);
+	struct point_set *grids;
 	if (v == NULL) {
 		return false;
 	}
@@ -1936,7 +1819,9 @@ bool build_throne(struct chunk *c, struct loc centre)
 	}
 
 	/* Memorise and mark */
-	generate_mark(c, y1, x1, y2, x2, SQUARE_G_VAULT);
+	grids = get_rectangle_point_set(y1, x1, y2, x2);
+	generate_mark(c, grids, SQUARE_G_VAULT);
+	point_set_dispose(grids);
 	assert(!c->vault_name);
 	c->vault_name = string_make(v->name);
 
@@ -1954,7 +1839,7 @@ bool build_throne(struct chunk *c, struct loc centre)
  * possible grid sizes, and then allocates a number of blocks that will always
  * contain them.
  */
-bool room_build(struct chunk *c, struct room_profile profile)
+bool room_build(struct chunk *c, struct loc centre, struct room_profile profile)
 {
 	event_signal_string(EVENT_GEN_ROOM_START, profile.name);
 
@@ -1965,7 +1850,7 @@ bool room_build(struct chunk *c, struct room_profile profile)
 	}
 
 	/* Try to build a room */
-	if (!profile.builder(c, loc(c->width, c->height))) {
+	if (!profile.builder(c, centre)) {
 		event_signal_flag(EVENT_GEN_ROOM_END, false);
 		return false;
 	}
