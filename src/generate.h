@@ -333,7 +333,7 @@ void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag);
 void fill_ellipse(struct chunk *c, int y0, int x0, int y_radius, int x_radius,
 				  int feat, int flag, bool light);
-void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag);
+void generate_mark(struct chunk *c, struct point_set *grids, int flag);
 void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat, 
 					int flag, bool overwrite_perm);
 void set_marked_granite(struct chunk *c, struct loc grid, int flag);
@@ -354,12 +354,14 @@ bool build_lesser_vault(struct chunk *c, struct loc centre);
 bool build_greater_vault(struct chunk *c, struct loc centre);
 bool build_throne(struct chunk *c, struct loc centre);
 bool build_gates(struct chunk *c, struct loc centre);
-bool room_build(struct chunk *c, struct room_profile profile);
+bool room_build(struct chunk *c, struct loc centre,
+				struct room_profile profile);
 
 
 /* gen-util.c */
 extern uint8_t get_angle_to_grid[41][41];
 
+struct loc get_rotated_grid(struct loc start, int sin, int cos, int mult);
 int *cave_find_init(struct loc top_left, struct loc bottom_right);
 void cave_find_reset(int *state);
 bool cave_find_get_grid(struct loc *grid, int *state);
