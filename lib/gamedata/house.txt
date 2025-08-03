@@ -68,7 +68,7 @@ alt-name:Finarfin's House
 short-name:Finarfin
 race:Noldor
 # Nargothrond
-start:5930:6899
+start:4950:5919
 language:QUENYA | SINDARIN
 stats:0:0:0:1
 skills:0:0:0:0:1:0:0:0
@@ -82,7 +82,7 @@ alt-name:Doriath
 short-name:Doriath
 race:Sindar
 # Menegroth
-start:9570:5710
+start:8590:4730
 language:SINDARIN
 stats:0:0:0:1
 skills:0:0:0:0:0:0:0:1
