@@ -108,6 +108,77 @@ uint8_t get_angle_to_grid[41][41] =
   { 113, 114, 114, 115, 116, 117, 118, 118, 120, 121, 122, 123, 124, 125, 127, 128, 129, 131, 132, 134, 135, 136, 138, 139, 141, 142, 143, 145, 146, 147, 148, 149, 150, 152, 152, 153, 154, 155, 156, 157, 158 }
 };
 
+/**
+ * Anti-clockwise rotation of a grid around the centre of a square
+ * ARENA_SIDE * ARENA_SIDE level.
+ *
+ * \param start is the initial grid
+ * \param sin is 1000 x the sine of the requested angle
+ * \param cos is 1000 x the cosine of the requested angle
+ * \param mult is the number of times to rotate
+ * \return the new grid
+ */
+struct loc get_rotated_grid(struct loc start, int sin, int cos, int nodes)
+{
+	/* Translate the origin to the centre */
+	struct loc grid = loc_diff(start, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+	int i;
+
+	/* Flip vertically */
+	grid.y = -grid.y;
+
+	/* Rotate the right number of times */
+	for (i = 0; i < nodes; i++) {
+		int x = (grid.x * cos - grid.y * sin) / 1000;
+		int y = (grid.x * sin + grid.y * cos) / 1000;
+		grid = loc(x, y);
+	}
+
+	/* Flip and translate back */
+	grid.y = -grid.y;
+	return loc_sum(grid, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+}
+
+/**
+ * Make a point_set of all the squares in a rectangle.
+ * \param y1 inclusive rectangle boundaries
+ * \param x1 inclusive rectangle boundaries
+ * \param y2 inclusive rectangle boundaries
+ * \param x2 inclusive rectangle boundaries
+ */
+struct point_set *get_rectangle_point_set(int y1, int x1, int y2, int x2)
+{
+	struct loc grid;
+	struct point_set *new = point_set_new((y2 - y1 + 1) * (x2 - x1 + 1));
+	for (grid.y = y1; grid.y <= y2; grid.y++) {
+		for (grid.x = x1; grid.x <= x2; grid.x++) {
+			add_to_point_set(new, grid);
+		}
+	}
+	return new;
+}
+
+/**
+ * Make a point_set of all the squares in an ellipse .
+ * \param y0 the ellipse centre
+ * \param x0 the ellipse centre
+ * \param y_rad the half-axis in the y direction
+ * \param x_rad the half-axis in the x direction
+ */
+struct point_set *get_ellipse_point_set(int y0, int x0, int y_rad, int x_rad)
+{
+	struct point_set *new = point_set_new(4 * y_rad * x_rad);
+	int y, x;
+	for (y = -y_rad; y <= y_rad; y++) {
+		for (x = -x_rad; x <= x_rad; x++) {
+			if (x * x * y_rad * y_rad + y * y * x_rad * x_rad <=
+				y_rad * y_rad * x_rad * x_rad) {
+				add_to_point_set(new, loc(x0 + x, y0 + y));
+			}
+		}
+	}
+	return new;
+}
 
 /**
  * Set up to locate a square in a rectangular region of a chunk.
@@ -118,15 +189,50 @@ uint8_t get_angle_to_grid[41][41] =
  * \return the state for the search.  When no longer needed, the returned
  * value should be passed to mem_free().
  */
-int *cave_find_init(struct loc top_left, struct loc bottom_right)
+//int *cave_find_init(struct loc top_left, struct loc bottom_right)
+//{
+//	struct loc diff = loc_diff(bottom_right, top_left);
+//  int n = (diff.y < 0 || diff.x < 0) ? 0 : (diff.x + 1) * (diff.y + 1);
+//	int *state = mem_alloc((5 + n) * sizeof(*state));
+//	int i;
+
+//	state[0] = n;
+//	state[1] = diff.x + 1;
+//	state[2] = top_left.x;
+//	state[3] = top_left.y;
+	/* The next to search is the first one. */
+//	state[4] = 0;
+	/*
+	 * Set up for left to right, top to bottom, search; will randomize in
+	 * cave_find_get_grid().
+	 */
+//	for (i = 5; i < 5 + n; ++i) {
+//		state[i] = i - 5;
+//	}
+//	return state;
+//}
+
+
+/**
+ * Set up to locate a square in a rectangular region of a chunk.
+ *
+ * \param top_left is the upper left corner of the rectangle to be searched.
+ * \param bottom_right is the lower right corner of the rectangle to be
+ * searched.
+ * \return the state for the search.  When no longer needed, the returned
+ * value should be passed to mem_free().
+ */
+int *cave_find_init(struct point_set *points, struct loc top_left,
+					struct loc bottom_right)
 {
 	struct loc diff = loc_diff(bottom_right, top_left);
-	int n = (diff.y < 0 || diff.x < 0) ? 0 : (diff.x + 1) * (diff.y + 1);
+	int n = points ? point_set_size(points) :
+		(diff.y < 0 || diff.x < 0) ? 0 : (diff.x + 1) * (diff.y + 1);
 	int *state = mem_alloc((5 + n) * sizeof(*state));
 	int i;
 
 	state[0] = n;
-	state[1] = diff.x + 1;
+	state[1] = points ? 0 : diff.x + 1;
 	state[2] = top_left.x;
 	state[3] = top_left.y;
 	/* The next to search is the first one. */
@@ -162,7 +268,44 @@ void cave_find_reset(int *state)
  * searched; otherwise return false to indicate that there are no more grids
  * available.
  */
-bool cave_find_get_grid(struct loc *grid, int *state)
+//bool cave_find_get_grid(struct loc *grid, int *state)
+//{
+//	int j, k;
+
+//	assert(state[4] >= 0);
+//	if (state[4] >= state[0]) return false;
+
+	/*
+	 * Choose one of the remaining ones at random.  Swap it with the one
+	 * that's next in order.
+	 */
+//	j = randint0(state[0] - state[4]) + state[4];
+//	k = state[5 + j];
+//	state[5 + j] = state[5 + state[4]];
+//	state[5 + state[4]] = k;
+
+//	grid->y = (k / state[1]) + state[3];
+//	grid->x = (k % state[1]) + state[2];
+
+	/*
+	 * Increment so a future call to cave_find_get_grid() will get the
+	 * next one.
+	 */
+//	++state[4];
+//	return true;
+//}
+
+
+/**
+ * Get the next grid for a search created by cave_find_init().
+ *
+ * \param grid is dereferenced and set to the grid to check.
+ * \param state is the search state created by cave_find_init().
+ * \return true if grid was dereferenced and set to the next grid to be
+ * searched; otherwise return false to indicate that there are no more grids
+ * available.
+ */
+bool cave_find_get_grid(int *index, struct loc *grid, int *state)
 {
 	int j, k;
 
@@ -178,8 +321,14 @@ bool cave_find_get_grid(struct loc *grid, int *state)
 	state[5 + j] = state[5 + state[4]];
 	state[5 + state[4]] = k;
 
-	grid->y = (k / state[1]) + state[3];
-	grid->x = (k % state[1]) + state[2];
+	if (index) {
+		*index = k;
+	} else if (grid) {
+		grid->y = (k / state[1]) + state[3];
+		grid->x = (k % state[1]) + state[2];
+	} else {
+		quit_fmt("Incorrrect call of cave_find_get_grid()");
+	}
 
 	/*
 	 * Increment so a future call to cave_find_get_grid() will get the
@@ -204,10 +353,33 @@ bool cave_find_in_range(struct chunk *c, struct loc *grid,
 		struct loc top_left, struct loc bottom_right,
 		square_predicate pred)
 {
-	int *state = cave_find_init(top_left, bottom_right);
+	int *state = cave_find_init(NULL, top_left, bottom_right);
 	bool found = false;
 
-	while (!found && cave_find_get_grid(grid, state)) {
+	while (!found && cave_find_get_grid(NULL, grid, state)) {
+		found = pred(c, *grid);
+	}
+	mem_free(state);
+	return found;
+}
+
+
+/**
+ * Locate a square in the dungeon which satisfies the given predicate.
+ * \param c current chunk
+ * \param grid found grid
+ * \param pred square_predicate specifying what we're looking for
+ * \return success
+ */
+bool cave_find_in_point_set(struct chunk *c, struct loc *grid,
+							struct point_set *points, square_predicate pred)
+{
+	int *state = cave_find_init(points, loc(0, 0), loc(0, 0)), *index = NULL;
+	bool found = false;
+
+	while (!found && cave_find_get_grid(index, NULL, state)) {
+		assert((*index >= 0) && (*index < point_set_size(points)));
+		*grid = points->pts[*index];
 		found = pred(c, *grid);
 	}
 	mem_free(state);
@@ -274,6 +446,31 @@ bool find_nearby_grid(struct chunk *c, struct loc *grid, struct loc centre,
 	struct loc bottom_right = loc(centre.x + xd, centre.y + yd);
 	return cave_find_in_range(c, grid, top_left, bottom_right,
 		square_in_bounds_fully);
+}
+
+
+/**
+ * Locate the nearest grid within a point set to a centre.
+ * \param c current chunk
+ * \param grid found grid
+ * \param centre starting grid
+ * \param points the point set to draw from
+ * \return success
+ */
+bool find_nearest_point_set_grid(struct chunk *c, struct loc *grid,
+								 struct loc centre, struct point_set *points)
+{
+	int i, dist = MAX(c->height, c->width), size = point_set_size(points);
+	bool found = false;
+	for (i = 0; i < size; i++) {
+		int d = distance(points->pts[i], centre);
+		if (d < dist) {
+			dist = d;
+			*grid = points->pts[i];
+			found = true;
+		}
+	}
+	return found;
 }
 
 
@@ -619,7 +816,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool any)
 	}
 
 	/* Place "num" stairs */
-	state = cave_find_init(loc(1, 1), loc(c->width - 2, c->height - 2));
+	state = cave_find_init(NULL, loc(1, 1), loc(c->width - 2, c->height - 2));
 	i = 0;
 	walls = 3;
 	while (i < num && walls >= 0) {
@@ -627,7 +824,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool any)
 		bool first = (i == 0);
 
 		/* Try to find; then decrease "walls" */
-		while (i < num && cave_find_get_grid(&grid, state)) {
+		while (i < num && cave_find_get_grid(NULL, &grid, state)) {
 			if (!square_isempty(c, grid)
 				|| square_num_walls_adjacent(c, grid) != walls) {
 				continue;
@@ -755,11 +952,11 @@ int alloc_object(struct chunk *c, int set, int typ, int num, int depth,
 						 uint8_t origin)
 {
 	int nrem = num;
-	int *state = cave_find_init(loc(1, 1),
-		loc(c->width - 2, c->height - 2));
+	int *state = cave_find_init(NULL, loc(1, 1),
+								loc(c->width - 2, c->height - 2));
 	struct loc grid;
 
-	while (nrem > 0 && cave_find_get_grid(&grid, state)) {
+	while (nrem > 0 && cave_find_get_grid(NULL, &grid, state)) {
 		/*
 		 * If we're ok with a corridor and we're in one, we're done.
 		 * If we are ok with a room and we're in one, we're done

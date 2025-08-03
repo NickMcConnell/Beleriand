@@ -177,6 +177,9 @@ struct dun_data {
     /*!< Whether this is the first time this level has been generated */
     bool first_time;
 
+    /*!< Whether to keep fixed room parameters to build consistent rooms */
+    bool fix_room_parameters;
+
     /*!< Saved seed value for quick random number generator */
     uint32_t seed;
 };
@@ -329,19 +332,23 @@ void chunk_change(struct player *p, int z_offset, int y_offset, int x_offset);
 
 /* gen-room.c */
 struct vault *random_vault(int depth, const char *typ, bool forge);
+void generate_mark(struct chunk *c, struct point_set *grids, int flag);
+void fill_point_set(struct chunk *c, struct point_set *grids, int feat,
+					int flag);
 void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag);
-void fill_ellipse(struct chunk *c, int y0, int x0, int y_radius, int x_radius,
-				  int feat, int flag, bool light);
-void generate_mark(struct chunk *c, struct point_set *grids, int flag);
 void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat, 
 					int flag, bool overwrite_perm);
+void fill_ellipse(struct chunk *c, int y0, int x0, int y_radius, int x_radius,
+				  int feat, int flag, bool light);
 void set_marked_granite(struct chunk *c, struct loc grid, int flag);
+void set_bordering_walls(struct chunk *c, int y1, int x1, int y2, int x2);
 extern bool generate_starburst_room(struct chunk *c, struct point_set *set,
 									int y1, int x1, int y2, int x2,
 									bool light, int feat, bool special_ok);
 bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				 struct vault *v);
+void unset_room_parameters(void);
 bool build_staircase(struct chunk *c, struct loc centre);
 bool build_simple(struct chunk *c, struct loc centre);
 bool build_circular(struct chunk *c, struct loc centre);
@@ -361,19 +368,26 @@ bool room_build(struct chunk *c, struct loc centre,
 /* gen-util.c */
 extern uint8_t get_angle_to_grid[41][41];
 
+struct point_set *get_rectangle_point_set(int y1, int x1, int y2, int x2);
+struct point_set *get_ellipse_point_set(int y0, int x0, int y_rad, int x_rad);
 struct loc get_rotated_grid(struct loc start, int sin, int cos, int mult);
-int *cave_find_init(struct loc top_left, struct loc bottom_right);
+int *cave_find_init(struct point_set *points, struct loc top_left,
+					struct loc bottom_right);
 void cave_find_reset(int *state);
-bool cave_find_get_grid(struct loc *grid, int *state);
+bool cave_find_get_grid(int *index, struct loc *grid, int *state);
 
 bool cave_find_in_range(struct chunk *c, struct loc *grid, struct loc top_left,
 	struct loc bottom_right, square_predicate pred);
+bool cave_find_in_point_set(struct chunk *c, struct loc *grid,
+							struct point_set *points, square_predicate pred);
 bool cave_find(struct chunk *c, struct loc *grid, square_predicate pred);
 bool find_empty(struct chunk *c, struct loc *grid);
 bool find_empty_range(struct chunk *c, struct loc *grid, struct loc top_left,
 					  struct loc bottom_right);
 bool find_nearby_grid(struct chunk *c, struct loc *grid, struct loc centre,
 					  int yd, int xd);
+bool find_nearest_point_set_grid(struct chunk *c, struct loc *grid,
+								 struct loc centre, struct point_set *points);
 void correct_dir(struct loc *offset, struct loc grid1, struct loc grid2);
 void adjust_dir(struct loc *offset, struct loc grid1, struct loc grid2);
 void rand_dir(struct loc *offset);

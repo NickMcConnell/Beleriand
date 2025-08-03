@@ -64,10 +64,9 @@ room:Greater vault:44:66:5:0:0
 room:Lesser vault:22:33:2:2:100
 
 # Unusual rooms (rarity = 1)
-room:Interesting room:44:55:0:1:10
-room:crossed room:11:33:3:1:50
-room:circular room:22:22:1:1:60
-room:overlap room:11:33:1:1:100
+room:Interesting room:44:55:0:1:20
+room:crossed room:11:33:3:1:80
+room:circular room:22:22:1:1:100
 
 # Normal rooms (rarity = 0)
 room:simple room:11:33:1:0:100
@@ -86,7 +85,12 @@ room:Throne room:0:0:0:0:0
 ## Elven - TODO just enough here to make it basically run
 name:elven
 biome:!
-params:44:50:300:2
+params:1:50:300:2
+
+room:Interesting room:14:23:0:0:20
+room:elliptical room:22:22:1:0:50
+room:circular room:22:22:1:0:60
+room:simple room:22:22:1:0:100
 
 ## Dwarven - TODO just enough here to make it basically run
 name:dwarven
