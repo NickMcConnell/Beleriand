@@ -1235,6 +1235,9 @@ static void build_staircase_rooms(struct chunk *c, const char *label)
 	for (join = dun->join; join; join = join->next) {
 		if (!(feat_is_stair(join->feat) || feat_is_shaft(join->feat))) continue;
 		dun->curr_join = join;
+
+		/* Build the staircase room; note that the argument join->grid in this
+		 * call (the room centre) is actually ignored by the room builder */
 		if (!room_build(c, join->grid, profile)) {
 			dump_level_simple(NULL, format("%s:  Failed to Build "
 				"Staircase Room at Row=%d Column=%d in a "
@@ -1412,7 +1415,7 @@ static struct chunk *angband_chunk(struct player *p, int depth, int height,
 			i++;
 		}
 
-		/* Once we have a key and a rarity, we iterate through out list of
+		/* Once we have a key and a rarity, we iterate through our list of
 		 * room profiles looking for a match (whose cutoff > key and whose
 		 * rarity > this rarity). We try building the room, and if it works
 		 * then we are done with this iteration. We keep going until we find
@@ -1574,6 +1577,431 @@ struct chunk *angband_gen(struct player *p) {
 
 /* ------------------ ELVEN ---------------- */
 
+static struct {
+	int nodes;
+	int sin;
+	int cos;
+} rota[] = {
+	{ 4, 999, 0 },
+	{ 5, 951, 309 },
+	{ 6, 866, 500 },
+	{ 7, 782, 623 },
+	{ 8, 707, 707 },
+	{ 9, 643, 766 },
+	{10, 588, 809 }
+};
+
+/**
+ * Get a straight path between two grids, adapted from project_path() in
+ * FAangband.
+ *
+ * \param gp is an array to store grid points, must be pre-allocated to size
+ * \param size is the max number of grid points that will be needed - note that
+ * the function will silently return a path that does not reach grid2 if size
+ * is too small
+ * \param grid1 is the starting grid
+ * \param grid2 is the finish grid
+ * \return the actual number of grids
+ */
+static int get_straight_path(struct loc *gp, int size, struct loc grid1,
+							 struct loc grid2)
+{
+	int y, x;
+
+	int n = 0;
+	int k = 0;
+
+	/* Absolute */
+	int ay, ax;
+
+	/* Offsets */
+	int sy, sx;
+
+	/* Fractions */
+	int frac;
+
+	/* Scale factors */
+	int full, half;
+
+	/* Slope */
+	int m;
+
+	/* No path necessary (or allowed) */
+	if (loc_eq(grid1, grid2)) return 0;
+
+
+	/* Analyze "dy" */
+	if (grid2.y < grid1.y) {
+		ay = (grid1.y - grid2.y);
+		sy = -1;
+	} else {
+		ay = (grid2.y - grid1.y);
+		sy = 1;
+	}
+
+	/* Analyze "dx" */
+	if (grid2.x < grid1.x) {
+		ax = (grid1.x - grid2.x);
+		sx = -1;
+	} else {
+		ax = (grid2.x - grid1.x);
+		sx = 1;
+	}
+
+
+	/* Number of "units" in one "half" grid */
+	half = (ay * ax);
+
+	/* Number of "units" in one "full" grid */
+	full = half << 1;
+
+
+	/* Vertical */
+	if (ay > ax) {
+		/* Start at tile edge */
+		frac = ax * ax;
+
+		/* Let m = ((dx/dy) * full) = (dx * dx * 2) = (frac * 2) */
+		m = frac << 1;
+
+		/* Start */
+		y = grid1.y + sy;
+		x = grid1.x;
+
+		/* Create the path */
+		while (1) {
+			/* Bounds check */
+			if (n == size) break;
+
+			/* Save grid */
+			gp[n++] = loc(x, y);
+
+			/* Stop at finish grid */
+			if (loc_eq(loc(x, y), grid2)) break;
+
+			/* Slant */
+			if (m) {
+				/* Advance (X) part 1 */
+				frac += m;
+
+				/* Horizontal change */
+				if (frac >= half) {
+					/* Advance (X) part 2 */
+					x += sx;
+
+					/* Advance (X) part 3 */
+					frac -= full;
+
+					/* Track distance */
+					k++;
+				}
+			}
+
+			/* Advance (Y) */
+			y += sy;
+		}
+	}
+
+	/* Horizontal */
+	else if (ax > ay) {
+		/* Start at tile edge */
+		frac = ay * ay;
+
+		/* Let m = ((dy/dx) * full) = (dy * dy * 2) = (frac * 2) */
+		m = frac << 1;
+
+		/* Start */
+		y = grid1.y;
+		x = grid1.x + sx;
+
+		/* Create the path */
+		while (1) {
+			/* Bounds check */
+			if (n == size) break;
+
+			/* Save grid */
+			gp[n++] = loc(x, y);
+
+			/* Stop at finish grid */
+			if (loc_eq(loc(x, y), grid2)) break;
+
+			/* Slant */
+			if (m) {
+				/* Advance (Y) part 1 */
+				frac += m;
+
+				/* Vertical change */
+				if (frac >= half) {
+					/* Advance (Y) part 2 */
+					y += sy;
+
+					/* Advance (Y) part 3 */
+					frac -= full;
+
+					/* Track distance */
+					k++;
+				}
+			}
+
+			/* Advance (X) */
+			x += sx;
+		}
+	}
+
+	/* Diagonal */
+	else {
+		/* Start */
+		y = grid1.y + sy;
+		x = grid1.x + sx;
+
+		/* Create the path */
+		while (1) {
+			/* Bounds check */
+			if (n == size) break;
+
+			/* Save grid */
+			gp[n++] = loc(x, y);
+
+			/* Stop at finish grid */
+			if (loc_eq(loc(x, y), grid2)) break;
+
+			/* Advance */
+			y += sy;
+			x += sx;
+		}
+	}
+
+	/* Length */
+	return n;
+}
+
+static struct point_set *get_annulus(struct loc centre, int inner_rad,
+									 int outer_rad)
+{
+	struct point_set *outer = get_ellipse_point_set(centre.x, centre.y,
+													outer_rad, outer_rad);
+	struct point_set *inner = get_ellipse_point_set(centre.x, centre.y,
+													inner_rad, inner_rad);
+	struct point_set *annulus = point_set_subtract(outer, inner);
+	point_set_dispose(outer);
+	point_set_dispose(inner);
+	return annulus;
+}
+
+static int build_room_circuit(struct chunk *c, struct loc start,
+							  struct loc *finish, int clearance)
+{
+	int i, k;
+	int num_rooms = dun->profile->n_room_profiles;
+	struct room_profile profile;
+	struct loc centre = loc(ARENA_SIDE / 2, ARENA_SIDE / 2);
+	struct point_set *circle;
+	struct loc *grids;
+	bool start_wall = false;
+	bool left_start = false;
+	bool pierced_room = false;
+
+	/* Roll for random key (to be compared against a profile's cutoff) */
+	int key = randint0(100);
+
+	/* Once we have a key we iterate through our list of room profiles
+	 * looking for a match (whose cutoff > key). We try building the room,
+	 * and if it works then we are done with this iteration. We keep
+	 * going until we find a room that we can build successfully or we
+	 * exhaust the profiles. */
+	for (i = 0; i < num_rooms; i++) {
+		int dist = 0;
+		profile = dun->profile->room_profiles[i];
+		if (profile.cutoff <= key) continue;
+
+		/* Place the initial room immediately west of the start */
+		dist = (profile.width / 2) + clearance;
+		*finish = loc_diff(start, loc(dist, 0));
+
+		/* Build a circular lit corridor to join the rooms */
+		circle = get_annulus(centre, centre.x - finish->x - 2,
+							 centre.x - finish->x);
+		fill_point_set(c, circle, FEAT_FLOOR, SQUARE_GLOW);
+
+		/* Build the first room */
+		dun->fix_room_parameters = true;
+		if (room_build(c, *finish, profile)) {
+			dun->fix_room_parameters = false;
+			break;
+		} else {
+			quit_fmt("Failed to build room %s in elven level", profile.name);
+		}
+	}
+
+	/* Now build the same room symmetrically about the centre of the level */
+	k = randint0(N_ELEMENTS(rota));
+	for (i = 1; i < rota[k].nodes; i++) {
+		struct loc new = get_rotated_grid(*finish, rota[k].sin, rota[k].cos, i);
+		struct loc moved = loc(0, 0);
+		if (!find_nearest_point_set_grid(c, &moved, new, circle)) {
+			quit_fmt("Failed to centre room %s.", profile.name);
+		}
+		if (!room_build(c, moved, profile)) {
+			quit_fmt("Failed to build room %s.", profile.name);
+		}
+	}
+
+	unset_room_parameters();
+
+	/* Clear any room walls from the corridor */
+	k = point_set_size(circle);
+	for (i = 0; i < k; i++) {
+		struct loc grid = circle->pts[i];
+		if (square_isgranite(c, grid) && square_iswall_outer(c, grid)) {
+			square_set_feat(c, grid, FEAT_FLOOR);
+			sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+		}
+	}
+	point_set_dispose(circle);
+
+	/* Build an avenue from the start room to the first room of the ring */
+	grids = mem_zalloc(sizeof(struct loc) * c->width);
+	k = get_straight_path(grids, c->width, start, *finish);
+	for (i = 0; i < k; i++) {
+		struct loc grid = grids[i];
+
+		/* Still in the starting room, or entered the target room */
+		if (!square_isgranite(c, grid)) {
+			if (pierced_room) break;
+			continue;
+		}
+
+		/* The starting room wall */
+		if (square_iswall_outer(c, grid) && !left_start) {
+			start_wall = true;
+			square_set_feat(c, grid, FEAT_FLOOR);
+			continue;
+		}
+
+		/* Outside the starting room wall */
+		if (!square_iswall_outer(c, grid) && start_wall) {
+			left_start = true;
+			square_set_feat(c, grid, FEAT_FLOOR);
+			continue;
+		}
+
+		/* Already left the starting room, so outer wall must be the target */
+		if (left_start && square_iswall_outer(c, grid)) {
+			pierced_room = true;
+			square_set_feat(c, grid, FEAT_FLOOR);
+			continue;
+		}
+	}
+
+	return profile.width / 2;
+}
+
+static void lay_out_rooms(struct chunk *c)
+{
+	struct loc centre = loc(ARENA_SIDE / 2, ARENA_SIDE / 2), first, second;
+	int clearance = build_room_circuit(c, centre, &first, 10);
+	(void) build_room_circuit(c, first, &second, clearance);
+#if 0
+	int i, k;
+	int num_rooms = dun->profile->n_room_profiles;
+	struct room_profile profile;
+	struct loc centre = loc(ARENA_SIDE / 2, ARENA_SIDE / 2), first;
+	struct point_set *first_circle;
+	struct loc *grids;
+	bool start_wall = false;
+	bool left_start = false;
+	bool pierced_room = false;
+
+	/* Roll for random key (to be compared against a profile's cutoff) */
+	int key = randint0(100);
+
+	/* Once we have a key we iterate through our list of room profiles
+	 * looking for a match (whose cutoff > key). We try building the room,
+	 * and if it works then we are done with this iteration. We keep
+	 * going until we find a room that we can build successfully or we
+	 * exhaust the profiles. */
+	for (i = 0; i < num_rooms; i++) {
+		int dist = 0;
+		profile = dun->profile->room_profiles[i];
+		if (profile.cutoff <= key) continue;
+
+		/* Place the initial room immediately west of the start */
+		dist = (profile.width / 2) + 10;
+		first = loc_diff(centre, loc(dist, 0));
+
+		/* Build a circular lit corridor to join the rooms */
+		first_circle = get_annulus(centre, dist - 1, dist + 1);
+		fill_point_set(c, first_circle, FEAT_FLOOR, SQUARE_GLOW);
+
+		/* Build the first room */
+		dun->fix_room_parameters = true;
+		if (room_build(c, first, profile)) {
+			dun->fix_room_parameters = false;
+			break;
+		} else {
+			quit_fmt("Failed to build room %s in elven level", profile.name);
+		}
+	}
+
+	/* Now build the same room symmetrically about the centre of the level */
+	k = randint0(N_ELEMENTS(rota));
+	for (i = 1; i < rota[k].nodes; i++) {
+		centre = get_rotated_grid(first, rota[k].sin, rota[k].cos, i);
+		if (!room_build(c, centre, profile)) {
+			quit_fmt("Failed to build room %s.", profile.name);
+		}
+	}
+
+	unset_room_parameters();
+
+	/* Clear any room walls from the corridor */
+	k = point_set_size(first_circle);
+	for (i = 0; i < k; i++) {
+		struct loc grid = first_circle->pts[i];
+		if (square_isgranite(c, grid) && square_iswall_outer(c, grid)) {
+			square_set_feat(c, grid, FEAT_FLOOR);
+			sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+		}
+	}
+	point_set_dispose(first_circle);
+
+	/* Build an avenue from the level centre to the initial room */
+	grids = mem_zalloc(sizeof(struct loc) * c->width);
+	k = get_straight_path(grids, c->width, loc(ARENA_SIDE / 2, ARENA_SIDE / 2),
+						  first);
+	for (i = 0; i < k; i++) {
+		struct loc grid = grids[i];
+
+		/* Still in the starting room, or entered the target room */
+		if (!square_isgranite(c, grid)) {
+			if (pierced_room) break;
+			continue;
+		}
+
+		/* The starting room wall */
+		if (square_iswall_outer(c, grid) && !left_start) {
+			start_wall = true;
+			square_set_feat(c, grid, FEAT_FLOOR);
+			continue;
+		}
+
+		/* Outside the starting room wall */
+		if (!square_iswall_outer(c, grid) && start_wall) {
+			left_start = true;
+			square_set_feat(c, grid, FEAT_FLOOR);
+			continue;
+		}
+
+		/* Already left the starting room, so outer wall must be the target */
+		if (left_start && square_iswall_outer(c, grid)) {
+			pierced_room = true;
+			square_set_feat(c, grid, FEAT_FLOOR);
+			continue;
+		}
+	}
+#endif
+}
+
 /**
  * Create a level for Menegroth or Nargothrond
  * TODO make this more than just a room, current plan is overlapping ellipses
@@ -1585,6 +2013,9 @@ struct chunk *elven_gen(struct player *p)
 	struct chunk *c;
 	struct connector *join;
 	struct loc pgrid = player->grid;
+	struct loc centre =  loc(ARENA_SIDE / 2, ARENA_SIDE / 2);
+	struct point_set *ellipse;
+	//struct point_set *staircase_room = point_set_new(1);
 
 	/* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
@@ -1611,9 +2042,20 @@ struct chunk *elven_gen(struct player *p)
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM, SQUARE_NONE,
 				   true);
 
-	/* Build a simple ellipse as a placeholder for now */
-	fill_ellipse(c, (c->height - 1) / 2, (c->width - 1) / 2,
-				 CHUNK_SIDE / 2, CHUNK_SIDE / 4, FEAT_FLOOR, SQUARE_NONE, true);
+	/* Place a single large ellipse to hold staircases.  Note that in the only
+	 * current uses of this algorithm the staircases will all fall in this
+	 * ellipse; this algorithm will need to be changed if that changes. */
+	ellipse = get_ellipse_point_set(ARENA_SIDE / 2, ARENA_SIDE / 2, 10, 12);
+	generate_mark(c, ellipse, SQUARE_ROOM);
+	fill_point_set(c, ellipse, FEAT_FLOOR, SQUARE_GLOW);
+	set_bordering_walls(c, 0, 0, ARENA_SIDE - 1, ARENA_SIDE - 1);
+
+	/* Mark the room centre - always the level centre */
+	dun->cent[dun->cent_n] = centre;
+	dun->cent_n++;
+
+	/* Place rooms */
+	lay_out_rooms(c);
 
 	/* Place staircases */
 	for (join = dun->join; join; join = join->next) {

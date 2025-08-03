@@ -195,9 +195,9 @@ static int test_unbundled_find_0(void *state) {
 
 	wipe_chunk_flags(c);
 
-	find_state = cave_find_init(loc(1, 1),
+	find_state = cave_find_init(NULL, loc(1, 1),
 		loc(c->width - 2, c->height - 2));
-	while (cave_find_get_grid(&grid, find_state)) {
+	while (cave_find_get_grid(NULL, &grid, find_state)) {
 		if (square_in_bounds_fully(c, grid) && !square_isroom(c, grid)) {
 			sqinfo_on(square(c, grid)->info, SQUARE_ROOM);
 		} else {
@@ -215,7 +215,7 @@ static int test_unbundled_find_0(void *state) {
 	}
 
 	cave_find_reset(find_state);
-	while (cave_find_get_grid(&grid, find_state)) {
+	while (cave_find_get_grid(NULL, &grid, find_state)) {
 		if (square_in_bounds_fully(c, grid) && square_isroom(c, grid)) {
 			sqinfo_off(square(c, grid)->info, SQUARE_ROOM);
 		} else {
