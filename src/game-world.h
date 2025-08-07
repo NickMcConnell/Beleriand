@@ -99,6 +99,7 @@ struct landmark {
 	char *message;
 	char *text;
 
+	int depth;         /**< Depth of cave beneath landmark, if any */
 	int map_y;         /**< Map y coordinate of landmark */
 	int map_x;         /**< Map x coordinate of landmark */
 	int height;        /**< Number of chunks high */
@@ -367,6 +368,7 @@ bool gen_loc_find(int x_pos, int y_pos, int z_pos, int *below, int *above);
 void gen_loc_make(int x_pos, int y_pos, int z_pos, int idx);
 struct square_mile *square_mile(wchar_t letter, int number, int y, int x);
 int chunk_realm(int chunk_idx);
+int dungeon_depth(struct player *p);
 bool is_daytime(void);
 bool outside(void);
 bool is_daylight(void);

@@ -320,6 +320,28 @@ static int mon_alloc_chance(struct player *p)
 }
 
 /**
+ * Return the depth of the dungeon the player is currently in, if any, or 0.
+ */
+int dungeon_depth(struct player *p)
+{
+	struct landmark *landmark;
+	struct chunk_ref *ref = &chunk_list[p->place];
+
+	/* Player is on the surface */
+	if (!p->depth) return 0;
+
+	/* Find a named cave if any */
+	landmark = find_landmark(ref->x_pos, ref->y_pos, 2);
+
+	/* Natural cave, depth 1 for now at least */
+	if (!landmark) return 1;
+
+	/* Return the named cave depth */
+	assert(landmark->depth > 0);
+	return landmark->depth;
+}
+
+/**
  * ------------------------------------------------------------------------
  * Functions for handling turn-based events
  * ------------------------------------------------------------------------ */

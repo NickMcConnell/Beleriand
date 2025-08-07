@@ -1405,6 +1405,16 @@ static enum parser_error parse_landmark_profile(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_landmark_depth(struct parser *p)
+{
+	struct landmark *l = parser_priv(p);
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	l->depth = parser_getuint(p, "depth");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_landmark_map_y(struct parser *p)
 {
 	struct landmark *l = parser_priv(p);
@@ -1461,6 +1471,7 @@ struct parser *init_parse_landmark(void)
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_landmark_name);
 	parser_reg(p, "profile str profile", parse_landmark_profile);
+	parser_reg(p, "depth uint depth", parse_landmark_depth);
 	parser_reg(p, "map-y uint map-y", parse_landmark_map_y);
 	parser_reg(p, "map-x uint map-x", parse_landmark_map_x);
 	parser_reg(p, "height uint height", parse_landmark_height);
