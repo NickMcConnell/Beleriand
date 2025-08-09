@@ -2320,19 +2320,19 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 		char prompt[80], s[80];
 
 		strnfmt(prompt, sizeof(prompt), "Depth for treasure (0-%d): ",
-			z_info->max_depth - 1);
+			z_info->max_obj_depth - 1);
 
 		/* Set default. */
 		strnfmt(s, sizeof(s), "%d", player_danger_level(player));
 
 		if (!get_string(prompt, s, sizeof(s)) ||
 				!get_int_from_string(s, &level) || level < 0 ||
-				level >= z_info->max_depth) {
+				level >= z_info->max_obj_depth) {
 			return;
 		}
 		cmd_set_arg_number(cmd, "depth", level);
 	}
-	if (level < 0 || level >= z_info->max_depth) {
+	if (level < 0 || level >= z_info->max_obj_depth) {
 		return;
 	}
 

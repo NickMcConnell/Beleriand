@@ -580,7 +580,7 @@ static int choose_up_stairs(struct chunk *c)
  */
 static int choose_down_stairs(struct chunk *c)
 {
-	if (c->depth < z_info->dun_depth - 2) {
+	if (c->depth < dungeon_depth(player) - 2) {
 		if (one_in_(2)) return FEAT_MORE_SHAFT;
 	}
 	return FEAT_MORE;

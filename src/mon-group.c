@@ -326,7 +326,7 @@ void monster_group_new_wandering_flow(struct monster *mon, struct loc tgrid)
 		/* Otherwise choose a location */
 		if (rf_has(race->flags, RF_SMART) &&
 			!rf_has(race->flags, RF_TERRITORIAL) &&
-			(player->depth != z_info->dun_depth) && one_in_(5) &&
+			(player->depth != z_info->angband_depth) && one_in_(5) &&
 			cave_find(cave, &grid, square_isstairs) &&
 			!square_isplayer(cave, grid) && !square_isvault(cave, grid)) {
 			/* Sometimes intelligent monsters want to pick a staircase and leave

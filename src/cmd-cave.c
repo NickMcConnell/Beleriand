@@ -118,7 +118,7 @@ static void do_cmd_go_up_aux(void)
 	//}
 
 	/* Flee Morgoth's throne room */
-	if ((player->depth == z_info->dun_depth) &&
+	if ((player->depth == z_info->angband_depth) &&
 		(silmarils_possessed(player) > 0)) {
 		if (!player->morgoth_slain) {
 			msg("As you climb the stair, a great cry of rage and anguish comes from below.");
@@ -174,7 +174,7 @@ static void do_cmd_go_down_aux(void)
 	}
 
 	/* Warn players if this could lead them to Morgoth's Throne Room */
-	if (player->depth + change >= z_info->dun_depth) {
+	if (player->depth + change >= z_info->angband_depth) {
 		if (!player->on_the_run) {
 			msg("From up this stair comes the harsh din of feasting in Morgoth's own hall.");
 			if (!get_check("Are you completely sure you wish to descend? ")) {

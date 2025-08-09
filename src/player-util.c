@@ -480,7 +480,7 @@ void player_falling_damage(struct player *p, bool stun)
 	const char *message;
 
 	if (square_ischasm(cave, p->grid)) {
-		if (p->depth != z_info->dun_depth - 2) {
+		if (p->depth != dungeon_depth(p) - 2) {
 			/* Fall two floors if there's room */
 			dice = 6;
 		}
@@ -532,7 +532,7 @@ void player_fall_in_chasm(struct player *p)
 	player_falling_damage(p, false);
 
 	/* New level */
-	chunk_change(p, MIN(p->depth + 2, z_info->dun_depth - 1), 0, 0);
+	chunk_change(p, MIN(p->depth + 2, dungeon_depth(p) - 1), 0, 0);
 }
 
 /**
@@ -1048,8 +1048,8 @@ bool player_can_fall_through_floor(struct player *p)
 	/* Only one floor in the tutorial */
 	if (in_tutorial()) return false;
 
-	/* No falling into or through the throne room */
-	if (p->depth >= z_info->dun_depth - 1) return false;
+	/* No falling into or through the bottom level */
+	if (p->depth >= dungeon_depth(p) - 1) return false;
 
 	/* If the floor below already exists, only fall into passable terrain. */
 	exists = gen_loc_find(chunk_list[p->place].x_pos,

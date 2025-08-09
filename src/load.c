@@ -1405,8 +1405,8 @@ int rd_dungeon(void)
 		return 0;
 
 	/* Ignore illegal dungeons */
-	if (depth > z_info->dun_depth) {
-		note(format("Ignoring illegal dungeon depth (%d)", depth));
+	if (depth > z_info->max_depth) {
+		note(format("Ignoring illegal dungeon depth (%d)", z_info->max_depth));
 		return (0);
 	}
 

@@ -738,13 +738,14 @@ void lore_append_movement(textblock *tb, const struct monster_race *race,
 		if (race == lookup_monster("Carcharoth")) {
 			textblock_append_c(tb, COLOUR_YELLOW,
 							   "guarding the gates of Angband");
-		} else if (race->level < z_info->dun_depth) {
+		} else if (race->level < z_info->angband_depth) {
 			textblock_append(tb, "at depths of ");
 			textblock_append_c(tb, COLOUR_YELLOW, "%d", race->level * 50);
 			textblock_append(tb, " feet");
 		} else {
 			textblock_append(tb, "at depths of ");
-			textblock_append_c(tb, COLOUR_YELLOW, "%d", z_info->dun_depth * 50);
+			textblock_append_c(tb, COLOUR_YELLOW, "%d",
+							   z_info->angband_depth * 50);
 			textblock_append(tb, " feet");
 		}
 	}

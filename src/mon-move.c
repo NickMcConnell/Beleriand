@@ -663,7 +663,7 @@ static bool get_move_wander(struct monster *mon, struct loc *tgrid)
 		 * leave the level */
 		if (rf_has(race->flags, RF_SMART) &&
 			!rf_has(race->flags, RF_TERRITORIAL) &&
-			(player->depth != z_info->dun_depth) && 
+			(player->depth != z_info->angband_depth) && 
 			square_isstairs(cave, mon->grid) && (mon->wandering_dist == 0)) {
 			if (monster_is_visible(mon)) {
 				if (square_isdownstairs(cave, mon->grid)) {

@@ -833,7 +833,7 @@ static const struct cave_profile *choose_profile(struct player *p)
 	const struct cave_profile *profile = NULL;
 
 	/* Make the profile choice */
-	if (p->depth == z_info->dun_depth) {
+	if (p->depth == z_info->angband_depth) {
 		profile = find_cave_profile("throne");
 	} else {
 		struct chunk_ref pref = chunk_list[player->place];
@@ -981,7 +981,7 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 						if (!exists_up2) {
 							struct connector *new = mem_zalloc(sizeof *new);
 							/* If on second bottom level, put a floor */
-							bool floor = (p->depth == z_info->dun_depth - 1);
+							bool floor = (p->depth == dungeon_depth(p) - 1);
 
 							/* Join is a floor or a chasm */
 							new->grid.y = join->grid.y + y * CHUNK_SIDE;

@@ -1390,7 +1390,7 @@ void remove_object_property(struct obj_property *prop, struct object *obj)
 			min_m = randcalc(obj->kind->modifiers[idx],
 				0, MINIMISE);
 			max_m = randcalc(obj->kind->modifiers[idx],
-				z_info->dun_depth, MAXIMISE);
+				z_info->max_obj_depth, MAXIMISE);
 			if (min_m == SPECIAL_VALUE) {
 				min_m = randcalc(obj->kind->special1,
 					0, MINIMISE);
@@ -1400,7 +1400,7 @@ void remove_object_property(struct obj_property *prop, struct object *obj)
 			}
 			if (max_m == SPECIAL_VALUE) {
 				max_m = randcalc(obj->kind->special1,
-					z_info->dun_depth, MAXIMISE);
+					z_info->max_obj_depth, MAXIMISE);
 				if (!max_m && obj->kind->special2) {
 					max_m = obj->kind->special2;
 				}

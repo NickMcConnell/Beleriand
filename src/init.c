@@ -485,8 +485,8 @@ static enum parser_error parse_constants_world(struct parser *p) {
 	if (value < 0)
 		return PARSE_ERROR_INVALID_VALUE;
 
-	if (streq(label, "dun-depth"))
-		z->dun_depth = value;
+	if (streq(label, "angband-depth"))
+		z->angband_depth = value;
 	else if (streq(label, "max-depth"))
 		z->max_depth = value;
 	else if (streq(label, "day-length"))
