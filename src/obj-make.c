@@ -64,9 +64,9 @@ static void alloc_init_objects(void) {
 	struct allocation *allocation;
 	struct object_kind *kind;
 	struct alloc_entry *table;
-	int16_t *num = mem_zalloc(z_info->max_depth * sizeof(int16_t));
+	int16_t *num = mem_zalloc(z_info->max_obj_depth * sizeof(int16_t));
 	int16_t *already_counted =
-		mem_zalloc(z_info->max_depth * sizeof(int16_t));
+		mem_zalloc(z_info->max_obj_depth * sizeof(int16_t));
 
 	/* Size of "alloc_kind_table" */
 	alloc_kind_size = 0;
@@ -89,7 +89,7 @@ static void alloc_init_objects(void) {
 	}
 
 	/* Calculate the cumultive level totals */
-	for (i = 1; i < z_info->max_depth; i++) {
+	for (i = 1; i < z_info->max_obj_depth; i++) {
 		/* Group by level */
 		num[i] += num[i - 1];
 	}
@@ -319,7 +319,7 @@ void ego_apply_magic(struct object *obj, bool smithing)
 			int min_m = randcalc(obj->kind->modifiers[i],
 				0, MINIMISE);
 			int max_m = randcalc(obj->kind->modifiers[i],
-				z_info->dun_depth, MAXIMISE);
+				z_info->max_obj_depth, MAXIMISE);
 
 			if (min_m == SPECIAL_VALUE) {
 				min_m = randcalc(obj->kind->special1,
@@ -330,7 +330,7 @@ void ego_apply_magic(struct object *obj, bool smithing)
 			}
 			if (max_m == SPECIAL_VALUE) {
 				max_m = randcalc(obj->kind->special1,
-					z_info->dun_depth, MAXIMISE);
+					z_info->max_obj_depth, MAXIMISE);
 				if (!max_m && obj->kind->special2) {
 					max_m = obj->kind->special2;
 				}
@@ -396,7 +396,7 @@ void ego_apply_magic(struct object *obj, bool smithing)
 				int min_m = randcalc(obj->kind->modifiers[i],
 					0, MINIMISE);
 				int max_m = randcalc(obj->kind->modifiers[i],
-					z_info->dun_depth, MAXIMISE);
+					z_info->max_obj_depth, MAXIMISE);
 
 				if (min_m == SPECIAL_VALUE) {
 					min_m = randcalc(obj->kind->special1,
@@ -407,7 +407,7 @@ void ego_apply_magic(struct object *obj, bool smithing)
 				}
 				if (max_m == SPECIAL_VALUE) {
 					max_m = randcalc(obj->kind->special1,
-						z_info->dun_depth, MAXIMISE);
+						z_info->max_obj_depth, MAXIMISE);
 					if (!max_m && obj->kind->special2) {
 						max_m = obj->kind->special2;
 					}
@@ -468,9 +468,9 @@ static bool make_special_item(struct object *obj, int level, bool only_good)
 	/* Occasionally boost the generation level of an item */
 	if (level > 0 && one_in_(z_info->great_ego)) {
 		/* Usually choose a deeper depth, weighted towards the current depth */
-		if (level < z_info->dun_depth) {
-			int level1 = rand_range(level + 1, z_info->dun_depth);
-			int level2 = rand_range(level + 1, z_info->dun_depth);
+		if (level < z_info->max_obj_depth) {
+			int level1 = rand_range(level + 1, z_info->max_obj_depth);
+			int level2 = rand_range(level + 1, z_info->max_obj_depth);
 			level = MIN(level1, level2);
 		} else {
 			level++;
@@ -854,7 +854,7 @@ void apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 	bool special = false;
 
 	/* Maximum "level" for various things */
-	lev = MIN(lev, z_info->max_depth - 1);
+	lev = MIN(lev, z_info->max_obj_depth - 1);
 
 	/* Roll for "fine" */
 	if (percent_chance(lev * 2)) fine = true;
@@ -1205,9 +1205,9 @@ struct object_kind *get_obj_num(int level)
 	/* Occasional level boost */
 	if ((level > 0) && one_in_(z_info->great_obj)) {
 		/* Mostly choose a deeper depth, weighted towards the current depth */
-		if (level < z_info->max_depth) {
-			int x = rand_range(level + 1, z_info->max_depth);
-			int y = rand_range(level + 1, z_info->max_depth);
+		if (level < z_info->max_obj_depth) {
+			int x = rand_range(level + 1, z_info->max_obj_depth);
+			int y = rand_range(level + 1, z_info->max_obj_depth);
 			level = MIN(x, y);
 		} else {
 			/* But if it was already very deep, just increment it */
@@ -1433,7 +1433,7 @@ int extract_kind_pval(const struct object_kind *kind, aspect rand_aspect,
 
 	for (i = 0; i < OBJ_MOD_MAX; ++i) {
 		int min_m = randcalc(kind->modifiers[i], 0, MINIMISE);
-		int max_m = randcalc(kind->modifiers[i], z_info->dun_depth,
+		int max_m = randcalc(kind->modifiers[i], z_info->max_obj_depth,
 			MAXIMISE);
 
 		if (min_m == SPECIAL_VALUE) {
@@ -1443,7 +1443,7 @@ int extract_kind_pval(const struct object_kind *kind, aspect rand_aspect,
 			}
 		}
 		if (max_m == SPECIAL_VALUE) {
-			max_m = randcalc(kind->special1, z_info->dun_depth,
+			max_m = randcalc(kind->special1, z_info->max_obj_depth,
 				MAXIMISE);
 			if (!max_m && kind->special2) {
 				max_m = kind->special2;

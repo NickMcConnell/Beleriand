@@ -890,7 +890,7 @@ static void pre_process_player(void)
 	}
 
 	/* Morgoth will announce a challenge if adjacent */
-	if (player->truce && (player->depth == z_info->dun_depth)) {
+	if (player->truce && (player->depth == z_info->angband_depth)) {
 		check_truce(player);
 	}
 
@@ -931,7 +931,7 @@ static void process_player_cleanup(void)
 		history_add(player, note, HIST_VAULT_ENTERED);
 
 		/* Give a message unless it is the Throne Room */
-		if (player->depth < z_info->dun_depth) {
+		if (player->depth < z_info->angband_depth) {
 			msg("You have entered %s.", cave->vault_name);
 		}
 		string_free(cave->vault_name);
@@ -1239,7 +1239,7 @@ void on_new_level(void)
 	event_signal(EVENT_REFRESH);
 
 	/* Explain the truce for the final level */
-	if ((player->depth == z_info->dun_depth) && player->truce) {
+	if ((player->depth == z_info->angband_depth) && player->truce) {
 		msg("There is a strange tension in the air.");
 		if (player->state.skill_use[SKILL_PERCEPTION] >= 15) {
 			msg("You feel that Morgoth's servants are reluctant to attack before he delivers judgment.");	

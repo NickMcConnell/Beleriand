@@ -107,7 +107,7 @@ TEST_CONSTANT(mon_regen_sp_period, "regen-sp-period", "mon-play")
 
 TEST_CONSTANT(level_room_max, "room-max", "dun-gen")
 
-TEST_CONSTANT(dun_depth, "dun-depth", "world")
+TEST_CONSTANT(angband_depth, "angband-depth", "world")
 TEST_CONSTANT(max_depth, "max-depth", "world")
 TEST_CONSTANT(day_length, "day-length", "world")
 TEST_CONSTANT(dungeon_hgt, "dungeon-hgt", "world")
@@ -151,7 +151,7 @@ struct test tests[] = {
 	{ "mon_regen_hp_period", test_mon_regen_hp_period },
 	{ "mon_regen_sp_period", test_mon_regen_sp_period },
 	{ "room_max", test_level_room_max },
-	{ "dun_depth", test_dun_depth },
+	{ "angband_depth", test_angband_depth },
 	{ "max_depth", test_max_depth },
 	{ "day_length", test_day_length },
 	{ "dungeon_hgt", test_dungeon_hgt },

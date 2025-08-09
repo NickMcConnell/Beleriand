@@ -68,7 +68,7 @@ void drop_iron_crown(struct monster *mon, const char *message)
 		/* Allocate by hand, prep, apply magic */
 		obj = mem_zalloc(sizeof(*obj));
 		kind = lookup_kind(crown->tval, crown->sval);
-		object_prep(obj, kind, z_info->dun_depth, RANDOMISE);
+		object_prep(obj, kind, z_info->angband_depth, RANDOMISE);
 		obj->artifact = crown;
 		copy_artifact_data(obj, obj->artifact);
 		mark_artifact_created(crown, true);
@@ -357,7 +357,7 @@ void prise_silmaril(struct player *p)
 			msg(freed_msg);
 
 			/* Make Silmaril */
-			object_prep(sil, kind, z_info->dun_depth, RANDOMISE);
+			object_prep(sil, kind, z_info->angband_depth, RANDOMISE);
 
 			/* Get it */
 			inven_carry(p, sil, true, true);

@@ -82,7 +82,7 @@ struct angband_constants
 	uint16_t tunn_grid_max;		/**< Maximum number of tunnel grids */
 
 	/* World shape constants, read from constants.txt */
-	uint16_t dun_depth;	/**< Maximum dungeon level */
+	uint16_t angband_depth;	/**< Maximum dungeon level in Angband */
 	uint16_t max_depth;	/**< Maximum generation level */
 	uint16_t day_length;	/**< Number of turns from dawn to dawn */
 	uint16_t dungeon_hgt;	/**< Maximum number of vertical grids on a level */

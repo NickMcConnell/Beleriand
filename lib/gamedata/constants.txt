@@ -68,11 +68,12 @@ dun-gen:tunn-max:900
 # Game World
 #---------------------------------------------------------------------
 
-# Maximum dungeon level.
-world:dun-depth:10
+# Maximum dungeon level in Angband (and in the game).
+world:angband-depth:10
 
-# Maximum level for calculations (can probably be reduced considerably).
-world:max-depth:128
+# Maximum level for monater calculations.
+#TODO reconsider hallucinatory monster depths
+world:max-depth:50
 
 # Number of turns from dawn to dawn
 world:day-length:10000
@@ -108,7 +109,7 @@ carry-cap:floor-size:23
 #---------------------------------------------------------------------
 
 # Maximum depth used in object allocation
-obj-make:max-depth:100
+obj-make:max-depth:25
 
 # 1/chance of inflating the requested object level
 obj-make:great-obj:7

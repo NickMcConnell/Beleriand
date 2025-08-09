@@ -134,7 +134,7 @@ void calc_morale(struct monster *mon)
 			morale += (race->level - player_danger_level(player)) * 10;
 
 			/* Make sure orcs etc in throne room don't have too low morale*/
-			if (player->depth == z_info->dun_depth) {
+			if (player->depth == z_info->angband_depth) {
 				morale = MAX(morale, 20);
 			}
 		}

@@ -432,7 +432,7 @@ static void build_chasms(struct chunk *c)
 	if (below) return;
 
     /* Determine whether to add chasms, and how many */
-    if ((c->depth > 2) && (c->depth < z_info->dun_depth - 1) &&
+    if ((c->depth > 2) && (c->depth < z_info->angband_depth - 1) &&
 		percent_chance(c->depth + 40)) {
         /* Add some chasms */
         chasms += damroll(1, blocks / 3);

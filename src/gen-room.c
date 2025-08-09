@@ -871,8 +871,9 @@ bool build_vault(struct chunk *c, struct loc *centre, bool *rotated,
 				return false;
 			}
 
-            /* Chasms can't occur at 450 ft */
-			if ((*t == '7') && (c->depth >= z_info->dun_depth - 1)) {
+            /* Chasms can't occur at too near the bottom of the dungeon */
+			//TODO check how chasms work outside angband
+			if ((*t == '7') && (c->depth >= dungeon_depth(player) - 1)) {
 				return false;
 			}
 		}
@@ -1582,8 +1583,9 @@ bool build_simple(struct chunk *c, struct loc centre)
 
 	/* Occasional light - chance of darkness starts very small and
 	 * increases quadratically until always dark at 450 ft */
-	if ((c->depth < randint1(z_info->dun_depth - 1)) ||
-		(c->depth < randint1(z_info->dun_depth - 1))) {
+	//TODO work out a general lighting scheme, this is really for Angband
+	if ((c->depth < randint1(z_info->angband_depth - 1)) ||
+		(c->depth < randint1(z_info->angband_depth - 1))) {
 		light = true;
 	}
 
@@ -1649,7 +1651,7 @@ bool build_crossed(struct chunk *c, struct loc centre)
 	struct point_set *room_h, *room_v;
 
 	/* Occasional light - always at level 1 down to never at Morgoth's level */
-	if (c->depth <= randint1(z_info->dun_depth - 1)) light = true;
+	if (c->depth <= randint1(z_info->angband_depth - 1)) light = true;
 
 	/* Pick a room size */
 	h_hgt = 1;                /* 3 */

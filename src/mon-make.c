@@ -251,7 +251,8 @@ struct monster_race *get_mon_num(int level, enum biome_type biome, int realm,
 	bool pursuing_monster = false;
 
 	/* Level 24 monsters can only be generated if especially asked for */
-	bool allow_24 = (level == z_info->dun_depth + 14);
+	//TODO Work out properly how levels should be handled
+	bool allow_24 = (level == z_info->angband_depth + 14);
 
 	/* Default level */
 	int generation_level = level;
@@ -292,9 +293,9 @@ struct monster_race *get_mon_num(int level, enum biome_type biome, int realm,
 	/* Final bounds checking */
 	if (generation_level < 1) generation_level = 1;
 	if (allow_24) {
-		generation_level = MIN(generation_level, z_info->dun_depth + 4);
+		generation_level = MIN(generation_level, z_info->angband_depth + 4);
 	} else {
-		generation_level = MIN(generation_level, z_info->dun_depth + 3);
+		generation_level = MIN(generation_level, z_info->angband_depth + 3);
 	}
 
 	/* Process probabilities */

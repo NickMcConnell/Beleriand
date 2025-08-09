@@ -222,7 +222,7 @@ static void monster_fall_in_chasm(struct loc grid)
 		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Determine the falling damage */
-		if (player->depth == z_info->dun_depth - 2) {
+		if (player->depth == dungeon_depth(player) - 2) {
 			dice = 3; /* only fall one floor in this case */
 		} else {
 			dice = 6;
