@@ -1901,105 +1901,6 @@ static void lay_out_rooms(struct chunk *c)
 	struct loc centre = loc(ARENA_SIDE / 2, ARENA_SIDE / 2), first, second;
 	int clearance = build_room_circuit(c, centre, &first, 10);
 	(void) build_room_circuit(c, first, &second, clearance);
-#if 0
-	int i, k;
-	int num_rooms = dun->profile->n_room_profiles;
-	struct room_profile profile;
-	struct loc centre = loc(ARENA_SIDE / 2, ARENA_SIDE / 2), first;
-	struct point_set *first_circle;
-	struct loc *grids;
-	bool start_wall = false;
-	bool left_start = false;
-	bool pierced_room = false;
-
-	/* Roll for random key (to be compared against a profile's cutoff) */
-	int key = randint0(100);
-
-	/* Once we have a key we iterate through our list of room profiles
-	 * looking for a match (whose cutoff > key). We try building the room,
-	 * and if it works then we are done with this iteration. We keep
-	 * going until we find a room that we can build successfully or we
-	 * exhaust the profiles. */
-	for (i = 0; i < num_rooms; i++) {
-		int dist = 0;
-		profile = dun->profile->room_profiles[i];
-		if (profile.cutoff <= key) continue;
-
-		/* Place the initial room immediately west of the start */
-		dist = (profile.width / 2) + 10;
-		first = loc_diff(centre, loc(dist, 0));
-
-		/* Build a circular lit corridor to join the rooms */
-		first_circle = get_annulus(centre, dist - 1, dist + 1);
-		fill_point_set(c, first_circle, FEAT_FLOOR, SQUARE_GLOW);
-
-		/* Build the first room */
-		dun->fix_room_parameters = true;
-		if (room_build(c, first, profile)) {
-			dun->fix_room_parameters = false;
-			break;
-		} else {
-			quit_fmt("Failed to build room %s in elven level", profile.name);
-		}
-	}
-
-	/* Now build the same room symmetrically about the centre of the level */
-	k = randint0(N_ELEMENTS(rota));
-	for (i = 1; i < rota[k].nodes; i++) {
-		centre = get_rotated_grid(first, rota[k].sin, rota[k].cos, i);
-		if (!room_build(c, centre, profile)) {
-			quit_fmt("Failed to build room %s.", profile.name);
-		}
-	}
-
-	unset_room_parameters();
-
-	/* Clear any room walls from the corridor */
-	k = point_set_size(first_circle);
-	for (i = 0; i < k; i++) {
-		struct loc grid = first_circle->pts[i];
-		if (square_isgranite(c, grid) && square_iswall_outer(c, grid)) {
-			square_set_feat(c, grid, FEAT_FLOOR);
-			sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
-		}
-	}
-	point_set_dispose(first_circle);
-
-	/* Build an avenue from the level centre to the initial room */
-	grids = mem_zalloc(sizeof(struct loc) * c->width);
-	k = get_straight_path(grids, c->width, loc(ARENA_SIDE / 2, ARENA_SIDE / 2),
-						  first);
-	for (i = 0; i < k; i++) {
-		struct loc grid = grids[i];
-
-		/* Still in the starting room, or entered the target room */
-		if (!square_isgranite(c, grid)) {
-			if (pierced_room) break;
-			continue;
-		}
-
-		/* The starting room wall */
-		if (square_iswall_outer(c, grid) && !left_start) {
-			start_wall = true;
-			square_set_feat(c, grid, FEAT_FLOOR);
-			continue;
-		}
-
-		/* Outside the starting room wall */
-		if (!square_iswall_outer(c, grid) && start_wall) {
-			left_start = true;
-			square_set_feat(c, grid, FEAT_FLOOR);
-			continue;
-		}
-
-		/* Already left the starting room, so outer wall must be the target */
-		if (left_start && square_iswall_outer(c, grid)) {
-			pierced_room = true;
-			square_set_feat(c, grid, FEAT_FLOOR);
-			continue;
-		}
-	}
-#endif
 }
 
 /**
@@ -2063,10 +1964,24 @@ struct chunk *elven_gen(struct player *p)
 
 		/* Place the correct stair or shaft */
 		square_set_feat(c, join->grid, join->feat);
+
+		/* Place new down stairs if needed */
+		if (feat_is_upstair(join->feat) && (p->depth < dungeon_depth(p))) {
+			struct loc grid = join->grid;
+			int dist = ARENA_SIDE / 2 - grid.x;
+			if (dist) {
+				grid.x = ARENA_SIDE / 2 + dist;
+			} else {
+				quit_fmt("Stair in horizontal centre in elven level");
+			}
+
+			/* Assumes no shafts */
+			square_set_feat(c, grid, FEAT_MORE);
+		}
 	}
 
 	if (!square_isupstairs(c, pgrid)) {
-		msg("Failed to place player on an up staircase (elven prototype)");
+		msg("Failed to place player on an up staircase (elven level)");
 	}
 
 	/* Delete any monster on the starting square */

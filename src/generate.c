@@ -894,11 +894,11 @@ static void get_join_info(struct player *p, struct dun_data *dd)
 			/* See if the nearby locations have been generated before */
 			exists_up1 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1,
 									  &lower_up1, &upper);
-			exists_up2 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1,
+			exists_up2 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 2,
 									  &lower_up2, &upper);
-			exists_down1 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1,
+			exists_down1 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos + 1,
 										&lower_down1, &upper);
-			exists_down2 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos - 1,
+			exists_down2 = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos + 2,
 										&lower_down2, &upper);
 
 			/* Check the level two up for chasms and down stairs and shafts */
