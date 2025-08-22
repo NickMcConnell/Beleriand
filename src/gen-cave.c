@@ -188,6 +188,7 @@ static bool ensure_connectivity(struct chunk *c)
 		flood_access(c, player->grid, access, true);
 		for (grid.y = 0; grid.y < c->height; grid.y++) {
 			for (grid.x = 0; grid.x < c->width; grid.x++) {
+				if (!square_in_bounds(c, grid)) continue;
 				if (player_pass(c, grid, true) && !access[grid.y][grid.x]) {
 					fail = true;
 					break;
@@ -432,7 +433,7 @@ static void build_chasms(struct chunk *c)
 	if (below) return;
 
     /* Determine whether to add chasms, and how many */
-    if ((c->depth > 2) && (c->depth < z_info->angband_depth - 1) &&
+    if ((c->depth > 2) && (c->depth < dungeon_depth(player) - 1) &&
 		percent_chance(c->depth + 40)) {
         /* Add some chasms */
         chasms += damroll(1, blocks / 3);
@@ -1328,11 +1329,11 @@ static struct chunk *angband_chunk(struct player *p, int depth, int height,
 	ROOM_LOG("height=%d  width=%d  nfloors=%d", c->height, c->width,num_floors);
 
 	/* Fill cave area with basic granite */
-	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1,
 		FEAT_GRANITE, SQUARE_NONE);
 
 	/* Generate permanent walls around the generated area (temporarily!) */
-	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
 		FEAT_PERM, SQUARE_NONE, true);
 
 	/* Actual maximum number of blocks on this level */
@@ -1349,7 +1350,7 @@ static struct chunk *angband_chunk(struct player *p, int depth, int height,
 	reset_entrance_data(c);
 
 	/* Build the special staircase rooms */
-	build_staircase_rooms(c, "Standard Generation");
+	build_staircase_rooms(c, "Angband Generation");
 
 	/* Guarantee a forge if one hasn't been generated in a while */
 	if (forge) {
@@ -1436,7 +1437,7 @@ static struct chunk *angband_chunk(struct player *p, int depth, int height,
 	do_traditional_tunneling(c);
 
 	/* Turn the outer permanent walls back to granite */
-	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
 		FEAT_GRANITE, SQUARE_NONE, true);
 
 	return c;
@@ -1995,7 +1996,250 @@ struct chunk *elven_gen(struct player *p)
 
 
 /* ----------------- DWARVEN --------------- */
+/**
+ * The main angband generation algorithm
+ * \param p is the player, in case generation fails and the partially created
+ * level needs to be cleaned up
+ * \param depth is the chunk's native depth
+ * \param height are the chunk's dimensions
+ * \param width are the chunk's dimensions
+ * \param forge if true forces a forge on this level
+ * \return a pointer to the generated chunk
+ */
+static struct chunk *dwarven_chunk(struct player *p, int depth, int height,
+								   int width)
+{
+	int i;
+	int key, rarity;
+	int num_floors;
+	int num_rooms = dun->profile->n_room_profiles;
+	int dun_unusual = dun->profile->dun_unusual;
+	int n_attempt;
+	struct room_profile forge_profile = lookup_room_profile("Interesting room");
 
+	/* Make the cave */
+	struct chunk *c = chunk_new(height, width);
+	c->depth = depth;
+
+	/* Set the intended number of floor grids based on cave floor area */
+	num_floors = c->height * c->width / 7;
+	ROOM_LOG("height=%d  width=%d  nfloors=%d", c->height, c->width,num_floors);
+
+	/* Fill cave area with basic granite */
+	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1,
+		FEAT_GRANITE, SQUARE_NONE);
+
+	/* Generate permanent walls around the generated area (temporarily!) */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
+		FEAT_PERM, SQUARE_NONE, true);
+
+	/* Actual maximum number of blocks on this level */
+	dun->row_blocks = c->height / dun->block_hgt;
+	dun->col_blocks = c->width / dun->block_wid;
+
+	/* Initialize the room table */
+	dun->room_map = mem_zalloc(dun->row_blocks * sizeof(bool*));
+	for (i = 0; i < dun->row_blocks; i++)
+		dun->room_map[i] = mem_zalloc(dun->col_blocks * sizeof(bool));
+
+	/* No rooms yet, pits or otherwise. */
+	dun->cent_n = 0;
+	reset_entrance_data(c);
+
+	/* Build the special staircase rooms */
+	build_staircase_rooms(c, "Dwarven Generation");
+
+	/* Guarantee a forge */
+	if (OPT(p, cheat_room)) msg("Trying to force a forge:");
+	p->upkeep->force_forge = true;
+
+	/* Failure (not clear why this would happen) */
+	if (!room_build(c, loc(0, 0), forge_profile)) {
+		p->upkeep->force_forge = false;
+		if (OPT(p, cheat_room)) msg("failed.");
+		uncreate_artifacts(c);
+		delete_temp_monsters();
+		chunk_wipe(c);
+		return NULL;
+	}
+
+	if (OPT(p, cheat_room)) msg("succeeded.");
+	p->upkeep->force_forge = false;
+
+	/*
+	 * Build rooms until we have enough floor grids and at least two rooms
+	 * or we appear to be stuck and can't match those criteria.
+	 */
+	n_attempt = 0;
+	while (1) {
+		if (c->feat_count[FEAT_FLOOR] >= num_floors
+				&& dun->cent_n >= 2) {
+			break;
+		}
+		/*
+		 * At an average of roughly 22 successful rooms per level
+		 * (and a standard deviation of 4.5 or so for that) and a
+		 * room failure rate that's less than .5 failures per success
+		 * (4.2.x profile doesn't use full allocation for rarity two
+		 * rooms - only up to 60; and the last type tried in that
+		 * rarity has a failure rate per successful rooms of all types
+		 * of around .024).  500 attempts is a generous cutoff for
+		 * saying no further progress is likely.
+		 */
+		if (n_attempt > 500) {
+			uncreate_artifacts(c);
+			delete_temp_monsters();
+			chunk_wipe(c);
+			return NULL;
+		}
+		++n_attempt;
+
+		/* Roll for random key (to be compared against a profile's cutoff) */
+		key = randint0(100);
+
+		/* We generate a rarity number to figure out how exotic to make
+		 * the room. This number has a (50+depth/2)/DUN_UNUSUAL chance
+		 * of being > 0, a (50+depth/2)^2/DUN_UNUSUAL^2 chance of
+		 * being > 1, up to MAX_RARITY. */
+		i = 0;
+		rarity = 0;
+		while (i == rarity && i < dun->profile->max_rarity) {
+			if (randint0(dun_unusual) < 50 + depth / 2) rarity++;
+			i++;
+		}
+
+		/* Once we have a key and a rarity, we iterate through our list of
+		 * room profiles looking for a match (whose cutoff > key and whose
+		 * rarity > this rarity). We try building the room, and if it works
+		 * then we are done with this iteration. We keep going until we find
+		 * a room that we can build successfully or we exhaust the profiles. */
+		for (i = 0; i < num_rooms; i++) {
+			struct room_profile profile = dun->profile->room_profiles[i];
+			if (profile.rarity > rarity) continue;
+			if (profile.cutoff <= key) continue;
+			if (room_build(c, loc(0, 0), profile)) break;
+		}
+	}
+
+	for (i = 0; i < dun->row_blocks; i++)
+		mem_free(dun->room_map[i]);
+	mem_free(dun->room_map);
+
+	/* Connect all the rooms together */
+	do_traditional_tunneling(c);
+
+	/* Turn the outer permanent walls back to granite */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
+		FEAT_GRANITE, SQUARE_NONE, true);
+
+	return c;
+}
+
+/**
+ * Generate a new dungeon level.
+ * \param p is the player
+ * \return a pointer to the generated chunk
+ *
+ * This is sample code to illustrate some of the new dungeon generation
+ * methods; I think it actually produces quite nice levels.  New stuff:
+ *
+ * - different sized levels
+ * - independence from block size: the block size can be set to any number
+ *   from 1 (no blocks) to about 15; beyond that it struggles to generate
+ *   enough floor space
+ * - the find_space function, called from the room builder functions, allows
+ *   the room to find space for itself rather than the generation algorithm
+ *   allocating it; this helps because the room knows better what size it is
+ * - a count is now kept of grids of the various terrains, allowing dungeon
+ *   generation to terminate when enough floor is generated
+ * - there are three new room types - huge rooms, rooms of chambers
+ *   and interesting rooms - as well as many new vaults
+ * - there is the ability to place specific monsters and objects in vaults and
+ *   interesting rooms, as well as to make general monster restrictions in
+ *   areas or the whole dungeon
+ */
+struct chunk *dwarven_gen(struct player *p) {
+	int i;
+	int y_size = ARENA_SIDE, x_size = ARENA_SIDE;
+	struct chunk *c;
+	struct connector *join;
+
+	/* Hack - variables for allocations */
+	int rubble_gen, mon_gen, obj_room_gen;
+
+	/* Set the block height and width */
+	dun->block_hgt = dun->profile->block_size;
+	dun->block_wid = dun->profile->block_size;
+
+	c = dwarven_chunk(p, p->depth, MIN(z_info->dungeon_hgt, y_size),
+					  MIN(z_info->dungeon_wid, x_size));
+	if (!c) return NULL;
+
+	/* Generate permanent walls around the edge of the generated area */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
+		FEAT_PERM, SQUARE_NONE, true);
+
+	/* Add some quartz streamers */
+	for (i = 0; i < dun->profile->str.qua; i++)
+		build_streamer(c, FEAT_QUARTZ);
+
+	/* Place stairs near some walls as allowed by levels above and below */
+	if (dungeon_depth(p) > p->depth) {
+		handle_level_stairs(c, p, rand_range(3, 4));
+	}
+
+    /* Add any chasms if needed */
+    build_chasms(c);
+
+	/* Place some rubble, occasionally much more on deep levels */
+	rubble_gen = randint1(5);
+	if ((c->depth >= 5) && one_in_(10)) {
+		rubble_gen += 30;
+	}
+	alloc_object(c, SET_BOTH, TYP_RUBBLE, rubble_gen, p->depth, ORIGIN_FLOOR);
+
+	/* Add join floors (the bottoms of chasms) */
+	for (join = dun->join; join; join = join->next) {
+		if (feat_is_floor(join->feat)) {
+			/* Allow any passable terrain, but replace impassable with floor */
+			if (!square_ispassable(c, join->grid)) {
+				square_set_feat(c, join->grid, FEAT_FLOOR);
+			}
+		}
+	}
+
+	/* Check dungeon connectivity - tolerate this for now NRM */
+	//if (!ensure_connectivity(c)) {
+	//	if (OPT(p, cheat_room)) msg("Failed connectivity.");
+	//	uncreate_artifacts(c);
+	//	delete_temp_monsters();
+	//	chunk_wipe(c);
+	//	return NULL;
+	//}
+
+	/* Place the player */
+	player_place(c, p, p->grid);
+
+	/* If we've generated this level before, we're done now */
+	if (!dun->first_time) return c;
+
+	/* Pick some number of monsters (between 0.5 per room and 1 per room) */
+	mon_gen = (dun->cent_n + randint1(dun->cent_n)) / 2;
+
+	for (i = mon_gen; i > 0; i--)
+		pick_and_place_distant_monster(c, p, '$', REALM_NAUGRIM, true,
+									   player_danger_level(p));
+
+	/* Put some objects in rooms */
+	obj_room_gen = 3 * mon_gen / 4;
+	if (obj_room_gen > 0) {
+		alloc_object(c, SET_ROOM, TYP_OBJECT, obj_room_gen,
+					 player_danger_level(p), ORIGIN_FLOOR);
+	}
+
+	return c;
+}
+#if 0
 /**
  * Create a level for Belegost or Nogrod
  * TODO make this more than just a room, current plan is long mining tunnels,
@@ -2057,7 +2301,7 @@ struct chunk *dwarven_gen(struct player *p)
 
 	return c;
 }
-
+#endif
 
 /* ------------------ THRONE ---------------- */
 

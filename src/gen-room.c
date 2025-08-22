@@ -1576,10 +1576,8 @@ bool build_simple(struct chunk *c, struct loc centre)
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	event_signal_size(EVENT_GEN_ROOM_CHOOSE_SIZE, height + 2, width + 2);
-	if ((centre.y >= c->height) || (centre.x >= c->width)) {
-		if (!find_space(&centre, height + 2, width + 2))
-			return (false);
-	}
+	if (!find_space(&centre, height + 2, width + 2))
+		return false;
 
 	/* Occasional light - chance of darkness starts very small and
 	 * increases quadratically until always dark at 450 ft */
