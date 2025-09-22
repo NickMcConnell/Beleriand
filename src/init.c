@@ -208,13 +208,21 @@ static void record_square_mile_river_data(struct river_mile *r_mile)
 		check = check->next;
 		count++;
 	}
-	if ((count > 2) || ((count == 2) && (r_mile->part != RIVER_JOIN))) {
+	if (count > 2) {
 		quit_fmt("Too many river miles in %c%d (%d,%d)",
 				 sq_mile->map_square.letter, sq_mile->map_square.number,
 				 sq_mile->map_square_grid.x, sq_mile->map_square_grid.y);
 	}
 
-	/* Add the river mile */
+	/* If there's an existing one that isn't a join, put the new one second */
+	if (sq_mile->river_miles && (sq_mile->river_miles->part != RIVER_JOIN)) {
+		/* Existing one isn't a join, so the current one should be */
+		assert(r_mile->part == RIVER_JOIN);
+		sq_mile->river_miles->next = r_mile;
+		return;
+	}
+
+	/* If there is an existing one, it's a join and needs to go second */
 	r_mile->next = sq_mile->river_miles;
 	sq_mile->river_miles = r_mile;
 }
@@ -1007,7 +1015,7 @@ static enum parser_error parse_river_split(struct parser *p)
 	stretch1->miles->sq_mile = sq_mile;
 	stretch2->miles->sq_mile = sq_mile;
 	record_square_mile_river_data(stretch1->miles);
-	record_square_mile_river_data(stretch2->miles);
+	//record_square_mile_river_data(stretch2->miles);
 	stretch1->index = parser_getint(p, "index1");
 	stretch2->index = parser_getint(p, "index2");
 	stretch1->in1 = current;
