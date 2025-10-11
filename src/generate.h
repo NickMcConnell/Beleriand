@@ -297,8 +297,10 @@ struct chunk *throne_gen(struct player *p);
 bool build_landmark(struct chunk *c, struct landmark *landmark, int map_y,
 					int map_x, int y_coord, int x_coord);
 
-/* gen-surface.c */
+/* gen-river.c */
 void map_river_miles(struct square_mile *sq_mile);
+
+/* gen-surface.c */
 void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 				 int x_coord, struct connector *first);
 

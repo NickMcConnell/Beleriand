@@ -7,7 +7,7 @@
 
 NAME = Beleriand
 VERSION = 0.1.0alpha
-COPYRIGHT = (c) 1995-2024 Angband contributors
+COPYRIGHT = (c) 1995-2025 Angband contributors
 PROGNAME = beleriand
 
 HEADERS = \
@@ -124,6 +124,7 @@ ANGFILES0 = \
 	generate.o \
 	gen-cave.o \
 	gen-chunk.o \
+	gen-river.o \
 	gen-room.o \
 	gen-surface.o \
 	gen-util.o \
