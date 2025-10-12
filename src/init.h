@@ -38,7 +38,7 @@ struct angband_constants
 	uint16_t warning_max;/**< Maximum number of monster warning message sets */
 	uint16_t s_max;		/**< Maximum number of magic spells */
 	uint16_t v_max;		/**< Maximum number of vault templates */
-	uint16_t set_max;	/**< Maximum number of settlement templates */
+	uint16_t sett_max;	/**< Maximum number of settlement templates */
 	uint16_t pit_max;	/**< Maximum number of monster pit types */
 	uint16_t act_max;	/**< Maximum number of activations for randarts */
 	uint8_t curse_max;	/**< Maximum number of curses */

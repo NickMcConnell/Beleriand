@@ -88,6 +88,14 @@ static const char *room_flags[] = {
 	NULL
 };
 
+static const char *settlement_flags[] = {
+	"NONE",
+	#define SETTF(a, b) #a,
+	#include "list-settlement-flags.h"
+	#undef SETTFF
+	NULL
+};
+
 
 /**
  * ------------------------------------------------------------------------
@@ -256,6 +264,21 @@ static enum parser_error parse_surface_proportion(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_surface_settlement(struct parser *p) {
+	struct surface_profile *s = parser_priv(p);
+	int val;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (grab_name("settlement flag", parser_getsym(p, "flag"),
+				  settlement_flags, N_ELEMENTS(settlement_flags), &val))
+		return PARSE_ERROR_INVALID_FLAG;
+	settf_on(s->flags, val);
+	s->settlement_proportion = parser_getint(p, "proportion");
+
+	return PARSE_ERROR_NONE;
+}
+
 
 static struct parser *init_parse_surface(void) {
 	struct parser *p = parser_new();
@@ -269,6 +292,8 @@ static struct parser *init_parse_surface(void) {
 	parser_reg(p, "size rand size", parse_surface_size);
 	parser_reg(p, "formation str name", parse_surface_formation);
 	parser_reg(p, "proportion int proportion", parse_surface_proportion);
+	parser_reg(p, "settlement sym flag int proportion",
+			   parse_surface_settlement);
 	return p;
 }
 
@@ -783,8 +808,8 @@ static enum parser_error parse_settlement_name(struct parser *p) {
 
 	set->name = string_make(parser_getstr(p, "name"));
 	set->next = h;
-	set->index = z_info->set_max;
-	z_info->set_max++;
+	set->index = z_info->sett_max;
+	z_info->sett_max++;
 	parser_setpriv(p, set);
 	return PARSE_ERROR_NONE;
 }
@@ -824,7 +849,7 @@ static enum parser_error parse_settlement_flags(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	s = string_make(parser_getstr(p, "flags"));
 	st = strtok(s, " |");
-	while (st && !grab_flag(set->flags, ROOMF_SIZE, room_flags, st)) {
+	while (st && !grab_flag(set->flags, SETTF_SIZE, settlement_flags, st)) {
 		st = strtok(NULL, " |");
 	}
 	mem_free(s);
@@ -864,7 +889,7 @@ static enum parser_error parse_settlement_d(struct parser *p) {
 
 struct parser *init_parse_settlement(void) {
 	struct parser *p = parser_new();
-	z_info->set_max = 0;
+	z_info->sett_max = 0;
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_settlement_name);
 	parser_reg(p, "type str type", parse_settlement_type);

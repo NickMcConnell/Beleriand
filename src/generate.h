@@ -74,6 +74,36 @@ enum {
 #define roomf_inter(f1, f2) flag_iter(f1, f2, ROOMF_SIZE)
 #define roomf_diff(f1, f2) flag_diff(f1, f2, ROOMF_SIZE)
 
+/**
+ * Flag for settlement types
+ */
+enum {
+	SETTF_NONE,
+	#define SETTF(a, b) SETTF_##a,
+	#include "list-settlement-flags.h"
+	#undef SETTF
+};
+
+#define SETTF_SIZE FLAG_SIZE(SETTF_MAX)
+
+#define settf_has(f, flag) flag_has_dbg(f, SETTF_SIZE, flag, #f, #flag)
+#define settf_next(f, flag) flag_next(f, SETTF_SIZE, flag)
+#define settf_count(f) flag_count(f, SETTF_SIZE)
+#define settf_is_empty(f) flag_is_empty(f, SETTF_SIZE)
+#define settf_is_full(f) flag_is_full(f, SETTF_SIZE)
+#define settf_is_inter(f1, f2) flag_is_inter(f1, f2, SETTF_SIZE)
+#define settf_is_subset(f1, f2) flag_is_subset(f1, f2, SETTF_SIZE)
+#define settf_is_equal(f1, f2) flag_is_equal(f1, f2, SETTF_SIZE)
+#define settf_on(f, flag) flag_on_dbg(f, SETTF_SIZE, flag, #f, #flag)
+#define settf_off(f, flag) flag_off(f, SETTF_SIZE, flag)
+#define settf_wipe(f) flag_wipe(f, SETTF_SIZE)
+#define settf_setall(f) flag_setall(f, SETTF_SIZE)
+#define settf_negate(f) flag_negate(f, SETTF_SIZE)
+#define settf_copy(f1, f2) flag_copy(f1, f2, SETTF_SIZE)
+#define settf_union(f1, f2) flag_union(f1, f2, SETTF_SIZE)
+#define settf_inter(f1, f2) flag_iter(f1, f2, SETTF_SIZE)
+#define settf_diff(f1, f2) flag_diff(f1, f2, SETTF_SIZE)
+
 
 /**
  * Structure to hold the corners of a room
@@ -113,6 +143,8 @@ struct surface_profile {
 	struct area_profile *areas;
 	struct formation_profile *formations;
 	int num_form_types;
+    bitflag flags[SETTF_SIZE];
+	int settlement_proportion;
 };
 
 extern struct surface_profile *surface_profiles;
@@ -276,7 +308,7 @@ struct settlement {
 	int16_t index;      		/*!< Settlement index */
     char *text;         		/*!< Grid by grid settlement layout */
     char *typ;					/*!< Settlement type */
-    bitflag flags[ROOMF_SIZE];	/*!< Settlement flags */
+    bitflag flags[SETTF_SIZE];	/*!< Settlement flags */
     uint8_t hgt;				/*!< Settlement height */
     uint8_t wid;				/*!< Settlement width */
     uint8_t depth;				/*!< Settlement depth */
