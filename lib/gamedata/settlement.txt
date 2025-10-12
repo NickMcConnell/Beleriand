@@ -8,18 +8,21 @@
 
 
 name:2x2 house
+flags:TOWN
 D:####
 D:#..#
 D:#..#
 D:#+##
 
 name:2x3 house
+flags:TOWN
 D:#####
 D:#...#
 D:#...#
 D:##+##
 
 name:3x2 house
+flags:TOWN
 D:####
 D:#..#
 D:#..#
@@ -27,6 +30,7 @@ D:#..#
 D:##+#
 
 name:3x3 house
+flags:TOWN
 D:#####
 D:#...#
 D:#...#
@@ -34,7 +38,14 @@ D:#...#
 D:##+##
 
 name:park
+flags:TOWN
 D:11111
 D:1;111
 D:111;1
 D:11111
+
+name:single tree
+flags:TOWN
+D:111
+D:1;1
+D:111

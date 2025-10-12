@@ -182,3 +182,4 @@ size:4+d5
 name:town
 code:=
 feat:road
+settlement:TOWN:80
