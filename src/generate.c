@@ -54,6 +54,7 @@
  * Array of pit types
  */
 struct vault *vaults;
+struct settlement *settlements;
 struct surface_profile *surface_profiles;
 static struct cave_profile *cave_profiles;
 struct dun_data *dun;
@@ -772,6 +773,139 @@ static struct file_parser vault_parser = {
 	cleanup_vault
 };
 
+/**
+ * ------------------------------------------------------------------------
+ * Parsing functions for settlement.txt
+ * ------------------------------------------------------------------------ */
+static enum parser_error parse_settlement_name(struct parser *p) {
+	struct settlement *h = parser_priv(p);
+	struct settlement *set = mem_zalloc(sizeof *set);
+
+	set->name = string_make(parser_getstr(p, "name"));
+	set->next = h;
+	set->index = z_info->set_max;
+	z_info->set_max++;
+	parser_setpriv(p, set);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_settlement_type(struct parser *p) {
+	struct settlement *set = parser_priv(p);
+
+	if (!set)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	set->typ = string_make(parser_getstr(p, "type"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_settlement_depth(struct parser *p) {
+	struct settlement *set = parser_priv(p);
+
+	if (!set)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	set->depth = parser_getuint(p, "depth");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_settlement_rarity(struct parser *p) {
+	struct settlement *set = parser_priv(p);
+
+	if (!set)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	set->rarity = parser_getuint(p, "rarity");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_settlement_flags(struct parser *p) {
+	struct settlement *set = parser_priv(p);
+	char *s, *st;
+
+	if (!set)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	s = string_make(parser_getstr(p, "flags"));
+	st = strtok(s, " |");
+	while (st && !grab_flag(set->flags, ROOMF_SIZE, room_flags, st)) {
+		st = strtok(NULL, " |");
+	}
+	mem_free(s);
+
+	return st ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_settlement_d(struct parser *p) {
+	struct settlement *set = parser_priv(p);
+	const char *desc;
+
+	if (!set)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	desc = parser_getstr(p, "text");
+	if (!set->wid) {
+		size_t wid = strlen(desc);
+
+		if (wid > 255) {
+			return PARSE_ERROR_SETTLE_TOO_BIG;
+		}
+		set->wid = (uint8_t)wid;
+	}
+
+
+	if (strlen(desc) != set->wid) {
+		return PARSE_ERROR_SETTLE_DESC_BAD_LENGTH;
+	} else {
+		if (set->hgt == 255) {
+			return PARSE_ERROR_SETTLE_TOO_BIG;
+		}
+		set->text = string_append(set->text, desc);
+		set->hgt++;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_settlement(void) {
+	struct parser *p = parser_new();
+	z_info->set_max = 0;
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_settlement_name);
+	parser_reg(p, "type str type", parse_settlement_type);
+	parser_reg(p, "depth uint depth", parse_settlement_depth);
+	parser_reg(p, "rarity uint rarity", parse_settlement_rarity);
+	parser_reg(p, "flags str flags", parse_settlement_flags);
+	parser_reg(p, "D str text", parse_settlement_d);
+	return p;
+}
+
+static errr run_parse_settlement(struct parser *p) {
+	return parse_file_quit_not_found(p, "settlement");
+}
+
+static errr finish_parse_settlement(struct parser *p) {
+	settlements = parser_priv(p);
+	parser_destroy(p);
+
+	return 0;
+}
+
+static void cleanup_settlement(void)
+{
+	struct settlement *set, *next;
+	for (set = settlements; set; set = next) {
+		next = set->next;
+		mem_free(set->name);
+		mem_free(set->typ);
+		mem_free(set->text);
+		mem_free(set);
+	}
+}
+
+static struct file_parser settlement_parser = {
+	"settlement",
+	init_parse_settlement,
+	run_parse_settlement,
+	finish_parse_settlement,
+	cleanup_settlement
+};
+
 static void run_template_parser(void) {
 	/* Initialize surface info */
 	event_signal_message(EVENT_INITSTATUS, 0,
@@ -790,6 +924,12 @@ static void run_template_parser(void) {
 						 "Initializing arrays... (vaults)");
 	if (run_parser(&vault_parser))
 		quit("Cannot initialize vaults");
+
+	/* Initialize settlement info */
+	event_signal_message(EVENT_INITSTATUS, 0,
+						 "Initializing arrays... (settlements)");
+	if (run_parser(&settlement_parser))
+		quit("Cannot initialize settlements");
 }
 
 

@@ -1,0 +1,40 @@
+# file: settlement.txt
+
+# Contains information about features of settlement, largely for towns but
+# also for farming etc.
+
+# name: The object's name.  This needs to match the corresponding entry in 
+# list-surface-profiles.h so the correct level-building function can be called
+
+
+name:2x2 house
+D:####
+D:#..#
+D:#..#
+D:#+##
+
+name:2x3 house
+D:#####
+D:#...#
+D:#...#
+D:##+##
+
+name:3x2 house
+D:####
+D:#..#
+D:#..#
+D:#..#
+D:##+#
+
+name:3x3 house
+D:#####
+D:#...#
+D:#...#
+D:#...#
+D:##+##
+
+name:park
+D:11111
+D:1;111
+D:111;1
+D:11111
