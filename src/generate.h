@@ -266,6 +266,24 @@ struct vault {
     bool forge;					/*!< Is there a forge in it? */
 };
 
+/*
+ * Information about settlement generation
+ */
+struct settlement {
+    struct settlement *next; 		/*!< Pointer to next settlement template */
+
+    char *name;         		/*!< Settlement name */
+	int16_t index;      		/*!< Settlement index */
+    char *text;         		/*!< Grid by grid settlement layout */
+    char *typ;					/*!< Settlement type */
+    bitflag flags[ROOMF_SIZE];	/*!< Settlement flags */
+    uint8_t hgt;				/*!< Settlement height */
+    uint8_t wid;				/*!< Settlement width */
+    uint8_t depth;				/*!< Settlement depth */
+    uint32_t rarity;				/*!< Settlement rarity */
+    bool forge;					/*!< Is there a forge in it? */
+};
+
 
 
 /**
@@ -279,6 +297,7 @@ struct vault {
 
 extern struct dun_data *dun;
 extern struct vault *vaults;
+extern struct settlement *settlements;
 extern struct room_template *room_templates;
 
 /* generate.c */
