@@ -563,11 +563,109 @@ static bool get_biome_tweaks(int y_pos, int x_pos, struct biome_tweak *tweak)
 }
 
 /**
+ * Chooses a settlement with a given flag at random.
+ * \param flag settlement flag it must have
+ * \return a pointer to the settlement template
+ */
+static struct settlement *random_settlement(int flag)
+{
+	struct settlement *s = settlements;
+	struct settlement *r = NULL;
+	uint32_t sum = 0;
+	do {
+		if (settf_has(s->flags, flag)) {
+			sum++;
+			if (!Rand_div(sum)) r = s;
+		}
+		s = s->next;
+	} while(s);
+	return r;
+}
+
+/**
+ * Build a settlement from its string representation (like build_vault()).
+ * \param c the chunk the room is being built in
+ * \param centre the room centre; out of chunk centre invokes find_space()
+ * \param v pointer to the vault template
+ * \param flip whether or not to diagonally flip (interchange x and y) the
+ * vault template
+ * \return success
+ */
+static bool build_settlement(struct chunk *c, struct point_set *piece,
+					  struct loc *centre, struct settlement *s)
+{
+	const char *data = s->text;
+	int y1, x1, y2, x2;
+	int x, y;
+	const char *t;
+	int rotate = 0, thgt = s->hgt, twid = s->wid;
+	bool reflect = false;
+
+	assert(c);
+
+	/* Find and reserve some space in the dungeon.  Get center of room. */
+	get_random_symmetry_transform(s->hgt, s->wid, SYMTR_FLAG_NONE,
+								  calc_default_transpose_weight(s->hgt, s->wid),
+								  &rotate, &reflect, &thgt, &twid);
+
+	/* Convert centre to translation for the symmetry transformation. */
+	centre->x -= twid / 2;
+	centre->y -= thgt / 2;
+
+	/* Get the room corners */
+	y1 = centre->y;
+	x1 = centre->x;
+	y2 = y1 + thgt - 1;
+	x2 = x1 + twid - 1;
+
+	/* Check settlement is within the current piece */
+	for (t = data, y = 0; y < s->hgt && *t; y++) {
+		for (x = 0; x < s->wid && *t; x++, t++) {
+			/* Get the actual grid */
+			struct loc grid = loc(x, y);
+			symmetry_transform(&grid, centre->y, centre->x, s->hgt, s->wid,
+							   rotate, reflect);
+			assert(grid.x >= x1 && grid.x <= x2 &&
+				   grid.y >= y1 && grid.y <= y2);
+
+			/* If grid is not in the point set, reject the settlement */
+			if (!point_set_contains(piece, grid)) {
+				return false;
+			}
+		}
+	}
+
+	/* Place dungeon features and objects */
+	get_terrain(c, loc(0, 0), loc(s->wid, s->hgt), *centre, s->hgt, s->wid,
+				rotate, reflect, s->flags, true, data, false);
+
+	/* Lighting */
+	for (t = data, y = 0; y < s->hgt && *t; y++) {
+		for (x = 0; x < s->wid && *t; x++, t++) {
+			/* Get the actual grid */
+			struct loc grid = loc(x, y);
+			symmetry_transform(&grid, centre->y, centre->x, s->hgt, s->wid,
+							   rotate, reflect);
+
+			/* Hack -- skip "non-grids" */
+			if (*t == ' ') continue;
+
+			/* Some settlements are always lit */
+			if (roomf_has(s->flags, SETTF_LIGHT)) {
+				sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
+			}
+		}
+	}
+
+	return true;
+}
+
+/**
  * ------------------------------------------------------------------------
  * Surface generation
  * ------------------------------------------------------------------------ */
 static void make_piece(struct chunk *c, enum biome_type terrain,
-					   struct point_set *piece)
+					   struct point_set *piece, struct loc top_left)
 {
 	int i, form_grids, size = point_set_size(piece);
 	struct surface_profile *s;
@@ -637,6 +735,20 @@ static void make_piece(struct chunk *c, enum biome_type terrain,
 		}
 		form = form->next;
 	}
+
+	/* Place settlements if needed */
+	if (s->settlement_proportion) {
+		/* This is really only a placeholder */
+		int j, space = 7;
+		for (i = space / 2; i < CHUNK_SIDE; i += space) {
+			for (j = space / 2; j < CHUNK_SIDE; j += space) {
+				struct settlement *sett = random_settlement(s->settlement_type);
+				struct loc grid = loc_sum(loc(randint0(3) + i, randint0(3) + j),
+										  top_left);
+				(void) build_settlement(c, piece, &grid, sett);
+			}
+		}
+	}
 }
 
 //TODO RIVER Add current
@@ -704,7 +816,7 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 	if (get_biome_tweaks(ref->y_pos, ref->x_pos, &tweak)) {
 		if (tweak.dir1 == DIR_NONE) {
 			/* Whole chunk is the tweaked biome */
-			make_piece(c, tweak.biome1, chunk);
+			make_piece(c, tweak.biome1, chunk, top_left);
 			mon_biome = tweak.biome1;
 		} else if ((tweak.dir1 == DIR_NE) || (tweak.dir1 == DIR_SE) ||
 				   (tweak.dir1 == DIR_SW) || (tweak.dir1 == DIR_NW)) {
@@ -712,8 +824,8 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 			struct point_set *tweaked = make_corner_point_set(c, top_left,
 															  tweak.dir1);
 			struct point_set *remainder = point_set_subtract(chunk, tweaked);
-			make_piece(c, tweak.biome1, tweaked);
-			make_piece(c, standard, remainder);
+			make_piece(c, tweak.biome1, tweaked, top_left);
+			make_piece(c, standard, remainder, top_left);
 			point_set_dispose(tweaked);
 			point_set_dispose(remainder);
 		} else {
@@ -726,7 +838,7 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 				first = make_edge_point_set(c, top_left, tweak.dir1);
 			}
 			remainder1 = point_set_subtract(chunk, first);
-			make_piece(c, tweak.biome1, first);
+			make_piece(c, tweak.biome1, first, top_left);
 
 			if (tweak.dir2 != DIR_NONE) {
 				struct point_set *second, *remainder2;
@@ -739,18 +851,18 @@ void surface_gen(struct chunk *c, struct chunk_ref *ref, int y_coord,
 				remainder2 = point_set_subtract(remainder1, first);
 
 				/* Possibly this will overlap first, which I think is OK */
-				make_piece(c, tweak.biome2, second);
-				make_piece(c, standard, remainder2);
+				make_piece(c, tweak.biome2, second, top_left);
+				make_piece(c, standard, remainder2, top_left);
 				point_set_dispose(second);
 				point_set_dispose(remainder2);
 			} else {
-				make_piece(c, standard, remainder1);
+				make_piece(c, standard, remainder1, top_left);
 			}
 			point_set_dispose(first);
 			point_set_dispose(remainder1);
 		}
 	} else {
-		make_piece(c, standard, chunk);
+		make_piece(c, standard, chunk, top_left);
 	}
 	point_set_dispose(chunk);
 

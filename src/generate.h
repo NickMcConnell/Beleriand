@@ -143,7 +143,7 @@ struct surface_profile {
 	struct area_profile *areas;
 	struct formation_profile *formations;
 	int num_form_types;
-    bitflag flags[SETTF_SIZE];
+	int settlement_type;
 	int settlement_proportion;
 };
 
