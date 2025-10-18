@@ -273,7 +273,7 @@ static enum parser_error parse_surface_settlement(struct parser *p) {
 	if (grab_name("settlement flag", parser_getsym(p, "flag"),
 				  settlement_flags, N_ELEMENTS(settlement_flags), &val))
 		return PARSE_ERROR_INVALID_FLAG;
-	settf_on(s->flags, val);
+	s->settlement_type = val;
 	s->settlement_proportion = parser_getint(p, "proportion");
 
 	return PARSE_ERROR_NONE;
