@@ -1145,6 +1145,11 @@ int chunk_fill(struct chunk *c, struct chunk_ref *ref, int y_coord, int x_coord)
 	/* Check for new square miles and do river mapping */
 	if (!mile->mapped) {
 		map_river_miles(mile);
+
+		/* Get the location again in case it's moved */
+		reload = gen_loc_find(x_pos, y_pos, z_pos, &lower, &upper);
+		assert(reload);
+		location = &gen_loc_list[upper];
 	}
 
 	/* Store the chunk reference */

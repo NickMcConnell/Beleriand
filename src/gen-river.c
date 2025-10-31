@@ -51,37 +51,86 @@ static int map_point_to_point(struct loc start, struct loc finish,
 
 	/* Add points roughly in the right direction until we're there */
 	while (!loc_eq(grid, finish)) {
+		bool must_adjust;
 		dir = rough_direction(grid, finish);
 
+		/* Already at the finish, don't adjust, just do it */
+		if (loc_eq(loc_sum(grid, ddgrid[dir]), finish)) {
+			course[finish.y][finish.x] = ++count;
+			break;
+		}
+
+		/* If the obvious grid is already used, adjust  */
+		must_adjust = (course[grid.y + ddy[dir]][grid.x + ddx[dir]] != 0);
+
 		/* Smallish chance of deviating, none if on the edge */
-		if (one_in_(6) &&
+		if ((one_in_(6) || must_adjust) &&
 			(grid.x > 0) && (grid.x < side - 1) &&
 			(grid.y > 0) && (grid.y < side - 1)) {
+			enum direction new_dir = DIR_NONE;
 			if (one_in_(2)) {
-				dir = cycle[chome[dir] + 1];
+				new_dir = cycle[chome[dir] + 1];
+				/* Didn't work, try the other one */
+				if (course[grid.y + ddy[new_dir]][grid.x + ddx[new_dir]] != 0) {
+					new_dir = cycle[chome[dir] - 1];
+				}
 			} else {
-				dir = cycle[chome[dir] - 1];
+				new_dir = cycle[chome[dir] - 1];
+				/* Didn't work, try the other one */
+				if (course[grid.y + ddy[new_dir]][grid.x + ddx[new_dir]] != 0) {
+					new_dir = cycle[chome[dir] + 1];
+				}
+			}
+			if (course[grid.y + ddy[new_dir]][grid.x + ddx[new_dir]] == 0) {
+				dir = new_dir;
+			} else if (must_adjust) {
+				/* Failure */
+				assert(0);
 			}
 		}
 
 		/* If the direction is diagonal, make two cardinal moves */
 		if (dir % 2) {
-			if (one_in_(2)) {
-				/* Clockwise first */
-				grid = next_grid(grid, cycle[chome[dir] - 1]);
+			/* Check cardinals to see if they're used yet */
+			struct loc grid_clock = next_grid(grid, cycle[chome[dir] - 1]);
+			struct loc grid_anti = next_grid(grid, cycle[chome[dir] + 1]);
+			if (course[grid_anti.y][grid_anti.x]) {
+				/* Anti-clockwise is used, clockwise first */
+				grid = grid_clock;
+				assert(course[grid.y][grid.x] == 0);
 				course[grid.y][grid.x] = ++count;
 				grid = next_grid(grid, cycle[chome[dir] + 1]);
+				assert(course[grid.y][grid.x] == 0);
+				course[grid.y][grid.x] = ++count;
+			} else if (course[grid_clock.y][grid_clock.x]) {
+				/* Clockwise is used, anti-clockwise first */
+				grid = grid_anti;
+				assert(course[grid.y][grid.x] == 0);
+				course[grid.y][grid.x] = ++count;
+				grid = next_grid(grid, cycle[chome[dir] - 1]);
+				assert(course[grid.y][grid.x] == 0);
+				course[grid.y][grid.x] = ++count;
+			} else if (one_in_(2)) {
+				/* Randomly clockwise first */
+				grid = next_grid(grid, cycle[chome[dir] - 1]);
+				assert(course[grid.y][grid.x] == 0);
+				course[grid.y][grid.x] = ++count;
+				grid = next_grid(grid, cycle[chome[dir] + 1]);
+				assert(course[grid.y][grid.x] == 0);
 				course[grid.y][grid.x] = ++count;
 			} else {
-				/* Anti-clockwise first */
+				/* Randomly anti-clockwise first */
 				grid = next_grid(grid, cycle[chome[dir] + 1]);
+				assert(course[grid.y][grid.x] == 0);
 				course[grid.y][grid.x] = ++count;
 				grid = next_grid(grid, cycle[chome[dir] - 1]);
+				assert(course[grid.y][grid.x] == 0);
 				course[grid.y][grid.x] = ++count;
 			}
 		} else {
 			/* Cardinal direction, single move */
 			grid = next_grid(grid, dir);
+			assert(course[grid.y][grid.x] == 0);
 			course[grid.y][grid.x] = ++count;
 		}
 	}
@@ -310,17 +359,17 @@ static int map_course(size_t side, enum direction start_dir, struct loc *start,
 }
 
 /**
- * Get the horizontal direction of travel from a grid to another grid given
+ * Get the horizontal direction from a grid to another grid given
  * their local coordinates in an array of squares of side x side grids.
  *
- * \param here is the grid the direction is relative to
- * \param from is the grid in that direction
+ * \param start is the first grid
+ * \param finish is the second grid
  * \param side is the maximum coordinate within a square of grids
  */
-static int grid_direction(struct loc here, struct loc from, int side)
+static int grid_direction(struct loc finish, struct loc start, int side)
 {
 	enum direction dir;
-	struct loc offset = loc_diff(from, here);
+	struct loc offset = loc_diff(finish, start);
 	if (ABS(offset.x) == (side - 1)) offset.x = -1;
 	if (ABS(offset.y) == (side - 1)) offset.y = -1;
 	for (dir = DIR_HOR_MIN; dir < DIR_HOR_MAX; dir++) {
@@ -499,7 +548,7 @@ static struct loc get_external_river_connect(enum direction dir,
 	}
 
 	/* Pick the grid to connect with existing external river */
-	if (min < max) {
+	if (min <= max) {
 		if (dir == DIR_N) {
 			grid = loc((min + max) / 2, 0);
 		} else if (dir == DIR_E) {
@@ -559,7 +608,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 	struct loc prev_chunk = start_adj;
 	struct loc current_chunk = loc_sum(find_course_index(CPM, 1, course), tl);
 	struct loc in_grid = loc(-1, -1), out_grid = loc(-1, -1);
-	struct loc exit_grid = loc(-1, -1);
+	struct loc entry_grid = loc(-1, -1), exit_grid = loc(-1, -1);
 	enum direction in_dir = DIR_NONE, out_dir = DIR_NONE, widen_dir = DIR_NONE;
 
 	/* Get river width */
@@ -597,7 +646,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 
 	/* Set direction for any incoming river from a set external chunk. */
 	if (river_piece_s || start_connect) {
-		in_dir = grid_direction(start, start_adj, CHUNK_SIDE);
+		in_dir = grid_direction(start_adj, start, CHUNK_SIDE);
 		assert(in_dir % 2 == 0);
 
 		if (river_piece_s) {
@@ -681,19 +730,15 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			(void) map_course(CHUNK_SIDE, in_dir, &in_grid, out_dir,
 							  &out_grid, course1);
 
-			/* Set in_grid and in_dir for next chunk */
+			/* Set entry_grid for initial chunk */
 			if (out_dir == DIR_N) {
-				in_grid = loc(finish_point, CHUNK_SIDE - 1);
-				in_dir = DIR_S;
+				entry_grid = loc(finish_point, CHUNK_SIDE - 1);
 			} else if (out_dir == DIR_E) {
-				in_grid = loc(0, finish_point);
-				in_dir = DIR_W;
+				entry_grid = loc(0, finish_point);
 			} else if (out_dir == DIR_S) {
-				in_grid = loc(finish_point, 0);
-				in_dir = DIR_N;
+				entry_grid = loc(finish_point, 0);
 			} else {
-				in_grid = loc(CHUNK_SIDE - 1, finish_point);
-				in_dir = DIR_E;
+				entry_grid = loc(CHUNK_SIDE - 1, finish_point);
 			}
 
 			/* Widen */
@@ -721,6 +766,8 @@ static void write_river_pieces(struct square_mile *sq_mile,
 	} else if (start_dir == DIR_NONE) {
 		in_grid = loc(randint0(CHUNK_SIDE / 2) + randint0(CHUNK_SIDE / 2 + 1),
 					  randint0(CHUNK_SIDE / 2) + randint0(CHUNK_SIDE / 2 + 1));
+	} else {
+		in_dir = start_dir;
 	}
 
 	/* Set direction for any outgoing river to a set external chunk. */
@@ -863,12 +910,14 @@ static void write_river_pieces(struct square_mile *sq_mile,
 
 		/* Get entry direction */
 		if (k > 1) {
-			in_dir = grid_direction(current_chunk, prev_chunk, CPM);
+			in_dir = grid_direction(prev_chunk, current_chunk, CPM);
+		} else {
+			in_grid = entry_grid;
 		}
 
 		/* Get exit direction */
 		if (k < num) {
-			out_dir1 = grid_direction(current_chunk, next_chunk, CPM);
+			out_dir1 = grid_direction(next_chunk, current_chunk, CPM);
 			out_grid = loc(-1, -1);
 		} else if (finish_dir == DIR_NONE) {
 			out_grid = loc(randint0(CHUNK_SIDE / 2) +
@@ -876,7 +925,6 @@ static void write_river_pieces(struct square_mile *sq_mile,
 						   randint0(CHUNK_SIDE / 2) +
 						   randint0(CHUNK_SIDE / 2 + 1));
 		} else {
-			out_dir1 = out_dir;
 			out_grid = exit_grid;
 		}
 
@@ -886,8 +934,8 @@ static void write_river_pieces(struct square_mile *sq_mile,
 
 		/* Write new in_grid adjacent to out_grid in out_dir1 */
 		in_grid = loc_sum(out_grid, ddgrid[out_dir1]);
-		in_grid.x %= CHUNK_SIDE;
-		in_grid.y %= CHUNK_SIDE;
+		in_grid.x = (in_grid.x + CHUNK_SIDE) % CHUNK_SIDE;
+		in_grid.y = (in_grid.y + CHUNK_SIDE) % CHUNK_SIDE;
 
 		/* Widen */
 		widen_river_course(CHUNK_SIDE, course1, widen_dir, width);
@@ -975,13 +1023,13 @@ void map_river_miles(struct square_mile *sq_mile)
 
 		/* Find the incoming and outgoing directions if any */
 		if (upstream) {
-			start_dir = grid_direction(sq_mile->map_grid,
-									   upstream->sq_mile->map_grid, MPS);
+			start_dir = grid_direction(upstream->sq_mile->map_grid,
+									   sq_mile->map_grid, MPS);
 			two_up = true;
 		}
 		if (downstream) {
-			finish_dir = grid_direction(sq_mile->map_grid,
-										downstream->sq_mile->map_grid, MPS);
+			finish_dir = grid_direction(downstream->sq_mile->map_grid,
+										sq_mile->map_grid, MPS);
 			two_down = true;
 		}
 
