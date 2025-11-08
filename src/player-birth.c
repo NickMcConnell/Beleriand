@@ -905,9 +905,26 @@ void do_cmd_accept_character(struct command *cmd)
 	player->depth = 0;
 	chunk_list[0].z_pos = 0;
 	if (OPT(player, birth_thrall)) {
+		/* Thralls start at the Gates of Angband */
 		chunk_list[0].y_pos = 839;
 		chunk_list[0].x_pos = 7926;
+	} else if (!player->house->start_y) {
+		/* No house start means start in a random place */
+		bool ok_start = false;
+		int y_pos = 0, x_pos = 0;
+		while (!ok_start) {
+			enum biome_type biome = BIOME_CAVE;
+			y_pos = randint0(MAX_Y_REGION * CPM);
+			x_pos = randint0(MAX_X_REGION * CPM);
+			biome = square_miles[y_pos / CPM][x_pos / CPM].biome;
+			ok_start = (biome == BIOME_FOREST) || (biome == BIOME_MOOR) ||
+				(biome == BIOME_PLAIN) || (biome == BIOME_TOWN) ||
+				(biome == BIOME_MOUNTAIN);
+		}
+		chunk_list[0].y_pos = y_pos;
+		chunk_list[0].x_pos = x_pos;
 	} else {
+		/* Regular house starting place */
 		chunk_list[0].y_pos = player->house->start_y;
 		chunk_list[0].x_pos = player->house->start_x;
 	}

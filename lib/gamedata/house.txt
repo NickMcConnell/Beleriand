@@ -41,7 +41,7 @@ race:Noldor
 start:11250:3530
 language:QUENYA | SINDARIN
 stats:0:1:0:0
-skills:0:0:0:0:0:0:1:0
+skills:0:0:0:0:0:0:0:1:0:0
 desc:Feanor was the greatest of the Noldor, though proud and
 desc: unyielding. He created the Silmarils which Morgoth later
 desc: stole, and he led his house across the sea to Beleriand
@@ -56,7 +56,7 @@ race:Noldor
 start:6110:2190
 language:QUENYA | SINDARIN
 stats:0:0:1:0
-skills:0:0:0:0:0:1:0:0
+skills:0:0:0:0:0:0:1:0:0:0
 desc:Fingolfin led his house into Beleriand to protect its
 desc: peoples from the shadow of Morgoth. Betrayed by the
 desc: Feanorians, they had to come through the icy wastes of the north.
@@ -71,7 +71,7 @@ race:Noldor
 start:4950:5919
 language:QUENYA | SINDARIN
 stats:0:0:0:1
-skills:0:0:0:0:1:0:0:0
+skills:0:0:0:0:0:1:0:0:0:0
 desc:Finarfin himself did not come to Beleriand, but many of his house
 desc: made the journey under Fingolfin's banner. They are the
 desc: fairest and wisest of the Noldor. All have golden hair as
@@ -85,7 +85,7 @@ race:Sindar
 start:8590:4730
 language:SINDARIN
 stats:0:0:0:1
-skills:0:0:0:0:0:0:0:1
+skills:0:0:0:0:0:0:0:0:0:1
 desc:Most Sindar dwell in the forests of Doriath. Thingol is their
 desc: king, and rules from Menegroth with Melian at his side.
 desc: Her power hides Doriath from the servants of Morgoth, allowing
@@ -99,11 +99,19 @@ race:Sindar
 start:3050:6490
 language:SINDARIN
 stats:0:1:0:0
-skills:0:1:0:0:0:0:0:0
+skills:0:1:0:0:0:0:0:0:0:0
 desc:When Thingol met with Melian under the wheeling stars, many of his folk
 desc: despaired of finding him again and journeyed to the shore, the Falas,
 desc: to set sail to Valinor. Some tarried there and dwelt in the havens on the
 desc: edge of Middle-Earth with their lord, Cirdan, the shipbuilder.
+
+name:Houseless
+alt-name:no House
+short-name:Houseless
+race:Avari
+language:AVARIN
+stats:0:0:0:0
+skills:0:0:0:0:0:0:0:0:0:0
 
 name:House of Nogrod
 alt-name:Nogrod
@@ -113,7 +121,7 @@ race:Naugrim
 start:14250:6010
 language:KHUZDUL
 stats:0:1:0:0
-skills:0:0:0:0:0:0:1:0
+skills:0:0:0:0:0:0:0:1:0:0
 desc:Nogrod, the 'Hollowbold', is a dwarven stronghold beneath the
 desc: Blue Mountains. The forges burn brightly in its deep mansions
 desc: and the smiths of Nogrod are matchless in all Beleriand.
@@ -126,7 +134,7 @@ race:Naugrim
 start:14130:5650
 language:KHUZDUL
 stats:1:0:0:0
-skills:0:0:0:0:0:1:0:0
+skills:0:0:0:0:0:0:1:0:0:0
 desc:Belegost, the 'Great Fortress', is a dwarven citadel in the
 desc: northern ranges of the Blue Mountains. Its stout warriors
 desc: are legendary for their strength and for the fearsome
@@ -140,7 +148,7 @@ race:Edain
 start:8570:1950
 language:TALISKAN
 stats:0:0:0:1
-skills:0:0:1:0:0:0:0:0
+skills:0:0:1:0:0:0:0:0:0:0
 desc:Those of Beor's house are steadfast in endurance of hardship
 desc: and sorrow, slow to tears and to laughter; their fortitude needs
 desc: no hope to sustain it. For the most part they have brown hair
@@ -154,7 +162,7 @@ race:Edain
 start:6030:4150
 language:HALETHIAN
 stats:0:1:0:0
-skills:0:0:0:1:0:0:0:0
+skills:0:0:0:1:0:0:0:0:0:0
 desc:The people of Haleth are not eager for lore, and use few words;
 desc: for they do not love great concourse of men, and many among them
 desc: delight in solitude, wandering free in the greenwoods. For the most
@@ -168,7 +176,7 @@ race:Edain
 start:5050:2810
 language:TALISKAN
 stats:1:0:0:0
-skills:1:0:0:0:0:0:0:0
+skills:1:0:0:0:0:0:0:0:0:0
 desc:Those of Hador's house are quick to wrath and laughter,
 desc: fierce in battle, generous to friend and foe, swift in resolve,
 desc: fast in loyalty and joyous in heart. For the most part they are
