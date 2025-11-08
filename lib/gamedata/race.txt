@@ -48,7 +48,7 @@
 
 name:Noldor
 stats:0:1:2:2
-skills:0:1:0:0:0:0:0:0
+skills:0:1:0:0:0:0:0:0:1:0
 history:1
 age:20:4865
 height:76:3
@@ -66,7 +66,7 @@ desc: hair is mostly dark and their eyes grey.
 
 name:Sindar
 stats:-1:1:2:1
-skills:0:1:0:0:0:0:0:0
+skills:0:1:0:0:0:0:0:0:0:0
 history:4
 age:20:4865
 height:72:3
@@ -79,9 +79,22 @@ desc: the Two Trees, but who found an echo of it in their queen,
 desc: Melian the Maiar. They are less learned and powerful than the
 desc: Noldor, but have fair voices and are gifted in song.
 
+name:Avari
+stats:-1:1:1:1
+skills:0:1:0:0:1:0:0:0:0:0
+history:6
+age:20:4865
+height:71:3
+weight:155:10
+equip:food:Fragment of Lembas:3:3
+equip:light:Wooden Torch:3:4
+desc:The Avari are the 'Dark-elves' who never refused the great journey to
+desc: Valinor. They are more rustic and unlearned the elves of the journey,
+desc: but are practiced at surviving in the wild.
+
 name:Naugrim
 stats:0:-1:3:1
-skills:0:-1:0:0:0:0:1:0
+skills:0:-1:0:0:0:0:0:1:0:0
 history:16
 age:35:180
 height:50:3
@@ -98,7 +111,7 @@ desc: named the 'Naugrim' by the Sindar, meaning 'the stunted people'.
 
 name:Edain
 stats:0:0:0:0
-skills:0:0:0:0:0:0:0:0
+skills:0:0:0:0:0:0:0:0:0:0
 history:21
 age:15:45
 height:72:3

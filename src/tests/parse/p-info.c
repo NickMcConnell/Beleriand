@@ -57,7 +57,7 @@ static int test_missing_record_header0(void *state) {
 	null(pr);
 	r = parser_parse(p, "stats:0:1:2:2");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
-	r = parser_parse(p, "skills:0:1:0:0:0:0:0:0");
+	r = parser_parse(p, "skills:0:1:0:0:0:0:0:0:0:0");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "history:1");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
@@ -102,7 +102,7 @@ static int test_stats0(void *state) {
 }
 
 static int test_skills0(void *state) {
-	enum parser_error r = parser_parse(state, "skills:1:2:-1:0:1:0:-1:0");
+	enum parser_error r = parser_parse(state, "skills:1:2:-1:0:0:1:0:-1:0:0");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -112,9 +112,11 @@ static int test_skills0(void *state) {
 	eq(pr->skill_adj[SKILL_ARCHERY], 2);
 	eq(pr->skill_adj[SKILL_EVASION], -1);
 	eq(pr->skill_adj[SKILL_STEALTH], 0);
+	eq(pr->skill_adj[SKILL_SURVIVAL], 0);
 	eq(pr->skill_adj[SKILL_PERCEPTION], 1);
 	eq(pr->skill_adj[SKILL_WILL], 0);
 	eq(pr->skill_adj[SKILL_SMITHING], -1);
+	eq(pr->skill_adj[SKILL_SPEECH], 0);
 	eq(pr->skill_adj[SKILL_SONG], 0);
 	ok;
 }
@@ -263,7 +265,7 @@ static int test_equip_bad0(void *state) {
 static int test_desc0(void *state) {
 	struct parser *p = (struct parser*) state;
 	enum parser_error r = parser_parse(p,
-		"desc: The dwarves are stone-hard and stubborn, ");
+		"desc:The dwarves are stone-hard and stubborn, ");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);

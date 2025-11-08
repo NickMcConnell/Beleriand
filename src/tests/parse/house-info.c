@@ -10,9 +10,10 @@
 /* Set up a minimal set of races to test race lookups. */
 static char dummy_race_name_1[16] = "Noldor";
 static char dummy_race_name_2[16] = "Sindar";
-static char dummy_race_name_3[16] = "Naugrim";
-static char dummy_race_name_4[16] = "Edain";
-static struct player_race dummy_races[4];
+static char dummy_race_name_3[16] = "Avari";
+static char dummy_race_name_4[16] = "Naugrim";
+static char dummy_race_name_5[16] = "Edain";
+static struct player_race dummy_races[5];
 
 int setup_tests(void **state) {
 	*state = house_parser.init();
@@ -23,7 +24,9 @@ int setup_tests(void **state) {
 	dummy_races[2].name = dummy_race_name_3;
 	dummy_races[2].next = &dummy_races[3];
 	dummy_races[3].name = dummy_race_name_4;
-	dummy_races[3].next = NULL;
+	dummy_races[3].next = &dummy_races[4];
+	dummy_races[4].name = dummy_race_name_5;
+	dummy_races[4].next = NULL;
 	races = dummy_races;
 	return !*state;
 }
@@ -52,7 +55,7 @@ static int test_missing_header_record0(void *state) {
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "stats:0:1:0:0");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
-	r = parser_parse(p, "skills:0:0:0:0:0:0:1:0");
+	r = parser_parse(p, "skills:0:0:0:0:0:0:0:1:0:0");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "player-flags:BLADE_PROFICIENCY");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
@@ -177,7 +180,7 @@ static int test_stats0(void *state) {
 
 static int test_skills0(void *state) {
 	struct parser *p = (struct parser*) state;
-	enum parser_error r = parser_parse(p, "skills:1:2:-1:-2:3:4:-4:-3");
+	enum parser_error r = parser_parse(p, "skills:1:2:-1:-2:1:3:4:-4:5:-3");
 	struct player_house *h;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -187,9 +190,11 @@ static int test_skills0(void *state) {
 	eq(h->skill_adj[SKILL_ARCHERY], 2);
 	eq(h->skill_adj[SKILL_EVASION], -1);
 	eq(h->skill_adj[SKILL_STEALTH], -2);
+	eq(h->skill_adj[SKILL_SURVIVAL], 1);
 	eq(h->skill_adj[SKILL_PERCEPTION], 3);
 	eq(h->skill_adj[SKILL_WILL], 4);
 	eq(h->skill_adj[SKILL_SMITHING], -4);
+	eq(h->skill_adj[SKILL_SPEECH], 5);
 	eq(h->skill_adj[SKILL_SONG], -3);
 	ok;
 }
@@ -257,7 +262,7 @@ static int test_desc0(void *state) {
 	h = (struct player_house*) parser_priv(p);
 	notnull(h);
 	notnull(h->desc);
-	require(streq(h->desc, "Fingolfin led his house into Beleriand"
+	require(streq(h->desc, "Fingolfin led his house into Beleriand "
 		"to protect its peoples from the shadow of Morgoth."));
 	ok;
 }
@@ -269,7 +274,7 @@ static int test_complete0(void *state) {
 		"short-name:Falathrim",
 		"race:Sindar",
 		"stats:0:1:0:0",
-		"skills:0:1:0:0:0:0:0:0",
+		"skills:0:1:0:0:0:0:0:0:0:0",
 		"desc:When Thingol met with Melian under the wheeling stars, ",
 		"desc:many of his folk despaired of finding him again and ",
 		"desc:journeyed to the shore, the Falas, to set sail to ",
@@ -295,7 +300,7 @@ static int test_complete0(void *state) {
 	notnull(h->short_name);
 	require(streq(h->short_name, "Falathrim"));
 	notnull(h->desc);
-	require(streq(h->desc, "When Thingol met with Meial under the wheeling "
+	require(streq(h->desc, "When Thingol met with Melian under the wheeling "
 		"stars, many of his folk despaired of finding him again and "
 		"journeyed to the shore, the Falas, to set sail to Valinor. "
 		"Some tarried there and dwelt in the havens on the edge of "

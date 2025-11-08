@@ -24,6 +24,7 @@
 #
 #  Noldor         -->  1 -->  2 -->  3 --> 50 --> 51 --> 52
 #  Sindar         -->  4 -->  5 --> 54 --> 55 --> 56
+#  Avari          -->  6 -->  7 --> 54 --> 55 --> 56
 #  Edain          --> 21 --> 22 --> 23 --> 25 --> 26 --> 27 --> 28
 #  Naugrim        --> 16 --> 17 --> 18 --> 57 --> 58 --> 59 --> 60 --> 61
 #
@@ -82,6 +83,29 @@ chart:5:54:99
 phrase: of a Sindar prince.
 chart:5:54:100
 phrase: of a Sindar king.
+
+
+# Avari history
+
+chart:6:7:5
+phrase:You are one of several children
+chart:6:7:40
+phrase:You are one of two children
+chart:6:7:95
+phrase:You are the only child
+chart:6:54:100
+phrase:You awoke on the shores of lake Cuivienen.
+
+chart:7:54:15
+phrase: of an Avarin archer.
+chart:7:54:50
+phrase: of an Avarin wanderer.
+chart:7:54:60
+phrase: of an Avarin trader.
+chart:7:54:80
+phrase: of an Avarin bard.
+chart:7:54:100
+phrase: of an Avarin leader.
 
 
 # Naugrim History
@@ -215,7 +239,7 @@ chart:52:0:100
 phrase: silver hair, and a fair complexion.
 
 
-# Sindar description
+# Sindar/Avari description
 
 chart:54:55:85
 phrase: You have light grey eyes,
