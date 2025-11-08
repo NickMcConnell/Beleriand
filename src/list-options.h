@@ -103,4 +103,6 @@ OP(score_timestop,        "Score: Don't allow monsters to move",
 SCORE, false)
 OP(birth_no_artifacts,    "Restrict creation of artifacts",
 BIRTH, false)
+OP(birth_thrall,          "Start in Angband",
+BIRTH, false)
 
