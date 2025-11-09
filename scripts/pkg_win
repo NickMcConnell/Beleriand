@@ -39,6 +39,7 @@ mkdir docs/_static
 mkdir docs/hacking
 mkdir lib
 mkdir lib/gamedata
+mkdir lib/gamedata/rivers
 mkdir lib/customize
 mkdir lib/help
 mkdir lib/screens
