@@ -177,8 +177,11 @@ ADD_LIBRARY(OurCoreLib OBJECT
         src/game-input.c
         src/game-world.c
         src/gen-cave.c
+        src/gen-chunk.c
         src/generate.c
+        src/gen-river.c
         src/gen-room.c
+        src/gen-surface.c
         src/gen-util.c
         src/grafmode.c
         src/guid.c
@@ -764,17 +767,15 @@ SET(ANGBAND_TEST_CASE_SOURCES
     parse/objprop.c
     parse/p-info.c
     parse/pain.c
-    parse/parse.c
     parse/partrap.c
     parse/proj.c
     parse/ptimed.c
     parse/pursuit.c
     parse/r-info.c
-    parse/sex-info.c
     parse/slay.c
     parse/ui_knowledge.c
     parse/v-info.c
-    parse/world.c
+    parse/warning.c
     parse/z-info.c
     player/birth.c
     player/calc-inventory.c
