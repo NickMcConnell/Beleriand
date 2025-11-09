@@ -37,7 +37,6 @@
 
 uint16_t chunk_max = 1;				/* Number of allocated chunks */
 uint16_t chunk_cnt = 0;				/* Number of live chunks */
-uint32_t gen_loc_cnt = 0;			/* Number of actual generated locations */
 struct chunk_ref *chunk_list;     /**< list of pointers refs to saved chunks */
 
 
