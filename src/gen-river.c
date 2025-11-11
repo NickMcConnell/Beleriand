@@ -926,6 +926,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 						   randint0(CHUNK_SIDE / 2 + 1));
 		} else {
 			out_grid = exit_grid;
+			out_dir1 = finish_dir;
 		}
 
 		/* Map a course across the chunk */
