@@ -5,22 +5,24 @@
 
 #include "mon-attack.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "monster.h"
 #include "option.h"
 #include "player-timed.h"
 #include "ui-input.h"
 
-struct monster *monsters;
-
 int setup_tests(void **state) {
 	struct monster_race *r = &test_r_human;
-	struct monster *m = mem_zalloc(sizeof *m);
+	struct monster *m = NULL;
 	int y, x;
 	textui_input_init();
 	z_info = mem_zalloc(sizeof(struct angband_constants));
 	z_info->mon_blows_max = 2;
+	z_info->monster_max = 2;
 	projections = test_projections;
 	l_list = &test_lore;
+	monsters_init();
+	m = &monsters[1];
 	m->race = r;
 	m->midx = 1;
 	r_info = r;
@@ -34,7 +36,6 @@ int setup_tests(void **state) {
 			cave->squares[y][x].info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
 		}
 	}
-	monsters = mem_zalloc(2 *sizeof(struct monster));
 
 	rand_fix(100);
 	return 0;
@@ -43,7 +44,7 @@ int setup_tests(void **state) {
 int teardown_tests(void *state) {
 	struct monster *m = state;
 	int y, x;
-	mem_free(monsters);
+	wipe_mon_list();
 	for (y = 0; y < cave->height; y++) {
 		for (x = 0; x < cave->width; x++) {
 			mem_free(cave->squares[y][x].info);
@@ -51,7 +52,6 @@ int teardown_tests(void *state) {
 		mem_free(cave->squares[y]);
 	}
 	mem_free(cave->squares);
-	mem_free(m);
 	mem_free(z_info);
 	return 0;
 }

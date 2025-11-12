@@ -647,7 +647,7 @@ void wipe_mon_list(void)
 	target_set_monster(0);
 
 	/* Hack -- no more tracking */
-	health_track(player->upkeep, 0);
+	if (player)	health_track(player->upkeep, 0);
 
 	mem_free(monster_groups);
 	mem_free(monsters);
