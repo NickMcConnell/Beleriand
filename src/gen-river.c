@@ -659,7 +659,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			int finish_point = randint0(CHUNK_SIDE);
 			int lower, upper;
 			bool reload;
-			struct gen_loc *location;
+			struct gen_loc *location = NULL;
 
 			/* Allocate in-chunk course array */
 			uint16_t **course1 = mem_zalloc(CHUNK_SIDE * sizeof(uint16_t*));
@@ -785,7 +785,7 @@ static void write_river_pieces(struct square_mile *sq_mile,
 			int finish_point = randint0(CHUNK_SIDE);
 			int lower, upper;
 			bool reload;
-			struct gen_loc *location;
+			struct gen_loc *location = NULL;
 
 			/* Allocate in-chunk course array */
 			uint16_t **course1 = mem_zalloc(CHUNK_SIDE * sizeof(uint16_t*));

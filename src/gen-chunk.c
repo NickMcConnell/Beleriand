@@ -1374,7 +1374,7 @@ static void arena_realign(struct player *p, int y_offset, int x_offset)
 	struct chunk *p_new = chunk_new(ARENA_SIDE, ARENA_SIDE);
 	struct loc src_top_left;
 	struct loc dest_top_left;
-	int height, width;
+	int height = 0, width = 0;
 
 	/* Get the direction of the new centre chunk */
 	new_dir = chunk_offset_to_adjacent(0, y_offset, x_offset);

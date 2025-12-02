@@ -1796,7 +1796,7 @@ static int build_room_circuit(struct chunk *c, struct loc start,
 	int num_rooms = dun->profile->n_room_profiles;
 	struct room_profile profile;
 	struct loc centre = loc(ARENA_SIDE / 2, ARENA_SIDE / 2);
-	struct point_set *circle;
+	struct point_set *circle = NULL;
 	struct loc *grids;
 	bool start_wall = false;
 	bool left_start = false;

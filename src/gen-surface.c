@@ -179,7 +179,7 @@ static struct point_set *match_edge_point_set(struct chunk *c,
 											  struct loc top_left,
 											  int gen_loc_idx, int dir)
 {
-	int y, x, count;
+	int y, x, count = 0;
 	struct point_set *new = point_set_new(CHUNK_SIDE * CHUNK_SIDE);
 	struct connector *join = gen_loc_list[gen_loc_idx].join;
 
