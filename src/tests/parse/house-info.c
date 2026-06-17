@@ -300,11 +300,12 @@ static int test_complete0(void *state) {
 	notnull(h->short_name);
 	require(streq(h->short_name, "Falathrim"));
 	notnull(h->desc);
-	require(streq(h->desc, "When Thingol met with Melian under the wheeling "
-		"stars, many of his folk despaired of finding him again and "
-		"journeyed to the shore, the Falas, to set sail to Valinor. "
-		"Some tarried there and dwelt in the havens on the edge of "
-		"Middle-Earth with their lord, Cirdan, the shipbuilder."));
+	require(streq(h->desc, "When Thingol met with Melian under the "
+		"wheeling stars, many of his folk despaired of finding him "
+		"again and journeyed to the shore, the Falas, to set sail to "
+		"Valinor. Some tarried there and dwelt in the havens on the "
+		"edge of Middle-Earth with their lord, Cirdan, the "
+		"shipbuilder."));
 	for (i = 0; i < STAT_MAX; ++i) {
 		eq(h->stat_adj[i], (i == STAT_DEX) ? 1 : 0);
 	}
