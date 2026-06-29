@@ -641,14 +641,14 @@ static enum parser_error parse_vault_rarity(struct parser *p) {
 
 static enum parser_error parse_vault_flags(struct parser *p) {
 	struct vault *v = parser_priv(p);
-	char *s, *st;
+	char *s, *st, *saveptr = NULL;
 
 	if (!v)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	s = string_make(parser_getstr(p, "flags"));
-	st = strtok(s, " |");
+	st = strtok_r(s, " |", &saveptr);
 	while (st && !grab_flag(v->flags, ROOMF_SIZE, room_flags, st)) {
-		st = strtok(NULL, " |");
+		st = strtok_r(NULL, " |", &saveptr);
 	}
 	mem_free(s);
 
@@ -843,14 +843,14 @@ static enum parser_error parse_settlement_rarity(struct parser *p) {
 
 static enum parser_error parse_settlement_flags(struct parser *p) {
 	struct settlement *set = parser_priv(p);
-	char *s, *st;
+	char *s, *st, *saveptr = NULL;
 
 	if (!set)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	s = string_make(parser_getstr(p, "flags"));
-	st = strtok(s, " |");
+	st = strtok_r(s, " |", &saveptr);
 	while (st && !grab_flag(set->flags, SETTF_SIZE, settlement_flags, st)) {
-		st = strtok(NULL, " |");
+		st = strtok_r(NULL, " |", &saveptr);
 	}
 	mem_free(s);
 
