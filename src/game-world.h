@@ -81,7 +81,7 @@ enum {
  * Codes for the different surface biomes
  */
 enum biome_type {
-	#define BIOME(a, b) BIOME_##a = b,
+#define BIOME(a, b, c) BIOME_##a = c,
 	#include "list-biomes.h"
 	#undef BIOME
 };
