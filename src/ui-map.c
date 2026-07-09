@@ -959,6 +959,141 @@ void prt_map_zoomed(struct chunk *chunk, struct chunk *p_chunk)
 }
 
 /**
+ * Side length of the square of square mile grids being aggregated for the
+ * regional map.  Needs to be an odd number.
+ */
+#define REGIONAL_MAP_SCALE 3
+
+/**
+ * Colours for the different surface biomes
+ */
+static struct biome_colours {
+	enum biome_type biome;
+	int attr;
+} biome_colours[] = {
+	#define BIOME(a, b, c) {c, b},
+	#include "list-biomes.h"
+	#undef BIOME
+};
+
+static int get_biome_colour(enum biome_type biome)
+{
+	unsigned int i;
+	for (i = 0; i < N_ELEMENTS(biome_colours); i++) {
+		if (biome == biome_colours[i].biome) return biome_colours[i].attr;
+	}
+	return 0;
+}
+
+/**
+ * Pick a representative for a square of square mile grids from region.txt
+ */
+static enum biome_type regional_map_grid(int x_centre, int y_centre)
+{
+	int y, x, half = REGIONAL_MAP_SCALE / 2;
+
+	/* Use the fact that enum biome_type takes values less than 128 */
+	enum biome_type *counts = mem_zalloc(128 * sizeof(enum biome_type));
+	enum biome_type biome, best = BIOME_ALL;
+	unsigned int max = 0;
+
+	/* Count the numbers of each biome */
+	for (y = -half; y <= half; y++) {
+		for (x = -half; x <= half; x++) {
+			int y_region = y_centre + y;
+			int x_region = x_centre + x;
+
+			/* Check bounds */
+			if ((y_region < 0) || (y_region >= MAX_Y_REGION)) return 0;
+			if ((x_region < 0) || (x_region >= MAX_X_REGION)) return 0;
+
+			/* Count */
+			biome = square_miles[y_region][x_region].biome;
+			counts[biome]++;
+		}
+	}
+
+	/* Pick the biggest (if more than one, earliest in biome list wins) */
+	for (y = 0; y < 128; y++) {
+		if (counts[y] > max) {
+			max = counts[y];
+			best = (enum biome_type) y;
+		}
+	}
+	assert(max > 0);
+	mem_free(counts);
+	return best;
+}
+
+/**
+ * Display a map of the local region of the surface showing aggregated
+ * biome types
+ */
+static void regional_map(term *t)
+{
+	int half_height = (t->hgt - 3) / 2;
+	int half_width = (t->wid - 3) / 2;
+	int y0 = half_height * REGIONAL_MAP_SCALE;
+	int x0 = half_width * REGIONAL_MAP_SCALE;
+	int y, x, i;
+
+	struct chunk_ref *ref = &chunk_list[player->place];
+
+	struct loc *regions = mem_zalloc(sizeof(struct loc) * z_info->region_max);
+
+	for (y = -y0; y <= y0; y += REGIONAL_MAP_SCALE) {
+		int y_map = y + ref->y_pos / CPM;
+		int y_scr = y / REGIONAL_MAP_SCALE + half_height + 1;
+		int incr = 0, space = 0;
+		for (x = -x0; x <= x0; x += REGIONAL_MAP_SCALE) {
+			int x_map = x + ref->x_pos / CPM;
+			int x_scr = x / REGIONAL_MAP_SCALE + half_width + 1;
+			int region = find_region(y_map * CPM, x_map * CPM);
+			int attr = COLOUR_WHITE;
+			enum biome_type biome = regional_map_grid(x_map, y_map);
+			wchar_t c = (wchar_t) biome;
+			if (!c) continue;
+			if ((x == 0) && (y == 0)) {
+				c = (wchar_t) '@';
+			} else {
+				attr = get_biome_colour(biome);
+			}
+
+			/* Print biome symbol */
+			Term_queue_char(t, x_scr, y_scr, attr, c, 0, 0);
+
+			/* Manage spacing for region names */
+			if (space) {
+				space--;
+			} else {
+				incr = 0;
+			}
+
+			/* Record region name if not done yet */
+			if (loc_eq(regions[region], loc(0, 0))) {
+				regions[region] = loc(x_scr, y_scr + incr);
+
+				/* Manage spacing for region names */
+				incr++;
+				space = 20;
+			}
+		}
+	}
+
+	/* Add region names */
+	for (i = 0; i < z_info->region_max; i++) {
+		int len = 0;
+		if (!loc_eq(regions[i], loc(0, 0))) {
+			char *name = region_info[i].name;
+			Term_gotoxy(regions[i].x, regions[i].y);
+			len = MIN((int) strlen(name), t->wid - regions[i].x);
+			Term_addstr(len, COLOUR_WHITE, name);
+		}
+	}
+}
+
+
+/**
  * Display a "small-scale" map of the dungeon in the active Term.
  *
  * Note that this function must "disable" the special lighting effects so
@@ -1134,7 +1269,11 @@ void do_cmd_view_map(void)
 	tile_height = 1;
 
 	/* Display the map */
-	display_map(&cy, &cx);
+	if (outside()) {
+		regional_map(Term);
+	} else {
+		display_map(&cy, &cx);
+	}
 
 	/* Show the prompt */
 	put_str(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
