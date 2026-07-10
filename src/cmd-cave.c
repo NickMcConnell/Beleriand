@@ -2051,6 +2051,24 @@ void do_cmd_pathfind(struct command *cmd)
 }
 
 /**
+ * Attempt fast travel
+ */
+void do_cmd_travel(struct command *cmd)
+{
+	int dir, dist;
+
+	/* Get arguments */
+	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
+		return;
+
+	if (cmd_get_arg_number(cmd, "miles", &dist) != CMD_OK) {
+		dist = get_quantity("Travel how many miles (max 100)? ", 100);
+		cmd_set_arg_number(cmd, "miles", dist);
+	}
+
+}
+
+/**
  * Stop, start or change a song
  */
 void do_cmd_change_song(struct command *cmd)

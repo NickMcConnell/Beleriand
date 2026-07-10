@@ -64,7 +64,7 @@ combination and does not pass it on):
   !    Speak                           ^a   (special - debug command)
   @    Character description           ^b   (hjkl - bash a door)
   #    Check time                      ^c   (special - break)
-  $    -                               ^d   -
+  $    Fast travel                     ^d   -
   %    -                               ^e   Toggle inven/equip window
   ^    (special - control key)         ^f   Fuel your light source
   &    -                               ^g   Do autopickup

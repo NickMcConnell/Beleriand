@@ -66,6 +66,7 @@ typedef enum cmd_code {
 	CMD_WALK,
 	CMD_JUMP,
 	CMD_PATHFIND,
+	CMD_TRAVEL,
 
 	CMD_INSCRIBE,
 	CMD_UNINSCRIBE,

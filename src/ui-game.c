@@ -145,6 +145,7 @@ struct cmd_info cmd_action[] =
 	{ "Dig a tunnel", { 'T' }, CMD_TUNNEL, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Go up staircase", {'<' }, CMD_GO_UP, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Go down staircase", { '>' }, CMD_GO_DOWN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Start fast travel", { '$' }, CMD_TRAVEL, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Open a door or a chest", { 'o' }, CMD_OPEN, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Close a door", { 'c' }, CMD_CLOSE, NULL, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Bash a door", { 'b', KTRL('B'), 'B', KTRL('B') }, CMD_BASH, NULL, NULL, 0, NULL, NULL, NULL, 0 },

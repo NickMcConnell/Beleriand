@@ -42,6 +42,7 @@ void do_cmd_walk(struct command *cmd);
 void do_cmd_jump(struct command *cmd);
 void do_cmd_run(struct command *cmd);
 void do_cmd_pathfind(struct command *cmd);
+void do_cmd_travel(struct command *cmd);
 void do_cmd_change_song(struct command *cmd);
 void do_cmd_speak(struct command *cmd);
 void do_cmd_rest(struct command *cmd);
