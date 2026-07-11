@@ -2051,11 +2051,98 @@ void do_cmd_pathfind(struct command *cmd)
 }
 
 /**
+ * Transport the player to the fast-travelled-to place
+ */
+void do_cmd_travel_aux(int y_pos, int x_pos)
+{
+	int i, y, x;
+	struct chunk *chunk;
+	int centre;
+
+	character_dungeon = false;
+
+	/* Save off the old chunks */
+	centre = chunk_get_centre();
+	for (y = -ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
+		for (x = -ARENA_CHUNKS / 2; x < ARENA_CHUNKS / 2; x++) {
+			struct chunk_ref ref = chunk_list[centre];
+
+			/* Get the location data */
+			chunk_offset_data(&ref, 0, y, x);
+			ref.z_pos = 0;
+
+			/* Store it */
+			(void) chunk_store(y + ARENA_CHUNKS / 2, x + ARENA_CHUNKS / 2,
+							   ref.region, ref.z_pos, ref.y_pos, ref.x_pos,
+							   ref.gen_loc_idx, true);
+		}
+	}
+
+	/* Make an arena to build into */
+	chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
+
+	/* Set the chunk */
+	player->last_place = player->place;
+
+	for (y = -ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
+		for (x = -ARENA_CHUNKS / 2; x <= ARENA_CHUNKS / 2; x++) {
+			struct chunk_ref ref = { 0 };
+			int idx;
+
+			/* Get the location data */
+			ref.z_pos = 0;
+			ref.y_pos = y_pos;
+			ref.x_pos = x_pos;
+			chunk_offset_data(&ref, 0, y, x);
+
+			/* Generate a new chunk */
+			idx = chunk_fill(chunk, &ref, y + ARENA_CHUNKS / 2,
+							 x + ARENA_CHUNKS / 2);
+			if ((y == 0) && (x == 0)) {
+				square_set_feat(chunk, loc(CHUNK_SIDE / 2, CHUNK_SIDE / 2),
+								FEAT_ROAD);
+				player->place = idx;
+			}
+		}
+	}
+	player_place(chunk, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+	cave = chunk;
+
+	/* Allocate new known level */
+	player->cave = chunk_new(chunk->height, chunk->width);
+	player->cave->objects = mem_realloc(player->cave->objects,
+										(chunk->obj_max + 1)
+										* sizeof(struct object*));
+	player->cave->obj_max = chunk->obj_max;
+	for (i = 0; i <= player->cave->obj_max; i++) {
+		player->cave->objects[i] = NULL;
+	}
+
+	/* Save the game when we arrive on the new level. */
+	player->upkeep->autosave = true;
+
+	/*
+	 * Because of the structure of the game loop, need to take some energy,
+	 * or the change level request will not be processed until after
+	 * performing another action that takes energy.
+	 */
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Apply illumination */
+	illuminate(cave);
+
+	/* The dungeon is ready */
+	character_dungeon = true;
+}
+
+/**
  * Attempt fast travel
  */
 void do_cmd_travel(struct command *cmd)
 {
 	int dir, dist;
+	struct chunk_ref *ref = &chunk_list[player->place];
+	int y_pos = ref->y_pos, x_pos = ref->x_pos;
 
 	/* Get arguments */
 	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
@@ -2066,6 +2153,29 @@ void do_cmd_travel(struct command *cmd)
 		cmd_set_arg_number(cmd, "miles", dist);
 	}
 
+	switch (dir) {
+		case DIR_N: {
+			y_pos = MAX(0, y_pos - CPM * dist);
+			break;
+		}
+		case DIR_E: {
+			x_pos = MIN(CPM * MAX_X_REGION - 2, x_pos + CPM * dist);
+			break;
+		}
+		case DIR_S: {
+			y_pos = MIN(CPM * MAX_Y_REGION - 2, y_pos + CPM * dist);
+			break;
+		}
+		case DIR_W: {
+			x_pos = MAX(0, x_pos - CPM * dist);
+			break;
+		}
+		default: {
+			msg("Please choose a cardinal direction.");
+		}
+	}
+
+	do_cmd_travel_aux(y_pos, x_pos);
 }
 
 /**
