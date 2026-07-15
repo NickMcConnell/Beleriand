@@ -1142,8 +1142,7 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 {
 	int x_pos = 0, y_pos = 0, z_pos = 0, choose_gen = 0;
 	char prompt[80], s[80];
-	int i, y, x;
-	struct chunk *chunk;
+	int y, x;
 	int centre;
 
 	/* Ask for x */
@@ -1167,12 +1166,19 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	//B for now
 	z_pos = 0;
 
+	/* If it's the same place, do nothing */
+	if ((x_pos == chunk_list[player->place].x_pos) &&
+		(y_pos == chunk_list[player->place].y_pos) &&
+		(z_pos == chunk_list[player->place].z_pos)) {
+		return;
+	}
+
 	character_dungeon = false;
 
 	/* Save off the old chunks */
 	centre = chunk_get_centre();
 	for (y = -ARENA_CHUNKS / 2; y <= ARENA_CHUNKS / 2; y++) {
-		for (x = -ARENA_CHUNKS / 2; x < ARENA_CHUNKS / 2; x++) {
+		for (x = -ARENA_CHUNKS / 2; x <= ARENA_CHUNKS / 2; x++) {
 			struct chunk_ref ref = chunk_list[centre];
 
 			/* Get the location data */
@@ -1187,7 +1193,10 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 	}
 
 	/* Make an arena to build into */
-	chunk = chunk_new(ARENA_SIDE, ARENA_SIDE);
+	chunk_wipe(cave);
+	chunk_wipe(player->cave);
+	cave = chunk_new(ARENA_SIDE, ARENA_SIDE);
+	player->cave = chunk_new(ARENA_SIDE, ARENA_SIDE);
 
 	/* Set the chunk */
 	player->last_place = player->place;
@@ -1203,28 +1212,26 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 			ref.x_pos = x_pos;
 			chunk_offset_data(&ref, 0, y, x);
 
-			/* Generate a new chunk */
-			idx = chunk_fill(chunk, &ref, y + ARENA_CHUNKS / 2,
-							 x + ARENA_CHUNKS / 2);
+			/* Check if the chunk exists, and reload or generate a new one */
+			idx = chunk_find(ref);
+			if (idx < MAX_CHUNKS) {
+				/* Reload the chunk */
+				assert(chunk_list[idx].chunk);
+				chunk_read(player, idx, y + ARENA_CHUNKS / 2,
+						   x + ARENA_CHUNKS / 2);
+			} else {
+				/* Generate a new chunk */
+				idx = chunk_fill(cave, &ref, y + ARENA_CHUNKS / 2,
+								 x + ARENA_CHUNKS / 2);
+			}
 			if ((y == 0) && (x == 0)) {
-				square_set_feat(chunk, loc(CHUNK_SIDE / 2, CHUNK_SIDE / 2),
+				square_set_feat(cave, loc(ARENA_SIDE / 2, ARENA_SIDE / 2),
 								FEAT_ROAD);
 				player->place = idx;
 			}
 		}
 	}
-	player_place(chunk, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
-	cave = chunk;
-
-	/* Allocate new known level */
-	player->cave = chunk_new(chunk->height, chunk->width);
-	player->cave->objects = mem_realloc(player->cave->objects,
-										(chunk->obj_max + 1)
-										* sizeof(struct object*));
-	player->cave->obj_max = chunk->obj_max;
-	for (i = 0; i <= player->cave->obj_max; i++) {
-		player->cave->objects[i] = NULL;
-	}
+	player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
 
 	if (z_pos > 0 && cmd_get_arg_choice(cmd, "choice", &choose_gen) != CMD_OK) {
 		choose_gen = (get_check("Choose cave profile? ")) ? 1 : 0;
@@ -1250,6 +1257,7 @@ void do_cmd_wiz_jump_level(struct command *cmd)
 
 	/* Apply illumination */
 	if (!z_pos) illuminate(cave);
+	set_monster_place_current();
 
 	/* The dungeon is ready */
 	character_dungeon = true;
