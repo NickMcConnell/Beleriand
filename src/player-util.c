@@ -295,18 +295,103 @@ void player_digest(struct player *p)
 	}
 }
 
+static bool one_water_grid = false;
 
 /**
  * Check for deep water during fast travel.
+ *
+ * This in fact checks for actual deep water if there is a live chunk in the
+ * chunk list, and for two successive water grids if there is only a generated
+ * location.  If there is no generated location, there should be no river as
+ * player_travel_pass_check() will have mapped the square mile and generated
+ * any locations with pieces of river in them..
  */
 static bool player_travel_water_check(struct player *p, int y_pos, int x_pos,
 									  struct loc grid)
 {
+	struct chunk_ref ref = { 0 };
+	int idx, diff = (ARENA_CHUNKS / 2) * CHUNK_SIDE;
+	struct loc test = loc_diff(grid, loc(diff, diff));
+	int lower, upper;
+	bool find;
+	struct gen_loc *location;
+
+	/* If the player can swim we're fine */
+	if (player_active_ability(p, "Swimming")) return false;
+
+	/* Get the location data, find the chunk if any */
+	ref.z_pos = 0;
+	ref.y_pos = y_pos;
+	ref.x_pos = x_pos;
+	idx = chunk_find(ref);
+
+	/* Check for deep water */
+	if (idx < MAX_CHUNKS) {
+		struct chunk *chunk = chunk_list[idx].chunk;
+		if (chunk) {
+			return (square_isswim(chunk, test)) ? true : false;
+		} else {
+			return (square_isswim(cave, grid)) ? true : false;
+		}
+	}
+
+	/* Get the generated location, if none we are fine */
+	find = gen_loc_find(ref.x_pos, ref.y_pos, ref.z_pos, &lower, &upper);
+	if (!find) return false;
+
+	/* Look at any river grids, stop for deep water if we get two in a row */
+	location = &gen_loc_list[upper];
+	if (location->river_piece) {
+		struct river_grid *rgrid = location->river_piece->grids;
+		while (rgrid) {
+			/* Check for water */
+			if (loc_eq(rgrid->grid, test)) {
+				if (one_water_grid) {
+					/* Two in a row, assume deep water */
+					return true;
+				} else {
+					/* First one, set the variable */
+					one_water_grid = true;
+					return false;
+				}
+			}
+			rgrid = rgrid->next;
+		}
+
+		/* Non-water grid, so reset*/
+		one_water_grid = false;
+	}
+
+	/* No obstacle */
+	return false;
+}
+
+/**
+ * Check for impassibility during fast travel.
+ */
+static bool player_travel_pass_check(struct player *p, int y_pos, int x_pos)
+{
+	struct square_mile *sq_mile = &square_miles[y_pos / CPM][x_pos / CPM];
+	struct world_region *region = &region_info[find_region(y_pos, x_pos)];
+
+	/* Region is too dangerous */
+	if (p->state.skill_use[SKILL_SURVIVAL] < region->danger) return true;
+
+	/* Region is impassable */
+	if (sq_mile->biome == BIOME_IMPASS) return true;
+
+	/* No rivers means fine */
+	if (!sq_mile->river_miles) return false;
+
+	/* If rivers, map them */
+	map_river_miles(sq_mile);
 	return false;
 }
 
 /**
  * Deal with the details of a single step of fast travel.
+ *
+ * Note that grid points to a square in the central chunk of the playing arena.
  */
 static bool player_travel_step(struct player *p, int dir, int *y_pos,
 							   int *x_pos, struct loc *grid)
@@ -331,8 +416,8 @@ static bool player_travel_step(struct player *p, int dir, int *y_pos,
 			if (!((*y_pos + 1) % CPM)) {
 				/* Stop if impassable */
 				biome = square_miles[(*y_pos) / CPM][(*x_pos) / CPM].biome;
-				if ((*y_pos < 0) || (biome == BIOME_IMPASS) ||
-					(player_travel_water_check(p, *y_pos, *x_pos, *grid))) {
+				if ((*y_pos < 0) ||
+					player_travel_pass_check(p, *y_pos, *x_pos)) {
 					/* Backtrack, stop travel */
 					grid->y++;
 					grid->y -= CHUNK_SIDE;
@@ -358,10 +443,10 @@ static bool player_travel_step(struct player *p, int dir, int *y_pos,
 
 			/* Check for square mile change */
 			if (!((*x_pos) % CPM)) {
-				/* Stop if impassable or deep water */
+				/* Stop if impassable */
 				biome = square_miles[(*y_pos) / CPM][(*x_pos) / CPM].biome;
-				if ((*x_pos >= CPM * MAX_X_REGION) || (biome == BIOME_IMPASS) ||
-					(player_travel_water_check(p, *y_pos, *x_pos, *grid))) {
+				if ((*x_pos >= CPM * MAX_X_REGION) ||
+					(player_travel_pass_check(p, *y_pos, *x_pos))) {
 					/* Backtrack, stop travel */
 					grid->x--;
 					grid->x += CHUNK_SIDE;
@@ -389,8 +474,8 @@ static bool player_travel_step(struct player *p, int dir, int *y_pos,
 			if (!((*y_pos) % CPM)) {
 				/* Stop if impassable */
 				biome = square_miles[(*y_pos) / CPM][(*x_pos) / CPM].biome;
-				if ((*y_pos >= CPM * MAX_Y_REGION) || (biome == BIOME_IMPASS) ||
-					(player_travel_water_check(p, *y_pos, *x_pos, *grid))) {
+				if ((*y_pos >= CPM * MAX_Y_REGION) ||
+					(player_travel_pass_check(p, *y_pos, *x_pos))) {
 					/* Backtrack, stop travel */
 					grid->y--;
 					grid->y += CHUNK_SIDE;
@@ -416,10 +501,10 @@ static bool player_travel_step(struct player *p, int dir, int *y_pos,
 
 			/* Check for square mile change */
 			if (!((*x_pos + 1) % CPM)) {
-				/* Stop if impassable or deep water */
+				/* Stop if impassable */
 				biome = square_miles[(*y_pos) / CPM][(*x_pos) / CPM].biome;
-				if ((*x_pos < 0) || (biome == BIOME_IMPASS) ||
-					(player_travel_water_check(p, *y_pos, *x_pos, *grid))) {
+				if ((*x_pos < 0) ||
+					(player_travel_pass_check(p, *y_pos, *x_pos))) {
 					/* Backtrack, stop travel */
 					grid->x++;
 					grid->x -= CHUNK_SIDE;
@@ -440,27 +525,13 @@ static bool player_travel_step(struct player *p, int dir, int *y_pos,
 	/* Success, no need to stop travel */
 	return false;
 }
-	//	case DIR_N: {
-	//		y_pos = MAX(0, y_pos - CPM * dist);
-	//		break;
-	//	}
-	//	case DIR_E: {
-	//		x_pos = MIN(CPM * MAX_X_REGION - 2, x_pos + CPM * dist);
-	//		break;
-	//	}
-	//	case DIR_S: {
-	//		y_pos = MIN(CPM * MAX_Y_REGION - 2, y_pos + CPM * dist);
-	//		break;
-	//	}
-	//	case DIR_W: {
-	//		x_pos = MAX(0, x_pos - CPM * dist);
-	//		break;
 
 /**
- * Deal with the details of fast travel.  These include:
- * - Stopping when the player gets hungry
- * - Slowing travel for difficult terrain (to simulate route-finding)
- * - Stopping on reaching an obstacle (water, impassable mountains)
+ * Deal with the details of fast travel.
+ *
+ * This essentially mimics a large number of steps in the chosen direction,
+ * stopping in the case of any obstacle or if the player is hungry, and handles
+ * all the normal world/player processing.
  */
 void player_travel(struct player *p, int dir, int miles, int *y_pos, int *x_pos,
 				   struct loc *grid)
