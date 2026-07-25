@@ -295,6 +295,262 @@ void player_digest(struct player *p)
 	}
 }
 
+
+/**
+ * Check for deep water during fast travel.
+ */
+static bool player_travel_water_check(struct player *p, int y_pos, int x_pos,
+									  struct loc grid)
+{
+	return false;
+}
+
+/**
+ * Deal with the details of a single step of fast travel.
+ */
+static bool player_travel_step(struct player *p, int dir, int *y_pos,
+							   int *x_pos, struct loc *grid)
+{
+	enum biome_type biome = square_miles[(*y_pos) / CPM][(*x_pos) / CPM].biome;
+
+	/* If difficult terrain maybe don't move */
+	if (((biome == BIOME_MOUNTAIN) || (biome == BIOME_SWAMP)) && one_in_(2)) {
+		return false;
+	}
+
+	/* Get the new grid, decide whether there is a chunk/mile change */
+	if (dir == DIR_N) {
+		bool chunk_change = !(grid->y % CHUNK_SIDE);
+		grid->y--;
+		/* Check for chunk change */
+		if (chunk_change) {
+			grid->y += CHUNK_SIDE;
+			(*y_pos)--;
+
+			/* Check for square mile change */
+			if (!((*y_pos + 1) % CPM)) {
+				/* Stop if impassable */
+				biome = square_miles[(*y_pos) / CPM][(*x_pos) / CPM].biome;
+				if ((*y_pos < 0) || (biome == BIOME_IMPASS) ||
+					(player_travel_water_check(p, *y_pos, *x_pos, *grid))) {
+					/* Backtrack, stop travel */
+					grid->y++;
+					grid->y -= CHUNK_SIDE;
+					(*y_pos)++;
+					return true;
+				}
+			}
+		}
+
+		/* Check for deep water */
+		if (player_travel_water_check(p, *y_pos, *x_pos, *grid)) {
+			/* Backtrack, stop travel */
+			grid->y++;
+			return true;
+		}
+	} else if (dir == DIR_E) {
+		bool chunk_change = !((grid->x + 1) % CHUNK_SIDE);
+		grid->x++;
+		/* Check for chunk change */
+		if (chunk_change) {
+			grid->x -= CHUNK_SIDE;
+			(*x_pos)++;
+
+			/* Check for square mile change */
+			if (!((*x_pos) % CPM)) {
+				/* Stop if impassable or deep water */
+				biome = square_miles[(*y_pos) / CPM][(*x_pos) / CPM].biome;
+				if ((*x_pos >= CPM * MAX_X_REGION) || (biome == BIOME_IMPASS) ||
+					(player_travel_water_check(p, *y_pos, *x_pos, *grid))) {
+					/* Backtrack, stop travel */
+					grid->x--;
+					grid->x += CHUNK_SIDE;
+					(*x_pos)--;
+					return true;
+				}
+			}
+		}
+
+		/* Check for deep water */
+		if (player_travel_water_check(p, *y_pos, *x_pos, *grid)) {
+			/* Backtrack, stop travel */
+			grid->x--;
+			return true;
+		}
+	} else if (dir == DIR_S) {
+		bool chunk_change = !((grid->y + 1) % CHUNK_SIDE);
+		grid->y++;
+		/* Check for chunk change */
+		if (chunk_change) {
+			grid->y -= CHUNK_SIDE;
+			(*y_pos)++;
+
+			/* Check for square mile change */
+			if (!((*y_pos) % CPM)) {
+				/* Stop if impassable */
+				biome = square_miles[(*y_pos) / CPM][(*x_pos) / CPM].biome;
+				if ((*y_pos >= CPM * MAX_Y_REGION) || (biome == BIOME_IMPASS) ||
+					(player_travel_water_check(p, *y_pos, *x_pos, *grid))) {
+					/* Backtrack, stop travel */
+					grid->y--;
+					grid->y += CHUNK_SIDE;
+					(*y_pos)--;
+					return true;
+				}
+			}
+		}
+
+		/* Check for deep water */
+		if (player_travel_water_check(p, *y_pos, *x_pos, *grid)) {
+			/* Backtrack, stop travel */
+			grid->y--;
+			return true;
+		}
+	} else if (dir == DIR_W) {
+		bool chunk_change = !((grid->x) % CHUNK_SIDE);
+		grid->x--;
+		/* Check for chunk change */
+		if (chunk_change) {
+			grid->x += CHUNK_SIDE;
+			(*x_pos)--;
+
+			/* Check for square mile change */
+			if (!((*x_pos + 1) % CPM)) {
+				/* Stop if impassable or deep water */
+				biome = square_miles[(*y_pos) / CPM][(*x_pos) / CPM].biome;
+				if ((*x_pos < 0) || (biome == BIOME_IMPASS) ||
+					(player_travel_water_check(p, *y_pos, *x_pos, *grid))) {
+					/* Backtrack, stop travel */
+					grid->x++;
+					grid->x -= CHUNK_SIDE;
+					(*x_pos)++;
+					return true;
+				}
+			}
+		}
+
+		/* Check for deep water */
+		if (player_travel_water_check(p, *y_pos, *x_pos, *grid)) {
+			/* Backtrack, stop travel */
+			grid->x++;
+			return true;
+		}
+	}
+
+	/* Success, no need to stop travel */
+	return false;
+}
+	//	case DIR_N: {
+	//		y_pos = MAX(0, y_pos - CPM * dist);
+	//		break;
+	//	}
+	//	case DIR_E: {
+	//		x_pos = MIN(CPM * MAX_X_REGION - 2, x_pos + CPM * dist);
+	//		break;
+	//	}
+	//	case DIR_S: {
+	//		y_pos = MIN(CPM * MAX_Y_REGION - 2, y_pos + CPM * dist);
+	//		break;
+	//	}
+	//	case DIR_W: {
+	//		x_pos = MAX(0, x_pos - CPM * dist);
+	//		break;
+
+/**
+ * Deal with the details of fast travel.  These include:
+ * - Stopping when the player gets hungry
+ * - Slowing travel for difficult terrain (to simulate route-finding)
+ * - Stopping on reaching an obstacle (water, impassable mountains)
+ */
+void player_travel(struct player *p, int dir, int miles, int *y_pos, int *x_pos,
+				   struct loc *grid)
+{
+	size_t i;
+	bool learn = false, danger = false;
+	int dist = miles * CPM * CHUNK_SIDE;
+
+	/* Food handling */
+	int dec = 1;
+	int dec_chance = int_exp(3, -(p->state.flags[OF_HUNGER]));
+	if (p->state.flags[OF_HUNGER] > 0) {
+		dec *= int_exp(3, p->state.flags[OF_HUNGER]);
+	}
+
+	/* Clear the array of previous actions */
+	for (i = 0; i < MAX_ACTION; i++) {
+		p->previous_action[i] = ACTION_NOTHING;
+	}
+
+	/* Clear the array of timed effects */
+	for (i = 0; i < TMD_MAX; i++) {
+		if (i != TMD_FOOD) p->timed[i] = 0;
+	}
+
+	/* Cancel stealth mode, wrath, etc */
+	p->stealth_mode = STEALTH_MODE_OFF;
+	p->wrath = 0;
+	p->focused = false;
+	p->consecutive_attacks = 0;
+	p->last_attack_m_idx = 0;
+
+	/* Silently stop singing */
+	p->song[SONG_MAIN] = NULL;
+	p->song[SONG_MINOR] = NULL;
+	p->song_duration = 0;
+
+	/* Just take a whole lot of steps */
+	while (true) {
+		/* Handle food manually */
+		int this_dec = dec;
+		if ((p->state.flags[OF_HUNGER] < 0) && !one_in_(dec_chance)) {
+			this_dec = 0;
+		}
+		p->timed[TMD_FOOD] -= this_dec;
+		if (p->timed[TMD_FOOD] < PY_FOOD_ALERT) {
+			msg("You are getting hungry.");
+			break;
+		}
+
+		/* Possibly identify DANGER flag every so often */
+		if (one_in_(500)) {
+			danger = true;
+		}
+
+		/* Notice things after time */
+		if (!(turn % 100)) {
+			learn = true;
+		}
+
+		if (p->chp < p->mhp) {
+			player_regen_hp(p);
+		}
+
+		/* Regenerate voice if needed */
+		if (p->csp < p->msp) {
+			player_regen_mana(p);
+		}
+
+		/* Take turns */
+		p->turn++;
+		turn += 10;
+
+		/* Take a step, maybe */
+		if (player_travel_step(p, dir, y_pos, x_pos, grid)) break;
+
+		/* Check distance */
+		dist--;
+		if (!dist) break;
+	}
+
+	/* Stuff we learned */
+	if (learn) {
+		equip_learn_after_time(p);
+	}
+	if (danger) {
+		equip_learn_flag(p, OF_DANGER);
+	}
+}
+
 /**
  * Update the player's light fuel
  */

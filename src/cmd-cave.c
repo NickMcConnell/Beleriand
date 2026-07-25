@@ -2053,7 +2053,7 @@ void do_cmd_pathfind(struct command *cmd)
 /**
  * Transport the player to the fast-travelled-to place
  */
-void do_cmd_travel_aux(int y_pos, int x_pos)
+void do_cmd_travel_aux(int y_pos, int x_pos, struct loc grid)
 {
 	int y, x;
 	int centre;
@@ -2110,13 +2110,14 @@ void do_cmd_travel_aux(int y_pos, int x_pos)
 								 x + ARENA_CHUNKS / 2);
 			}
 			if ((y == 0) && (x == 0)) {
-				square_set_feat(cave, loc(ARENA_SIDE / 2, ARENA_SIDE / 2),
-								FEAT_ROAD);
+				if (!square_ispassable(cave, grid)) {
+					square_set_feat(cave, grid, FEAT_ROAD);
+				}
 				player->place = idx;
 			}
 		}
 	}
-	player_place(cave, player, loc(ARENA_SIDE / 2, ARENA_SIDE / 2));
+	player_place(cave, player, grid);
 
 	/* Save the game when we arrive on the new level. */
 	player->upkeep->autosave = true;
@@ -2144,39 +2145,49 @@ void do_cmd_travel(struct command *cmd)
 	int dir, dist;
 	struct chunk_ref *ref = &chunk_list[player->place];
 	int y_pos = ref->y_pos, x_pos = ref->x_pos;
+	struct loc grid = player->grid;
+
+	/* Restrict to the surface */
+	if (ref->z_pos > 0) {
+		msg("You can only fast travel on the surface.");
+		return;
+	}
+
+	/* No travel while poisoned, cut, gorged or hungry */
+	if (player->timed[TMD_POISONED]) {
+		msg("You cannot fast travel while poisoned.");
+		return;
+	} else if (player->timed[TMD_CUT]) {
+		msg("You cannot fast travel while bleeding.");
+		return;
+	} else if (player->timed[TMD_FOOD] >= PY_FOOD_MAX) {
+		msg("You cannot fast travel while gorged.");
+		return;
+	} else if (player->timed[TMD_FOOD] < PY_FOOD_ALERT) {
+		msg("You cannot fast travel while hungry.");
+		return;
+	}
 
 	/* Get arguments */
 	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 		return;
+	if ((dir != DIR_N) && (dir != DIR_E) && (dir != DIR_S) && (dir != DIR_W)) {
+		msg("Please choose a cardinal direction.");
+		return;
+	}
 
 	if (cmd_get_arg_number(cmd, "miles", &dist) != CMD_OK) {
 		dist = get_quantity("Travel how many miles (max 100)? ", 100);
 		cmd_set_arg_number(cmd, "miles", dist);
 	}
 
-	switch (dir) {
-		case DIR_N: {
-			y_pos = MAX(0, y_pos - CPM * dist);
-			break;
-		}
-		case DIR_E: {
-			x_pos = MIN(CPM * MAX_X_REGION - 2, x_pos + CPM * dist);
-			break;
-		}
-		case DIR_S: {
-			y_pos = MIN(CPM * MAX_Y_REGION - 2, y_pos + CPM * dist);
-			break;
-		}
-		case DIR_W: {
-			x_pos = MAX(0, x_pos - CPM * dist);
-			break;
-		}
-		default: {
-			msg("Please choose a cardinal direction.");
-		}
-	}
+	if (!dist) return;
 
-	if (dist) do_cmd_travel_aux(y_pos, x_pos);
+	/* Travel until hungry or stopped by terrain/danger or reach the target */
+	player_travel(player, dir, dist, &y_pos, &x_pos, &grid);
+
+	/* Move the player */
+	do_cmd_travel_aux(y_pos, x_pos, grid);
 }
 
 /**
