@@ -852,12 +852,12 @@ static void prt_map_zoomed_chunks(int x_margin, int y_margin, int level)
 			chunk = chunk_list[idx].chunk;
 			p_chunk = chunk_list[idx].p_chunk;
 			for (y1 = 0, vy = ROW_MAP + rem_y + (y - y_pos) * side;
-				 y1 < CHUNK_SIDE; y1++) {
+				 (y1 < CHUNK_SIDE) && (vy < Term->hgt - 1); y1++) {
 				if (y1 % level) {
 					continue;
 				}
 				for (x1 = 0, vx = COL_MAP + rem_x + (x - x_pos) * side;
-					 x1 < CHUNK_SIDE; x1++) {
+					 (x1 < CHUNK_SIDE) && (vx < Term->wid - 1); x1++) {
 					if (x1 % level) {
 						continue;
 					}
