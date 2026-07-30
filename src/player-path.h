@@ -23,7 +23,7 @@
 #include "z-type.h"
 
 int pathfind_direction_to(struct loc from, struct loc to);
-bool find_path(struct loc grid);
+bool find_path(struct loc grid, enum direction dir);
 void run_step(int dir);
 
 #endif /* !PLAYER_PATH_H */

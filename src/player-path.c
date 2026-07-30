@@ -206,17 +206,28 @@ static bool set_up_path_distances(struct loc grid)
 	return true;
 }
 
+static enum direction outside_running_dir = DIR_NONE;
+
 /**
  * Fill the array of path step directions
  * \param grid the target grid
  */
-bool find_path(struct loc grid)
+bool find_path(struct loc grid, enum direction dir)
 {
 	struct loc new = grid;
 
 	/* Attempt to find a path if necessary */
-	if (loc_eq(new, player->grid)) return false;
-	if (!set_up_path_distances(grid)) return false;
+	if (loc_eq(new, player->grid)) {
+		outside_running_dir = DIR_NONE;
+		return false;
+	}
+	if (!set_up_path_distances(grid)) {
+		outside_running_dir = DIR_NONE;
+		return false;
+	}
+
+	/* Set the outside running direction */
+	outside_running_dir = dir;
 
 	/* Now travel along the path, backwards */
 	path_step_idx = 0;
@@ -237,7 +248,10 @@ bool find_path(struct loc grid)
 		}
 
 		/* Check we haven't exceeded path length */
-		if (path_step_idx >= MAX_PF_LENGTH) return false;
+		if (path_step_idx >= MAX_PF_LENGTH) {
+			outside_running_dir = DIR_NONE;
+			return false;
+		}
 
 		/* Record the opposite of the backward direction */
 		path_step_dir[path_step_idx++] = 10 - ddd[k];
@@ -897,6 +911,29 @@ void run_step(int dir)
 		if (player->upkeep->running_withpathfind) {
 			/* Running is a side effect of pathfinding. */
 			cmdq_peek()->is_background_command = true;
+
+			/* Check whether to keep running */
+			if (!path_step_idx && (outside_running_dir != DIR_NONE)) {
+				int dist = 9;
+
+				/* Pick a fairly close spot to run to */
+				struct loc grid = loc_sum(player->grid,
+										  ddgrid[outside_running_dir]);
+				while (dist) {
+					grid = loc_sum(grid, ddgrid[outside_running_dir]);
+					dist--;
+				}
+
+				/* If we have passability issues, try running further */
+				dist = 30;
+				while (!square_ispassable(cave, grid) && dist) {
+					grid = loc_sum(grid, ddgrid[dir]);
+					dist--;
+				}
+
+				/* Try to run */
+				find_path(grid, outside_running_dir);
+			}
 		}
 		cmd_set_arg_direction(cmdq_peek(), "direction", 0);
 	}

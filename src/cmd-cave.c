@@ -2011,13 +2011,40 @@ void do_cmd_run(struct command *cmd)
 		if (!do_cmd_walk_test(player, grid))
 			return;
 			
-		/* Hack: convert repeat count to running count */
-		if (cmd->nrepeats > 0) {
-			player->upkeep->running = cmd->nrepeats;
-			cmd->nrepeats = 0;
-		}
-		else {
-			player->upkeep->running = 0;
+		/* Experimental outdoor running */
+		if (!player->depth) {
+			int dist = 9;
+
+			/* Pick a fairly close spot to run to */
+			while (dist) {
+				grid = loc_sum(grid, ddgrid[dir]);
+				dist--;
+			}
+
+			/* If we have passability issues, try running further */
+			dist = 30;
+			while (!square_ispassable(cave, grid)) {
+				grid = loc_sum(grid, ddgrid[dir]);
+				dist--;
+			}
+
+			/* Try to run */
+			if (find_path(grid, dir)) {
+				player->upkeep->running = 1000;
+				/* Calculate torch radius */
+				player->upkeep->update |= (PU_TORCH);
+				player->upkeep->running_withpathfind = true;
+				run_step(0);
+			}
+			return;
+		} else {
+			/* Hack: convert repeat count to running count */
+			if (cmd->nrepeats > 0) {
+				player->upkeep->running = cmd->nrepeats;
+				cmd->nrepeats = 0;
+			} else {
+				player->upkeep->running = 0;
+			}
 		}
 	}
 
@@ -2041,7 +2068,7 @@ void do_cmd_pathfind(struct command *cmd)
 	if (player->timed[TMD_CONFUSED])
 		return;
 
-	if (find_path(grid)) {
+	if (find_path(grid, DIR_NONE)) {
 		player->upkeep->running = 1000;
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
