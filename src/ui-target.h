@@ -20,19 +20,32 @@
 #ifndef UI_TARGET_H
 #define UI_TARGET_H
 
+#include "generate.h"
 #include "ui-event.h"
+
+#define ZOOM_LEVEL (player->upkeep->zoom_level)
+#define SY_MIN MAX(0, Term->offset_y - ((ZOOM_LEVEL - 1) * SCREEN_HGT) / 2)
+#define SX_MIN MAX(0, Term->offset_x - ((ZOOM_LEVEL - 1) * SCREEN_WID) / 2)
+#define SY_MAX MIN(Term->offset_y + ((ZOOM_LEVEL - 1) * SCREEN_HGT) / 2 \
+				   + SCREEN_HGT, ARENA_SIDE)
+#define SX_MAX MIN(Term->offset_x + ((ZOOM_LEVEL - 1) * SCREEN_WID) / 2 \
+				   + SCREEN_WID, ARENA_SIDE)
+#define Y_ADD MAX(0, (SCREEN_HGT - ((SY_MAX - SY_MIN) / ZOOM_LEVEL)) / 2)
+#define X_ADD MAX(0, (SCREEN_WID - ((SX_MAX - SX_MIN) / ZOOM_LEVEL)) / 2)
 
 /**
  * Convert a "key event" into a "location" (Y)
  */
 #define KEY_GRID_Y(K) \
-  ((int) (((K.mouse.y - ROW_MAP) / tile_height) + Term->offset_y))
+	((int) (((K.mouse.y - ROW_MAP - Y_ADD) * ZOOM_LEVEL / tile_height)	\
+			+ SY_MIN))
 
 /**
  * Convert a "key event" into a "location" (X)
  */
 #define KEY_GRID_X(K) \
-	((int) (((K.mouse.x - COL_MAP) / tile_width) + Term->offset_x))
+	((int) (((K.mouse.x - COL_MAP - X_ADD) * ZOOM_LEVEL / tile_width)	\
+			+ SX_MIN))
 
 /**
  * Convert a "key event" into a "location"

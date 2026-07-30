@@ -261,7 +261,7 @@ void square_note_spot(struct chunk *c, struct loc grid)
  */
 void square_light_spot(struct chunk *c, struct loc grid)
 {
-	if ((c == cave) && player->cave) {
+	if ((c == cave) && player->cave && square_isview(c, grid)) {
 		player->upkeep->redraw |= PR_ITEMLIST;
 		event_signal_point(EVENT_MAP, grid.x, grid.y);
 	}

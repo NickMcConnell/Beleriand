@@ -452,33 +452,46 @@ void move_cursor_relative(int y, int x)
 {
 	int ky, kx;
 	int vy, vx;
+	int level = player->upkeep->zoom_level;
+
+	/* Assume screen */
+	int sy = MAX(0, Term->offset_y - ((level - 1) * SCREEN_HGT) / 2);
+	int sx = MAX(0, Term->offset_x - ((level - 1) * SCREEN_WID) / 2);
+	int ty = MIN(Term->offset_y + ((level - 1) * SCREEN_HGT) / 2
+				 + SCREEN_HGT, cave->height);
+	int tx = MIN(Term->offset_x + ((level - 1) * SCREEN_WID) / 2
+				 + SCREEN_WID, cave->width);
+
+	/* Centre the map */
+	int y_add = MAX(0, (SCREEN_HGT - ((ty - sy) / level)) / 2);
+	int x_add = MAX(0, (SCREEN_WID - ((tx - sx) / level)) / 2);
 
 	/* Move the cursor on map sub-windows */
 	move_cursor_relative_map(y, x);
 
 	/* Location relative to panel */
-	ky = y - Term->offset_y;
+	ky = y - sy;
 
 	/* Verify location */
-	if ((ky < 0) || (ky >= SCREEN_HGT)) return;
+	if ((ky < 0) || (ky >= ty)) return;
 
 	/* Location relative to panel */
-	kx = x - Term->offset_x;
+	kx = x - sx;
 
 	/* Verify location */
-	if ((kx < 0) || (kx >= SCREEN_WID)) return;
+	if ((kx < 0) || (kx >= tx)) return;
 
 	/* Location in window */
-	vy = ky + ROW_MAP;
+	vy = ky / level + ROW_MAP + y_add;
 
 	/* Location in window */
-	vx = kx + COL_MAP;
+	vx = kx / level + COL_MAP + x_add;
 
 	if (tile_width > 1)
-		vx += (tile_width - 1) * kx;
+		vx += (tile_width - 1) * kx / level;
 
 	if (tile_height > 1)
-		vy += (tile_height - 1) * ky;
+		vy += (tile_height - 1) * ky / level;
 
 	/* Go there */
 	(void)Term_gotoxy(vx, vy);
@@ -738,10 +751,9 @@ void prt_map(void)
 		}
 }
 
-static void get_zoomed_grid_data(struct chunk *chunk, struct chunk *p_chunk,
-								 struct grid_data *g,
-								 int *ap, wchar_t *cp, int *tap, wchar_t *tcp,
-								 struct loc grid, int level)
+void get_zoomed_grid_data(struct chunk *chunk, struct chunk *p_chunk,
+						  struct grid_data *g, int *ap, wchar_t *cp, int *tap,
+						  wchar_t *tcp, struct loc grid, int level)
 {
 	int y, x, pri = 0, max = 0;
 	bool pgrid = false;
@@ -781,9 +793,8 @@ static void get_zoomed_grid_data(struct chunk *chunk, struct chunk *p_chunk,
 			count[g->f_idx]++;
 
 			/* Save "best" */
-			if ((count[g->f_idx] > max) || ((max > 0) &&
-											(count[g->f_idx] == max) &&
-											(this_pri > pri))) {
+			if (((count[g->f_idx] > max) && (this_pri > pri)) ||
+				((max > 0) && (count[g->f_idx] == max) && (this_pri > pri))) {
 				max = count[g->f_idx];
 				pri = this_pri;
 				grid_data_as_text(chunk, g, ap, cp, tap, tcp);
@@ -812,7 +823,8 @@ static void get_zoomed_grid_data(struct chunk *chunk, struct chunk *p_chunk,
  * Print chunks adjacent to the current playing arena when the map is zoomed
  * out so that the arena doesn't fill the screen.
  */
-static void prt_map_zoomed_chunks(int x_margin, int y_margin, int level)
+static void prt_map_zoomed_chunks(int x_min, int y_min, int x_margin,
+								  int y_margin, int level)
 {
 	int side = CHUNK_SIDE / level;
 	int num_x = x_margin / side, num_y = y_margin / side;
@@ -851,12 +863,12 @@ static void prt_map_zoomed_chunks(int x_margin, int y_margin, int level)
 			/* Print the map */
 			chunk = chunk_list[idx].chunk;
 			p_chunk = chunk_list[idx].p_chunk;
-			for (y1 = 0, vy = ROW_MAP + rem_y + (y - y_pos) * side;
+			for (y1 = y_min, vy = ROW_MAP + rem_y + (y - y_pos) * side;
 				 (y1 < CHUNK_SIDE) && (vy < Term->hgt - 1); y1++) {
 				if (y1 % level) {
 					continue;
 				}
-				for (x1 = 0, vx = COL_MAP + rem_x + (x - x_pos) * side;
+				for (x1 = x_min, vx = COL_MAP + rem_x + (x - x_pos) * side;
 					 (x1 < CHUNK_SIDE) && (vx < Term->wid - 1); x1++) {
 					if (x1 % level) {
 						continue;
@@ -953,8 +965,8 @@ void prt_map_zoomed(struct chunk *chunk, struct chunk *p_chunk)
 	}
 
 	/* Add visited chunks around the main map as they fit */
-	if (x_add || y_add) {
-		prt_map_zoomed_chunks(x_add, y_add, level);
+	if ((x_add || y_add) && !player->depth) {
+		prt_map_zoomed_chunks(sx, sy, x_add, y_add, level);
 	}
 }
 

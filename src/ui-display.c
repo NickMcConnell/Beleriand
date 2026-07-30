@@ -1130,9 +1130,6 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	/* This signals a whole-map redraw. */
 	if (data->point.x == -1 && data->point.y == -1) {
 		prt_map_zoomed(cave, player->cave);
-	} else if (level > 1) {
-		/* Don't do point updates if zoomed */
-		return;
 	} else {
 		/* Single point to be redrawn */
 		struct grid_data g;
@@ -1142,27 +1139,33 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		int ky, kx;
 		int vy, vx;
 		int clipy;
-		int vlevel;
-		int y_add = 0, x_add = 0;
+
+		/* Assume screen */
+		int sy = MAX(0, Term->offset_y - ((level - 1) * SCREEN_HGT) / 2);
+		int sx = MAX(0, Term->offset_x - ((level - 1) * SCREEN_WID) / 2);
+		int ty = MIN(Term->offset_y + ((level - 1) * SCREEN_HGT) / 2
+					 + SCREEN_HGT, cave->height);
+		int tx = MIN(Term->offset_x + ((level - 1) * SCREEN_WID) / 2
+					 + SCREEN_WID, cave->width);
+
+		/* Centre the map */
+		int y_add = MAX(0, (SCREEN_HGT - ((ty - sy) / level)) / 2);
+		int x_add = MAX(0, (SCREEN_WID - ((tx - sx) / level)) / 2);
 
 		/* Location relative to panel */
-		ky = data->point.y - t->offset_y;
-		kx = data->point.x - t->offset_x;
+		ky = data->point.y - sy;
+		kx = data->point.x - sx;
 
 		if (t == angband_term[0]) {
-			/* Centre the map */
-			for (vlevel = level; vlevel > 1; vlevel /= 2) {
-				y_add += SCREEN_HGT / (vlevel * 2);
-				x_add += SCREEN_WID / (vlevel * 2);
-			}
-
 			/* Verify location */
-			if ((ky < 0) || (ky >= SCREEN_HGT)) return;
-			if ((kx < 0) || (kx >= SCREEN_WID)) return;
+			if ((ky < 0) || (ky >= ty)) return;
+			if ((kx < 0) || (kx >= tx)) return;
 
 			/* Location in window */
 			vy = tile_height * ky / level + ROW_MAP + y_add;
 			vx = tile_width * kx / level + COL_MAP + x_add;
+			if ((vy < ROW_MAP) || (vy >= t->hgt)) return;
+			if ((vx < COL_MAP) || (vx >= t->wid)) return;
 
 			/* Protect the status line against modification. */
 			clipy = ROW_MAP + SCREEN_ROWS;
