@@ -1908,7 +1908,7 @@ effect:HEAL_HP
 dice:m50
 effect:RESTORE_MANA
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 flags:GOOD
 desc:It cures stunning, confusion, hallucination, poison,
 desc: blindness, cuts, and fear. It restores half your health, and
@@ -1933,7 +1933,7 @@ effect:CURE:AFRAID
 effect:HEAL_HP
 dice:m25
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It banishes all fear, cures a quarter of your health, and stuns you
 desc: (for 2d4 turns).
 
@@ -1954,7 +1954,7 @@ effect:CURE:CONFUSED
 effect:CURE:IMAGE
 effect:CURE:RAGE
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It cures stunning, confusion, and hallucination; and ends
 desc: your rage. 
 
@@ -1977,7 +1977,7 @@ effect:HEAL_HP
 dice:$B
 expr:B:PLAYER_MAX_HP: / 2
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 flags:GOOD
 desc:It heals all cuts and restores half your health.
 
@@ -1994,7 +1994,7 @@ defence:0:0d0
 alloc:13:1
 effect:RESTORE_MANA
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It renews your voice. 
 
 
@@ -2013,7 +2013,7 @@ effect:CURE:IMAGE
 effect:TIMED_SET:SINVIS
 dice:10d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 thrown-effect:REVEAL_MONSTER
 desc:It restores your sight and enables you to resist
 desc: blindness, resist hallucination, and see
@@ -2035,7 +2035,7 @@ effect:TIMED_SET:POISONED
 dice:$B
 expr:B:PLAYER_POIS: / 2
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It halves the severity of any current poisoning.
 
 
@@ -2053,7 +2053,7 @@ alloc:15:1
 effect:TIMED_INC:FAST
 dice:10d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 thrown-effect:EXPLOSION:SPEED
 thrown-dice:-1+1d4
 flags:GOOD
@@ -2093,7 +2093,7 @@ dice:3
 effect:TIMED_INC:STR
 dice:20d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It grants a bonus of +3 to strength for 20d4 turns,
 desc: restoring strength by up to 3 in the process.
 
@@ -2114,7 +2114,7 @@ dice:3
 effect:TIMED_INC:DEX
 dice:20d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It grants a bonus of +3 to dexterity for 20d4 turns,
 desc: restoring dexterity by up to 3 in the process.
 
@@ -2135,7 +2135,7 @@ dice:3
 effect:TIMED_INC:CON
 dice:20d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It grants a bonus of +3 to constitution for 20d4 turns,
 desc: restoring constitution by up to 3 in the process.
 
@@ -2156,7 +2156,7 @@ dice:3
 effect:TIMED_INC:GRA
 dice:20d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It grants a bonus of +3 to grace for 20d4 turns,
 desc: restoring grace by up to 3 in the process.
 
@@ -2177,7 +2177,7 @@ alloc:2:3
 effect:TIMED_INC:SLOW
 dice:10d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 thrown-effect:EXPLOSION:SLOW
 thrown-dice:10
 desc:It slows you down (-1 to speed) for 10d4 turns.
@@ -2196,7 +2196,7 @@ alloc:3:3
 effect:TIMED_INC:POISONED
 dice:5d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It causes 5d4 points of poison. 
 
 
@@ -2213,7 +2213,7 @@ alloc:4:3
 effect:TIMED_INC:BLIND
 dice:10d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It induces blindness for 10d4 turns.
 
 
@@ -2230,7 +2230,7 @@ alloc:6:3
 effect:TIMED_INC:CONFUSED
 dice:10d4
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 thrown-effect:EXPLOSION:CONFUSION
 thrown-dice:10
 desc:It induces confusion for 5d4 turns.
@@ -2248,7 +2248,7 @@ defence:0:0d0
 alloc:9:3
 effect:DRAIN_STAT:DEX
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It reduces your dexterity by one point. 
 
 
@@ -2264,7 +2264,7 @@ defence:0:0d0
 alloc:11:3
 effect:DRAIN_STAT:GRA
 effect:NOURISH:INC_BY
-dice:100
+dice:1000
 desc:It reduces your grace by one point. 
 
 
@@ -2381,12 +2381,12 @@ effect:CURE:AFRAID
 effect:TIMED_INC:RAGE
 dice:10d4
 effect:NOURISH:INC_BY
-dice:250
+dice:2500
 desc:It sends you into a dark rage
 desc: (+1 Str/Con, -1 Dex/Gra, special melee attack, resistance to fear)
 desc: for 10d4 turns.
-desc: Herbs provide nourishment for about 250
-desc: turns under normal conditions. 
+desc: Herbs provide nourishment for about 2500
+desc: turns under normal conditions.
 
 
 # Index 381
@@ -2403,7 +2403,7 @@ alloc:15:1
 effect:NOURISH:INC_BY:0:1
 dice:2000
 desc:It provides nourishment for about 2000 turns
-desc: under normal conditions. 
+desc: under normal conditions.
 
 
 # Index 382
@@ -2420,10 +2420,10 @@ alloc:6:2
 effect:TERROR
 dice:10d4
 effect:NOURISH:INC_BY
-dice:250
+dice:2500
 desc:It induces fear that lasts
 desc: for 10d4 turns and a burst of speed that lasts 5d4 turns.
-desc: Herbs provide nourishment for about 250
+desc: Herbs provide nourishment for about 2500
 desc: turns under normal conditions.
 
 
@@ -2444,10 +2444,10 @@ expr:B:PLAYER_CUT: / 2
 effect:HEAL_HP
 dice:m50
 effect:NOURISH:INC_BY
-dice:250
+dice:2500
 desc:It cures all cuts and heals half of your health.
 desc:  Herbs provide nourishment for
-desc: about 250 turns under normal conditions. 
+desc: about 2500 turns under normal conditions.
 
 
 # Index 384
@@ -2471,10 +2471,10 @@ dice:3
 effect:RESTORE_STAT:GRA
 dice:3
 effect:NOURISH:INC_BY
-dice:250
+dice:2500
 desc:It restores all of your statistics by up to 3 points each. 
-desc: Herbs provide nourishment for about 250 turns under normal
-desc: conditions. 
+desc: Herbs provide nourishment for about 2500 turns under normal
+desc: conditions.
 
 
 # Index 385
@@ -2488,7 +2488,7 @@ attack:0:0d0
 defence:0:0d0
 alloc:4:3
 effect:NOURISH:DEC_BY:0:1
-dice:1000
+dice:10000
 desc:It makes you more hungry (by 1,000 turns under normal conditions). 
 
 
@@ -2506,10 +2506,10 @@ effect:CURE:BLIND
 effect:TIMED_INC:IMAGE
 dice:80d4
 effect:NOURISH:INC_BY
-dice:250
+dice:2500
 desc:It causes you to hallucinate for 80d4 turns, but cures blindness in
 desc: the process.
-desc: Herbs provide nourishment for about 250
+desc: Herbs provide nourishment for about 2500
 desc: turns under normal conditions.
 
 
@@ -2526,10 +2526,10 @@ alloc:8:3
 effect:TIMED_SET:ENTRANCED
 dice:10d4
 effect:NOURISH:INC_BY
-dice:250
+dice:2500
 desc:It induces a trance that lasts for 10d4 turns.
-desc: Herbs provide nourishment for about 250 turns under
-desc: normal conditions. 
+desc: Herbs provide nourishment for about 2500 turns under
+desc: normal conditions.
 
 
 # Index 388
@@ -2544,10 +2544,10 @@ defence:0:0d0
 alloc:8:3
 effect:DRAIN_STAT:STR
 effect:NOURISH:INC_BY
-dice:250
+dice:2500
 desc:It reduces your strength by one point.
-desc: Herbs provide nourishment for about 250
-desc: turns under normal conditions. 
+desc: Herbs provide nourishment for about 2500
+desc: turns under normal conditions.
 
 
 # Index 389
@@ -2562,10 +2562,10 @@ defence:0:0d0
 alloc:8:3
 effect:DRAIN_STAT:CON
 effect:NOURISH:INC_BY
-dice:250
+dice:2500
 desc:It reduces your constitution by one point.
 desc: Herbs provide nourishment for
-desc: about 250 turns under normal conditions. 
+desc: about 2500 turns under normal conditions.
 
 ##### Food #####
 
@@ -2579,9 +2579,9 @@ cost:2
 attack:0:0d0
 defence:0:0d0
 effect:NOURISH:INC_BY
-dice:3000
+dice:30000
 msg:It is moist and tasty.
-desc:It provides nourishment for about 3000 turns under normal conditions.
+desc:It provides nourishment for about 30,000 turns under normal conditions.
 
 name:& Fish Fillet~
 graphics:,:w
@@ -2592,9 +2592,9 @@ cost:2
 attack:0:0d0
 defence:0:0d0
 effect:NOURISH:INC_BY
-dice:3000
+dice:30000
 msg:It is moist and tasty.
-desc:It provides nourishment for about 3000 turns under normal conditions.
+desc:It provides nourishment for about 30,000 turns under normal conditions.
 
 # Index 399
 name:& Piece~ of Dark Bread
@@ -2608,9 +2608,9 @@ defence:0:0d0
 alloc:7:2
 alloc:13:1
 effect:NOURISH:INC_BY
-dice:1500
+dice:15000
 msg:It is hard and bitter.
-desc:It provides nourishment for about 1,500 turns under normal conditions. 
+desc:It provides nourishment for about 15,000 turns under normal conditions.
 
 
 # Index 400
@@ -2625,9 +2625,9 @@ defence:0:0d0
 alloc:10:4
 alloc:16:1
 effect:NOURISH:INC_BY
-dice:2000
+dice:20000
 msg:It is tough and chewy.
-desc:It provides nourishment for about 2,000 turns under normal conditions. 
+desc:It provides nourishment for about 20,000 turns under normal conditions.
 
 
 # Index 401
@@ -2642,12 +2642,12 @@ defence:0:0d0
 alloc:7:4
 alloc:18:2
 effect:NOURISH:INC_BY
-dice:3000
+dice:30000
 effect:RESTORE_STAT:GRA
 dice:1
 msg:It fills you with renewed energy and spirit.
 desc:It restores a point of grace if it has been drained.  It provides
-desc: nourishment for about 3,000 turns under normal conditions. 
+desc: nourishment for about 30,000 turns under normal conditions.
 
 
 ##### Ingredients #####
@@ -2662,12 +2662,12 @@ cost:2
 attack:0:0d0
 defence:0:0d0
 effect:NOURISH:INC_BY
-dice:500
+dice:5000
 effect:FOOD_POISONING
 cooked:food:Pigeon Breast
 preserved:food:Strip of Dried Meat
 msg:It is slimy and bloody.
-desc:It provides nourishment for about 500 turns under normal conditions.  It
+desc:It provides nourishment for about 5000 turns under normal conditions.  It
 desc: may make you sick.
 
 name:& Raw Fish~
@@ -2679,11 +2679,11 @@ cost:2
 attack:0:0d0
 defence:0:0d0
 effect:NOURISH:INC_BY
-dice:500
+dice:5000
 effect:FOOD_POISONING
 cooked:food:Fish Fillet
 msg:It is wet and bony.
-desc:It provides nourishment for about 500 turns under normal conditions.  It
+desc:It provides nourishment for about 5000 turns under normal conditions.  It
 desc: may make you sick.
 
 ##### Various #####

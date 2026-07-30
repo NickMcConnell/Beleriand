@@ -76,7 +76,7 @@ world:angband-depth:10
 world:max-depth:50
 
 # Number of turns from dawn to dawn
-world:day-length:10000
+world:day-length:30000
 
 # Max number of grids in each dungeon level (vertically)
 world:dungeon-hgt:132
