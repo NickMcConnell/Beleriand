@@ -563,9 +563,7 @@ static int get_river_width(struct river_mile *r_mile)
  * This algorithm adds the diagonal grid and the two adjacent cardinal grids
  * for the given direction from each existing grid. This should result in a
  * proper widening, although it will not work very well if the diagonal gets
- * close to parallel to the river.
- *
- * This also has the problem of being truncated at the edge of the square.
+ * close to parallel to the river, or with cardinal directions.
  */
 static int widen_river_course(int side, uint16_t **course, enum direction dir,
 							  int width)
@@ -807,6 +805,18 @@ static void find_half_piece_start(struct gen_loc *chunk, enum direction dir,
 }
 
 /**
+ * Check if a river piece contains a given grid
+ */
+static bool river_piece_has_grid(struct river_piece *piece, struct loc grid)
+{
+	struct river_grid *rgrid;
+	for (rgrid = piece->grids; rgrid; rgrid = rgrid->next) {
+		if (loc_eq(grid, rgrid->grid)) return true;
+	}
+	return false;
+}
+
+/**
  * Map out the course of a river through a square mile.
  *
  * This function takes the course of a river mile spelled out in chunks across
@@ -982,11 +992,17 @@ static void map_one_river_mile(struct square_mile *sq_mile,
 			for (y1 = 0; y1 < CHUNK_SIDE; y1++) {
 				for (x1 = 0; x1 < CHUNK_SIDE; x1++) {
 					if (course[y * CHUNK_SIDE + y1][x * CHUNK_SIDE + x1]) {
-						struct river_grid *rgrid = mem_zalloc(sizeof(*rgrid));
-						rgrid->next = location->river_piece->grids;
-						rgrid->grid = loc(x1, y1);
-						location->river_piece->grids = rgrid;
-						count++;
+						struct river_grid *rgrid;
+						if (river_piece_has_grid(location->river_piece,
+												 loc(x1, y1))) {
+							continue;
+						} else {
+							rgrid = mem_zalloc(sizeof(*rgrid));
+							rgrid->next = location->river_piece->grids;
+							rgrid->grid = loc(x1, y1);
+							location->river_piece->grids = rgrid;
+							count++;
+						}
 					}
 				}
 			}
