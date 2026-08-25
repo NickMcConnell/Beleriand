@@ -338,7 +338,7 @@ void player_init(struct player *p)
 	p->upkeep = mem_zalloc(sizeof(struct player_upkeep));
 	p->upkeep->inven = mem_zalloc((z_info->pack_size + 1) *
 								  sizeof(struct object *));
-	p->timed = mem_zalloc(TMD_MAX * sizeof(int16_t));
+	p->timed = mem_zalloc(TMD_MAX * sizeof(int32_t));
 	p->vaults = mem_zalloc(z_info->v_max * sizeof(int16_t));
 	p->obj_k = mem_zalloc(sizeof(struct object));
 	p->obj_k->brands = mem_zalloc(z_info->brand_max * sizeof(bool));

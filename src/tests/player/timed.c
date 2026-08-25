@@ -214,10 +214,10 @@ static int test_set_timed0(void *state) {
 	struct test_timed_state *st = (struct test_timed_state*) state;
 
 	struct {
-		int16_t in, new;
+		int32_t in, new;
 		bool notify;
 		bool disturb;
-		int16_t out;
+		int32_t out;
 		bool notified;
 		const char *change_msg;
 		const char *recover_msg;
@@ -353,11 +353,11 @@ static int test_set_timed1(void *state) {
 	struct test_timed_state *st = (struct test_timed_state*) state;
 
 	struct {
-		int16_t in, new;
+		int32_t in, new;
 		bool resist;
 		bool notify;
 		bool disturb;
-		int16_t out;
+		int32_t out;
 		bool notified;
 		const char *change_msg;
 		const char *recover_msg;
@@ -1735,13 +1735,13 @@ static int test_inc_timed0(void *state) {
 	struct test_timed_state *st = (struct test_timed_state*) state;
 
 	struct {
-		int16_t in;
+		int32_t in;
 		int inc;
 		bool notify;
 		bool disturb;
 		bool check;
 		bool protected;
-		int16_t out;
+		int32_t out;
 		bool notified;
 		const char *change_msg;
 		const char *recover_msg;
@@ -1909,13 +1909,13 @@ static int test_inc_timed0(void *state) {
 static int test_inc_timed1(void *state) {
 	struct test_timed_state *st = (struct test_timed_state*) state;
 	struct {
-		int16_t in;
+		int32_t in;
 		int inc;
 		bool notify;
 		bool disturb;
 		bool check;
 		bool protected;
-		int16_t out;
+		int32_t out;
 		bool notified;
 		const char *change_msg;
 		const char *recover_msg;
@@ -2082,11 +2082,11 @@ static int test_inc_timed1(void *state) {
 static int test_dec_timed0(void *state) {
 	struct test_timed_state *st = (struct test_timed_state*) state;
 	struct {
-		int16_t in;
+		int32_t in;
 		int dec;
 		bool notify;
 		bool disturb;
-		int16_t out;
+		int32_t out;
 		bool notified;
 		const char *change_msg;
 		const char *recover_msg;
@@ -2184,7 +2184,7 @@ static int test_clear_timed0(void *state) {
 	struct test_timed_state *st = (struct test_timed_state*) state;
 
 	struct {
-		int16_t in;
+		int32_t in;
 		bool notify;
 		bool disturb;
 		bool notified;

@@ -534,7 +534,7 @@ void wr_player(void)
 
 	/* Read all the effects, in a loop */
 	for (i = 0; i < TMD_MAX; i++)
-		wr_s16b(player->timed[i]);
+		wr_s32b(player->timed[i]);
 
 	/* Greater vaults seen */
 	wr_u16b(z_info->v_max);

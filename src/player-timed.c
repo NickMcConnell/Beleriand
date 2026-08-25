@@ -316,10 +316,10 @@ static enum parser_error parse_player_timed_change_grade(struct parser *p)
 	/*
 	 * The maximum should be greater than zero so it does not interfere
 	 * with the implicit "off" grade.  Because the player's timed array
-	 * has int16_t elements, ensure that the maximum is compatible with
+	 * has int32_t elements, ensure that the maximum is compatible with
 	 * that.
 	 */
-	if (grade_max <= 0 || grade_max > 32767) {
+	if (grade_max <= 0 || grade_max > 2147483647) {
 		return PARSE_ERROR_INVALID_VALUE;
 	}
 

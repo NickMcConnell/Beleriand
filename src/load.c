@@ -815,18 +815,18 @@ int rd_player(void)
 	if (num <= TMD_MAX) {
 		/* Read all the effects */
 		for (i = 0; i < num; i++)
-			rd_s16b(&player->timed[i]);
+			rd_s32b(&player->timed[i]);
 
 		/* Initialize any entries not read */
 		if (num < TMD_MAX)
-			memset(player->timed + num, 0, (TMD_MAX - num) * sizeof(int16_t));
+			memset(player->timed + num, 0, (TMD_MAX - num) * sizeof(int32_t));
 	} else {
 		/* Probably in trouble anyway */
 		for (i = 0; i < TMD_MAX; i++)
-			rd_s16b(&player->timed[i]);
+			rd_s32b(&player->timed[i]);
 
 		/* Discard unused entries */
-		strip_bytes(2 * (num - TMD_MAX));
+		strip_bytes(4 * (num - TMD_MAX));
 		note("Discarded unsupported timed effects");
 	}
 

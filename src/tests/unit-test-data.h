@@ -23,7 +23,7 @@
 #include "project.h"
 
 /* 21 = TMD_MAX */
-static int16_t TEST_DATA test_timed[21] = {
+static int32_t TEST_DATA test_timed[21] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0

@@ -542,7 +542,7 @@ struct player {
 	bool been_attacked;			/* Has anyone attacked the player? */
 	bool focused;				/* Currently focusing for an attack */
 
-	int16_t *timed;				/* Timed effects */
+	int32_t *timed;				/* Timed effects */
 
 	int16_t energy;				/* Current energy */
 	uint32_t total_energy;			/* Total energy used (including resting) */
