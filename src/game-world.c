@@ -853,7 +853,9 @@ void process_world(struct chunk *c)
 	}
 
 	/* Process light */
-	player_update_light(player);
+	if (!is_daylight() && player_update_light(player)) {
+		disturb(player, false);
+	}
 }
 
 

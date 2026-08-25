@@ -601,6 +601,9 @@ void player_travel(struct player *p, int dir, int miles, int *y_pos, int *x_pos,
 			player_regen_mana(p);
 		}
 
+		/* Use light if needed */
+		if (!is_daylight() && player_update_light(p)) break;
+
 		/* Take turns */
 		p->turn++;
 		turn += 10;
@@ -620,15 +623,19 @@ void player_travel(struct player *p, int dir, int miles, int *y_pos, int *x_pos,
 	if (danger) {
 		equip_learn_flag(p, OF_DANGER);
 	}
+	notice_stuff(player);
+	handle_stuff(player);
+	event_signal(EVENT_REFRESH);
 }
 
 /**
  * Update the player's light fuel
  */
-void player_update_light(struct player *p)
+bool player_update_light(struct player *p)
 {
 	/* Check for light being wielded */
 	struct object *obj = equipped_item_by_slot_name(p, "light");
+	bool dist = false;
 
 	/* Burn some fuel in the current light */
 	if (obj && tval_is_light(obj)) {
@@ -654,13 +661,13 @@ void player_update_light(struct player *p)
 				if (obj->timeout == 0) obj->timeout++;
 			} else if (obj->timeout == 0) {
 				/* The light is now out */
-				disturb(p, false);
+				dist = true;
 				msg("Your light has gone out!");
 			} else if ((obj->timeout <= 100) && (!(obj->timeout % 20))) {
 				/* The light is getting dim */
 				if (obj->timeout == 100) {
 					/* Only disturb the first time */
-					disturb(p, false);
+					dist = true;
 				}
 				msg("Your light is growing faint.");
 			}
@@ -669,6 +676,8 @@ void player_update_light(struct player *p)
 
 	/* Calculate torch radius */
 	p->upkeep->update |= (PU_TORCH);
+
+	return dist;
 }
 
 /**
