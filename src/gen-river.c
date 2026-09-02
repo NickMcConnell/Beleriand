@@ -827,7 +827,7 @@ static void map_one_river_mile(struct square_mile *sq_mile,
 							   struct river_mile *r_mile,
 							   enum direction start_dir, struct loc start,
 							   enum direction finish_dir, struct loc finish,
-							   uint16_t **coarse_course, int num)
+							   uint16_t **coarse_course, int num, bool join)
 {
 	/* Coordinates of the chunk in the top left corner */
 	struct loc tl = loc(sq_mile->map_grid.x * CPM - 1,
@@ -911,6 +911,10 @@ static void map_one_river_mile(struct square_mile *sq_mile,
 			out_dir = grid_direction(next_chunk, current_chunk, CPM);
 			out_grid = loc(-1, -1);
 		} else if (chunk_f) {
+			if (join) {
+				/* Set a direction to join the other river */
+				finish_dir = opposite_dir(in_dir);
+			}
 			/* Find where we join the already set river chunk */
 			find_half_piece_start(chunk_f, finish_dir, &out_grid);
 		} else {
@@ -1150,7 +1154,7 @@ void map_river_miles(struct square_mile *sq_mile)
 
 		/* Map the river through the mile, writing the river pieces */
 		map_one_river_mile(sq_mile, r_mile,	start_dir, start, finish_dir,
-						   finish, course, num);
+						   finish, course, num, (r_mile->part == RIVER_JOIN));
 
 		/* Set a joining point if necessary */
 		if (r_mile->next && (r_mile->next->part == RIVER_JOIN)) {

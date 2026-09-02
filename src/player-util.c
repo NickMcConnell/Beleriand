@@ -405,10 +405,10 @@ static bool player_travel_step(struct player *p, int dir, int *y_pos,
 
 	/* Get the new grid, decide whether there is a chunk/mile change */
 	if (dir == DIR_N) {
-		bool chunk_change = !(grid->y % CHUNK_SIDE);
+		bool change_chunk = !(grid->y % CHUNK_SIDE);
 		grid->y--;
 		/* Check for chunk change */
-		if (chunk_change) {
+		if (change_chunk) {
 			grid->y += CHUNK_SIDE;
 			(*y_pos)--;
 
@@ -434,10 +434,10 @@ static bool player_travel_step(struct player *p, int dir, int *y_pos,
 			return true;
 		}
 	} else if (dir == DIR_E) {
-		bool chunk_change = !((grid->x + 1) % CHUNK_SIDE);
+		bool change_chunk = !((grid->x + 1) % CHUNK_SIDE);
 		grid->x++;
 		/* Check for chunk change */
-		if (chunk_change) {
+		if (change_chunk) {
 			grid->x -= CHUNK_SIDE;
 			(*x_pos)++;
 
@@ -463,10 +463,10 @@ static bool player_travel_step(struct player *p, int dir, int *y_pos,
 			return true;
 		}
 	} else if (dir == DIR_S) {
-		bool chunk_change = !((grid->y + 1) % CHUNK_SIDE);
+		bool change_chunk = !((grid->y + 1) % CHUNK_SIDE);
 		grid->y++;
 		/* Check for chunk change */
-		if (chunk_change) {
+		if (change_chunk) {
 			grid->y -= CHUNK_SIDE;
 			(*y_pos)++;
 
@@ -492,10 +492,10 @@ static bool player_travel_step(struct player *p, int dir, int *y_pos,
 			return true;
 		}
 	} else if (dir == DIR_W) {
-		bool chunk_change = !((grid->x) % CHUNK_SIDE);
+		bool change_chunk = !((grid->x) % CHUNK_SIDE);
 		grid->x--;
 		/* Check for chunk change */
-		if (chunk_change) {
+		if (change_chunk) {
 			grid->x += CHUNK_SIDE;
 			(*x_pos)--;
 
